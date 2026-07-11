@@ -5,6 +5,7 @@ import {
   assertSupportedDossierContinuation,
   assertSupportedDossierClaimStatuses,
   buildAssistanceCommand,
+  createAssistanceCommandId,
   createAssistanceState,
   normalizeMisconceptionDossier,
 } from "./learningSupportAdapter.js";
@@ -38,7 +39,7 @@ test("assistance command matches the strict writable contract", () => {
       probe: { prompt_instance_id: "prompt-1" },
     },
     elapsedTimeSeconds: 12.5,
-    commandId: "command-1",
+    commandId: `c_${"A".repeat(40)}`,
   });
   assert.deepEqual(Object.keys(body), [
     "phase",
@@ -54,6 +55,13 @@ test("assistance command matches the strict writable contract", () => {
   assert.equal("level" in body, false);
   assert.equal("diagnostic_evidence_weight" in body, false);
   assert.equal("independent" in body, false);
+  assert.match(body.command_id, /^c_[A-P]{40}$/);
+  assert.match(createAssistanceCommandId(), /^c_[A-P]{40}$/);
+  assert.throws(() => buildAssistanceCommand({
+    session: { state_version: 5, probe: { prompt_instance_id: "prompt-1" } },
+    elapsedTimeSeconds: 1,
+    commandId: "command-1",
+  }), /command/i);
 });
 
 test("assistance state is unavailable until a real prompt instance exists", () => {
@@ -185,6 +193,8 @@ test("supported and refuted dossier candidates remain hypotheses", () => {
     ["refuted_hypothesis", "supported_hypothesis"],
   );
   assert.equal(dossier.statusCopy, "尚未确认");
+  assert.equal("probability" in dossier.rankedHypotheses[0], false);
+  assert.equal("probability" in dossier.rankedHypotheses[1], false);
   assert.match(dossier.rankedHypotheses[0].refutingEvidence[0], /事件 9/);
   assert.match(dossier.rankedHypotheses[1].supportingEvidence[0], /事件 9/);
 });

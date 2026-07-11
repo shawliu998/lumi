@@ -37,9 +37,11 @@ CLI option to widen the bind address.
 | POST | `/v1/attempts` | Start real attempt session (`hermes.attempt-session.v1`) |
 | POST | `/v1/attempts/{id}/responses` | Continue probe or independent verification |
 | POST | `/v1/attempts/{id}/assistance` | Deliver the next authored probe-help level |
-| POST | `/v1/runs` | Run `success`, `ambiguous`, or `offline` learning loop |
 | GET | `/v1/misconceptions` | Rebuildable misconception-dossier summaries |
 | GET | `/v1/misconceptions/{id}` | Event-sourced evidence dossier for one attempt |
+| POST | `/v1/today-plans` | Create the local-date evidence-backed plan |
+| GET | `/v1/today-plans/{id}` | Read a TodayPlan projection |
+| GET | `/v1/review-schedule` | Read the independent-review schedule |
 | GET | `/v1/runs/{id}/trace` | Append-only events and state/tool artifacts |
 | GET | `/v1/runs/{id}/replay` | Hash-verified replay frames |
 | GET | `/v1/skills/report` | Evidence-backed per-skill trace summary |
@@ -55,7 +57,7 @@ curl -sS http://127.0.0.1:8765/v1/attempts \
 # Use run_id, state_version, state and prompt_instance_id from the response.
 curl -sS http://127.0.0.1:8765/v1/attempts/ATTEMPT_ID/assistance \
   -H 'Content-Type: application/json' \
-  -d '{"phase":"probe","expected_version":5,"expected_state":"awaiting_probe","prompt_instance_id":"ATTEMPT_ID:probe:1","action":"next","elapsed_time_seconds":8,"command_id":"help-command-1"}'
+  -d '{"phase":"probe","expected_version":5,"expected_state":"awaiting_probe","prompt_instance_id":"ATTEMPT_ID:probe:1","action":"next","elapsed_time_seconds":8,"command_id":"c_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}'
 
 curl -sS http://127.0.0.1:8765/v1/attempts/ATTEMPT_ID/responses \
   -H 'Content-Type: application/json' \
@@ -66,10 +68,6 @@ curl -sS http://127.0.0.1:8765/v1/attempts/ATTEMPT_ID/responses \
   -H 'Content-Type: application/json' \
   -d '{"phase":"verification","expected_version":11,"expected_state":"awaiting_verification","prompt_instance_id":"ATTEMPT_ID:verification:1","response":"C","confidence":0.9,"response_time_seconds":18}'
 
-curl -sS http://127.0.0.1:8765/v1/runs \
-  -H 'Content-Type: application/json' \
-  -H 'X-Request-ID: mac-client-1' \
-  -d '{"mode":"offline","run_id":"offline-demo"}'
 ```
 
 The attempt contract accepts only `fixture_id`, `response`, `confidence`,
@@ -78,11 +76,13 @@ clients cannot inject a misconception label, mastery value, score, or model
 output. The raw response is scored in memory and persisted only as redacted text,
 a one-way digest, length, and redaction metadata. The redactor covers email,
 mainland mobile/identity numbers, bearer credentials, common API-token forms,
-and private-key blocks. Public run/command identifiers are restricted to short
-ASCII identifiers with at least one letter and reject embedded mainland mobile/
-identity substrings plus common `sk-` and GitHub-token forms, so PII or secret
-values cannot be used as trace keys. Real response evidence uses current UTC
-timestamps.
+and private-key blocks. Every new public run identifier is an opaque
+`r_` plus exactly 40 `A`–`P` characters; every idempotency command identifier
+uses the corresponding `c_` profile. The sidecar generates run identifiers when
+one is omitted. Existing safe legacy and 32-hex run keys remain readable, but
+are never accepted at a new public write boundary. This prevents arbitrary PII
+or credentials from becoming durable SQLite keys. Real response evidence uses
+current UTC timestamps.
 
 The session is a strict optimistic-concurrency state machine:
 
@@ -117,10 +117,16 @@ not a second mutable source of truth. It separates observed answer patterns,
 ranked hypotheses, authored probe support/refutation, and learning resolution.
 Probe evidence also selects the matching authored teaching variant; a refuted
 candidate cannot remain the teaching focus. Support never becomes causal ground
-truth. A correct initial answer followed by failed independent transfer is
+truth. A correct initial answer followed by failed independent verification is
 reported as a targeted-retry need rather than “no misconception observed”. With
 no consented cohort data the dossier returns
 `cohort_evidence.status=unavailable` and never emits peer error rates.
+
+Health counts and learner-facing skill, misconception, TodayPlan, and review
+projections include only `scenario=attempt` records whose evidence origin is
+`human_local_interactive`. Internal evaluation fixtures remain available to the
+test harness and explicit trace/replay audit routes, but cannot appear as
+learner progress and cannot be created through a public `/v1/runs` route.
 
 The skill endpoint deliberately ignores withheld assisted-verification updates.
 It reports the latest committed per-run mastery and aggregate delta; it does not

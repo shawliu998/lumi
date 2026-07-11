@@ -99,6 +99,7 @@ class IntegrationSession:
         store: EventStore,
         *,
         learner_id: str = "integration-learner",
+        evidence_origin: str = "evaluation_fixture",
     ) -> None:
         validate_fixture(fixture)
         self.fixture = dict(fixture)
@@ -108,6 +109,13 @@ class IntegrationSession:
         if stored_hash != fixture_content_hash(self.fixture):
             raise ValueError("stored fixture snapshot hash mismatch")
         self.learner_id = learner_id
+        if evidence_origin not in {
+            "human_local_interactive",
+            "evaluation_fixture",
+            "synthetic_isolated",
+        }:
+            raise ValueError("unsupported evidence origin")
+        self.evidence_origin = evidence_origin
         self.kt = HermesKTTool()
         self.registry = self._registry()
         # The runtime requires a replaceable router boundary. This integration
@@ -128,6 +136,7 @@ class IntegrationSession:
             "scenario": self.scenario.name,
             "execution_mode": self.scenario.execution_mode,
             "network_opt_in": False,
+            "evidence_origin": self.evidence_origin,
         }
         return AgentState(
             run_id=run_id or AgentState("placeholder", "placeholder", "placeholder").run_id,
@@ -568,7 +577,13 @@ def run_attempt(
     store = EventStore(database)
     transfer_store = False
     try:
-        session = IntegrationSession(fixture, scenario, store, learner_id=learner_id)
+        session = IntegrationSession(
+            fixture,
+            scenario,
+            store,
+            learner_id=learner_id,
+            evidence_origin="human_local_interactive",
+        )
         result = session.runtime.run(session.new_state(run_id), interrupt_after=3)
         transfer_store = True
         return session, result
@@ -665,7 +680,15 @@ def continue_attempt(
             initial_observed_at=_utc_now(),
             verification_observed_at=_utc_now(),
         )
-        session = IntegrationSession(fixture, scenario, store, learner_id=state.learner_id)
+        session = IntegrationSession(
+            fixture,
+            scenario,
+            store,
+            learner_id=state.learner_id,
+            evidence_origin=str(
+                state.context.get("evidence_origin", "evaluation_fixture")
+            ),
+        )
         before = deepcopy(state.to_dict())
         evidence = sanitize_response(response)
         if phase == "probe":

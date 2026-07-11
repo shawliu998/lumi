@@ -25,6 +25,12 @@ RUN_ROUTE = re.compile(r"^/v1/runs/([^/]+)/(trace|replay)$")
 ATTEMPT_RESPONSE_ROUTE = re.compile(r"^/v1/attempts/([^/]+)/responses$")
 ATTEMPT_ASSISTANCE_ROUTE = re.compile(r"^/v1/attempts/([^/]+)/assistance$")
 MISCONCEPTION_ROUTE = re.compile(r"^/v1/misconceptions/([^/]+)$")
+TODAY_PLAN_ROUTE = re.compile(r"^/v1/today-plans/([^/]+)$")
+TODAY_PLAN_REPLAY_ROUTE = re.compile(r"^/v1/today-plans/([^/]+)/replay$")
+TODAY_PLAN_TASK_COMMAND_ROUTE = re.compile(
+    r"^/v1/today-plans/([^/]+)/tasks/([^/]+)/commands$"
+)
+REVIEW_TASK_REPLAY_ROUTE = re.compile(r"^/v1/review-schedule/([^/]+)/replay$")
 
 
 class LocalThreadingHTTPServer(ThreadingHTTPServer):
@@ -94,15 +100,6 @@ def _handler_factory(application: SidecarApplication, allowed_origins: frozenset
                     payload = self._route_get(parsed.path, parse_qs(parsed.query, keep_blank_values=True))
                     self._send(200, payload, request_id, origin)
                     return
-                if method == "POST" and parsed.path == "/v1/runs":
-                    body = self._read_json({"mode", "run_id"})
-                    if not isinstance(body.get("mode"), str):
-                        raise ServiceError(400, "invalid_mode", "mode must be success, ambiguous, or offline")
-                    if body.get("run_id") is not None and not isinstance(body["run_id"], str):
-                        raise ServiceError(400, "invalid_run_id", "run_id must be a string")
-                    payload = application.run_learning_loop(body.get("mode"), body.get("run_id"))
-                    self._send(201, payload, request_id, origin)
-                    return
                 if method == "POST" and parsed.path == "/v1/attempts":
                     body = self._read_json(
                         {"fixture_id", "response", "confidence", "response_time_seconds", "run_id"}
@@ -116,6 +113,37 @@ def _handler_factory(application: SidecarApplication, allowed_origins: frozenset
                         body["confidence"],
                         body["response_time_seconds"],
                         body.get("run_id"),
+                    )
+                    self._send(201, payload, request_id, origin)
+                    return
+                if method == "POST" and parsed.path == "/v1/today-plans":
+                    body = self._read_json(
+                        {
+                            "plan_date",
+                            "exam_date",
+                            "daily_budget_minutes",
+                            "expected_version",
+                            "command_id",
+                        }
+                    )
+                    required = {
+                        "plan_date",
+                        "daily_budget_minutes",
+                        "expected_version",
+                        "command_id",
+                    }
+                    if not required.issubset(body):
+                        raise ServiceError(
+                            400,
+                            "invalid_body",
+                            "TodayPlan body is missing a required field",
+                        )
+                    payload = application.create_today_plan(
+                        body["plan_date"],
+                        body.get("exam_date"),
+                        body["daily_budget_minutes"],
+                        body["expected_version"],
+                        body["command_id"],
                     )
                     self._send(201, payload, request_id, origin)
                     return
@@ -191,6 +219,42 @@ def _handler_factory(application: SidecarApplication, allowed_origins: frozenset
                     )
                     self._send(200, payload, request_id, origin)
                     return
+                schedule_command_match = TODAY_PLAN_TASK_COMMAND_ROUTE.fullmatch(
+                    parsed.path
+                )
+                if method == "POST" and schedule_command_match:
+                    body = self._read_json(
+                        {
+                            "action",
+                            "expected_version",
+                            "expected_task_version",
+                            "command_id",
+                            "postpone_until",
+                        }
+                    )
+                    required = {
+                        "action",
+                        "expected_version",
+                        "expected_task_version",
+                        "command_id",
+                    }
+                    if not required.issubset(body):
+                        raise ServiceError(
+                            400,
+                            "invalid_body",
+                            "schedule command body is missing a required field",
+                        )
+                    payload = application.transition_today_plan_task(
+                        unquote(schedule_command_match.group(1)),
+                        unquote(schedule_command_match.group(2)),
+                        body["action"],
+                        body["expected_version"],
+                        body["expected_task_version"],
+                        body["command_id"],
+                        body.get("postpone_until"),
+                    )
+                    self._send(200, payload, request_id, origin)
+                    return
                 if method == "POST":
                     raise ServiceError(404, "route_not_found", "the requested API route does not exist")
                 raise ServiceError(405, "method_not_allowed", "HTTP method is not allowed for this route")
@@ -223,6 +287,33 @@ def _handler_factory(application: SidecarApplication, allowed_origins: frozenset
                 if query:
                     raise ServiceError(400, "invalid_query", "misconception report does not accept query parameters")
                 return application.misconception_report()
+            if path == "/v1/review-schedule":
+                if query:
+                    raise ServiceError(
+                        400,
+                        "invalid_query",
+                        "review schedule does not accept query parameters",
+                    )
+                return application.review_schedule()
+            plan_replay_match = TODAY_PLAN_REPLAY_ROUTE.fullmatch(path)
+            if plan_replay_match:
+                if query:
+                    raise ServiceError(400, "invalid_query", "plan replay does not accept query parameters")
+                return application.schedule_replay(
+                    "today_plan", unquote(plan_replay_match.group(1))
+                )
+            review_replay_match = REVIEW_TASK_REPLAY_ROUTE.fullmatch(path)
+            if review_replay_match:
+                if query:
+                    raise ServiceError(400, "invalid_query", "task replay does not accept query parameters")
+                return application.schedule_replay(
+                    "review_task", unquote(review_replay_match.group(1))
+                )
+            plan_match = TODAY_PLAN_ROUTE.fullmatch(path)
+            if plan_match:
+                if query:
+                    raise ServiceError(400, "invalid_query", "TodayPlan does not accept query parameters")
+                return application.today_plan(unquote(plan_match.group(1)))
             misconception_match = MISCONCEPTION_ROUTE.fullmatch(path)
             if misconception_match:
                 if query:

@@ -1,10 +1,11 @@
 # Lumi P0 → P1 → P2 execution contract
 
 Status: active. P0.1 is verified and published on
-`origin/codex/lumi-p0-p1-p2` at implementation commit `c62c66a`; P0.2 is the
-next implementation gate. Later phases may prepare read-only audits and contract
-proposals, but production implementation cannot be merged before the preceding
-phase passes.
+`origin/codex/lumi-p0-p1-p2` at implementation commit `c62c66a`. P0.2 is
+verified by final release cut `run-20260711T132028Z`; P0.3 is the next production
+slice. Later phases may prepare read-only audits and isolated evaluation
+scaffolding, but production implementation cannot be merged before the
+preceding phase passes.
 
 ## Non-negotiable boundaries
 
@@ -59,17 +60,30 @@ Gate:
 
 Deliver:
 
-- persistent review schedule independent from mastery;
-- task reason, expected duration, success criterion, and skip consequence;
-- accept, complete, postpone, skip, and resurface transitions;
-- deterministic initial scheduler using exam date, due reviews, weak skills,
-  recent causes, coverage, and fatigue/failed-attempt guardrails.
+- persistent ReviewSchedule projection independent from mastery and KT;
+- task reason, expected duration, success criterion, skip consequence,
+  immutable activity reference, and trace-resolvable evidence references;
+- public accept, complete, postpone, and skip transitions; resurfacing/re-entry
+  is an internal due-date and fair-rotation behavior, not a public command;
+- deterministic scheduling from completed `human_local_interactive` traces,
+  unconfirmed causes, independent-verification evidence, due/overdue windows,
+  exam date, accepted commitments, daily budget, and a fixed workload policy.
+  It does not consume peer/cohort rates, forgetting probability, fatigue score,
+  or predicted learning gain.
 
 Gate:
 
 - every recommendation cites recorded evidence;
 - no fabricated precision or peer comparison;
-- completion/skip/postpone are replayable and idempotent.
+- completion/skip/postpone are replayable and idempotent;
+- new public run and command writes use opaque identifiers; batch/demo/
+  synthetic-origin runs cannot be created through a public run endpoint or seed
+  learner-facing projections;
+- +1/+3 windows and task durations are fixed, unvalidated engineering policy;
+- the current launchable activity is a same-fixture independent retest, not
+  transfer to an unseen parallel item;
+- user-marked completion changes scheduling state only and cannot update KT or
+  prove learning effectiveness.
 
 ### P0.3 Minimal Study Pack
 
@@ -141,9 +155,12 @@ Engineering scope:
 - coach view for evidence and review queues;
 - cohort-prior pipeline with privacy review and minimum-sample gate.
 
-P2 gate: with no consented population dataset, cohort/calibration/causal outputs
-must be unavailable rather than synthetic. Engineering readiness can pass while
-population efficacy remains unproven.
+P2 gate: isolated synthetic learner simulation may validate schemas, lineage,
+replay, deletion, and policy invariants, but it cannot enter product
+projections, consented cohort denominators, calibration, causal, fairness, or
+learning-effect outputs. Without privacy-reviewed consented population data,
+those population outputs remain `unavailable`. Engineering readiness can pass
+while population efficacy remains unproven.
 
 ## Automation and evidence
 

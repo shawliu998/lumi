@@ -7,6 +7,7 @@ const execFile = promisify(execFileCallback);
 const desktopRoot = resolve(import.meta.dirname, "..");
 const appPath = resolve(desktopRoot, "src-tauri/target/debug/bundle/macos/Lumi.app");
 const verifyOnly = process.argv.includes("--verify-only");
+const verbose = process.argv.includes("--verbose");
 
 async function filesUnder(directory) {
   const entries = await readdir(directory, { withFileTypes: true });
@@ -49,7 +50,7 @@ if (!verifyOnly) {
       "--timestamp=none",
       path,
     ]);
-    console.log(`Ad-hoc signed ${relative(appPath, path)}`);
+    if (verbose) console.log(`Ad-hoc signed ${relative(appPath, path)}`);
   }
   await execFile("codesign", [
     "--force",
@@ -58,7 +59,7 @@ if (!verifyOnly) {
     "--timestamp=none",
     appPath,
   ]);
-  console.log(`Ad-hoc signed ${appPath}`);
+  console.log(`Ad-hoc signed ${codeFiles.length} nested Mach-O files and Lumi.app${verbose ? " (verbose)" : ""}.`);
 }
 
 await verify();

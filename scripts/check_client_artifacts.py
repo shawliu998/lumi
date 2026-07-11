@@ -27,6 +27,23 @@ SCREENSHOTS = {
     "p01-authentic-comparison-tools-probe-assistance.png": (1800, 526),
     "p01-authentic-comparison-tools-dossier-probe.png": (1800, 526),
     "p01-authentic-comparison-tools-independent-verification.png": (1800, 526),
+    "p02-overview-connected-not-created-1280x720.png": (1280, 720),
+    "p02-practice-final-contract-1280x720.png": (1280, 720),
+    "p02-practice-evidence-collapsed-1280x720.png": (1280, 720),
+    "p02-practice-evidence-expanded-1280x720.png": (1280, 720),
+    "p02-report-review-schedule-1280x720.png": (1280, 720),
+    "p02-report-readable-narrow-640x720.png": (640, 720),
+    "p02-historical-plan-conflict-1280x720.png": (1280, 720),
+    "p02-no-pending-review-1280x720.png": (1280, 720),
+    "p02-offline-fail-closed-1280x720.png": (1280, 720),
+    "p02-error-500-fail-closed-1280x720.png": (1280, 720),
+    "p02-practice-narrow-640x720.png": (640, 720),
+    "p02-compare-overview-khanmigo.png": (1816, 562),
+    "p02-compare-practice-khanmigo.png": (1816, 562),
+    "p02-compare-report-khanmigo.png": (1816, 562),
+    "p02-budget-below-accepted-retry-1280x720.png": (1280, 720),
+    "p02-budget-retry-success-1280x720.png": (1280, 720),
+    "p02-compare-budget-conflict-khanmigo.png": (1816, 562),
 }
 
 BANNED_PATTERNS = {
@@ -55,6 +72,9 @@ PRODUCTION_TRUTH_PATTERNS = {
     ),
     "legacy demo write path": re.compile(r"查看演示流程|当前显示演示数据"),
     "legacy fake attempt count": re.compile(r"\b129\b"),
+    "raw Today planning copy": re.compile(r"Today\s*(?:最多|中|展示|计划)"),
+    "raw accepted state in planning copy": re.compile(r"非\s*accepted\s*任务", re.I),
+    "AI recommendation marketing copy": re.compile(r"AI\s*推荐", re.I),
 }
 
 
@@ -89,7 +109,11 @@ def main() -> int:
                 failures.append(f"stale design QA claim detected: {label}")
 
     qa_readme = QA / "README.md"
-    if not qa_readme.is_file() or "Only files beginning with `p01-authentic-`" not in qa_readme.read_text(encoding="utf-8"):
+    qa_readme_text = qa_readme.read_text(encoding="utf-8") if qa_readme.is_file() else ""
+    if (
+        "Files beginning with `p02-` are the current P0.2" not in qa_readme_text
+        or "Only files beginning with `p01-authentic-`" not in qa_readme_text
+    ):
         failures.append("client/qa does not distinguish current authentic evidence from superseded captures")
 
     screenshot_evidence: dict[str, object] = {}

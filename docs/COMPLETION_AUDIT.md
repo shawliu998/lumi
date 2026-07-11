@@ -12,31 +12,41 @@ mean population learning efficacy or production distribution has been proved.
 | Explainable KT and cause diagnosis | complete for deterministic v0 | `engine/` tests; release `diagnosis` and `kt` gates | no population calibration or delayed-retention evidence yet |
 | Bounded Agent learning loop | complete | `runtime/`, `integration/`, append-only trace/replay tests | model-assisted production providers remain optional and gated |
 | Xingce, Shenlun, Interview representative coverage | complete | 14 paths × success/ambiguous/offline = 42 fixtures; `domains/` and release gates | representative synthetic fixtures are not the full item bank |
-| Loopback-only local service | complete | `service/` tests; health/capabilities/run/trace/replay/skill-report endpoints | browser client wiring is tracked below |
+| Loopback-only local service | complete | `service/` tests; health/capabilities/real-attempt/trace/replay/skill-report endpoints | public batch/demo run creation is disabled; internal evaluation traces remain separately auditable |
 | Real-attempt safety projection | complete | release `attempt_api` and `cohort_prior_guardrail` gates; redacted API evidence artifact | synthetic engineering priors are not real cohort evidence |
 | Stepwise learner continuation | complete for local v1 | release `attempt_continuation` gate; versioned probe/verification HTTP trace and replay | single local learner/session; no cross-device concurrency claim |
 | Progressive assistance and misconception dossier | complete for P0.1 | six authored levels; `progressive_assistance` and `misconception_dossier` gates; 42 resolved probe/teaching contracts | engineering policy is uncalibrated; synonym/ASR coverage is conservative |
-| Khanmigo-grounded, non-AI-slop client | complete | `client/design-qa.md`; 11 authenticated artifacts (six 1280×720 states and five 1800×526 comparisons) with enforced dimensions and hashes; `scripts/check_client_artifacts.py` | visual result is a v0 shell, not a public design system |
-| UI uses real sidecar and labels fallback honestly | complete for P0.1 | `client/design-qa.md`; authentic current PNGs; final Sol task `019f4fdb-9368-7b41-81f4-53538957ce7b` | one visible Xingce fixture; Today schedule, Shenlun, Interview and 11 other tools are explicitly unavailable |
-| macOS Tauri app manages packaged sidecar | complete for local debug app | `desktop/`; `npm run check:signature`; `npm run check:bundled-sidecar`; `npm run check:managed-app`; `cargo check --locked`; zero-residual process check | strict/deep verified ad-hoc ARM64 debug build, not Developer ID signed, notarized, or universal |
-| Automated release evidence | complete for current P0.1 source | `scripts/verify_core.py`; `evals/run_all.py`; fresh 15/15 release run `run-20260711T095034Z` | local deterministic/loopback evidence only; no population efficacy claim |
+| Explainable TodayPlan and independent ReviewSchedule | complete for bounded P0.2 | `evals/reports/latest.json` → `today_plan_schedule`; closed schemas; schedule/API tests; `client/design-qa.md` | only completed human-local attempts seed tasks; one owned launchable fixture; +1/+3 and durations are uncalibrated; activity is a same-fixture retest; completion cannot write KT; no population-effect claim |
+| Khanmigo-grounded, non-AI-slop client | complete for P0.2 | `client/design-qa.md`; 28 dimension/hash-gated artifacts: 17 current P0.2 states/comparisons plus 11 retained P0.1 artifacts; `scripts/check_client_artifacts.py` | one launchable Xingce fixture; no broad usability or public design-system claim |
+| UI uses real sidecar and labels fallback honestly | complete for bounded P0.2 | real first-answer continuation plus TodayPlan/ReviewSchedule browser QA; connected/offline/error/conflict/budget-retry states; Sol task `019f50e4-5a05-7a33-97f3-d47ef1330322` | Shenlun and Interview remain unavailable in the client; no synthetic learner answer or cached/demo plan is substituted |
+| macOS Tauri app manages packaged P0.2 sidecar | complete for local ARM64 debug app | `Lumi.app` app-tree SHA-256 `2a2a4002fba273c60eb49352cf3a69978e4722538abe94c46f5ebc3dd93a877d`; strict/deep signature; read-only bundle tree gate; managed lifecycle and zero-residual process checks | ad-hoc signed only; not Developer ID signed, notarized, universal, or production-distributed |
+| Automated release evidence | complete for final P0.2 source | `scripts/verify_core.py`: 17/17 checks; `evals/run_all.py`: 16/16 final release cut `run-20260711T132028Z`; `today_plan_schedule`: 23 cases / 2675 assertions | local deterministic/loopback evidence only; no population efficacy claim |
 | Portfolio evidence | complete for v0 mechanics | `portfolio/`, release reports, `client/design-qa.md`, Mac artifact | learner interviews, calibrated population results, and notarized distribution remain future evidence |
 
 ## Current release state
 
-P0.1 has passed the adversarial re-audit, fresh 15/15 release gates, final full
-verifier, strict/deep signed `Lumi.app` checks, bundle-resident sidecar checks,
-and frozen Shenlun boundary. Implementation commit `c62c66a` is published on
-`origin/codex/lumi-p0-p1-p2`; P0.2 is now the next implementation slice.
+P0.2 has passed adversarial security and evidence re-audit, the final 16/16
+release cut, the 17/17 full verifier, strict/deep signed `Lumi.app` checks,
+bundle-tree non-mutation, managed sidecar lifecycle, and the frozen Shenlun
+boundary. This proves bounded local scheduling mechanics, not delayed retention
+or learning effectiveness.
 
-Notarization, population calibration, delayed-retention evidence, full item
-coverage, crash recovery, continuation command-result idempotency, and
-authoritative longitudinal KT remain future milestones rather than P0.1 claims.
+New public run/command writes use closed opaque IDs. Learner-facing health,
+skill, misconception, TodayPlan, and ReviewSchedule projections include only
+real `human_local_interactive` attempts. Evaluation-only synthetic traces remain
+isolated engineering evidence. Notarization, population calibration,
+delayed-retention evidence, full item coverage, crash recovery, continuation
+command-result idempotency, and authoritative longitudinal KT remain future
+milestones.
 
 ## Claims that remain prohibited
 
 - population learning improvement;
 - calibrated cohort-level causal diagnosis;
 - delayed-retention lift;
+- unseen-item transfer from the current same-fixture retest;
+- calibrated forgetting, fatigue, duration, or +1/+3 timing;
+- user-marked completion as learning evidence;
+- cohort/common-error rates without eligible consented data;
 - notarized or production-distributed macOS readiness;
 - full Xingce content coverage.

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import tempfile
 import threading
@@ -7,13 +8,22 @@ import unittest
 import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 
 from hermes_service.api import create_server
 from hermes_service.application import ServiceError, SidecarApplication, public_safe
 from hermes_runtime.store import EventStore
+
+
+def opaque_public_id(prefix: str, label: str) -> str:
+    alphabet = "ABCDEFGHIJKLMNOP"
+    digest = hashlib.sha256(label.encode("utf-8")).digest()[:20]
+    encoded = "".join(
+        f"{alphabet[byte >> 4]}{alphabet[byte & 15]}" for byte in digest
+    )
+    return f"{prefix}_{encoded}"
 
 
 class SidecarTests(unittest.TestCase):
@@ -74,28 +84,52 @@ class SidecarTests(unittest.TestCase):
         self.assertEqual(xingce["count"], 15)
         self.assertEqual(offline["count"], 14)
 
-    def test_http_run_trace_replay_and_skill_report(self) -> None:
-        status, run, headers = self.request(
+    def test_public_run_route_is_disabled_and_internal_evaluation_is_invisible(self) -> None:
+        evaluation = self.application.run_learning_loop(
+            "success", "internal-evaluation-fixture"
+        )
+        self.assertEqual(evaluation["status"], "completed")
+
+        status, error, headers = self.request(
             "POST",
             "/v1/runs",
-            {"mode": "success", "run_id": "http-success"},
+            {"mode": "success", "run_id": "http-evaluation-must-be-disabled"},
             {"Origin": "http://127.0.0.1:1420", "X-Request-ID": "client-request-1"},
         )
-        self.assertEqual(status, 201)
+        self.assertEqual(status, 404)
+        self.assertEqual(error["error"]["code"], "route_not_found")
         self.assertEqual(headers["X-Request-ID"], "client-request-1")
         self.assertEqual(headers["Access-Control-Allow-Origin"], "http://127.0.0.1:1420")
-        self.assertEqual(run["status"], "completed")
-        self.assertTrue(run["trace_verified"])
 
-        _, trace, _ = self.request("GET", run["links"]["trace"])
-        _, replay, _ = self.request("GET", run["links"]["replay"])
+        _, capabilities, _ = self.request("GET", "/v1/capabilities")
+        self.assertNotIn("run", capabilities["endpoints"])
+        self.assertNotIn("learning_modes", capabilities)
+        _, health, _ = self.request("GET", "/v1/health")
         _, skills, _ = self.request("GET", "/v1/skills/report")
-        self.assertEqual(trace["event_count"], 8)
-        self.assertTrue(trace["trace_verified"])
-        self.assertEqual(replay["frame_count"], 8)
-        self.assertEqual(replay["frames"][-1]["state"]["status"], "completed")
-        self.assertEqual(skills["skill_count"], 1)
-        self.assertEqual(skills["items"][0]["verified_transfers"], 1)
+        _, misconceptions, _ = self.request("GET", "/v1/misconceptions")
+        self.assertEqual(health["run_count"], 0)
+        self.assertEqual(skills["skill_count"], 0)
+        self.assertEqual(misconceptions["count"], 0)
+        dossier_status, dossier, _ = self.request(
+            "GET", "/v1/misconceptions/internal-evaluation-fixture"
+        )
+        self.assertEqual(dossier_status, 404)
+        self.assertEqual(dossier["error"]["code"], "run_not_found")
+
+        today = date.today().isoformat()
+        plan_status, plan, _ = self.request(
+            "POST",
+            "/v1/today-plans",
+            {
+                "plan_date": today,
+                "daily_budget_minutes": 60,
+                "expected_version": 0,
+                "command_id": opaque_public_id("c", "synthetic invisible plan"),
+            },
+        )
+        self.assertEqual(plan_status, 201)
+        self.assertEqual(plan["empty_reason"], "no_recorded_evidence")
+        self.assertEqual(plan["tasks"], [])
 
     def test_all_three_learning_modes_complete(self) -> None:
         expected = {"success": True, "ambiguous": False, "offline": True}
@@ -115,7 +149,7 @@ class SidecarTests(unittest.TestCase):
             with self.subTest(fixture_id=fixture_id):
                 fixture = self.application.catalog.resolve(fixture_id)
                 samples = fixture["independent_verify"]["samples"]
-                run_id = f"cross-domain-transfer-{index}"
+                run_id = opaque_public_id("r", f"cross-domain-transfer-{index}")
                 initial = self.application.submit_attempt(
                     fixture_id,
                     samples["failing_response"],
@@ -174,7 +208,9 @@ class SidecarTests(unittest.TestCase):
                     verification_attack = "；".join(
                         f"{attack_prefix}{group['aliases'][0]}" for group in condition[group_key]
                     ) + "；以上全部不应做。"
-                    run_id = f"negation-guard-{index}-{attack_index}"
+                    run_id = opaque_public_id(
+                        "r", f"negation-guard-{index}-{attack_index}"
+                    )
                     initial = self.application.submit_attempt(
                         fixture_id,
                         initial_attack,
@@ -216,7 +252,7 @@ class SidecarTests(unittest.TestCase):
                 "response": "B",
                 "confidence": 0.9,
                 "response_time_seconds": 18,
-                "run_id": "http-attempt-correct",
+                "run_id": opaque_public_id("r", "http-attempt-correct"),
             },
         )
         _, wrong, _ = self.request(
@@ -227,7 +263,7 @@ class SidecarTests(unittest.TestCase):
                 "response": "A",
                 "confidence": 0.8,
                 "response_time_seconds": 31,
-                "run_id": "http-attempt-wrong",
+                "run_id": opaque_public_id("r", "http-attempt-wrong"),
             },
         )
         self.assertTrue(correct["score"]["passed"])
@@ -258,7 +294,7 @@ class SidecarTests(unittest.TestCase):
                 "response": "A",
                 "confidence": 0.8,
                 "response_time_seconds": 31,
-                "run_id": "http-staged-attempt",
+                "run_id": opaque_public_id("r", "http-staged-attempt"),
             },
         )
         _, empty_skills, _ = self.request("GET", "/v1/skills/report")
@@ -358,7 +394,7 @@ class SidecarTests(unittest.TestCase):
                 "response": "A",
                 "confidence": 0.8,
                 "response_time_seconds": 31,
-                "run_id": "http-concurrent-attempt",
+                "run_id": opaque_public_id("r", "http-concurrent-attempt"),
             },
         )
         barrier = threading.Barrier(3)
@@ -393,12 +429,13 @@ class SidecarTests(unittest.TestCase):
     def test_two_sidecar_instances_share_database_level_continuation_cas(self) -> None:
         first = SidecarApplication(self.database)
         second = SidecarApplication(self.database)
+        run_id = opaque_public_id("r", "two-sidecar-cas")
         initial = first.submit_attempt(
             "xingce.data-analysis.growth-rate.synthetic-01",
             "A",
             0.8,
             20,
-            "two-sidecar-cas",
+            run_id,
         )
         barrier = threading.Barrier(3)
 
@@ -408,7 +445,7 @@ class SidecarTests(unittest.TestCase):
                 return (
                     "accepted",
                     application.continue_attempt_session(
-                        "two-sidecar-cas",
+                        run_id,
                         "probe",
                         initial["state_version"],
                         "awaiting_probe",
@@ -434,11 +471,11 @@ class SidecarTests(unittest.TestCase):
         accepted = next(value for status, value in results if status == "accepted")
         self.assertEqual(accepted["state"], "awaiting_verification")
         store = EventStore(self.database)
-        self.assertTrue(store.verify("two-sidecar-cas"))
+        self.assertTrue(store.verify(run_id))
         self.assertEqual(
             sum(
                 event.kind == "learner_response_recorded"
-                for event in store.events("two-sidecar-cas")
+                for event in store.events(run_id)
             ),
             1,
         )
@@ -447,26 +484,28 @@ class SidecarTests(unittest.TestCase):
     def test_two_sidecars_replay_the_same_assistance_command_idempotently(self) -> None:
         first = SidecarApplication(self.database)
         second = SidecarApplication(self.database)
+        run_id = opaque_public_id("r", "two-sidecar-idempotency")
+        command_id = opaque_public_id("c", "shared-assistance-command")
         initial = first.submit_attempt(
             "xingce.data-analysis.growth-rate.synthetic-01",
             "A",
             0.8,
             20,
-            "two-sidecar-idempotency",
+            run_id,
         )
         barrier = threading.Barrier(3)
 
         def request_help(application: SidecarApplication) -> dict[str, Any]:
             barrier.wait(timeout=3)
             return application.deliver_assistance(
-                "two-sidecar-idempotency",
+                run_id,
                 "probe",
                 initial["state_version"],
                 "awaiting_probe",
                 initial["probe"]["prompt_instance_id"],
                 "next",
                 4,
-                "shared-command",
+                command_id,
             )
 
         with ThreadPoolExecutor(max_workers=2) as executor:
@@ -479,11 +518,11 @@ class SidecarTests(unittest.TestCase):
         self.assertEqual(
             sum(
                 event.kind == "assistance_delivered"
-                for event in store.events("two-sidecar-idempotency")
+                for event in store.events(run_id)
             ),
             1,
         )
-        self.assertTrue(store.verify("two-sidecar-idempotency"))
+        self.assertTrue(store.verify(run_id))
         store.close()
 
     def test_progressive_assistance_is_persistent_ordered_and_idempotent(self) -> None:
@@ -495,7 +534,7 @@ class SidecarTests(unittest.TestCase):
                 "response": "A",
                 "confidence": 0.8,
                 "response_time_seconds": 31,
-                "run_id": "http-assistance-ladder",
+                "run_id": opaque_public_id("r", "http-assistance-ladder"),
             },
         )
         _, initial_dossier, _ = self.request("GET", initial["links"]["misconception"])
@@ -529,7 +568,7 @@ class SidecarTests(unittest.TestCase):
                 "prompt_instance_id": initial["probe"]["prompt_instance_id"],
                 "action": "next",
                 "elapsed_time_seconds": index * 3,
-                "command_id": f"assist-{index}",
+                "command_id": opaque_public_id("c", f"assist-{index}"),
             }
             status, delivered, _ = self.request("POST", initial["links"]["assist"], body)
             self.assertEqual(status, 200)
@@ -570,7 +609,7 @@ class SidecarTests(unittest.TestCase):
             "prompt_instance_id": initial["probe"]["prompt_instance_id"],
             "action": "next",
             "elapsed_time_seconds": 30,
-            "command_id": "assist-7",
+            "command_id": opaque_public_id("c", "assist-7"),
         }
         status, exhausted, _ = self.request(
             "POST", initial["links"]["assist"], exhausted_body
@@ -633,7 +672,7 @@ class SidecarTests(unittest.TestCase):
                 "response": "A",
                 "confidence": 0.8,
                 "response_time_seconds": 20,
-                "run_id": "http-probe-assessment",
+                "run_id": opaque_public_id("r", "http-probe-assessment"),
             },
         )
         _, after_probe, _ = self.request(
@@ -679,7 +718,7 @@ class SidecarTests(unittest.TestCase):
         serialized = json.dumps(dossier, ensure_ascii=False)
         self.assertNotIn("confirmed_cause", serialized)
         restarted = SidecarApplication(self.database).misconception_dossier(
-            "http-probe-assessment"
+            initial["run_id"]
         )
         self.assertEqual(restarted["hypotheses"], dossier["hypotheses"])
         self.assertEqual(restarted["provenance"], dossier["provenance"])
@@ -693,7 +732,7 @@ class SidecarTests(unittest.TestCase):
                 "response": "A",
                 "confidence": 0.8,
                 "response_time_seconds": 20,
-                "run_id": "http-assisted-verification",
+                "run_id": opaque_public_id("r", "http-assisted-verification"),
             },
         )
         _, after_probe, _ = self.request(
@@ -719,7 +758,7 @@ class SidecarTests(unittest.TestCase):
                 "prompt_instance_id": after_probe["verification"]["prompt_instance_id"],
                 "action": "next",
                 "elapsed_time_seconds": 3,
-                "command_id": "forbidden-verification-help",
+                "command_id": opaque_public_id("c", "forbidden-verification-help"),
             },
         )
         self.assertEqual(forbidden_status, 409)
@@ -728,10 +767,10 @@ class SidecarTests(unittest.TestCase):
         )
 
         store = EventStore(self.database)
-        state = store.load_state("http-assisted-verification")
-        current = store.events("http-assisted-verification")[-1].seq
+        state = store.load_state(initial["run_id"])
+        current = store.events(initial["run_id"])[-1].seq
         injected = store.append_if_version(
-            "http-assisted-verification",
+            initial["run_id"],
             current,
             "assistance_delivered",
             {
@@ -784,7 +823,7 @@ class SidecarTests(unittest.TestCase):
                 "response": "A",
                 "confidence": 0.8,
                 "response_time_seconds": 20,
-                "run_id": "http-concurrent-assistance",
+                "run_id": opaque_public_id("r", "http-concurrent-assistance"),
             },
         )
         barrier = threading.Barrier(3)
@@ -801,7 +840,7 @@ class SidecarTests(unittest.TestCase):
                     "prompt_instance_id": initial["probe"]["prompt_instance_id"],
                     "action": "next",
                     "elapsed_time_seconds": 4,
-                    "command_id": command_id,
+                    "command_id": opaque_public_id("c", command_id),
                 },
             )
             return status, payload
@@ -828,7 +867,7 @@ class SidecarTests(unittest.TestCase):
                 "response": "A",
                 "confidence": 0.8,
                 "response_time_seconds": 20,
-                "run_id": "http-assistance-invalid",
+                "run_id": opaque_public_id("r", "http-assistance-invalid"),
             },
         )
         _, before, _ = self.request("GET", initial["links"]["trace"])
@@ -839,7 +878,7 @@ class SidecarTests(unittest.TestCase):
             "prompt_instance_id": initial["probe"]["prompt_instance_id"],
             "action": "next",
             "elapsed_time_seconds": 4,
-            "command_id": "invalid-help",
+            "command_id": opaque_public_id("c", "invalid-help"),
         }
         cases = (
             ({**base, "level": "full_explanation"}, 400, "invalid_body"),
@@ -857,7 +896,10 @@ class SidecarTests(unittest.TestCase):
         unknown_status, unknown, _ = self.request(
             "POST",
             "/v1/attempts/missing-run/assistance",
-            {**base, "command_id": "unknown-run-help"},
+            {
+                **base,
+                "command_id": opaque_public_id("c", "unknown-run-help"),
+            },
         )
         self.assertEqual(unknown_status, 404)
         self.assertEqual(unknown["error"]["code"], "run_not_found")
@@ -875,7 +917,7 @@ class SidecarTests(unittest.TestCase):
                 "response": raw,
                 "confidence": 0.4,
                 "response_time_seconds": 50,
-                "run_id": "http-attempt-redacted",
+                "run_id": opaque_public_id("r", "http-attempt-redacted"),
             },
         )
         self.assertEqual(status, 201)
@@ -896,7 +938,7 @@ class SidecarTests(unittest.TestCase):
                 "response": f"A {raw_secret}",
                 "confidence": 0.4,
                 "response_time_seconds": 20,
-                "run_id": "secret-redaction",
+                "run_id": opaque_public_id("r", "secret-redaction"),
             },
         )
         self.assertEqual(status, 201)
@@ -916,12 +958,17 @@ class SidecarTests(unittest.TestCase):
             "response_time_seconds": 20,
         }
         for run_id in (
+            "legacy-safe-run",
             "13800138000",
             "run-13800138000",
             "run-013800138000",
             "run-11010519491231002X",
             "run-" + "sk-" + "abcdefghijklmnopqrstuvwxyz" + "123456",
             "run-" + "ghp_" + "abcdefghijklmnopqrstuvwxyz" + "123456",
+            "github_pat_" + "A" * 82,
+            "AIzaSy" + "A" * 33,
+            "npm_" + "A" * 36,
+            "xoxb-" + "A" * 24 + "-" + "B" * 24,
             "学习者一号",
             "run" + "x" * 94,
         ):
@@ -932,14 +979,27 @@ class SidecarTests(unittest.TestCase):
                 self.assertEqual(status, 400)
                 self.assertEqual(payload["error"]["code"], "invalid_run_id")
 
+        store = EventStore(self.database)
+        try:
+            self.assertEqual(store.run_ids(), [])
+        finally:
+            store.close()
+
+        valid_run_id = opaque_public_id("r", "safe command run")
         _, initial, _ = self.request(
-            "POST", "/v1/attempts", {**base, "run_id": "safe-command-run"}
+            "POST", "/v1/attempts", {**base, "run_id": valid_run_id}
         )
+        _, trace_before, _ = self.request("GET", initial["links"]["trace"])
         for command_id in (
+            "legacy-command",
             "cmd-13800138000",
             "cmd-013800138000",
             "cmd-" + "sk-" + "abcdefghijklmnopqrstuvwxyz" + "123456",
             "cmd-" + "ghp_" + "abcdefghijklmnopqrstuvwxyz" + "123456",
+            "github_pat_" + "A" * 82,
+            "AIzaSy" + "A" * 33,
+            "npm_" + "A" * 36,
+            "xoxb-" + "A" * 24 + "-" + "B" * 24,
         ):
             with self.subTest(command_id=command_id):
                 status, payload, _ = self.request(
@@ -958,18 +1018,26 @@ class SidecarTests(unittest.TestCase):
                 self.assertEqual(status, 400)
                 self.assertEqual(payload["error"]["code"], "invalid_command_id")
 
+        _, trace_after, _ = self.request("GET", initial["links"]["trace"])
+        self.assertEqual(trace_after, trace_before)
+
+        status, generated, _ = self.request("POST", "/v1/attempts", base)
+        self.assertEqual(status, 201)
+        self.assertRegex(generated["run_id"], r"^r_[A-P]{40}$")
+
     def test_real_attempt_and_verification_use_service_utc_timestamps(self) -> None:
         before = datetime.now(timezone.utc)
+        run_id = opaque_public_id("r", "real-observed-at")
         initial = self.application.submit_attempt(
             "xingce.data-analysis.growth-rate.synthetic-01",
             "A",
             0.7,
             20,
-            "real-observed-at",
+            run_id,
         )
         after_initial = datetime.now(timezone.utc)
         after_probe = self.application.continue_attempt_session(
-            "real-observed-at",
+            run_id,
             "probe",
             initial["state_version"],
             "awaiting_probe",
@@ -980,7 +1048,7 @@ class SidecarTests(unittest.TestCase):
         )
         before_verification = datetime.now(timezone.utc)
         self.application.continue_attempt_session(
-            "real-observed-at",
+            run_id,
             "verification",
             after_probe["state_version"],
             "awaiting_verification",
@@ -991,7 +1059,7 @@ class SidecarTests(unittest.TestCase):
         )
         after_verification = datetime.now(timezone.utc)
         store = EventStore(self.database)
-        state = store.load_state("real-observed-at")
+        state = store.load_state(run_id)
         store.close()
         initial_at = datetime.fromisoformat(
             state.artifacts["observe"][-1]["attempt"]["observed_at"]
@@ -1012,7 +1080,7 @@ class SidecarTests(unittest.TestCase):
             "B",
             0.8,
             18,
-            "correct-then-failed-transfer",
+            opaque_public_id("r", "correct-then-failed-transfer"),
         )
         after_probe = self.application.continue_attempt_session(
             initial["run_id"],
@@ -1083,7 +1151,7 @@ class SidecarTests(unittest.TestCase):
                 "response": "A",
                 "confidence": 0.5,
                 "response_time_seconds": 20,
-                "run_id": "typed-continuation",
+                "run_id": opaque_public_id("r", "typed-continuation"),
             },
         )
         base = {
@@ -1108,12 +1176,13 @@ class SidecarTests(unittest.TestCase):
 
     def test_session_uses_immutable_fixture_snapshot_after_catalog_drift(self) -> None:
         first = SidecarApplication(self.database)
+        run_id = opaque_public_id("r", "immutable-fixture-session")
         initial = first.submit_attempt(
             "xingce.data-analysis.growth-rate.synthetic-01",
             "A",
             0.7,
             20,
-            "immutable-fixture-session",
+            run_id,
         )
         second = SidecarApplication(self.database)
         fixture = second.catalog._fixtures[
@@ -1122,7 +1191,7 @@ class SidecarTests(unittest.TestCase):
         original_prompt = fixture["teach"]["prompt"]
         fixture["teach"]["prompt"] = "DRIFT MUST NOT BE USED"
         result = second.continue_attempt_session(
-            "immutable-fixture-session",
+            run_id,
             "probe",
             initial["state_version"],
             "awaiting_probe",
@@ -1135,12 +1204,13 @@ class SidecarTests(unittest.TestCase):
         self.assertNotEqual(result["teaching"]["prompt"], "DRIFT MUST NOT BE USED")
 
     def test_legacy_run_without_fixture_snapshot_is_skipped_by_report(self) -> None:
+        source_run_id = opaque_public_id("r", "snapshot-source")
         initial = self.application.submit_attempt(
             "xingce.data-analysis.growth-rate.synthetic-01",
             "A",
             0.7,
             20,
-            "snapshot-source",
+            source_run_id,
         )
         store = EventStore(self.database)
         state = store.load_state(initial["run_id"])
@@ -1159,23 +1229,24 @@ class SidecarTests(unittest.TestCase):
         self.assertEqual(raised.exception.code, "fixture_snapshot_unavailable")
         report = self.application.misconception_report()
         self.assertEqual(report["count"], 1)
-        self.assertEqual(report["items"][0]["run_id"], "snapshot-source")
+        self.assertEqual(report["items"][0]["run_id"], source_run_id)
 
     def test_processing_dossier_never_offers_an_unexecutable_prompt_write(self) -> None:
+        run_id = opaque_public_id("r", "processing-dossier")
         initial = self.application.submit_attempt(
             "xingce.data-analysis.growth-rate.synthetic-01",
             "A",
             0.7,
             20,
-            "processing-dossier",
+            run_id,
         )
         store = EventStore(self.database)
-        state = store.load_state("processing-dossier")
+        state = store.load_state(run_id)
         state.context["consumed_prompt_instances"] = [
             initial["probe"]["prompt_instance_id"]
         ]
         store.append_if_version(
-            "processing-dossier",
+            run_id,
             initial["state_version"],
             "learner_response_recorded",
             {
@@ -1185,7 +1256,7 @@ class SidecarTests(unittest.TestCase):
             },
         )
         store.close()
-        dossier = self.application.misconception_dossier("processing-dossier")
+        dossier = self.application.misconception_dossier(run_id)
         self.assertEqual(dossier["state"], "processing_probe")
         self.assertEqual(dossier["learning_status"], "processing_probe_response")
         self.assertEqual(
@@ -1203,7 +1274,7 @@ class SidecarTests(unittest.TestCase):
                 "response": "D",
                 "confidence": 0.7,
                 "response_time_seconds": 42,
-                "run_id": "http-attempt-offline",
+                "run_id": opaque_public_id("r", "http-attempt-offline"),
             },
         )
         self.assertEqual(status, 201)

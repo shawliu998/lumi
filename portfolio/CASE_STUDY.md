@@ -5,9 +5,10 @@ Status: **evidence-backed v0 case study; learner-outcome sections remain templat
 Current evidence boundary: 42/42 representative domain contract cases and real
 success/ambiguous/offline domain→engine→runtime traces are reproducible through
 `evals/run_all.py`. The ARM64 debug Mac shell, packaged sidecar lifecycle, and
-three-screen visual/interaction baseline are also reproducible. This still does
-not prove population learning gains, notarized distribution readiness, or full
-content coverage.
+28 dimension/hash-gated client artifacts are also reproducible. The P0.2 release
+cut adds 23 real HTTP/storage scheduling cases. This still does not prove
+population learning gains, delayed-retention lift, notarized distribution
+readiness, or full content coverage.
 
 The real-attempt endpoint has a separate black-box safety gate for zero-cause
 correct answers, unconfirmed hypotheses, PII redaction, fail-closed fields, and
@@ -22,10 +23,10 @@ Reproducible release report: current `run_id` in `evals/reports/latest.json`
 
 ## One-sentence thesis
 
-Lumi turns an answer into an evidence-linked cycle of uncertain diagnosis,
-targeted probing, cause-specific teaching, independent transfer verification,
-and an evidence-linked per-run knowledge-state update—while keeping the P0.1
-path local by default. Review scheduling is the next independent P0.2 slice.
+Lumi turns a learner-entered answer into an evidence-linked cycle of uncertain
+diagnosis, targeted probing, cause-specific teaching, independent verification,
+and a per-run KT update, then projects trace-cited work into an independent
+TodayPlan/ReviewSchedule that cannot write mastery.
 
 ## Problem and user
 
@@ -49,7 +50,7 @@ Document the closed loop using exact runtime artifacts:
 | Diagnose | ranks causes with uncertainty | `<DIAGNOSIS_RESULT>` |
 | Plan | selects probe/intervention from state | `<POLICY_DECISION>` |
 | Act | invokes domain/tool/model capability | `<TOOL_CALL>` |
-| Verify | checks correctness and independent transfer | `<VERIFIER_RESULT>` |
+| Verify | checks correctness through an independent verification response | `<VERIFIER_RESULT>` |
 | Learn | applies an evidence-linked per-run KT update after independent verification | `<STATE_DIFF>` |
 | Reflect | evaluates trajectory and policy result | `<EVAL_RESULT>` |
 
@@ -103,9 +104,26 @@ controls. Compare against simpler baselines.
 
 For expert fixtures, replace predictive claims with invariant/test results.
 
+Forgetting models and delayed-retention calibration remain future evaluation
+work; the P0.2 scheduler uses no forgetting probability or fatigue score.
+
 Evidence: `<KT_REPORT_AND_SPLIT_MANIFEST>`
 
-## Technical contribution 3 — model routing under quality constraints
+## Technical contribution 3 — bounded scheduling independent from KT
+
+P0.2 scheduling is deliberately independent from KT. Only completed
+`human_local_interactive` traces can seed tasks. Candidate causes remain
+unconfirmed; +1/+3 windows and durations are fixed unvalidated policy; the
+current activity is a same-fixture independent retest rather than unseen-item
+transfer. Accept, complete, postpone, and skip are replayable schedule actions,
+while resurfacing is internal fair rotation. User-marked completion does not
+update KT or establish a learning effect. Cohort, peer, calibration, and
+population-effect evidence remain unavailable.
+
+Evidence: `evals/reports/latest.json` → `today_plan_schedule` and
+`evals/reports/today-plan-evidence-latest.json`.
+
+## Technical contribution 4 — model routing under quality constraints
 
 Explain why ambiguity, free text, multimodality, and high-impact decisions route
 to a strong tier, while simple structured work can use an economical tier only

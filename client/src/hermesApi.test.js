@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { isValidMisconceptionDossierContract } from "./hermesApi.js";
+import { readFileSync } from "node:fs";
+import { createRunId, isValidMisconceptionDossierContract, submitAttempt } from "./hermesApi.js";
 
 function dossierContract(claimStatus) {
   return {
@@ -88,4 +89,23 @@ test("dossier API rejects fabricated cohort evidence", () => {
     disguisedPriorSample.hypotheses[0].prior.sample_size = disguisedZero;
     assert.equal(isValidMisconceptionDossierContract(disguisedPriorSample, "run-contract"), false);
   }
+});
+
+test("attempt run ids use the closed Web Crypto profile", () => {
+  assert.match(createRunId(), /^r_[A-P]{40}$/);
+});
+
+test("attempt submission rejects caller-supplied run ids outside the closed profile", async () => {
+  await assert.rejects(
+    () => submitAttempt({
+      fixtureId: "xingce.data-analysis.growth-rate.synthetic-01",
+      response: "A",
+      confidence: 0.5,
+      runId: "59678fb4-b3ee-4caa-bbb2-2ae95ba15b9c",
+    }),
+    (error) => error?.code === "invalid_run_id" && error?.kind === "client",
+  );
+  const source = readFileSync(new URL("./hermesApi.js", import.meta.url), "utf8");
+  assert.match(source, /attempt\?\.run_id !== resolvedRunId/);
+  assert.match(source, /!isRunId\(attempt\?\.run_id\)/);
 });

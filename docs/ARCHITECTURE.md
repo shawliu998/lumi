@@ -1,14 +1,14 @@
-# Lumi target architecture and implemented P0.1 slice
+# Lumi target architecture and implemented P0.2 slice
 
 This document is the architectural direction, not a claim that every box is
 already implemented. The current executable slice is deliberately smaller:
 
 | Capability | Current status |
 | --- | --- |
-| Tauri + React Mac client, loopback Python sidecar, SQLite hash-chained trace and immutable content snapshots | implemented in P0.1 |
+| Tauri + React Mac client, loopback Python sidecar, SQLite hash-chained trace and immutable content snapshots | implemented in P0.2 |
 | Real first answer → targeted probe → cause-specific teaching → independent verification → per-run KT update | implemented for one visible Xingce path; deterministic representative contracts cover Xingce, Shenlun, and Interview |
-| Six-level authored assistance and event-sourced misconception dossier | implemented in P0.1; policies are synthetic and uncalibrated |
-| Today plan and independent ReviewSchedule | planned P0.2 |
+| Six-level authored assistance and event-sourced misconception dossier | implemented in P0.2; policies are authored engineering policy and uncalibrated |
+| Today plan and independent ReviewSchedule | implemented for completed human-local traces; one owned same-fixture launch contract |
 | Study Pack and Shenlun process coach | planned P0.3/P0.4 |
 | Durable jobs, registries, confirmed memory, longitudinal KT, bounded background workers | planned P1 |
 | Consented event flywheel, DuckDB analytics, delayed-retention evaluation, coach view, eligible cohort priors | planned P2 |
@@ -20,8 +20,9 @@ durable job system, or background scheduler yet.
 ## System shape
 
 The target is a local macOS modular monolith with explicit application, agent,
-domain, learning, and analytics boundaries. P0.1 currently instantiates the UI,
-loopback sidecar, deterministic learning packages, and SQLite trace portion.
+domain, learning, and analytics boundaries. P0.2 currently instantiates the UI,
+loopback sidecar, deterministic learning packages, SQLite trace, and independent
+TodayPlan/ReviewSchedule projection portions.
 
 ```mermaid
 flowchart TB
@@ -90,9 +91,12 @@ branding:
 - Command palette: start practice, inspect a skill, replay a trajectory, import a
   package, or switch provider.
 
-P0.1 implements Today, disabled future-task surfaces, one real training tool,
-and an evidence-only skill report. Agent Lab and the broader navigation above
-remain future product surfaces.
+P0.2 implements the real attempt/continuation loop, an evidence-only skill
+report, and persistent TodayPlan/ReviewSchedule surfaces backed by completed
+`human_local_interactive` traces. The current launch contract is one owned
+same-fixture retest, not transfer to an unseen parallel item; +1/+3 windows and
+durations are fixed uncalibrated policy. Agent Lab and the broader navigation
+above remain future product surfaces.
 
 ## Agent runtime: current boundary and P1 target
 
@@ -105,7 +109,7 @@ IDLE → OBSERVE → DIAGNOSE → SELECT_ACTION → EXECUTE
      → VERIFY → UPDATE_STATE → SCHEDULE → REFLECT → IDLE
 ```
 
-P0.1 has versioned inputs/outputs, SQLite compare-and-append, explicit failure
+P0.2 has versioned inputs/outputs, SQLite compare-and-append, explicit failure
 states, and idempotent assistance commands. Retry budgets, cancellation,
 leases/fencing, checkpoint recovery, and general command-result idempotency are
 P1 requirements.
@@ -130,9 +134,10 @@ The target separates four kinds of memory:
 3. Episodic summaries: compact session summaries linked to source events.
 4. Agent working memory: temporary context with a short lifetime.
 
-P0.1 implements the event trace and rebuildable per-run projections only. It has
-no confirmed preference-memory store or authoritative longitudinal KT state.
-Natural-language summaries cannot directly change mastery.
+P0.2 implements the event trace, rebuildable per-run projections, and an
+independent persistent schedule projection. It has no confirmed
+preference-memory store or authoritative longitudinal KT state. Schedule
+completion and natural-language summaries cannot directly change mastery.
 
 ## Shared learning contract
 
@@ -174,7 +179,7 @@ The cause taxonomy is subtype-specific. “Careless” is not an acceptable term
 cause without an observable operational definition such as unit omission after a
 correct intermediate result.
 
-Current P0.1 KT is a deterministic per-run BKT/PFA/Rasch-style baseline. The
+Current P0.2 KT is a deterministic per-run BKT/PFA/Rasch-style baseline. The
 following is the broader research target:
 
 - BKT/PFA-style per-skill state and forgetting for the initial online update;
@@ -189,11 +194,11 @@ ranges, evidence links, version compatibility, and rollback/rebuild behavior.
 
 ## Tutor policy
 
-P0.1 implements an authored six-level assistance ladder, targeted probe,
-cause-specific teaching variant, and independent transfer item. Expected-
-information-gain selection, spaced review, contextual-bandit experiments, and
-offline policy evaluation are future work; online reinforcement learning is out
-of scope.
+P0.2 implements an authored six-level assistance ladder, targeted probe,
+cause-specific teaching variant, independent verification prompt, and fixed
+uncalibrated review windows. Expected-information-gain selection, calibrated
+adaptive spacing, contextual-bandit experiments, and offline policy evaluation
+are future work; online reinforcement learning is out of scope.
 
 ## Model routing policy
 

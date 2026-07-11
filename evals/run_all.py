@@ -3,7 +3,8 @@
 
 The runner probes real repository capabilities. Missing required capabilities are
 PENDING, invalid present capabilities are FAIL, and only asserted evidence can
-PASS. It never writes outside evals/reports.
+PASS. It persists release artifacts only in evals/reports; black-box probes may
+use automatically removed operating-system temporary directories.
 """
 
 from __future__ import annotations
@@ -15,14 +16,17 @@ import math
 import os
 import re
 import select
+import sqlite3
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 import urllib.error
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Callable, Iterable, Mapping
 
@@ -44,6 +48,10 @@ REPORT_PII_PATTERNS = (
 REPORT_SECRET_PATTERNS = (
     re.compile(r"sk-[A-Za-z0-9_-]{20,}"),
     re.compile(r"gh[pousr]_[A-Za-z0-9]{20,}"),
+    re.compile(r"github_pat_[A-Za-z0-9_]{20,}"),
+    re.compile(r"AIzaSy[A-Za-z0-9_-]{33}"),
+    re.compile(r"npm_[A-Za-z0-9]{36}"),
+    re.compile(r"xox[baprs]-[A-Za-z0-9-]{20,}"),
     re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"),
 )
 LOCAL_ABSOLUTE_PATH_PATTERN = re.compile(
@@ -62,6 +70,29 @@ def canonical_json(value: Any) -> str:
 
 def sha256_json(value: Any) -> str:
     return hashlib.sha256(canonical_json(value).encode("utf-8")).hexdigest()
+
+
+def _eval_opaque_identifier(prefix: str, label: str) -> str:
+    """Derive a stable non-PII public identifier for black-box evaluation."""
+
+    if prefix not in {"r", "c"}:
+        raise ValueError("opaque evaluation identifier prefix must be r or c")
+    digest = hashlib.sha256(
+        f"lumi-eval:{prefix}:{label}".encode("utf-8")
+    ).digest()[:20]
+    alphabet = "ABCDEFGHIJKLMNOP"
+    encoded = "".join(
+        f"{alphabet[byte >> 4]}{alphabet[byte & 15]}" for byte in digest
+    )
+    return f"{prefix}_{encoded}"
+
+
+def _eval_public_run_id(label: str) -> str:
+    return _eval_opaque_identifier("r", label)
+
+
+def _eval_public_command_id(label: str) -> str:
+    return _eval_opaque_identifier("c", label)
 
 
 def load_json(path: Path) -> Any:
@@ -217,6 +248,7 @@ class Context:
     trace: dict[str, Any] | None = None
     integration_probe: dict[str, Any] | None = None
     attempt_api_probe: dict[str, Any] | None = None
+    schedule_api_probe: dict[str, Any] | None = None
     service_tests_probe: dict[str, Any] | None = None
 
     def load_fixture(self) -> dict[str, Any]:
@@ -341,6 +373,11 @@ class Context:
             self.attempt_api_probe = _probe_attempt_api()
         return self.attempt_api_probe
 
+    def probe_schedule_api(self) -> dict[str, Any]:
+        if self.schedule_api_probe is None:
+            self.schedule_api_probe = _probe_schedule_api()
+        return self.schedule_api_probe
+
     def probe_service_tests(self) -> dict[str, Any]:
         if self.service_tests_probe is None:
             self.service_tests_probe = _probe_service_tests()
@@ -357,6 +394,8 @@ def gate_contracts(ctx: Context) -> GateResult:
         "release_report.schema.json",
         "assistance-result.schema.json",
         "misconception-dossier.schema.json",
+        "today-plan.schema.json",
+        "review-schedule.schema.json",
     }
     missing = required - {path.name for path in schemas}
     if missing:
@@ -721,6 +760,2062 @@ def _http_json(base_url: str, method: str, path: str, body: Mapping[str, Any] | 
         response.close()
 
 
+class _ScheduleEvalClock:
+    def __init__(self, value: date) -> None:
+        self.value = value
+
+    def __call__(self) -> date:
+        return self.value
+
+
+class _ScheduleHTTPHarness:
+    """Real loopback HTTP harness with an injectable local calendar.
+
+    The production application and HTTP router are used unchanged.  The clock
+    is injectable solely so one release probe can prove +1/+3 day behavior and
+    historical-plan protections without waiting several wall-clock days.
+    """
+
+    def __init__(self, root: Path, *, start: date = date(2026, 7, 11)) -> None:
+        for package in ("service", "integration", "runtime", "domains", "engine"):
+            path = str(REPO_ROOT / package)
+            if path not in sys.path:
+                sys.path.insert(0, path)
+        from hermes_service.api import create_server
+        from hermes_service.application import SidecarApplication
+
+        self._create_server = create_server
+        self._application_type = SidecarApplication
+        self.database = root / "schedule-eval.sqlite3"
+        self.clock = _ScheduleEvalClock(start)
+        self._servers: list[Any] = []
+        self._threads: list[threading.Thread] = []
+        self.base_url = self.start_server()
+
+    def start_server(self, *, clock: Callable[[], date] | None = None) -> str:
+        application = self._application_type(
+            self.database,
+            today_provider=clock or self.clock,
+        )
+        server = self._create_server(application, port=0)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        self._servers.append(server)
+        self._threads.append(thread)
+        return f"http://127.0.0.1:{server.server_address[1]}"
+
+    def close(self) -> None:
+        for server in self._servers:
+            server.shutdown()
+            server.server_close()
+        for thread in self._threads:
+            thread.join(timeout=2)
+        self._servers.clear()
+        self._threads.clear()
+
+    def request(
+        self,
+        method: str,
+        path: str,
+        body: Mapping[str, Any] | None = None,
+        *,
+        base_url: str | None = None,
+    ) -> dict[str, Any]:
+        return _http_json(base_url or self.base_url, method, path, body)
+
+    def create_plan(
+        self,
+        command_id: str,
+        *,
+        budget: int = 60,
+        exam_date: str | None = None,
+        body_overrides: Mapping[str, Any] | None = None,
+        raw_command_id: bool = False,
+    ) -> dict[str, Any]:
+        body: dict[str, Any] = {
+            "plan_date": self.clock.value.isoformat(),
+            "exam_date": exam_date
+            if exam_date is not None
+            else (self.clock.value + timedelta(days=30)).isoformat(),
+            "daily_budget_minutes": budget,
+            "expected_version": 0,
+            "command_id": (
+                command_id
+                if raw_command_id
+                else _eval_public_command_id(command_id)
+            ),
+        }
+        if body_overrides:
+            body.update(body_overrides)
+        return self.request("POST", "/v1/today-plans", body)
+
+    def seed_attempt(
+        self,
+        run_id: str,
+        *,
+        initial_response: str = "A",
+        verification_response: str = "A",
+    ) -> dict[str, Any]:
+        initial = self.request(
+            "POST",
+            "/v1/attempts",
+            {
+                "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "response": initial_response,
+                "confidence": 0.6,
+                "response_time_seconds": 20,
+                "run_id": _eval_public_run_id(run_id),
+            },
+        )
+        if initial["status"] != 201:
+            raise RuntimeError(
+                f"initial attempt returned {initial['status']}: {initial['payload']!r}"
+            )
+        attempt = initial["payload"]
+        probe = self.request(
+            "POST",
+            attempt["links"]["respond"],
+            {
+                "phase": "probe",
+                "expected_version": attempt["state_version"],
+                "expected_state": "awaiting_probe",
+                "prompt_instance_id": attempt["probe"]["prompt_instance_id"],
+                "response": "120÷100",
+                "confidence": 0.8,
+                "response_time_seconds": 15,
+            },
+        )
+        if probe["status"] != 200:
+            raise RuntimeError(
+                f"probe continuation returned {probe['status']}: {probe['payload']!r}"
+            )
+        after_probe = probe["payload"]
+        verification = self.request(
+            "POST",
+            after_probe["links"]["respond"],
+            {
+                "phase": "verification",
+                "expected_version": after_probe["state_version"],
+                "expected_state": "awaiting_verification",
+                "prompt_instance_id": after_probe["verification"][
+                    "prompt_instance_id"
+                ],
+                "response": verification_response,
+                "confidence": 0.9,
+                "response_time_seconds": 20,
+            },
+        )
+        if verification["status"] != 200:
+            raise RuntimeError(
+                "verification continuation returned "
+                f"{verification['status']}: {verification['payload']!r}"
+            )
+        completed = verification["payload"]
+        if completed.get("state") != "completed":
+            raise RuntimeError("attempt did not reach the completed state")
+        return completed
+
+    def seed_evaluation_fixture(self, run_id: str) -> dict[str, Any]:
+        """Persist one completed non-learner run through the internal eval path.
+
+        This deliberately bypasses the public HTTP API.  Synthetic/evaluation
+        trajectories are useful to exercise deterministic fixtures, but they
+        must never be constructible as learner activity or appear in learner
+        projections.
+        """
+
+        from hermes_integration.loop import run_scenario
+
+        session, result = run_scenario(
+            "success",
+            self.database,
+            run_id=run_id,
+        )
+        try:
+            return {
+                "run_id": result.state.run_id,
+                "status": result.state.status.value,
+                "evidence_origin": result.state.context.get("evidence_origin"),
+                "trace_verified": session.store.verify(result.state.run_id),
+            }
+        finally:
+            session.store.close()
+
+    def task_command(
+        self,
+        plan: Mapping[str, Any],
+        task: Mapping[str, Any],
+        action: str,
+        command_id: str,
+        *,
+        expected_version: int | None = None,
+        expected_task_version: int | None = None,
+        postpone_until: str | None = None,
+        extra: Mapping[str, Any] | None = None,
+        base_url: str | None = None,
+    ) -> dict[str, Any]:
+        body: dict[str, Any] = {
+            "action": action,
+            "expected_version": (
+                int(plan["version"])
+                if expected_version is None
+                else expected_version
+            ),
+            "expected_task_version": (
+                int(task["version"])
+                if expected_task_version is None
+                else expected_task_version
+            ),
+            "command_id": _eval_public_command_id(command_id),
+        }
+        if postpone_until is not None:
+            body["postpone_until"] = postpone_until
+        if extra:
+            body.update(extra)
+        return self.request(
+            "POST",
+            f"/v1/today-plans/{plan['plan_id']}/tasks/{task['task_id']}/commands",
+            body,
+            base_url=base_url,
+        )
+
+
+@dataclass
+class _ScheduleChecks:
+    errors: list[str] = field(default_factory=list)
+    count: int = 0
+
+    def that(self, condition: bool, message: str) -> None:
+        self.count += 1
+        if not condition:
+            self.errors.append(message)
+
+    def equal(self, actual: Any, expected: Any, message: str) -> None:
+        self.that(actual == expected, f"{message}: expected {expected!r}, got {actual!r}")
+
+
+def _json_pointer_value(document: Any, pointer: str) -> Any:
+    if not isinstance(pointer, str) or not pointer.startswith("/"):
+        raise ValueError("JSON pointer must start with /")
+    current = document
+    for encoded in pointer[1:].split("/"):
+        part = encoded.replace("~1", "/").replace("~0", "~")
+        if isinstance(current, list):
+            current = current[int(part)]
+        elif isinstance(current, Mapping):
+            current = current[part]
+        else:
+            raise KeyError(part)
+    return current
+
+
+def _schedule_contract_checks(
+    payload: Mapping[str, Any],
+    contract_name: str,
+    checks: _ScheduleChecks,
+    label: str,
+) -> None:
+    schema = load_json(CONTRACT_DIR / contract_name)
+    for error in validate_json(payload, schema):
+        checks.that(False, f"{label} contract: {error}")
+
+
+def _schedule_claim_checks(
+    plan: Mapping[str, Any],
+    schedule: Mapping[str, Any],
+    checks: _ScheduleChecks,
+    label: str,
+) -> None:
+    excluded = set(plan.get("basis", {}).get("excluded_inputs", []))
+    checks.that(
+        {
+            "cohort_statistics",
+            "peer_comparison",
+            "population_effect",
+            "authoritative_longitudinal_mastery",
+            "learner_fatigue_signal",
+        }.issubset(excluded),
+        f"{label}: unsupported cohort/peer/mastery/fatigue inputs are not excluded",
+    )
+    checks.equal(
+        plan.get("mastery_write_capability"),
+        False,
+        f"{label}: TodayPlan must not write mastery",
+    )
+    checks.equal(
+        schedule.get("mastery_write_capability"),
+        False,
+        f"{label}: ReviewSchedule must not write mastery",
+    )
+    checks.equal(
+        schedule.get("population_evidence"),
+        "unavailable",
+        f"{label}: population evidence must be unavailable",
+    )
+    forbidden_keys = {
+        "peer_rate",
+        "peer_error_rate",
+        "cohort_rate",
+        "cohort_size",
+        "population_error_rate",
+        "forgetting_probability",
+        "fatigue_score",
+        "mastery_gain",
+        "mastery_delta",
+        "predicted_mastery",
+        "retention_probability",
+    }
+    forbidden_phrases = (
+        re.compile(r"(?i)peer (?:error )?rate|cohort average|forgetting probability|fatigue score|mastery (?:gain|increase)"),
+        re.compile(r"掌握度(?:已)?提升|同学平均错误率|遗忘概率|疲劳分数"),
+    )
+
+    def visit(value: Any, path: str) -> None:
+        if isinstance(value, Mapping):
+            for key, item in value.items():
+                checks.that(
+                    str(key) not in forbidden_keys,
+                    f"{label}: unsupported claim field at {path}.{key}",
+                )
+                visit(item, f"{path}.{key}")
+        elif isinstance(value, list):
+            for index, item in enumerate(value):
+                visit(item, f"{path}[{index}]")
+        elif isinstance(value, str) and "excluded_inputs" not in path:
+            for pattern in forbidden_phrases:
+                checks.that(
+                    pattern.search(value) is None,
+                    f"{label}: unsupported claim language at {path}",
+                )
+
+    visit(plan, "plan")
+    visit(schedule, "schedule")
+
+
+def _schedule_evidence_checks(
+    harness: _ScheduleHTTPHarness,
+    tasks: Iterable[Mapping[str, Any]],
+    checks: _ScheduleChecks,
+    label: str,
+) -> int:
+    trace_cache: dict[str, Mapping[str, Any]] = {}
+    semantic_contracts = {
+        "verification_effective": (
+            "trace_skill_evidence",
+            "phase_completed",
+            "update",
+            r"/output/evidence/verification_effective",
+        ),
+        "initial_answer_passed": (
+            "trace_observation",
+            "phase_completed",
+            "observe",
+            r"/output/score/passed",
+        ),
+        "candidate_hypothesis": (
+            "candidate_cause",
+            "phase_completed",
+            "diagnose",
+            r"/output/diagnosis/hypotheses/\d+/status",
+        ),
+        "candidate_claim_status": (
+            "candidate_cause",
+            "probe_assessed",
+            None,
+            r"/assessments/\d+/claim_status",
+        ),
+        "terminal_completed": (
+            "trace_terminal",
+            "phase_completed",
+            "reflect",
+            r"/state_after/status",
+        ),
+    }
+    resolved = 0
+    for task in tasks:
+        checks.equal(
+            task.get("definition_status"),
+            "authored_engineering_estimate_unvalidated",
+            f"{label}: task duration definition must be unvalidated",
+        )
+        checks.equal(
+            task.get("schedule_window", {}).get("calibration"),
+            "fixed_engineering_policy_unvalidated",
+            f"{label}: schedule window must be unvalidated",
+        )
+        skip_consequence = str(task.get("skip_consequence", ""))
+        checks.that(
+            "保留在 ReviewSchedule" in skip_consequence
+            and "公平轮候" in skip_consequence,
+            f"{label}: skip consequence must disclose fair queue retention",
+        )
+        checks.that(
+            "下一学习日重新出现" not in skip_consequence,
+            f"{label}: skip consequence makes an impossible next-day guarantee",
+        )
+        success_criterion = str(task.get("success_criterion", ""))
+        checks.that(
+            "同题组独立复测" in success_criterion
+            and "不构成未见平行题上的迁移验证" in success_criterion,
+            f"{label}: success criterion must disclose same-fixture retest limits",
+        )
+        checks.that(
+            "无提示的新题" not in success_criterion,
+            f"{label}: success criterion fabricates novel-item transfer",
+        )
+        for field_name in (
+            "policy_offset_days",
+            "base_due_on",
+            "initial_due_on",
+            "scheduling_adjustment",
+        ):
+            checks.equal(
+                task.get("schedule_window", {}).get(field_name),
+                task.get(field_name),
+                f"{label}: schedule window {field_name} must match the task",
+            )
+        activity = task.get("activity_ref", {})
+        checks.equal(
+            activity.get("availability"),
+            "launchable",
+            f"{label}: task activity must be launchable",
+        )
+        checks.equal(
+            activity.get("launch_endpoint"),
+            "/v1/attempts",
+            f"{label}: task launch endpoint must be executable",
+        )
+        checks.equal(
+            activity.get("novelty_status"),
+            "same_fixture_retest_not_novel_item",
+            f"{label}: activity novelty limitation",
+        )
+        for evidence_ref in task.get("evidence_refs", []):
+            if not isinstance(evidence_ref, Mapping):
+                checks.that(False, f"{label}: evidence ref is not structured")
+                continue
+            run_id = str(evidence_ref.get("run_id", ""))
+            if run_id not in trace_cache:
+                response = harness.request("GET", f"/v1/runs/{run_id}/trace")
+                checks.equal(
+                    response["status"],
+                    200,
+                    f"{label}: evidence source trace must be readable",
+                )
+                if response["status"] != 200:
+                    continue
+                trace_cache[run_id] = response["payload"]
+            trace = trace_cache[run_id]
+            checks.equal(
+                trace.get("trace_verified"),
+                True,
+                f"{label}: evidence source trace hash chain",
+            )
+            events = trace.get("events", [])
+            event = next(
+                (
+                    item
+                    for item in events
+                    if item.get("seq") == evidence_ref.get("event_seq")
+                ),
+                None,
+            )
+            checks.that(event is not None, f"{label}: evidence event seq is missing")
+            if not isinstance(event, Mapping):
+                continue
+            semantic = evidence_ref.get("semantic")
+            expected_contract = semantic_contracts.get(str(semantic))
+            checks.that(
+                expected_contract is not None,
+                f"{label}: evidence semantic is unsupported",
+            )
+            if expected_contract is None:
+                continue
+            expected_kind, expected_event_kind, expected_phase, pointer_pattern = (
+                expected_contract
+            )
+            checks.equal(
+                evidence_ref.get("source_type"),
+                "trace_event",
+                f"{label}: evidence source type",
+            )
+            checks.equal(
+                evidence_ref.get("kind"),
+                expected_kind,
+                f"{label}: semantic evidence kind binding",
+            )
+            checks.equal(
+                evidence_ref.get("event_kind"),
+                expected_event_kind,
+                f"{label}: semantic event kind binding",
+            )
+            checks.equal(
+                evidence_ref.get("phase"),
+                expected_phase,
+                f"{label}: semantic phase binding",
+            )
+            pointer = str(evidence_ref.get("json_pointer", ""))
+            checks.that(
+                re.fullmatch(pointer_pattern, pointer) is not None,
+                f"{label}: semantic JSON pointer binding",
+            )
+            canonical_ref = (
+                f"trace:{run_id}:event:{evidence_ref.get('event_seq')}:"
+                f"{evidence_ref.get('event_hash')}#pointer={pointer}"
+            )
+            checks.equal(
+                evidence_ref.get("ref"),
+                canonical_ref,
+                f"{label}: canonical evidence ref",
+            )
+            checks.equal(
+                event.get("event_hash"),
+                evidence_ref.get("event_hash"),
+                f"{label}: evidence hash must match trace",
+            )
+            checks.equal(
+                event.get("kind"),
+                evidence_ref.get("event_kind"),
+                f"{label}: evidence kind must match trace",
+            )
+            if expected_phase is not None:
+                checks.equal(
+                    event.get("payload", {}).get("phase"),
+                    expected_phase,
+                    f"{label}: cited event payload phase",
+                )
+            try:
+                pointed = _json_pointer_value(
+                    event.get("payload", {}), pointer
+                )
+            except (KeyError, IndexError, TypeError, ValueError):
+                checks.that(False, f"{label}: evidence JSON pointer cannot be resolved")
+                continue
+            if semantic == "terminal_completed":
+                checks.equal(pointed, "completed", f"{label}: terminal evidence value")
+            elif semantic in {"verification_effective", "initial_answer_passed"}:
+                checks.that(
+                    isinstance(pointed, bool),
+                    f"{label}: boolean evidence semantic is not boolean",
+                )
+            elif semantic in {"candidate_hypothesis", "candidate_claim_status"}:
+                checks.equal(
+                    pointed,
+                    evidence_ref.get("claim_status"),
+                    f"{label}: candidate claim status must match trace",
+                )
+                checks.equal(
+                    evidence_ref.get("confirmation_status"),
+                    "unconfirmed",
+                    f"{label}: candidate cause must remain unconfirmed",
+                )
+            resolved += 1
+    return resolved
+
+
+def _schedule_replay_checks(
+    harness: _ScheduleHTTPHarness,
+    plan: Mapping[str, Any],
+    tasks: Iterable[Mapping[str, Any]],
+    checks: _ScheduleChecks,
+    label: str,
+) -> int:
+    responses = [
+        harness.request("GET", f"/v1/today-plans/{plan['plan_id']}/replay")
+    ]
+    responses.extend(
+        harness.request("GET", f"/v1/review-schedule/{task['task_id']}/replay")
+        for task in tasks
+    )
+    for response in responses:
+        checks.equal(response["status"], 200, f"{label}: replay HTTP status")
+        checks.equal(
+            response["payload"].get("trace_verified"),
+            True,
+            f"{label}: replay hash chain",
+        )
+        checks.equal(
+            response["payload"].get("projection_verified"),
+            True,
+            f"{label}: replay projection",
+        )
+    return len(responses)
+
+
+def _schedule_seed_due_plan(
+    harness: _ScheduleHTTPHarness,
+    prefix: str,
+    *,
+    count: int = 1,
+    offset_days: int = 1,
+    initial_response: str = "B",
+    verification_response: str = "A",
+    budget: int = 60,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    attempts = [
+        harness.seed_attempt(
+            f"eval-{prefix}-{index}",
+            initial_response=initial_response,
+            verification_response=verification_response,
+        )
+        for index in range(count)
+    ]
+    seeded = harness.create_plan(f"plan-{prefix}-seed", budget=60)
+    if seeded["status"] != 201:
+        raise RuntimeError(f"seed plan failed: {seeded!r}")
+    harness.clock.value += timedelta(days=offset_days)
+    due = harness.create_plan(f"plan-{prefix}-due", budget=budget)
+    if due["status"] != 201:
+        raise RuntimeError(f"due plan failed: {due!r}")
+    return attempts, due["payload"]
+
+
+def _probe_schedule_api() -> dict[str, Any]:
+    """Exercise the P0.2 TodayPlan/ReviewSchedule contract over real HTTP."""
+
+    if not (REPO_ROOT / "service" / "hermes_service" / "api.py").is_file():
+        return {
+            "status": "pending",
+            "errors": ["sidecar schedule HTTP surface is absent"],
+            "cases": {},
+        }
+    cases: dict[str, Any] = {}
+    all_errors: list[str] = []
+    total_assertions = 0
+
+    def run_case(
+        name: str,
+        callback: Callable[[_ScheduleHTTPHarness, _ScheduleChecks], dict[str, Any]],
+    ) -> None:
+        nonlocal total_assertions
+        checks = _ScheduleChecks()
+        summary: dict[str, Any] = {}
+        try:
+            case_root = temporary_root / name
+            case_root.mkdir()
+            harness = _ScheduleHTTPHarness(case_root)
+            try:
+                summary = callback(harness, checks)
+            finally:
+                harness.close()
+        except Exception as exc:
+            checks.errors.append(f"case raised {exc!r}")
+        total_assertions += checks.count
+        prefixed = [f"{name}: {error}" for error in checks.errors]
+        all_errors.extend(prefixed)
+        cases[name] = {
+            **summary,
+            "assertion_count": checks.count,
+            "status": "fail" if checks.errors else "pass",
+            "errors": checks.errors,
+        }
+
+    def empty_case(harness: _ScheduleHTTPHarness, checks: _ScheduleChecks) -> dict[str, Any]:
+        created = harness.create_plan("empty-plan-command")
+        checks.equal(created["status"], 201, "empty plan HTTP status")
+        plan = created["payload"]
+        schedule_response = harness.request("GET", "/v1/review-schedule")
+        checks.equal(schedule_response["status"], 200, "empty schedule HTTP status")
+        schedule = schedule_response["payload"]
+        checks.equal(plan.get("status"), "empty", "empty plan status")
+        checks.equal(plan.get("empty_reason"), "no_recorded_evidence", "empty reason")
+        checks.equal(plan.get("tasks"), [], "empty plan tasks")
+        checks.equal(schedule.get("count"), 0, "empty schedule count")
+        _schedule_contract_checks(plan, "today-plan.schema.json", checks, "empty")
+        _schedule_contract_checks(schedule, "review-schedule.schema.json", checks, "empty")
+        _schedule_claim_checks(plan, schedule, checks, "empty")
+        _schedule_replay_checks(harness, plan, [], checks, "empty")
+        replayed = harness.create_plan("empty-plan-command")
+        checks.equal(replayed["status"], 201, "empty command receipt replay status")
+        checks.equal(replayed["payload"], plan, "empty command receipt exact replay")
+        return {
+            "empty_reason": plan.get("empty_reason"),
+            "receipt_exact_replay": replayed["payload"] == plan,
+            "projection_verified": plan.get("event_stream", {}).get("projection_verified"),
+        }
+
+    def synthetic_origin_case(
+        harness: _ScheduleHTTPHarness, checks: _ScheduleChecks
+    ) -> dict[str, Any]:
+        public_run = harness.request(
+            "POST",
+            "/v1/runs",
+            {"mode": "success", "run_id": "eval-public-run-must-not-exist"},
+        )
+        capabilities_response = harness.request("GET", "/v1/capabilities")
+        checks.equal(
+            public_run["status"],
+            404,
+            "synthetic public run creation route must not exist",
+        )
+        checks.equal(
+            public_run["payload"].get("error", {}).get("code"),
+            "route_not_found",
+            "synthetic public run creation uses the closed not-found envelope",
+        )
+        checks.equal(
+            capabilities_response["status"],
+            200,
+            "synthetic origin capabilities status",
+        )
+        capabilities = capabilities_response["payload"]
+        endpoints = capabilities.get("endpoints", {})
+        features = capabilities.get("features", [])
+        checks.that(
+            "run" not in endpoints,
+            "capabilities still advertise public synthetic run creation",
+        )
+        checks.that(
+            "learning_modes" not in capabilities,
+            "capabilities still advertise prefilled evaluation modes as product learning modes",
+        )
+        checks.that(
+            "offline-deterministic-path" not in features,
+            "capabilities still advertise the removed demo-only offline path",
+        )
+        seeded = harness.seed_evaluation_fixture("eval-synthetic-origin")
+        checks.equal(seeded.get("status"), "completed", "synthetic internal run status")
+        checks.equal(
+            seeded.get("evidence_origin"),
+            "evaluation_fixture",
+            "synthetic internal evidence origin",
+        )
+        checks.equal(
+            seeded.get("trace_verified"),
+            True,
+            "synthetic internal trace verification",
+        )
+        created = harness.create_plan("synthetic-origin-plan")
+        checks.equal(created["status"], 201, "synthetic-origin plan status")
+        plan = created["payload"]
+        schedule_response = harness.request("GET", "/v1/review-schedule")
+        health_response = harness.request("GET", "/v1/health")
+        skills_response = harness.request("GET", "/v1/skills/report")
+        misconception_report_response = harness.request("GET", "/v1/misconceptions")
+        dossier_response = harness.request(
+            "GET", f"/v1/misconceptions/{seeded['run_id']}"
+        )
+        checks.equal(schedule_response["status"], 200, "synthetic origin schedule status")
+        checks.equal(health_response["status"], 200, "synthetic origin health status")
+        checks.equal(skills_response["status"], 200, "synthetic origin skills status")
+        checks.equal(
+            misconception_report_response["status"],
+            200,
+            "synthetic origin misconception report status",
+        )
+        checks.equal(
+            dossier_response["status"],
+            404,
+            "synthetic origin dossier must be publicly invisible",
+        )
+        checks.equal(
+            dossier_response["payload"].get("error", {}).get("code"),
+            "run_not_found",
+            "synthetic origin dossier uses the closed not-found envelope",
+        )
+        schedule = schedule_response["payload"]
+        health = health_response["payload"]
+        skills = skills_response["payload"]
+        misconception_report = misconception_report_response["payload"]
+        checks.equal(plan.get("empty_reason"), "no_recorded_evidence", "synthetic origin exclusion")
+        checks.equal(schedule.get("count"), 0, "synthetic origin schedule exclusion")
+        checks.equal(health.get("run_count"), 0, "synthetic origin health exclusion")
+        checks.equal(skills.get("skill_count"), 0, "synthetic origin skills exclusion")
+        checks.equal(
+            misconception_report.get("count"),
+            0,
+            "synthetic origin misconception report exclusion",
+        )
+        checks.that(
+            seeded["run_id"] not in canonical_json(
+                {
+                    "plan": plan,
+                    "schedule": schedule,
+                    "health": health,
+                    "skills": skills,
+                    "misconceptions": misconception_report,
+                    "dossier_error": dossier_response["payload"],
+                }
+            ),
+            "synthetic run identifier leaked into a learner-facing projection",
+        )
+        _schedule_contract_checks(plan, "today-plan.schema.json", checks, "synthetic-origin")
+        _schedule_contract_checks(schedule, "review-schedule.schema.json", checks, "synthetic-origin")
+        return {
+            "seed_path": "internal_evaluation_fixture",
+            "evidence_origin": seeded.get("evidence_origin"),
+            "public_run_status": public_run["status"],
+            "capabilities_run_advertised": "run" in endpoints,
+            "offline_demo_feature_advertised": "offline-deterministic-path"
+            in features,
+            "synthetic_origin_excluded": (
+                not plan.get("tasks")
+                and schedule.get("count") == 0
+                and health.get("run_count") == 0
+                and skills.get("skill_count") == 0
+                and misconception_report.get("count") == 0
+                and dossier_response["status"] == 404
+            ),
+            "learner_projection_counts": {
+                "health_runs": health.get("run_count"),
+                "skills": skills.get("skill_count"),
+                "misconceptions": misconception_report.get("count"),
+                "review_tasks": schedule.get("count"),
+                "today_tasks": len(plan.get("tasks", [])),
+            },
+            "dossier_status": dossier_response["status"],
+        }
+
+    def branch_case(
+        name: str,
+        *,
+        initial_response: str,
+        verification_response: str,
+        expected_kind: str,
+        offset_days: int,
+    ) -> Callable[[_ScheduleHTTPHarness, _ScheduleChecks], dict[str, Any]]:
+        def evaluate(harness: _ScheduleHTTPHarness, checks: _ScheduleChecks) -> dict[str, Any]:
+            completed = harness.seed_attempt(
+                f"eval-{name}-human",
+                initial_response=initial_response,
+                verification_response=verification_response,
+            )
+            checks.equal(completed.get("state"), "completed", f"{name}: completed human attempt")
+            seed = harness.create_plan(f"plan-{name}-seed")
+            checks.equal(seed["status"], 201, f"{name}: seed plan status")
+            schedule_response = harness.request("GET", "/v1/review-schedule")
+            checks.equal(schedule_response["status"], 200, f"{name}: review schedule status")
+            schedule = schedule_response["payload"]
+            checks.equal(schedule.get("count"), 1, f"{name}: one review task")
+            if not schedule.get("items"):
+                return {"task_kind": None}
+            task = schedule["items"][0]
+            checks.equal(task.get("task_kind"), expected_kind, f"{name}: task branch")
+            checks.equal(task.get("due_on"), (harness.clock.value + timedelta(days=offset_days)).isoformat(), f"{name}: due offset")
+            checks.equal(task.get("policy_offset_days"), offset_days, f"{name}: authored policy offset")
+            checks.equal(task.get("scheduling_adjustment"), "on_policy_window", f"{name}: on-window adjustment")
+            if expected_kind == "cause_probe":
+                checks.equal(task.get("cause_confirmation_status"), "unconfirmed", f"{name}: cause remains unconfirmed")
+                checks.that(task.get("cause_label") in task.get("reason", ""), f"{name}: authored cause label is visible")
+                checks.that(task.get("cause_id") not in task.get("reason", ""), f"{name}: raw cause id is not user-facing")
+            else:
+                checks.equal(task.get("cause_confirmation_status"), None, f"{name}: no confirmed cause field")
+            _schedule_contract_checks(schedule, "review-schedule.schema.json", checks, name)
+            resolved = _schedule_evidence_checks(harness, [task], checks, name)
+            harness.clock.value += timedelta(days=offset_days)
+            due_response = harness.create_plan(f"plan-{name}-due")
+            checks.equal(due_response["status"], 201, f"{name}: due plan status")
+            due = due_response["payload"]
+            checks.equal(len(due.get("tasks", [])), 1, f"{name}: due task appears")
+            _schedule_contract_checks(due, "today-plan.schema.json", checks, name)
+            _schedule_claim_checks(due, schedule, checks, name)
+            replay_count = _schedule_replay_checks(harness, due, [task], checks, name)
+            return {
+                "source": "real_POST_v1_attempts_human_local_interactive",
+                "task_kind": task.get("task_kind"),
+                "due_offset_days": offset_days,
+                "cause_confirmation_status": task.get("cause_confirmation_status"),
+                "definition_status": task.get("definition_status"),
+                "resolved_evidence_ref_count": resolved,
+                "verified_replay_count": replay_count,
+            }
+
+        return evaluate
+
+    def budget_case(harness: _ScheduleHTTPHarness, checks: _ScheduleChecks) -> dict[str, Any]:
+        _, plan = _schedule_seed_due_plan(
+            harness,
+            "budget",
+            count=2,
+            offset_days=1,
+            initial_response="B",
+            verification_response="A",
+            budget=20,
+        )
+        schedule = harness.request("GET", "/v1/review-schedule")["payload"]
+        used = sum(int(task["expected_duration_minutes"]) for task in plan.get("tasks", []))
+        checks.equal(schedule.get("count"), 2, "budget: both due tasks remain scheduled")
+        checks.equal(len(plan.get("tasks", [])), 1, "budget: only one task fits")
+        checks.that(used <= 20, "budget: selected tasks overrun the daily budget")
+        checks.equal(plan.get("basis", {}).get("due_review_count"), 2, "budget: due count")
+        _schedule_contract_checks(plan, "today-plan.schema.json", checks, "budget")
+        _schedule_contract_checks(schedule, "review-schedule.schema.json", checks, "budget")
+        return {"daily_budget_minutes": 20, "selected_minutes": used, "due_count": schedule.get("count")}
+
+    def overdue_case(harness: _ScheduleHTTPHarness, checks: _ScheduleChecks) -> dict[str, Any]:
+        harness.seed_attempt(
+            "eval-overdue-human",
+            initial_response="A",
+            verification_response="C",
+        )
+        harness.clock.value += timedelta(days=10)
+        created = harness.create_plan("overdue-catch-up-plan")
+        checks.equal(created["status"], 201, "overdue: plan status")
+        plan = created["payload"]
+        schedule = harness.request("GET", "/v1/review-schedule")["payload"]
+        checks.equal(schedule.get("count"), 1, "overdue: one retained task")
+        if not schedule.get("items"):
+            return {"scheduling_adjustment": None}
+        task = schedule["items"][0]
+        checks.equal(task.get("task_kind"), "delayed_retention", "overdue: task kind")
+        checks.equal(task.get("policy_offset_days"), 3, "overdue: policy offset remains authored +3")
+        checks.equal(task.get("initial_due_on"), harness.clock.value.isoformat(), "overdue: catch-up date is today")
+        checks.equal(task.get("due_on"), task.get("initial_due_on"), "overdue: current due date")
+        checks.equal(task.get("scheduling_adjustment"), "overdue_catch_up", "overdue: adjustment is explicit")
+        checks.that(task.get("base_due_on") < task.get("initial_due_on"), "overdue: base due precedes catch-up date")
+        checks.that("逾期补排" in task.get("reason", ""), "overdue: reason discloses catch-up")
+        checks.that("不代表仍按 +3 天执行" in task.get("reason", ""), "overdue: reason rejects false +3 execution claim")
+        checks.that(plan.get("basis", {}).get("workload_guardrail", {}).get("overdue_catch_up_count", 0) > 0, "overdue: plan records catch-up count")
+        _schedule_contract_checks(plan, "today-plan.schema.json", checks, "overdue")
+        _schedule_contract_checks(schedule, "review-schedule.schema.json", checks, "overdue")
+        _schedule_evidence_checks(harness, [task], checks, "overdue")
+        return {
+            "task_kind": task.get("task_kind"),
+            "policy_offset_days": task.get("policy_offset_days"),
+            "base_due_on": task.get("base_due_on"),
+            "initial_due_on": task.get("initial_due_on"),
+            "scheduling_adjustment": task.get("scheduling_adjustment"),
+        }
+
+    def old_evidence_case(
+        harness: _ScheduleHTTPHarness, checks: _ScheduleChecks
+    ) -> dict[str, Any]:
+        harness.seed_attempt(
+            "eval-old-evidence-human",
+            initial_response="B",
+            verification_response="A",
+        )
+        harness.clock.value += timedelta(days=20)
+        created = harness.create_plan("old-evidence-catch-up-plan")
+        checks.equal(created["status"], 201, "old evidence: plan status")
+        plan = created["payload"]
+        schedule = harness.request("GET", "/v1/review-schedule")["payload"]
+        checks.equal(schedule.get("count"), 1, "old evidence: task is not discarded")
+        if not schedule.get("items"):
+            return {"eligible_evidence_count": 0}
+        task = schedule["items"][0]
+        guardrail = plan.get("basis", {}).get("workload_guardrail", {})
+        checks.equal(task.get("task_kind"), "independent_retry", "old evidence: +1 retry branch")
+        checks.equal(task.get("policy_offset_days"), 1, "old evidence: authored +1 offset")
+        checks.equal(task.get("scheduling_adjustment"), "overdue_catch_up", "old evidence: overdue disclosed")
+        checks.that(task.get("base_due_on") < task.get("initial_due_on"), "old evidence: base and catch-up dates differ")
+        checks.equal(task.get("initial_due_on"), harness.clock.value.isoformat(), "old evidence: catch-up is today")
+        checks.that("逾期补排" in task.get("reason", ""), "old evidence: reason discloses catch-up")
+        checks.equal(guardrail.get("eligible_evidence_count"), 1, "old evidence: eligible count")
+        checks.equal(guardrail.get("recent_evidence_count"), 0, "old evidence: outside 14-day recency")
+        checks.equal(len(plan.get("tasks", [])), 1, "old evidence: catch-up appears in Today")
+        _schedule_contract_checks(plan, "today-plan.schema.json", checks, "old-evidence")
+        _schedule_contract_checks(schedule, "review-schedule.schema.json", checks, "old-evidence")
+        _schedule_evidence_checks(harness, [task], checks, "old-evidence")
+        return {
+            "age_days": 20,
+            "task_kind": task.get("task_kind"),
+            "policy_offset_days": task.get("policy_offset_days"),
+            "scheduling_adjustment": task.get("scheduling_adjustment"),
+            "eligible_evidence_count": guardrail.get("eligible_evidence_count"),
+            "recent_evidence_count": guardrail.get("recent_evidence_count"),
+        }
+
+    def recovery_load_case(
+        harness: _ScheduleHTTPHarness, checks: _ScheduleChecks
+    ) -> dict[str, Any]:
+        for index in range(3):
+            harness.seed_attempt(
+                f"eval-recovery-human-{index}",
+                initial_response="A",
+                verification_response="A",
+            )
+        seeded = harness.create_plan("recovery-seed-plan", budget=60)
+        checks.equal(seeded["status"], 201, "recovery: seed plan status")
+        seed_schedule = harness.request("GET", "/v1/review-schedule")["payload"]
+        checks.equal(seed_schedule.get("count"), 3, "recovery: all failed tasks persist")
+        checks.equal(len(seeded["payload"].get("tasks", [])), 0, "recovery: future tasks are not shown early")
+        harness.clock.value += timedelta(days=1)
+        due_response = harness.create_plan("recovery-due-plan", budget=60)
+        checks.equal(due_response["status"], 201, "recovery: due plan status")
+        due = due_response["payload"]
+        schedule = harness.request("GET", "/v1/review-schedule")["payload"]
+        guardrail = due.get("basis", {}).get("workload_guardrail", {})
+        checks.equal(schedule.get("count"), 3, "recovery: ReviewSchedule retains all tasks")
+        checks.equal(len(due.get("tasks", [])), 1, "recovery: Today presents one task")
+        checks.equal(guardrail.get("mode"), "recovery_load", "recovery: workload mode")
+        checks.equal(guardrail.get("recent_failed_attempt_count"), 3, "recovery: failed-run count")
+        checks.equal(guardrail.get("max_non_accepted_tasks"), 1, "recovery: non-accepted presentation limit")
+        checks.that(all(item.get("task_kind") == "cause_probe" for item in schedule.get("items", [])), "recovery: each task is cause-specific")
+        _schedule_contract_checks(due, "today-plan.schema.json", checks, "recovery")
+        _schedule_contract_checks(schedule, "review-schedule.schema.json", checks, "recovery")
+        first_task = due["tasks"][0]
+        first_skip = harness.task_command(
+            due, first_task, "skip", "recovery-skip-first"
+        )
+        checks.equal(first_skip["status"], 200, "recovery: first skip status")
+        harness.clock.value += timedelta(days=1)
+        second_response = harness.create_plan("recovery-second-day", budget=60)
+        checks.equal(second_response["status"], 201, "recovery: second-day plan status")
+        second_plan = second_response["payload"]
+        checks.equal(len(second_plan.get("tasks", [])), 1, "recovery: second day presents one")
+        second_task = second_plan["tasks"][0]
+        checks.that(
+            second_task["task_id"] != first_task["task_id"],
+            "recovery: repeatedly skipped task monopolized the next day",
+        )
+        second_skip = harness.task_command(
+            second_plan, second_task, "skip", "recovery-skip-second"
+        )
+        checks.equal(second_skip["status"], 200, "recovery: second skip status")
+        harness.clock.value += timedelta(days=1)
+        third_response = harness.create_plan("recovery-third-day", budget=60)
+        checks.equal(third_response["status"], 201, "recovery: third-day plan status")
+        third_plan = third_response["payload"]
+        checks.equal(len(third_plan.get("tasks", [])), 1, "recovery: third day presents one")
+        third_task = third_plan["tasks"][0]
+        rotation = [
+            first_task["task_id"],
+            second_task["task_id"],
+            third_task["task_id"],
+        ]
+        checks.equal(len(set(rotation)), 3, "recovery: three-day fair rotation")
+        final_schedule = harness.request("GET", "/v1/review-schedule")["payload"]
+        checks.equal(final_schedule.get("count"), 3, "recovery: fair rotation loses no task")
+        return {
+            "failed_attempt_count": guardrail.get("recent_failed_attempt_count"),
+            "review_schedule_count": schedule.get("count"),
+            "today_task_count": len(due.get("tasks", [])),
+            "max_non_accepted_tasks": guardrail.get("max_non_accepted_tasks"),
+            "three_day_unique_task_count": len(set(rotation)),
+        }
+
+    def partial_migration_restart_case(
+        harness: _ScheduleHTTPHarness, checks: _ScheduleChecks
+    ) -> dict[str, Any]:
+        _, plan = _schedule_seed_due_plan(harness, "partial-migration")
+        original_task = plan["tasks"][0]
+        task_id = original_task["task_id"]
+        plan_id = plan["plan_id"]
+        legacy_accept = harness.task_command(
+            plan,
+            original_task,
+            "accept",
+            "partial-migration-legacy-accept",
+        )
+        checks.equal(legacy_accept["status"], 200, "partial migration: legacy accept status")
+        harness.close()
+        connection = sqlite3.connect(harness.database)
+        try:
+            connection.executescript(
+                """
+                PRAGMA foreign_keys = OFF;
+                BEGIN IMMEDIATE;
+                CREATE TABLE review_schedule_tasks_partial (
+                    task_id TEXT PRIMARY KEY,
+                    source_key TEXT NOT NULL UNIQUE,
+                    task_kind TEXT NOT NULL,
+                    domain TEXT NOT NULL,
+                    skill_id TEXT NOT NULL,
+                    reason TEXT NOT NULL,
+                    expected_duration_minutes INTEGER NOT NULL,
+                    success_criterion TEXT NOT NULL,
+                    skip_consequence TEXT NOT NULL,
+                    evidence_refs_json TEXT NOT NULL,
+                    activity_ref_json TEXT NOT NULL,
+                    cause_id TEXT,
+                    cause_label TEXT,
+                    cause_confirmation_status TEXT,
+                    definition_status TEXT NOT NULL,
+                    policy_offset_days INTEGER,
+                    base_due_on TEXT,
+                    initial_due_on TEXT,
+                    scheduling_adjustment TEXT,
+                    completion_semantics TEXT,
+                    state TEXT NOT NULL,
+                    due_on TEXT NOT NULL,
+                    version INTEGER NOT NULL,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL
+                );
+                INSERT INTO review_schedule_tasks_partial
+                SELECT task_id, source_key, task_kind, domain, skill_id, reason,
+                       expected_duration_minutes, success_criterion,
+                       skip_consequence, evidence_refs_json, activity_ref_json,
+                       cause_id, cause_label, cause_confirmation_status,
+                       definition_status, NULL, NULL, NULL, NULL,
+                       completion_semantics, state, due_on, version,
+                       created_at, updated_at
+                FROM review_schedule_tasks;
+
+                CREATE TABLE today_plan_tasks_partial (
+                    plan_id TEXT NOT NULL REFERENCES today_plans(plan_id),
+                    task_id TEXT NOT NULL REFERENCES review_schedule_tasks(task_id),
+                    ordinal INTEGER NOT NULL,
+                    state TEXT NOT NULL,
+                    task_snapshot_json TEXT,
+                    PRIMARY KEY(plan_id, task_id),
+                    UNIQUE(plan_id, ordinal)
+                );
+                INSERT INTO today_plan_tasks_partial
+                SELECT plan_id, task_id, ordinal, state, NULL
+                FROM today_plan_tasks;
+
+                DROP TABLE today_plan_tasks;
+                DROP TABLE review_schedule_tasks;
+                ALTER TABLE review_schedule_tasks_partial
+                    RENAME TO review_schedule_tasks;
+                ALTER TABLE today_plan_tasks_partial RENAME TO today_plan_tasks;
+                COMMIT;
+                PRAGMA foreign_keys = ON;
+                """
+            )
+            rows = connection.execute(
+                "SELECT task_id, activity_ref_json FROM review_schedule_tasks"
+            ).fetchall()
+            for legacy_task_id, encoded_activity in rows:
+                activity = json.loads(encoded_activity)
+                activity.pop("novelty_status", None)
+                connection.execute(
+                    """
+                    UPDATE review_schedule_tasks
+                    SET activity_ref_json = ?,
+                        success_criterion = ?, skip_consequence = ?
+                    WHERE task_id = ?
+                    """,
+                    (
+                        canonical_json(activity),
+                        "在无提示的新题中独立达到既定评分标准。",
+                        "若跳过，任务将在下一学习日重新出现。",
+                        legacy_task_id,
+                    ),
+                )
+            connection.execute(
+                "DROP TRIGGER IF EXISTS schedule_command_results_no_update"
+            )
+            receipt_rows = connection.execute(
+                "SELECT command_id, response_json FROM schedule_command_results"
+            ).fetchall()
+            for receipt_command_id, encoded_response in receipt_rows:
+                receipt = json.loads(encoded_response)
+                changed = False
+                for receipt_task in receipt.get("tasks", []):
+                    activity = receipt_task.get("activity_ref", {})
+                    if isinstance(activity, dict):
+                        activity.pop("novelty_status", None)
+                    receipt_task["success_criterion"] = (
+                        "在无提示的新题中独立达到既定评分标准。"
+                    )
+                    receipt_task["skip_consequence"] = (
+                        "若跳过，任务将在下一学习日重新出现。"
+                    )
+                    changed = True
+                if changed:
+                    connection.execute(
+                        """
+                        UPDATE schedule_command_results SET response_json = ?
+                        WHERE command_id = ?
+                        """,
+                        (canonical_json(receipt), receipt_command_id),
+                    )
+            connection.execute(
+                """
+                CREATE TRIGGER schedule_command_results_no_update
+                BEFORE UPDATE ON schedule_command_results BEGIN
+                    SELECT RAISE(ABORT, 'schedule command results are immutable');
+                END
+                """
+            )
+            connection.commit()
+        finally:
+            connection.close()
+
+        recovered_base = harness.start_server()
+        harness.base_url = recovered_base
+        schedule_response = harness.request(
+            "GET", "/v1/review-schedule", base_url=recovered_base
+        )
+        checks.equal(schedule_response["status"], 200, "partial migration: schedule restart status")
+        schedule = schedule_response["payload"]
+        plan_response = harness.request(
+            "GET", f"/v1/today-plans/{plan_id}", base_url=recovered_base
+        )
+        checks.equal(plan_response["status"], 200, "partial migration: plan restart status")
+        recovered_plan = plan_response["payload"]
+        recovered_task = next(
+            item for item in schedule.get("items", []) if item["task_id"] == task_id
+        )
+        checks.equal(recovered_task.get("policy_offset_days"), 1, "partial migration: policy offset repaired")
+        checks.equal(recovered_task.get("base_due_on"), recovered_task.get("due_on"), "partial migration: base due repaired")
+        checks.equal(recovered_task.get("initial_due_on"), recovered_task.get("due_on"), "partial migration: initial due repaired")
+        checks.equal(recovered_task.get("scheduling_adjustment"), "on_policy_window", "partial migration: adjustment repaired")
+        checks.equal(recovered_task.get("activity_ref", {}).get("novelty_status"), "same_fixture_retest_not_novel_item", "partial migration: novelty disclosure repaired")
+        checks.that("同题组独立复测" in recovered_task.get("success_criterion", ""), "partial migration: success criterion repaired")
+        checks.that("公平轮候" in recovered_task.get("skip_consequence", ""), "partial migration: skip consequence repaired")
+        checks.equal(recovered_plan["tasks"][0].get("task_id"), task_id, "partial migration: snapshot rebuilt")
+        _schedule_contract_checks(schedule, "review-schedule.schema.json", checks, "partial-migration")
+        _schedule_contract_checks(recovered_plan, "today-plan.schema.json", checks, "partial-migration")
+        checks.equal(recovered_task.get("state"), "accepted", "partial migration: task state retained")
+        legacy_create_retry = harness.create_plan(
+            "plan-partial-migration-due", budget=60
+        )
+        checks.equal(legacy_create_retry["status"], 409, "partial migration: legacy create receipt fails closed")
+        checks.equal(legacy_create_retry["payload"].get("error", {}).get("code"), "command_conflict", "partial migration: legacy create receipt code")
+        legacy_transition_retry = harness.task_command(
+            plan,
+            original_task,
+            "accept",
+            "partial-migration-legacy-accept",
+            base_url=recovered_base,
+        )
+        checks.equal(legacy_transition_retry["status"], 409, "partial migration: legacy transition receipt fails closed")
+        checks.equal(legacy_transition_retry["payload"].get("error", {}).get("code"), "command_conflict", "partial migration: legacy transition receipt code")
+        current_after_conflicts = harness.request(
+            "GET", f"/v1/today-plans/{plan_id}", base_url=recovered_base
+        )
+        checks.equal(current_after_conflicts["payload"], recovered_plan, "partial migration: reload remains authoritative")
+        task_replay = harness.request(
+            "GET", f"/v1/review-schedule/{task_id}/replay", base_url=recovered_base
+        )
+        plan_replay = harness.request(
+            "GET", f"/v1/today-plans/{plan_id}/replay", base_url=recovered_base
+        )
+        checks.equal(task_replay["payload"].get("frames", [])[-1].get("kind"), "task_contract_migrated", "partial migration: task migration event")
+        checks.equal(plan_replay["payload"].get("frames", [])[-1].get("kind"), "today_plan_contract_migrated", "partial migration: plan migration event")
+        checks.equal(task_replay["payload"].get("projection_verified"), True, "partial migration: task projection replay")
+        checks.equal(plan_replay["payload"].get("projection_verified"), True, "partial migration: plan projection replay")
+
+        verification = sqlite3.connect(harness.database)
+        try:
+            remaining_nulls = verification.execute(
+                """
+                SELECT COUNT(*) FROM review_schedule_tasks
+                WHERE policy_offset_days IS NULL OR base_due_on IS NULL
+                   OR initial_due_on IS NULL OR scheduling_adjustment IS NULL
+                """
+            ).fetchone()[0]
+            missing_snapshots = verification.execute(
+                """
+                SELECT COUNT(*) FROM today_plan_tasks
+                WHERE task_snapshot_json IS NULL OR trim(task_snapshot_json) = ''
+                """
+            ).fetchone()[0]
+            migration_count = verification.execute(
+                """
+                SELECT COUNT(*) FROM schedule_migrations
+                WHERE kind = 'pre_release_schedule_contract_v2'
+                """
+            ).fetchone()[0]
+        finally:
+            verification.close()
+        checks.equal(remaining_nulls, 0, "partial migration: four task fields fully repaired")
+        checks.equal(missing_snapshots, 0, "partial migration: snapshots fully repaired")
+        checks.equal(migration_count, 1, "partial migration: one auditable contract migration")
+
+        from hermes_runtime.schedule import ScheduleStore
+
+        healthy_reopen = ScheduleStore(harness.database)
+        healthy_reopen_changes = healthy_reopen._connection.total_changes
+        healthy_reopen.close()
+        checks.equal(healthy_reopen_changes, 0, "partial migration: healthy reopen is write-free")
+        second_recovered_base = harness.start_server()
+        second_schedule = harness.request(
+            "GET", "/v1/review-schedule", base_url=second_recovered_base
+        )
+        checks.equal(second_schedule["status"], 200, "partial migration: second HTTP restart status")
+        checks.equal(second_schedule["payload"], schedule, "partial migration: second restart is stable")
+        return {
+            "nullable_fields_repaired": 5,
+            "remaining_task_field_nulls": remaining_nulls,
+            "missing_task_snapshots": missing_snapshots,
+            "auditable_contract_migration_count": migration_count,
+            "healthy_reopen_total_changes": healthy_reopen_changes,
+            "second_restart_stable": second_schedule["payload"] == schedule,
+            "legacy_create_receipt_status": legacy_create_retry["status"],
+            "legacy_transition_receipt_status": legacy_transition_retry["status"],
+        }
+
+    def dynamic_arrival_fairness_case(
+        harness: _ScheduleHTTPHarness, checks: _ScheduleChecks
+    ) -> dict[str, Any]:
+        for index in range(3):
+            harness.seed_attempt(
+                f"eval-dynamic-initial-human-{index}",
+                initial_response="A",
+                verification_response="A",
+            )
+        seed = harness.create_plan("dynamic-arrival-seed")
+        checks.equal(seed["status"], 201, "dynamic fairness: seed plan status")
+        harness.clock.value += timedelta(days=1)
+        first_response = harness.create_plan("dynamic-arrival-first-due")
+        checks.equal(first_response["status"], 201, "dynamic fairness: first due plan status")
+        first_plan = first_response["payload"]
+        checks.equal(len(first_plan.get("tasks", [])), 1, "dynamic fairness: first task shown")
+        oldest_task = first_plan["tasks"][0]
+        first_skip = harness.task_command(
+            first_plan,
+            oldest_task,
+            "skip",
+            "dynamic-arrival-skip-oldest",
+        )
+        checks.equal(first_skip["status"], 200, "dynamic fairness: oldest skip status")
+
+        oldest_return_day: int | None = None
+        presentation_ids = [oldest_task["task_id"]]
+        latest_plan = first_plan
+        for day_index in range(1, 9):
+            harness.seed_attempt(
+                f"eval-dynamic-new-human-{day_index}",
+                initial_response="A",
+                verification_response="A",
+            )
+            harness.clock.value += timedelta(days=1)
+            response = harness.create_plan(
+                f"dynamic-arrival-day-{day_index}", budget=60
+            )
+            checks.equal(response["status"], 201, f"dynamic fairness day {day_index}: plan status")
+            latest_plan = response["payload"]
+            checks.equal(len(latest_plan.get("tasks", [])), 1, f"dynamic fairness day {day_index}: presentation cap")
+            shown = latest_plan["tasks"][0]
+            presentation_ids.append(shown["task_id"])
+            if shown["task_id"] == oldest_task["task_id"] and oldest_return_day is None:
+                oldest_return_day = day_index
+            schedule = harness.request("GET", "/v1/review-schedule")["payload"]
+            checks.equal(schedule.get("count"), day_index + 3, f"dynamic fairness day {day_index}: no task loss")
+            if day_index < 8:
+                skipped = harness.task_command(
+                    latest_plan,
+                    shown,
+                    "skip",
+                    f"dynamic-arrival-skip-{day_index}",
+                )
+                checks.equal(skipped["status"], 200, f"dynamic fairness day {day_index}: skip status")
+        checks.that(oldest_return_day is not None, "dynamic fairness: oldest skipped task starved for eight days")
+        checks.that(
+            oldest_return_day is not None and oldest_return_day <= 8,
+            "dynamic fairness: oldest skipped task exceeded bounded return",
+        )
+        final_schedule = harness.request("GET", "/v1/review-schedule")["payload"]
+        checks.equal(final_schedule.get("count"), 11, "dynamic fairness: final ReviewSchedule count")
+        _schedule_contract_checks(latest_plan, "today-plan.schema.json", checks, "dynamic-fairness")
+        _schedule_contract_checks(final_schedule, "review-schedule.schema.json", checks, "dynamic-fairness")
+        return {
+            "days_with_new_arrivals": 8,
+            "oldest_return_day": oldest_return_day,
+            "final_review_schedule_count": final_schedule.get("count"),
+            "presentation_count": len(presentation_ids),
+        }
+
+    def strict_case(harness: _ScheduleHTTPHarness, checks: _ScheduleChecks) -> dict[str, Any]:
+        _, plan = _schedule_seed_due_plan(harness, "strict")
+        task = plan["tasks"][0]
+        before = harness.request("GET", plan["links"]["self"])["payload"]
+        forbidden_fields = {
+            "action_date": harness.clock.value.isoformat(),
+            "completion_evidence_ref": "forged",
+            "mastery": 0.9,
+            "peer_rate": 0.75,
+            "forgetting_probability": 0.42,
+        }
+        for index, (field_name, value) in enumerate(forbidden_fields.items()):
+            response = harness.task_command(
+                plan,
+                task,
+                "accept",
+                f"strict-field-{index}",
+                extra={field_name: value},
+            )
+            checks.equal(response["status"], 400, f"strict: reject {field_name}")
+            checks.equal(response["payload"].get("error", {}).get("code"), "invalid_body", f"strict: {field_name} error code")
+        sensitive_ids = {
+            "phone": "cmd-13800138000",
+            "national_id": "cmd-11010519491231002X",
+            "openai_key": "cmd-s" + "k-" + "A" * 32,
+            "github_classic": "cmd-gh" + "p_" + "A" * 36,
+            "github_fine_grained": "cmd-github" + "_pat_" + "A" * 40,
+            "google_api_key": "cmd-AIza" + "Sy" + "A" * 33,
+            "npm_token": "cmd-n" + "pm_" + "A" * 36,
+            "slack_bot_token": (
+                "cmd-xo" + "xb-" + "123456789012-123456789012-" + "A" * 24
+            ),
+        }
+        for sensitive_class, command_id in sensitive_ids.items():
+            # A plan already exists for this date.  If an identifier escaped
+            # validation the request would reach the ordinary 409 plan path;
+            # the required 400 therefore proves the opaque ID was rejected,
+            # while the existing plan prevents one broken vector from mutating
+            # state and masking the remaining vectors.
+            response = harness.create_plan(command_id, raw_command_id=True)
+            checks.equal(
+                response["status"],
+                400,
+                f"strict: {sensitive_class} plan command id status",
+            )
+            checks.equal(
+                response["payload"].get("error", {}).get("code"),
+                "invalid_command_id",
+                f"strict: {sensitive_class} plan command id code",
+            )
+            checks.that(
+                command_id not in canonical_json(response["payload"]),
+                f"strict: error echoed {sensitive_class} plan command id",
+            )
+        stale = harness.task_command(
+            plan,
+            task,
+            "accept",
+            "strict-stale-task",
+            expected_task_version=int(task["version"]) + 1,
+        )
+        checks.equal(stale["status"], 409, "strict: stale task version status")
+        checks.equal(stale["payload"].get("error", {}).get("code"), "stale_task_version", "strict: stale task version code")
+        invalid_plan = harness.create_plan(
+            "strict-extra-plan",
+            body_overrides={"peer_rate": 0.8},
+        )
+        checks.equal(invalid_plan["status"], 400, "strict: plan rejects unknown claim field")
+        after = harness.request("GET", plan["links"]["self"])["payload"]
+        checks.equal(after, before, "strict: rejected writes leave plan unchanged")
+        return {
+            "forbidden_field_count": len(forbidden_fields),
+            "sensitive_id_count": len(sensitive_ids),
+            "sensitive_id_classes": sorted(sensitive_ids),
+            "rejected_writes_are_noop": after == before,
+        }
+
+    def fresh_create_receipt_case(
+        harness: _ScheduleHTTPHarness, checks: _ScheduleChecks
+    ) -> dict[str, Any]:
+        second_base = harness.start_server()
+        body = {
+            "plan_date": harness.clock.value.isoformat(),
+            "exam_date": (harness.clock.value + timedelta(days=30)).isoformat(),
+            "daily_budget_minutes": 60,
+            "expected_version": 0,
+            "command_id": _eval_public_command_id(
+                "fresh-create-shared-receipt"
+            ),
+        }
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            futures = [
+                executor.submit(
+                    harness.request,
+                    "POST",
+                    "/v1/today-plans",
+                    body,
+                    base_url=base_url,
+                )
+                for base_url in (harness.base_url, second_base)
+            ]
+            results = [future.result(timeout=10) for future in futures]
+        checks.equal(
+            [item["status"] for item in results],
+            [201, 201],
+            "fresh create: duplicate receipt statuses",
+        )
+        checks.equal(
+            results[0]["payload"],
+            results[1]["payload"],
+            "fresh create: exact persisted receipt replay",
+        )
+        plan = results[0]["payload"]
+        checks.equal(plan.get("version"), 1, "fresh create: one plan version")
+        loaded = harness.request("GET", plan["links"]["self"])
+        checks.equal(loaded["status"], 200, "fresh create: plan is readable")
+        checks.equal(loaded["payload"], plan, "fresh create: one persisted projection")
+        replay = harness.request("GET", plan["links"]["replay"])
+        checks.equal(replay["status"], 200, "fresh create: replay status")
+        checks.equal(replay["payload"].get("frame_count"), 1, "fresh create: one create event")
+        checks.equal(replay["payload"].get("projection_verified"), True, "fresh create: projection replay")
+        conflict_body = dict(body)
+        conflict_body["daily_budget_minutes"] = 30
+        conflict = harness.request(
+            "POST", "/v1/today-plans", conflict_body, base_url=second_base
+        )
+        checks.equal(conflict["status"], 409, "fresh create: changed command conflicts")
+        checks.equal(conflict["payload"].get("error", {}).get("code"), "command_conflict", "fresh create: conflict code")
+        return {
+            "cross_instance": True,
+            "http_statuses": [item["status"] for item in results],
+            "receipt_exact_replay": results[0]["payload"] == results[1]["payload"],
+            "event_frame_count": replay["payload"].get("frame_count"),
+        }
+
+    def cas_case(harness: _ScheduleHTTPHarness, checks: _ScheduleChecks) -> dict[str, Any]:
+        _, plan = _schedule_seed_due_plan(harness, "cas", count=2, budget=60)
+        first, second = plan["tasks"]
+        second_base = harness.start_server()
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            futures = [
+                executor.submit(
+                    harness.task_command,
+                    plan,
+                    first,
+                    "accept",
+                    "cas-shared-receipt",
+                    base_url=base_url,
+                )
+                for base_url in (harness.base_url, second_base)
+            ]
+            duplicates = [future.result(timeout=10) for future in futures]
+        checks.equal([item["status"] for item in duplicates], [200, 200], "CAS: duplicate receipt statuses")
+        checks.equal(duplicates[0]["payload"], duplicates[1]["payload"], "CAS: exact command receipt replay")
+        after_duplicate = duplicates[0]["payload"]
+        checks.equal(after_duplicate.get("version"), 2, "CAS: duplicate writes one plan version")
+        plan_replay_after_duplicate = harness.request(
+            "GET", after_duplicate["links"]["replay"]
+        )
+        second_replay_before = harness.request(
+            "GET", f"/v1/review-schedule/{second['task_id']}/replay"
+        )
+        checks.equal(
+            plan_replay_after_duplicate["payload"].get("frame_count"),
+            2,
+            "CAS: duplicate receipt appends one plan event",
+        )
+        checks.equal(
+            second_replay_before["payload"].get("frame_count"),
+            1,
+            "CAS: untouched task has only its create event",
+        )
+        conflict = harness.task_command(
+            plan,
+            first,
+            "skip",
+            "cas-shared-receipt",
+        )
+        checks.equal(conflict["status"], 409, "CAS: reused command conflict status")
+        checks.equal(conflict["payload"].get("error", {}).get("code"), "command_conflict", "CAS: reused command conflict code")
+        after_conflict = harness.request("GET", plan["links"]["self"])
+        checks.equal(
+            after_conflict["payload"].get("version"),
+            2,
+            "CAS: command conflict makes no partial plan write",
+        )
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            futures = [
+                executor.submit(
+                    harness.task_command,
+                    plan,
+                    second,
+                    "accept",
+                    command_id,
+                    expected_version=2,
+                    base_url=base_url,
+                )
+                for base_url, command_id in (
+                    (harness.base_url, "cas-writer-one"),
+                    (second_base, "cas-writer-two"),
+                )
+            ]
+            contenders = [future.result(timeout=10) for future in futures]
+        checks.equal(sorted(item["status"] for item in contenders), [200, 409], "CAS: exactly one writer wins")
+        rejected = next((item for item in contenders if item["status"] == 409), {"payload": {}})
+        checks.equal(rejected["payload"].get("error", {}).get("code"), "stale_schedule_version", "CAS: losing writer is stale")
+        final_plan = harness.request("GET", plan["links"]["self"])
+        checks.equal(final_plan["status"], 200, "CAS: final plan status")
+        checks.equal(final_plan["payload"].get("version"), 3, "CAS: one CAS transition committed")
+        final_states = {
+            item["task_id"]: item["state"]
+            for item in final_plan["payload"].get("tasks", [])
+        }
+        checks.equal(final_states.get(first["task_id"]), "accepted", "CAS: first task state")
+        checks.equal(final_states.get(second["task_id"]), "accepted", "CAS: second task state")
+        final_plan_replay = harness.request("GET", plan["links"]["replay"])
+        final_first_replay = harness.request(
+            "GET", f"/v1/review-schedule/{first['task_id']}/replay"
+        )
+        final_second_replay = harness.request(
+            "GET", f"/v1/review-schedule/{second['task_id']}/replay"
+        )
+        checks.equal(final_plan_replay["payload"].get("frame_count"), 3, "CAS: plan has two transition events")
+        checks.equal(final_first_replay["payload"].get("frame_count"), 2, "CAS: first task changed exactly once")
+        checks.equal(final_second_replay["payload"].get("frame_count"), 2, "CAS: second task changed exactly once")
+        for replay, replay_label in (
+            (final_plan_replay, "plan"),
+            (final_first_replay, "first task"),
+            (final_second_replay, "second task"),
+        ):
+            checks.equal(replay["payload"].get("trace_verified"), True, f"CAS: {replay_label} hash replay")
+            checks.equal(replay["payload"].get("projection_verified"), True, f"CAS: {replay_label} projection replay")
+        return {
+            "cross_instance": True,
+            "receipt_exact_replay": duplicates[0]["payload"] == duplicates[1]["payload"],
+            "cas_statuses": sorted(item["status"] for item in contenders),
+            "final_plan_version": final_plan["payload"].get("version"),
+            "final_plan_frame_count": final_plan_replay["payload"].get("frame_count"),
+        }
+
+    def resurface_case(harness: _ScheduleHTTPHarness, checks: _ScheduleChecks) -> dict[str, Any]:
+        _, old_plan = _schedule_seed_due_plan(harness, "resurface", count=2)
+        first, second = old_plan["tasks"]
+        skipped = harness.task_command(old_plan, first, "skip", "resurface-skip")
+        checks.equal(skipped["status"], 200, "resurface: skip status")
+        next_day = harness.clock.value + timedelta(days=1)
+        postponed = harness.task_command(
+            skipped["payload"],
+            second,
+            "postpone",
+            "resurface-postpone",
+            postpone_until=next_day.isoformat(),
+        )
+        checks.equal(postponed["status"], 200, "resurface: postpone status")
+        checks.equal(postponed["payload"].get("status"), "handled", "resurface: old plan handled")
+        harness.clock.value = next_day
+        current_response = harness.create_plan("resurface-current-plan")
+        checks.equal(current_response["status"], 201, "resurface: current plan status")
+        current = current_response["payload"]
+        checks.equal({item["task_id"] for item in current.get("tasks", [])}, {first["task_id"], second["task_id"]}, "resurface: both tasks return")
+        checks.that(all(item.get("state") == "scheduled" for item in current.get("tasks", [])), "resurface: returned tasks are scheduled")
+        replay_count = _schedule_replay_checks(harness, current, current.get("tasks", []), checks, "resurface")
+        for task in current.get("tasks", []):
+            replay = harness.request("GET", f"/v1/review-schedule/{task['task_id']}/replay")
+            frames = replay["payload"].get("frames", [])
+            checks.equal(frames[-1].get("kind") if frames else None, "task_resurfaced", "resurface: terminal replay event")
+        historical = harness.task_command(
+            old_plan,
+            first,
+            "accept",
+            "resurface-old-plan-write",
+            expected_version=int(postponed["payload"]["version"]),
+            expected_task_version=int(current["tasks"][0]["version"]),
+        )
+        checks.equal(historical["status"], 409, "resurface: historical write status")
+        checks.equal(historical["payload"].get("error", {}).get("code"), "historical_plan_read_only", "resurface: historical write code")
+        return {"resurfaced_task_count": len(current.get("tasks", [])), "verified_replay_count": replay_count, "historical_read_only": historical["status"] == 409}
+
+    def historical_case(harness: _ScheduleHTTPHarness, checks: _ScheduleChecks) -> dict[str, Any]:
+        _, old_plan = _schedule_seed_due_plan(harness, "historical")
+        task = old_plan["tasks"][0]
+        harness.clock.value += timedelta(days=1)
+        current_response = harness.create_plan("historical-current-plan")
+        checks.equal(current_response["status"], 201, "historical: current plan status")
+        current = current_response["payload"]
+        checks.equal(current["tasks"][0].get("version"), task.get("version"), "historical: task version is unchanged")
+        rejected = harness.task_command(old_plan, task, "accept", "historical-old-write")
+        checks.equal(rejected["status"], 409, "historical: old plan write status")
+        checks.equal(rejected["payload"].get("error", {}).get("code"), "historical_plan_read_only", "historical: old plan write code")
+        unchanged = harness.request("GET", current["links"]["self"])["payload"]
+        checks.equal(unchanged["tasks"][0].get("state"), "scheduled", "historical: current task unchanged")
+        return {"task_version_unchanged": current["tasks"][0].get("version") == task.get("version"), "historical_read_only": rejected["status"] == 409}
+
+    def skewed_sidecar_clock_case(
+        harness: _ScheduleHTTPHarness, checks: _ScheduleChecks
+    ) -> dict[str, Any]:
+        harness.seed_attempt(
+            "eval-skewed-clock-human",
+            initial_response="B",
+            verification_response="A",
+        )
+        seed = harness.create_plan("skewed-clock-seed")
+        checks.equal(seed["status"], 201, "skewed clock: seed plan status")
+        old_day = harness.clock.value + timedelta(days=1)
+        new_day = old_day + timedelta(days=1)
+        old_base = harness.start_server(clock=_ScheduleEvalClock(old_day))
+        new_base = harness.start_server(clock=_ScheduleEvalClock(new_day))
+
+        def create_at(base_url: str, day: date, command_id: str) -> dict[str, Any]:
+            return harness.request(
+                "POST",
+                "/v1/today-plans",
+                {
+                    "plan_date": day.isoformat(),
+                    "exam_date": (day + timedelta(days=30)).isoformat(),
+                    "daily_budget_minutes": 60,
+                    "expected_version": 0,
+                    "command_id": _eval_public_command_id(command_id),
+                },
+                base_url=base_url,
+            )
+
+        old_response = create_at(old_base, old_day, "skewed-clock-old-plan")
+        checks.equal(old_response["status"], 201, "skewed clock: old-date plan status")
+        old_plan = old_response["payload"]
+        new_response = create_at(new_base, new_day, "skewed-clock-new-plan")
+        checks.equal(new_response["status"], 201, "skewed clock: new-date plan status")
+        new_plan = new_response["payload"]
+        stale_create = create_at(
+            old_base, old_day, "skewed-clock-old-late-create"
+        )
+        checks.equal(stale_create["status"], 409, "skewed clock: stale create status")
+        checks.equal(stale_create["payload"].get("error", {}).get("code"), "historical_plan_read_only", "skewed clock: stale create code")
+        old_task = old_plan["tasks"][0]
+        rejected = harness.task_command(
+            old_plan,
+            old_task,
+            "accept",
+            "skewed-clock-old-write",
+            base_url=old_base,
+        )
+        checks.equal(rejected["status"], 409, "skewed clock: stale sidecar write status")
+        checks.equal(rejected["payload"].get("error", {}).get("code"), "historical_plan_read_only", "skewed clock: stale sidecar write code")
+        current = harness.request(
+            "GET", new_plan["links"]["self"], base_url=new_base
+        )
+        checks.equal(current["status"], 200, "skewed clock: current plan readable")
+        checks.equal(current["payload"].get("version"), 1, "skewed clock: current plan unchanged")
+        checks.equal(current["payload"]["tasks"][0].get("state"), "scheduled", "skewed clock: task unchanged")
+        replay = harness.request(
+            "GET", new_plan["links"]["replay"], base_url=new_base
+        )
+        checks.equal(replay["payload"].get("frame_count"), 1, "skewed clock: no partial event")
+        checks.equal(replay["payload"].get("projection_verified"), True, "skewed clock: current projection replay")
+        return {
+            "old_plan_date": old_plan.get("plan_date"),
+            "current_plan_date": new_plan.get("plan_date"),
+            "stale_create_status": stale_create["status"],
+            "old_write_status": rejected["status"],
+            "current_plan_version": current["payload"].get("version"),
+        }
+
+    def missed_existing_on_policy_case(
+        harness: _ScheduleHTTPHarness, checks: _ScheduleChecks
+    ) -> dict[str, Any]:
+        _, due_plan = _schedule_seed_due_plan(harness, "missed-on-policy")
+        original_task = due_plan["tasks"][0]
+        checks.equal(original_task.get("scheduling_adjustment"), "on_policy_window", "missed existing: original adjustment")
+        checks.equal(original_task.get("initial_due_on"), original_task.get("base_due_on"), "missed existing: original due is on policy")
+        harness.clock.value += timedelta(days=1)
+        next_response = harness.create_plan("missed-on-policy-next-day")
+        checks.equal(next_response["status"], 201, "missed existing: next-day plan status")
+        next_plan = next_response["payload"]
+        checks.equal(len(next_plan.get("tasks", [])), 1, "missed existing: task remains due")
+        task = next_plan["tasks"][0]
+        checks.equal(task.get("task_id"), original_task.get("task_id"), "missed existing: same immutable task")
+        checks.equal(task.get("scheduling_adjustment"), "on_policy_window", "missed existing: no retrospective catch-up relabel")
+        checks.equal(task.get("base_due_on"), original_task.get("base_due_on"), "missed existing: base due remains immutable")
+        checks.equal(task.get("initial_due_on"), original_task.get("initial_due_on"), "missed existing: initial due remains immutable")
+        checks.equal(task.get("due_on"), original_task.get("due_on"), "missed existing: due projection is not rewritten")
+        checks.equal(
+            next_plan.get("basis", {}).get("workload_guardrail", {}).get("overdue_catch_up_count"),
+            0,
+            "missed existing: on-policy task is not counted as authored catch-up",
+        )
+        _schedule_contract_checks(next_plan, "today-plan.schema.json", checks, "missed-existing")
+        return {
+            "task_id_unchanged": task.get("task_id") == original_task.get("task_id"),
+            "scheduling_adjustment": task.get("scheduling_adjustment"),
+            "overdue_catch_up_count": next_plan.get("basis", {}).get("workload_guardrail", {}).get("overdue_catch_up_count"),
+        }
+
+    def accepted_continues_case(
+        harness: _ScheduleHTTPHarness, checks: _ScheduleChecks
+    ) -> dict[str, Any]:
+        for index in range(3):
+            harness.seed_attempt(
+                f"eval-accepted-carry-human-{index}",
+                initial_response="A",
+                verification_response="A",
+            )
+        seed = harness.create_plan("accepted-carry-seed")
+        checks.equal(seed["status"], 201, "accepted carry: seed plan status")
+        harness.clock.value += timedelta(days=1)
+        first_response = harness.create_plan("accepted-carry-first-day")
+        checks.equal(first_response["status"], 201, "accepted carry: first-day plan status")
+        first_plan = first_response["payload"]
+        checks.equal(len(first_plan.get("tasks", [])), 1, "accepted carry: recovery cap")
+        task = first_plan["tasks"][0]
+        accepted = harness.task_command(
+            first_plan, task, "accept", "accepted-carry-command"
+        )
+        checks.equal(accepted["status"], 200, "accepted carry: accept status")
+        accepted_task = accepted["payload"]["tasks"][0]
+        checks.equal(accepted_task.get("state"), "accepted", "accepted carry: initial state")
+        harness.clock.value += timedelta(days=1)
+        next_response = harness.create_plan("accepted-carry-next-day")
+        checks.equal(next_response["status"], 201, "accepted carry: next-day plan status")
+        next_plan = next_response["payload"]
+        checks.equal(len(next_plan.get("tasks", [])), 2, "accepted carry: commitment plus one non-accepted task")
+        checks.equal(next_plan["tasks"][0].get("task_id"), task.get("task_id"), "accepted carry: commitment is first")
+        continued = next(
+            item for item in next_plan["tasks"] if item["task_id"] == task["task_id"]
+        )
+        checks.equal(continued.get("task_id"), task.get("task_id"), "accepted carry: same task")
+        checks.equal(continued.get("state"), "accepted", "accepted carry: state is retained")
+        checks.equal(continued.get("version"), accepted_task.get("version"), "accepted carry: no synthetic transition")
+        next_schedule = harness.request("GET", "/v1/review-schedule")["payload"]
+        checks.equal(next_schedule.get("count"), 3, "accepted carry: competing tasks remain queued")
+        replay_before_complete = harness.request(
+            "GET", f"/v1/review-schedule/{task['task_id']}/replay"
+        )
+        frames = replay_before_complete["payload"].get("frames", [])
+        checks.equal(frames[-1].get("kind") if frames else None, "task_accepted", "accepted carry: no resurface event")
+        completed = harness.task_command(
+            next_plan,
+            continued,
+            "complete",
+            "accepted-carry-complete",
+        )
+        checks.equal(completed["status"], 200, "accepted carry: completion status")
+        completed_task = next(
+            item
+            for item in completed["payload"]["tasks"]
+            if item["task_id"] == task["task_id"]
+        )
+        checks.equal(completed_task.get("state"), "completed", "accepted carry: commitment completes")
+        checks.equal(completed["payload"].get("status"), "active", "accepted carry: competing task remains active")
+        _schedule_contract_checks(next_plan, "today-plan.schema.json", checks, "accepted-carry")
+        return {
+            "task_id_unchanged": continued.get("task_id") == task.get("task_id"),
+            "state_next_day": continued.get("state"),
+            "replay_terminal_before_complete": frames[-1].get("kind") if frames else None,
+        }
+
+    def accepted_budget_retry_case(
+        harness: _ScheduleHTTPHarness, checks: _ScheduleChecks
+    ) -> dict[str, Any]:
+        _, first_plan = _schedule_seed_due_plan(harness, "accepted-budget")
+        task = first_plan["tasks"][0]
+        accepted = harness.task_command(
+            first_plan, task, "accept", "accepted-budget-accept"
+        )
+        checks.equal(accepted["status"], 200, "accepted budget: accept status")
+        accepted_task = accepted["payload"]["tasks"][0]
+        harness.clock.value += timedelta(days=1)
+        schedule_before = harness.request("GET", "/v1/review-schedule")["payload"]
+        replay_before = harness.request(
+            "GET", f"/v1/review-schedule/{task['task_id']}/replay"
+        )["payload"]
+        retry_command = "accepted-budget-retry-command"
+        low = harness.create_plan(retry_command, budget=5)
+        checks.equal(low["status"], 409, "accepted budget: low budget status")
+        checks.equal(low["payload"].get("error", {}).get("code"), "budget_below_accepted_commitment", "accepted budget: low budget code")
+        checks.equal(set(low["payload"]), {"error"}, "accepted budget: closed error envelope")
+        checks.equal(set(low["payload"].get("error", {})), {"code", "message", "request_id"}, "accepted budget: closed error fields")
+        checks.that(str(accepted_task["expected_duration_minutes"]) in low["payload"].get("error", {}).get("message", ""), "accepted budget: error discloses required minutes")
+        absent = harness.request(
+            "GET", f"/v1/today-plans/today-{harness.clock.value.isoformat()}"
+        )
+        checks.equal(absent["status"], 404, "accepted budget: failed create leaves no plan")
+        schedule_after_low = harness.request("GET", "/v1/review-schedule")["payload"]
+        replay_after_low = harness.request(
+            "GET", f"/v1/review-schedule/{task['task_id']}/replay"
+        )["payload"]
+        checks.equal(schedule_after_low, schedule_before, "accepted budget: failed create leaves task projection unchanged")
+        checks.equal(replay_after_low, replay_before, "accepted budget: failed create appends no task event")
+        high = harness.create_plan(
+            retry_command,
+            budget=int(accepted_task["expected_duration_minutes"]),
+        )
+        checks.equal(high["status"], 201, "accepted budget: raised-budget retry status")
+        high_plan = high["payload"]
+        checks.equal(len(high_plan.get("tasks", [])), 1, "accepted budget: accepted task actionable")
+        checks.equal(high_plan["tasks"][0].get("state"), "accepted", "accepted budget: state retained")
+        checks.equal(high_plan["tasks"][0].get("task_id"), task.get("task_id"), "accepted budget: same task")
+        _schedule_contract_checks(high_plan, "today-plan.schema.json", checks, "accepted-budget")
+        return {
+            "low_budget_status": low["status"],
+            "error_code": low["payload"].get("error", {}).get("code"),
+            "retry_same_command_id": True,
+            "high_budget_status": high["status"],
+            "required_minutes": accepted_task["expected_duration_minutes"],
+        }
+
+    def multiple_accepted_commitments_case(
+        harness: _ScheduleHTTPHarness, checks: _ScheduleChecks
+    ) -> dict[str, Any]:
+        for index in range(3):
+            harness.seed_attempt(
+                f"eval-multi-accepted-human-{index}",
+                initial_response="A",
+                verification_response="A",
+            )
+        seed = harness.create_plan("multi-accepted-seed")
+        checks.equal(seed["status"], 201, "multi accepted: seed plan status")
+        harness.clock.value += timedelta(days=1)
+        current_response = harness.create_plan("multi-accepted-day-1", budget=60)
+        checks.equal(current_response["status"], 201, "multi accepted: day 1 status")
+        current = current_response["payload"]
+        for index in range(3):
+            scheduled = [
+                task for task in current.get("tasks", []) if task.get("state") == "scheduled"
+            ]
+            checks.equal(len(scheduled), 1, f"multi accepted: round {index + 1} has one new commitment")
+            if not scheduled:
+                break
+            accepted = harness.task_command(
+                current,
+                scheduled[0],
+                "accept",
+                f"multi-accepted-accept-{index + 1}",
+            )
+            checks.equal(accepted["status"], 200, f"multi accepted: round {index + 1} accept status")
+            current = accepted["payload"]
+            if index < 2:
+                harness.clock.value += timedelta(days=1)
+                next_response = harness.create_plan(
+                    f"multi-accepted-day-{index + 2}", budget=60
+                )
+                checks.equal(next_response["status"], 201, f"multi accepted: day {index + 2} status")
+                current = next_response["payload"]
+        harness.clock.value += timedelta(days=1)
+        final_response = harness.create_plan("multi-accepted-final", budget=60)
+        checks.equal(final_response["status"], 201, "multi accepted: final plan status")
+        final_plan = final_response["payload"]
+        tasks = final_plan.get("tasks", [])
+        guardrail = final_plan.get("basis", {}).get("workload_guardrail", {})
+        checks.equal(len(tasks), 3, "multi accepted: every commitment is actionable")
+        checks.that(all(task.get("state") == "accepted" for task in tasks), "multi accepted: all states retained")
+        checks.equal(guardrail.get("mode"), "recovery_load", "multi accepted: degraded mode")
+        checks.equal(guardrail.get("max_non_accepted_tasks"), 1, "multi accepted: non-accepted task cap")
+        checks.equal(final_plan.get("basis", {}).get("selected_task_count"), 3, "multi accepted: selected count includes all commitments")
+        checks.that(len(tasks) > int(guardrail.get("max_non_accepted_tasks", 0)), "multi accepted: commitments are not counted against non-accepted cap")
+        total_minutes = sum(int(task["expected_duration_minutes"]) for task in tasks)
+        checks.that(total_minutes <= 60, "multi accepted: commitments exceed supplied budget")
+        schedule = harness.request("GET", "/v1/review-schedule")["payload"]
+        checks.equal(schedule.get("count"), 3, "multi accepted: schedule count")
+        checks.that(all(task.get("state") == "accepted" for task in schedule.get("items", [])), "multi accepted: schedule states")
+        _schedule_contract_checks(final_plan, "today-plan.schema.json", checks, "multi-accepted")
+        _schedule_contract_checks(schedule, "review-schedule.schema.json", checks, "multi-accepted")
+        return {
+            "accepted_commitment_count": len(tasks),
+            "mode": guardrail.get("mode"),
+            "max_non_accepted_tasks": guardrail.get("max_non_accepted_tasks"),
+            "selected_task_count": final_plan.get("basis", {}).get("selected_task_count"),
+            "required_minutes": total_minutes,
+        }
+
+    def completion_case(harness: _ScheduleHTTPHarness, checks: _ScheduleChecks) -> dict[str, Any]:
+        completed_attempt = harness.seed_attempt(
+            "eval-completion-overdue-human",
+            initial_response="A",
+            verification_response="C",
+        )
+        run_id = completed_attempt["run_id"]
+        harness.clock.value += timedelta(days=10)
+        plan_response = harness.create_plan("completion-overdue-plan")
+        checks.equal(plan_response["status"], 201, "completion: overdue plan status")
+        plan = plan_response["payload"]
+        task = plan["tasks"][0]
+        checks.equal(task.get("scheduling_adjustment"), "overdue_catch_up", "completion: starts from overdue task")
+        trace_before = harness.request("GET", f"/v1/runs/{run_id}/trace")["payload"]
+        skills_before = harness.request("GET", "/v1/skills/report")["payload"]
+        accepted = harness.task_command(plan, task, "accept", "completion-accept")
+        checks.equal(accepted["status"], 200, "completion: accept status")
+        accepted_task = next(item for item in accepted["payload"]["tasks"] if item["task_id"] == task["task_id"])
+        completed = harness.task_command(
+            accepted["payload"],
+            accepted_task,
+            "complete",
+            "completion-user-marked",
+        )
+        checks.equal(completed["status"], 200, "completion: complete status")
+        result = completed["payload"]
+        completed_task = next(item for item in result["tasks"] if item["task_id"] == task["task_id"])
+        checks.equal(completed_task.get("completion_semantics"), "user_marked_not_learning_evidence", "completion: semantics")
+        checks.equal(result.get("mastery_write_capability"), False, "completion: no mastery write")
+        trace_after = harness.request("GET", f"/v1/runs/{run_id}/trace")["payload"]
+        skills_after = harness.request("GET", "/v1/skills/report")["payload"]
+        checks.equal(trace_after, trace_before, "completion: learning trace unchanged")
+        checks.equal(skills_after, skills_before, "completion: KT projection unchanged")
+        replay_count = _schedule_replay_checks(harness, result, [completed_task], checks, "completion")
+        harness.clock.value += timedelta(days=1)
+        next_response = harness.create_plan("completion-next-day-plan")
+        checks.equal(next_response["status"], 201, "completion: next-day plan status")
+        next_plan = next_response["payload"]
+        next_schedule = harness.request("GET", "/v1/review-schedule")["payload"]
+        checks.equal(next_plan.get("status"), "empty", "completion: next-day plan is empty")
+        checks.equal(next_plan.get("empty_reason"), "no_pending_review_tasks", "completion: next-day empty reason")
+        checks.equal(next_plan.get("tasks"), [], "completion: no pending Today task")
+        checks.equal(next_schedule.get("count"), 1, "completion: completed task remains auditable")
+        checks.equal(next_schedule["items"][0].get("state"), "completed", "completion: schedule task remains completed")
+        checks.equal(
+            next_plan.get("basis", {}).get("workload_guardrail", {}).get("overdue_catch_up_count"),
+            0,
+            "completion: completed overdue task is excluded from pending catch-up count",
+        )
+        _schedule_contract_checks(next_plan, "today-plan.schema.json", checks, "completion-next-day")
+        _schedule_contract_checks(next_schedule, "review-schedule.schema.json", checks, "completion-next-day")
+        return {
+            "completion_semantics": completed_task.get("completion_semantics"),
+            "learning_trace_unchanged": trace_after == trace_before,
+            "skill_report_unchanged": skills_after == skills_before,
+            "verified_replay_count": replay_count,
+            "next_day_empty_reason": next_plan.get("empty_reason"),
+            "next_day_overdue_catch_up_count": next_plan.get("basis", {}).get("workload_guardrail", {}).get("overdue_catch_up_count"),
+        }
+
+    def exam_case(harness: _ScheduleHTTPHarness, checks: _ScheduleChecks) -> dict[str, Any]:
+        harness.seed_attempt(
+            "eval-exam-human",
+            initial_response="A",
+            verification_response="A",
+        )
+        created = harness.create_plan(
+            "exam-deadline-plan",
+            exam_date=harness.clock.value.isoformat(),
+        )
+        checks.equal(created["status"], 201, "exam: plan status")
+        plan = created["payload"]
+        schedule = harness.request("GET", "/v1/review-schedule")["payload"]
+        checks.equal(plan.get("empty_reason"), "task_due_after_exam", "exam: withhold reason")
+        checks.equal(schedule.get("count"), 0, "exam: no impossible task persisted")
+        checks.that(plan.get("basis", {}).get("workload_guardrail", {}).get("withheld_exam_deadline_count", 0) > 0, "exam: withheld count recorded")
+        _schedule_contract_checks(plan, "today-plan.schema.json", checks, "exam")
+        return {"empty_reason": plan.get("empty_reason"), "withheld_count": plan.get("basis", {}).get("workload_guardrail", {}).get("withheld_exam_deadline_count")}
+
+    try:
+        with tempfile.TemporaryDirectory(prefix="lumi-schedule-gate-") as directory:
+            temporary_root = Path(directory)
+            run_case("empty", empty_case)
+            run_case("synthetic_origin_excluded", synthetic_origin_case)
+            run_case(
+                "failed_with_candidate",
+                branch_case(
+                    "failed-candidate",
+                    initial_response="A",
+                    verification_response="A",
+                    expected_kind="cause_probe",
+                    offset_days=1,
+                ),
+            )
+            run_case(
+                "successful_transfer",
+                branch_case(
+                    "successful-transfer",
+                    initial_response="A",
+                    verification_response="C",
+                    expected_kind="delayed_retention",
+                    offset_days=3,
+                ),
+            )
+            run_case(
+                "correct_first_failed_transfer",
+                branch_case(
+                    "correct-first-failed-transfer",
+                    initial_response="B",
+                    verification_response="A",
+                    expected_kind="independent_retry",
+                    offset_days=1,
+                ),
+            )
+            run_case("budget", budget_case)
+            run_case("overdue_plus_3_catch_up", overdue_case)
+            run_case("overdue_plus_1_old_evidence", old_evidence_case)
+            run_case("three_failure_recovery_load", recovery_load_case)
+            run_case("partial_migration_restart", partial_migration_restart_case)
+            run_case("dynamic_arrival_fairness", dynamic_arrival_fairness_case)
+            run_case("strict_input", strict_case)
+            run_case("fresh_create_receipt", fresh_create_receipt_case)
+            run_case("receipt_and_cas", cas_case)
+            run_case("skip_postpone_resurface", resurface_case)
+            run_case("historical_plan", historical_case)
+            run_case("skewed_sidecar_clock", skewed_sidecar_clock_case)
+            run_case("missed_existing_on_policy", missed_existing_on_policy_case)
+            run_case("accepted_continues_next_day", accepted_continues_case)
+            run_case("accepted_budget_retry", accepted_budget_retry_case)
+            run_case("multiple_accepted_commitments", multiple_accepted_commitments_case)
+            run_case("user_marked_completion", completion_case)
+            run_case("exam_deadline", exam_case)
+    except (OSError, RuntimeError) as exc:
+        all_errors.append(f"schedule HTTP probe could not run: {exc!r}")
+    return {
+        "schema_version": "lumi.today-plan-eval-evidence.v1",
+        "status": "fail" if all_errors else "pass",
+        "transport": "real_loopback_http_with_production_router",
+        "calendar": "injected_local_date_provider_for_deterministic_day_transitions",
+        "assertion_count": total_assertions,
+        "case_count": len(cases),
+        "cases": cases,
+        "errors": all_errors,
+    }
+
+
 def _diagnosis_from_trace(trace: Mapping[str, Any]) -> dict[str, Any] | None:
     for event in trace.get("events", []):
         payload = event.get("payload", {})
@@ -827,14 +2922,14 @@ def _probe_attempt_api() -> dict[str, Any]:
                     "response": "B",
                     "confidence": 0.90,
                     "response_time_seconds": 18,
-                    "run_id": "eval-api-correct",
+                    "run_id": _eval_public_run_id("api-correct"),
                 },
                 "wrong": {
                     "fixture_id": fixture_id,
                     "response": "A",
                     "confidence": 0.80,
                     "response_time_seconds": 31,
-                    "run_id": "eval-api-wrong",
+                    "run_id": _eval_public_run_id("api-wrong"),
                 },
                 "pii": {
                     "fixture_id": fixture_id,
@@ -844,14 +2939,14 @@ def _probe_attempt_api() -> dict[str, Any]:
                     ),
                     "confidence": 0.40,
                     "response_time_seconds": 50,
-                    "run_id": "eval-api-pii",
+                    "run_id": _eval_public_run_id("api-pii"),
                 },
                 "unknown_field": {
                     "fixture_id": fixture_id,
                     "response": "A",
                     "confidence": 0.50,
                     "response_time_seconds": 20,
-                    "run_id": "eval-api-unknown",
+                    "run_id": _eval_public_run_id("api-unknown"),
                     "cause_ground_truth": "injected-cause",
                 },
             }
@@ -940,7 +3035,11 @@ def _probe_attempt_api() -> dict[str, Any]:
                     errors.append("pii: digest/length evidence is incomplete")
             if unknown["status"] != 400 or unknown["payload"].get("error", {}).get("code") != "invalid_body":
                 errors.append("unknown_field: unsupported input did not fail closed with invalid_body")
-            unknown_trace = _http_json(base_url, "GET", "/v1/runs/eval-api-unknown/trace")
+            unknown_trace = _http_json(
+                base_url,
+                "GET",
+                f"/v1/runs/{requests['unknown_field']['run_id']}/trace",
+            )
             cases["unknown_field"]["trace_after_rejection"] = unknown_trace
             if unknown_trace["status"] != 404:
                 errors.append("unknown_field: rejected input left a persisted run")
@@ -1126,7 +3225,7 @@ def _probe_attempt_api() -> dict[str, Any]:
                     "response": "A",
                     "confidence": 0.8,
                     "response_time_seconds": 28,
-                    "run_id": "eval-api-assistance",
+                    "run_id": _eval_public_run_id("api-assistance"),
                 },
             )
             assistance_deliveries: list[dict[str, Any]] = []
@@ -1167,7 +3266,9 @@ def _probe_attempt_api() -> dict[str, Any]:
                             "prompt_instance_id": initial_payload["probe"]["prompt_instance_id"],
                             "action": "next",
                             "elapsed_time_seconds": ordinal * 2,
-                            "command_id": f"eval-assistance-{ordinal}",
+                            "command_id": _eval_public_command_id(
+                                f"api-assistance-{ordinal}"
+                            ),
                         },
                     )
                     assistance_deliveries.append(delivered)
@@ -1207,7 +3308,9 @@ def _probe_attempt_api() -> dict[str, Any]:
                             "prompt_instance_id": initial_payload["probe"]["prompt_instance_id"],
                             "action": "next",
                             "elapsed_time_seconds": 20,
-                            "command_id": "eval-assistance-7",
+                            "command_id": _eval_public_command_id(
+                                "api-assistance-7"
+                            ),
                         },
                     )
                     if (
@@ -1245,7 +3348,7 @@ def _probe_attempt_api() -> dict[str, Any]:
                     "response": "A",
                     "confidence": 0.8,
                     "response_time_seconds": 25,
-                    "run_id": "eval-api-dossier",
+                    "run_id": _eval_public_run_id("api-dossier"),
                 },
             )
             dossier_after_probe: dict[str, Any] = {"status": 0, "payload": {}}
@@ -2031,6 +4134,32 @@ def gate_attempt_continuation(ctx: Context) -> GateResult:
     )
 
 
+def gate_today_plan_schedule(ctx: Context) -> GateResult:
+    probe = ctx.probe_schedule_api()
+    evidence = [probe]
+    status = probe.get("status", "pending")
+    if status == "pending":
+        return GateResult(
+            "today_plan_schedule",
+            "pending",
+            "TodayPlan and ReviewSchedule HTTP surfaces are absent",
+            evidence,
+        )
+    if status != "pass":
+        return GateResult(
+            "today_plan_schedule",
+            "fail",
+            "TodayPlan/ReviewSchedule truthfulness, provenance, timing, budget, command, replay, or KT-separation assertion failed",
+            evidence,
+        )
+    return GateResult(
+        "today_plan_schedule",
+        "pass",
+        "23 real HTTP/storage cases prove empty and three human-attempt branches, canonical trace provenance, same-fixture disclosure, fixed-unvalidated and overdue timing, accepted-budget fail-closed/retry plus fair commitment carry, restart migration, command receipts/CAS with no partial writes, clock-skew historical safety, verified replay, synthetic-origin exclusion, and user-marked completion with no KT write",
+        evidence,
+    )
+
+
 def gate_progressive_assistance(ctx: Context) -> GateResult:
     probe = ctx.probe_attempt_api()
     service_tests = ctx.probe_service_tests()
@@ -2205,6 +4334,10 @@ def gate_trace(ctx: Context) -> GateResult:
 SECRET_PATTERNS = {
     "openai_key": re.compile(r"sk-[A-Za-z0-9_-]{20,}"),
     "github_token": re.compile(r"gh[pousr]_[A-Za-z0-9]{20,}"),
+    "github_fine_grained_token": re.compile(r"github_pat_[A-Za-z0-9_]{20,}"),
+    "google_api_key": re.compile(r"AIzaSy[A-Za-z0-9_-]{33}"),
+    "npm_token": re.compile(r"npm_[A-Za-z0-9]{36}"),
+    "slack_token": re.compile(r"xox[baprs]-[A-Za-z0-9-]{20,}"),
     "private_key": re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"),
 }
 SENSITIVE_FIELD_PATTERN = re.compile(r"(?:email|phone|mobile|id_card|real_name|audio_bytes|video_bytes)", re.I)
@@ -2416,6 +4549,7 @@ GATES: dict[str, Callable[[Context], GateResult]] = {
     "attempt_api": gate_attempt_api,
     "cohort_prior_guardrail": gate_cohort_prior_guardrail,
     "attempt_continuation": gate_attempt_continuation,
+    "today_plan_schedule": gate_today_plan_schedule,
     "progressive_assistance": gate_progressive_assistance,
     "misconception_dossier": gate_misconception_dossier,
     "trace": gate_trace,
@@ -2518,6 +4652,17 @@ def write_outputs(report: Mapping[str, Any], ctx: Context) -> None:
         compact = _compact_attempt_api_evidence(ctx.attempt_api_probe)
         path.write_text(
             json.dumps(_sanitize_report_value(compact), ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+    if ctx.schedule_api_probe is not None:
+        path = REPORT_DIR / "today-plan-evidence-latest.json"
+        path.write_text(
+            json.dumps(
+                _sanitize_report_value(ctx.schedule_api_probe),
+                ensure_ascii=False,
+                indent=2,
+            )
+            + "\n",
             encoding="utf-8",
         )
 

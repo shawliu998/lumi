@@ -24,10 +24,14 @@ import {
   X,
 } from "@phosphor-icons/react";
 import {
+  commandTodayPlanTask,
   continueAttempt,
+  createTodayPlan,
   fetchHealth,
   fetchMisconceptionDossier,
+  fetchReviewSchedule,
   fetchSkillReport,
+  fetchTodayPlan,
   requestNextAssistance,
   submitAttempt,
 } from "./hermesApi";
@@ -39,6 +43,13 @@ import {
   normalizeMisconceptionDossier,
 } from "./learningSupportAdapter";
 import { reportGroupsFromSidecar } from "./reportEvidenceAdapter";
+import { classifyCreatePlanError, resolveClientNow } from "./todayPlanAdapter";
+import {
+  ReviewScheduleReport,
+  ReviewScheduleSummary,
+  TodayPlanOverview,
+  TodayPracticeScreen,
+} from "./TodayPlanViews";
 
 const NAV_ITEMS = [
   { id: "overview", label: "今日学习", icon: House },
@@ -75,6 +86,15 @@ const INITIAL_SIDECAR_STATE = {
   health: null,
   report: null,
   error: null,
+};
+
+const INITIAL_PLANNING_STATE = {
+  phase: "loading",
+  plan: null,
+  schedule: null,
+  error: null,
+  notice: null,
+  processing: null,
 };
 
 function connectionCopy(sidecar) {
@@ -357,12 +377,12 @@ function MisconceptionDossier({ state }) {
               <li key={item.id} data-claim-status={item.claimStatus} data-learning-status={item.learningStatus}>
                 <span>{item.rank}</span>
                 <div><strong>{item.label}</strong><small>{item.subtype}</small></div>
-                <em>{item.probability === null ? claimStatusCopy(item.claimStatus) : `${Math.round(item.probability * 100)}% · ${claimStatusCopy(item.claimStatus)}`}</em>
+                <em>候选 / 未确认 · {claimStatusCopy(item.claimStatus)}</em>
               </li>
             ))}
           </ol>
         ) : <p className="dossier-empty">首答通过，规则要求不生成错误原因。</p>}
-        {dossier.rankedHypotheses.length > 0 && <p className="dossier-rank-note">百分比只表示本轮候选的相对排序，不是群体统计。</p>}
+        {dossier.rankedHypotheses.length > 0 && <p className="dossier-rank-note">返回顺序只用于决定下一步探查；所有候选均未确认，不显示概率。</p>}
       </div>
       {dossier.rankedHypotheses.length > 0 && (
         <div className="dossier-section dossier-evidence">
@@ -399,12 +419,12 @@ function overviewDateCopy() {
     month: "numeric",
     day: "numeric",
     weekday: "long",
-  }).formatToParts(new Date());
+  }).formatToParts(resolveClientNow());
   const value = (type) => parts.find((item) => item.type === type)?.value || "";
   return `${value("month")} 月 ${value("day")} 日 · ${value("weekday")}`;
 }
 
-function Overview({ setPage, onOpenTool, sidecar }) {
+function Overview({ setPage, sidecar, planning }) {
   const [query, setQuery] = useState("");
   const [searchResult, setSearchResult] = useState("");
   const connected = sidecar.phase === "connected";
@@ -417,16 +437,6 @@ function Overview({ setPage, onOpenTool, sidecar }) {
   const searchMatches = searchResult
     ? liveSkills.filter((skill) => skill.name.includes(searchResult))
     : [];
-  const sourceStateCopy = connected
-    ? runCount > 0
-      ? `${runCount} 条本机运行轨迹 · ${liveSkills.length} 个有报告技能`
-      : "本机服务已连接，尚无运行轨迹"
-    : sidecar.phase === "checking"
-      ? "正在读取本机证据"
-      : sidecar.phase === "error"
-        ? "本机服务响应异常，记录不可用"
-        : "本机服务未连接，记录不可用";
-
   const runSearch = (event) => {
     event.preventDefault();
     const normalized = query.trim();
@@ -453,7 +463,7 @@ function Overview({ setPage, onOpenTool, sidecar }) {
           </form>
 
           <div className="quick-actions">
-            <button className="button primary" disabled={!connected} onClick={() => onOpenTool("错因辨析")}>{connected ? "开始错因辨析" : "本机服务不可用"}</button>
+            <button className="button primary" disabled={["loading", "offline", "error"].includes(planning.phase)} onClick={() => setPage("practice")}>{planning.phase === "not-created" ? "创建今日计划" : planning.phase === "connected" ? "查看今日任务" : "今日计划不可用"}</button>
             <button className="button secondary" onClick={() => setPage("reports")}>查看技能报告</button>
           </div>
 
@@ -489,29 +499,9 @@ function Overview({ setPage, onOpenTool, sidecar }) {
             <button className="text-link subject-more" onClick={() => setPage("reports")}>查看全部学习科目 <ArrowRight size={12} /></button>
           </section>
 
-          <section className="assignments-section">
-            <div className="section-title row-between">
-              <h2>今日安排</h2>
-              <div className="section-actions">
-                <button className="text-link" onClick={() => setPage("practice")}>查看任务状态</button>
-              </div>
-            </div>
-            <div className="table-shell" role="table" aria-label="今日安排">
-              <div className="table-row table-head" role="row"><span>任务</span><span>类型</span><span>预计时间</span><span>状态</span></div>
-              <div className="table-empty-row" role="row"><span>{connected ? "任务编排 API 尚未接通；不会依据技能报告生成虚构任务。" : "本机任务记录当前不可用。"}</span></div>
-            </div>
-          </section>
+          <TodayPlanOverview planning={planning} setPage={setPage} />
         </div>
-
-        <aside className="daily-panel">
-          <div className="row-between"><strong>本机证据</strong><span>{connected ? "已连接" : "不可用"}</span></div>
-          <p className="daily-source-copy">{sourceStateCopy}</p>
-          <dl><div><dt>运行轨迹</dt><dd>{connected ? `${runCount} 条` : "—"}</dd></div><div><dt>报告技能</dt><dd>{connected ? `${liveSkills.length} 个` : "—"}</dd></div></dl>
-          <hr />
-          <strong>下一步</strong>
-          <p>{connected ? (runCount > 0 ? "只在技能报告中查看已完成运行形成的证据。" : "完成一次真实错因辨析后，这里才会出现本机证据。") : "恢复本机服务后才能开始真实训练。"}</p>
-          {connected && <button className="text-link" onClick={() => onOpenTool("错因辨析")}>开始真实训练 <ArrowRight size={12} /></button>}
-        </aside>
+        <ReviewScheduleSummary planning={planning} onOpenReport={() => setPage("reports")} />
       </div>
     </div>
   );
@@ -903,7 +893,7 @@ function EvidenceSummary({ skill }) {
   );
 }
 
-function ReportsScreen({ setPage, sidecar }) {
+function ReportsScreen({ setPage, sidecar, planning }) {
   const [tab, setTab] = useState("skills");
   const [subject, setSubject] = useState("xingce");
   const [module, setModule] = useState("all");
@@ -1015,7 +1005,7 @@ function ReportsScreen({ setPage, sidecar }) {
       )}
 
       {tab === "reviews" && (
-        <section className="report-list-section"><div className="report-list-heading"><h2>复习安排</h2><p>当前 sidecar 尚未提供复习计划合同。</p></div><div className="empty-state report-empty"><strong>复习记录不可用</strong><p>客户端不会根据技能报告自行推算到期时间。</p></div></section>
+        <section className="report-list-section"><div className="report-list-heading"><h2>复习安排</h2><p>只展示独立 ReviewSchedule 投影与其结构化轨迹引用。</p></div><ReviewScheduleReport planning={planning} /></section>
       )}
     </div>
   );
@@ -1085,6 +1075,40 @@ export function App() {
   const [commandOpen, setCommandOpen] = useState(false);
   const [utility, setUtility] = useState(null);
   const [sidecar, setSidecar] = useState(INITIAL_SIDECAR_STATE);
+  const [planning, setPlanning] = useState(INITIAL_PLANNING_STATE);
+
+  const refreshPlanning = useCallback(async ({ notice = null } = {}) => {
+    setPlanning((current) => ({ ...current, phase: "loading", error: null, notice, processing: null }));
+    try {
+      const schedule = await fetchReviewSchedule();
+      try {
+        const plan = await fetchTodayPlan({ now: resolveClientNow() });
+        setPlanning({ phase: "connected", plan, schedule, error: null, notice, processing: null });
+        return { plan, schedule };
+      } catch (error) {
+        if (error?.status === 404 && error?.code === "schedule_not_found") {
+          setPlanning({ phase: "not-created", plan: null, schedule, error: null, notice, processing: null });
+          return { plan: null, schedule };
+        }
+        throw error;
+      }
+    } catch (error) {
+      const phase = error?.kind === "unavailable" ? "offline" : "error";
+      setPlanning({
+        phase,
+        plan: null,
+        schedule: null,
+        error,
+        notice: notice || {
+          kind: "error",
+          title: phase === "offline" ? "本机服务未连接" : "计划读取失败",
+          message: phase === "offline" ? "计划操作已关闭；不会读取缓存或演示数据。" : "响应未通过合同校验，请恢复服务后重新读取。",
+        },
+        processing: null,
+      });
+      return null;
+    }
+  }, []);
 
   const refreshSidecar = useCallback(async () => {
     setSidecar((current) => ({ ...current, phase: "checking", error: null }));
@@ -1106,6 +1130,7 @@ export function App() {
     try {
       const [health, report] = await Promise.all([fetchHealth(), fetchSkillReport()]);
       setSidecar({ phase: "connected", health, report, error: null });
+      await refreshPlanning();
       return report;
     } catch (error) {
       setSidecar((current) => ({
@@ -1116,11 +1141,112 @@ export function App() {
       }));
       return null;
     }
-  }, []);
+  }, [refreshPlanning]);
 
   useEffect(() => {
     refreshSidecar();
-  }, [refreshSidecar]);
+    refreshPlanning();
+  }, [refreshPlanning, refreshSidecar]);
+
+  const retryAll = useCallback(() => {
+    refreshSidecar();
+    refreshPlanning();
+  }, [refreshPlanning, refreshSidecar]);
+
+  const handleCreatePlan = useCallback(async ({ examDate, dailyBudgetMinutes }) => {
+    setPlanning((current) => ({ ...current, processing: "create", notice: null }));
+    try {
+      const plan = await createTodayPlan({
+        now: resolveClientNow(),
+        examDate,
+        dailyBudgetMinutes,
+      });
+      const schedule = await fetchReviewSchedule();
+      setPlanning({
+        phase: "connected",
+        plan,
+        schedule,
+        error: null,
+        notice: {
+          kind: "success",
+          title: plan.status === "empty" ? "今日计划已生成" : "今日任务已生成",
+          message: plan.status === "empty" ? "计划真实为空；未生成任何替代任务。" : `已读取 ${plan.tasks.length} 项有证据来源的任务。`,
+        },
+        processing: null,
+      });
+    } catch (error) {
+      const recovery = classifyCreatePlanError(error);
+      if (recovery === "retry_with_higher_budget") {
+        setPlanning((current) => ({
+          ...current,
+          phase: "not-created",
+          plan: null,
+          error: null,
+          notice: {
+            kind: "conflict",
+            code: "budget_below_accepted_commitment",
+            title: "今日预算不足以覆盖已接受任务",
+            message: "已接受任务会优先保留。请提高今日可用时间后重试；本次请求没有创建或修改计划。",
+          },
+          processing: null,
+        }));
+        return;
+      }
+      const conflict = recovery === "refresh";
+      await refreshPlanning({
+        notice: {
+          kind: conflict ? "conflict" : "error",
+          code: error?.code || "unknown",
+          title: conflict ? "计划状态已变化" : "今日计划未创建",
+          message: conflict
+            ? (error?.code === "historical_plan_read_only" ? "本机日期或计划状态已变化；已重新读取本机当前计划。" : "已重新读取本机当天计划；请基于当前版本继续。")
+            : (error?.message || "本机服务没有接受这次创建请求。"),
+        },
+      });
+    }
+  }, [refreshPlanning]);
+
+  const handleTaskCommand = useCallback(async (task, action, postponeUntil) => {
+    const plan = planning.plan;
+    if (!plan || planning.phase !== "connected") return;
+    setPlanning((current) => ({ ...current, processing: task.id, notice: null }));
+    try {
+      const updatedPlan = await commandTodayPlanTask({
+        plan,
+        task,
+        action,
+        postponeUntil,
+      });
+      const schedule = await fetchReviewSchedule();
+      const copy = {
+        accept: ["任务已接受", "可从绑定的活动开始真实练习。"],
+        complete: ["已标记处理", "这不是学习效果证据，也没有更新 KT。"],
+        postpone: ["任务已推迟", "所选日期是最早恢复到期日/进入轮候日；实际展示仍受预算、公平轮转与已接受承诺影响。"],
+        skip: ["任务已跳过", "任务保留在 ReviewSchedule，并按后续学习日公平轮候；不承诺下一学习日展示。"],
+      }[action];
+      setPlanning({ phase: "connected", plan: updatedPlan, schedule, error: null, notice: { kind: "success", title: copy[0], message: copy[1] }, processing: null });
+    } catch (error) {
+      const conflict = [
+        "historical_plan_read_only",
+        "stale_task_version",
+        "stale_schedule_version",
+        "command_conflict",
+      ].includes(error?.code);
+      const conflictMessage = {
+        historical_plan_read_only: "原计划已经成为历史快照；已读取本机当天计划。",
+        stale_task_version: "任务已在其他操作中变化；已重新读取最新任务版本。",
+        stale_schedule_version: "计划版本已变化；已重新读取最新计划。",
+        command_conflict: "随机命令编号已被用于不同操作；状态已重新读取，可安全重试。",
+      }[error?.code];
+      await refreshPlanning({
+        notice: {
+          kind: conflict ? "conflict" : "error",
+          title: conflict ? "任务状态已变化" : "任务操作未完成",
+          message: conflict ? conflictMessage : (error?.message || "本机服务没有接受这次操作。"),
+        },
+      });
+    }
+  }, [planning.phase, planning.plan, refreshPlanning]);
 
   const openToolByTitle = (title) => {
     const tool = TOOLS.find((item) => item.title === title);
@@ -1129,16 +1255,25 @@ export function App() {
     setToolStage("ready");
   };
 
+  const launchTask = (task) => {
+    if (!task?.launchable || sidecar.phase !== "connected") {
+      setPlanning((current) => ({ ...current, notice: { kind: "error", title: "练习不可用", message: "只有可启动且绑定当前增长率题的活动可以进入练习。" } }));
+      return;
+    }
+    openToolByTitle("错因辨析");
+  };
+
   return (
     <main className="desktop-canvas">
       <div className={collapsed ? "app-window sidebar-collapsed" : "app-window"}>
-        <Sidebar page={page} setPage={setPage} collapsed={collapsed} setCollapsed={setCollapsed} onUtility={setUtility} sidecar={sidecar} onRetrySidecar={refreshSidecar} />
+        <Sidebar page={page} setPage={setPage} collapsed={collapsed} setCollapsed={setCollapsed} onUtility={setUtility} sidecar={sidecar} onRetrySidecar={retryAll} />
         <section className="app-main">
           {page !== "tools" && <Topbar page={page} setPage={setPage} onSearch={() => setCommandOpen(true)} onUtility={setUtility} />}
-          {page === "overview" && <Overview setPage={setPage} onOpenTool={openToolByTitle} sidecar={sidecar} />}
+          {page === "overview" && <Overview setPage={setPage} sidecar={sidecar} planning={planning} />}
+          {page === "practice" && <TodayPracticeScreen planning={planning} onCreate={handleCreatePlan} onCommand={handleTaskCommand} onLaunchTask={launchTask} />}
           {page === "tools" && <ToolsScreen favorites={favorites} setFavorites={setFavorites} selectedTool={selectedTool} setSelectedTool={setSelectedTool} toolStage={toolStage} setToolStage={setToolStage} sidecar={sidecar} onRefreshSkills={refreshSkills} setPage={setPage} />}
-          {page === "reports" && <ReportsScreen setPage={setPage} sidecar={sidecar} />}
-          {(page === "practice" || page === "materials") && <AuxiliaryScreen page={page} setPage={setPage} />}
+          {page === "reports" && <ReportsScreen setPage={setPage} sidecar={sidecar} planning={planning} />}
+          {page === "materials" && <AuxiliaryScreen page={page} setPage={setPage} />}
         </section>
 
         {commandOpen && <CommandPalette onClose={() => setCommandOpen(false)} setPage={setPage} onOpenTool={openToolByTitle} />}

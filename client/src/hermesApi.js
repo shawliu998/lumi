@@ -4,6 +4,16 @@ import {
   isSupportedDossierClaimStatus,
   isSupportedDossierContinuation,
 } from "./learningSupportAdapter.js";
+import {
+  buildCreateTodayPlanCommand,
+  buildTaskCommand,
+  normalizeReviewSchedule,
+  normalizeTodayPlan,
+  todayPlanId,
+} from "./todayPlanAdapter.js";
+import { createCommandId, createRunId, isRunId } from "./publicLearningId.js";
+
+export { createRunId };
 
 const DEFAULT_BASE_URL = "http://127.0.0.1:8765";
 const REQUEST_TIMEOUT_MS = 5000;
@@ -50,11 +60,88 @@ export async function fetchSkillReport() {
   return report;
 }
 
+export async function fetchReviewSchedule() {
+  const schedule = await request("/v1/review-schedule");
+  try {
+    return normalizeReviewSchedule(schedule);
+  } catch (error) {
+    throw new HermesApiError("复习安排格式与客户端不兼容。", {
+      kind: "contract",
+      code: "invalid_review_schedule_contract",
+    });
+  }
+}
+
+export async function fetchTodayPlan({ now = new Date() } = {}) {
+  const planId = todayPlanId(now);
+  const plan = await request(`/v1/today-plans/${encodeURIComponent(planId)}`);
+  try {
+    return normalizeTodayPlan(plan);
+  } catch (error) {
+    throw new HermesApiError("今日计划格式与客户端不兼容。", {
+      kind: "contract",
+      code: "invalid_today_plan_contract",
+    });
+  }
+}
+
+export async function createTodayPlan({
+  now = new Date(),
+  examDate,
+  dailyBudgetMinutes,
+  commandId,
+} = {}) {
+  const body = buildCreateTodayPlanCommand({
+    now,
+    examDate,
+    dailyBudgetMinutes,
+    commandId,
+  });
+  const plan = await request("/v1/today-plans", { method: "POST", body });
+  try {
+    return normalizeTodayPlan(plan);
+  } catch (error) {
+    throw new HermesApiError("本机服务返回了不一致的今日计划。", {
+      kind: "contract",
+      code: "invalid_today_plan_contract",
+    });
+  }
+}
+
+export async function commandTodayPlanTask({
+  plan,
+  task,
+  action,
+  postponeUntil,
+  commandId,
+} = {}) {
+  const body = buildTaskCommand({ plan, task, action, postponeUntil, commandId });
+  const result = await request(
+    `/v1/today-plans/${encodeURIComponent(plan.planId)}/tasks/${encodeURIComponent(task.id)}/commands`,
+    { method: "POST", body },
+  );
+  try {
+    return normalizeTodayPlan(result);
+  } catch (error) {
+    throw new HermesApiError("任务操作后的计划格式与客户端不兼容。", {
+      kind: "contract",
+      code: "invalid_today_plan_contract",
+    });
+  }
+}
+
 export async function submitAttempt({ fixtureId, response, confidence, responseTimeSeconds, runId } = {}) {
   if (!fixtureId || !String(response).trim() || !Number.isFinite(confidence)) {
     throw new HermesApiError("作答内容不完整。", {
       kind: "client",
       code: "invalid_attempt_input",
+    });
+  }
+  const resolvedRunId = runId || createRunId();
+  if (!isRunId(resolvedRunId)) {
+    throw new HermesApiError("运行编号不符合本机学习记录合同。", {
+      kind: "client",
+      code: "invalid_run_id",
     });
   }
   const attempt = await request("/v1/attempts", {
@@ -64,12 +151,13 @@ export async function submitAttempt({ fixtureId, response, confidence, responseT
       response: String(response).trim(),
       confidence,
       response_time_seconds: Math.max(0, Math.min(Number(responseTimeSeconds) || 0, 7200)),
-      run_id: runId || createRunId(),
+      run_id: resolvedRunId,
     },
   });
   if (
     attempt?.schema_version !== "hermes.attempt-session.v1"
-    || !attempt?.run_id
+    || attempt?.run_id !== resolvedRunId
+    || !isRunId(attempt?.run_id)
     || attempt?.state !== "awaiting_probe"
     || !Number.isInteger(attempt?.state_version)
     || attempt?.diagnosis?.semantics !== "ranked_unconfirmed_hypotheses"
@@ -328,15 +416,7 @@ async function parsePayload(response) {
   }
 }
 
-function createRunId() {
-  return `mac-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-}
-
 function createRequestId() {
   if (globalThis.crypto?.randomUUID) return `client-${globalThis.crypto.randomUUID()}`;
   return `client-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
-}
-
-function createCommandId() {
-  return `assist-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }

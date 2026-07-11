@@ -82,6 +82,8 @@ class JsonSchemaSubsetTests(unittest.TestCase):
         for name in (
             "assistance-result.schema.json",
             "misconception-dossier.schema.json",
+            "today-plan.schema.json",
+            "review-schedule.schema.json",
         ):
             assert_closed(runner.load_json(runner.CONTRACT_DIR / name))
 
@@ -203,6 +205,43 @@ class JsonSchemaSubsetTests(unittest.TestCase):
         invalid["provenance"]["source_trace_version"] = 0
         invalid["provenance"]["source_event_hash"] = "not-a-hash"
         self.assertGreaterEqual(len(runner.validate_json(invalid, schema)), 5)
+
+    def test_schedule_contracts_pin_truthful_identifier_and_window_shapes(self) -> None:
+        today = runner.load_json(
+            runner.CONTRACT_DIR / "today-plan.schema.json"
+        )
+        review = runner.load_json(
+            runner.CONTRACT_DIR / "review-schedule.schema.json"
+        )
+        today_task = today["$defs"]["task"]
+        review_task = review["$defs"]["task"]
+        workload = today["$defs"]["basis"]["properties"][
+            "workload_guardrail"
+        ]
+        self.assertIn("max_non_accepted_tasks", workload["required"])
+        self.assertNotIn("max_new_tasks", workload["properties"])
+        self.assertIn("ordinal", today_task["required"])
+        self.assertNotIn("ordinal", review_task["required"])
+        for task in (today_task, review_task):
+            self.assertEqual(
+                task["properties"]["policy_offset_days"]["enum"], [1, 3]
+            )
+        for schema in (today, review):
+            activity = schema["$defs"]["activity_ref"]
+            self.assertIn("novelty_status", activity["required"])
+            self.assertEqual(
+                activity["properties"]["novelty_status"]["const"],
+                "same_fixture_retest_not_novel_item",
+            )
+            claim_status = schema["$defs"]["evidence_ref"]["properties"][
+                "claim_status"
+            ]["enum"]
+            self.assertNotIn("refuted_hypothesis", claim_status)
+            window_properties = schema["$defs"]["schedule_window"][
+                "properties"
+            ]
+            self.assertNotIn("base_offset_days", window_properties)
+            self.assertNotIn("applied_offset_days", window_properties)
 
 
 class EvidenceIntegrationTests(unittest.TestCase):
@@ -327,6 +366,208 @@ class EvidenceIntegrationTests(unittest.TestCase):
             0,
         )
         self.assertEqual(context.service_tests_probe["status"], "pass")
+
+    def test_real_http_today_plan_and_review_schedule_close_the_gate(self) -> None:
+        context = runner.Context()
+        result = runner.gate_today_plan_schedule(context)
+        self.assertEqual(result.status, "pass", result.evidence)
+        probe = context.schedule_api_probe
+        self.assertIsNotNone(probe)
+        assert probe is not None
+        self.assertGreater(probe["assertion_count"], 100)
+        self.assertEqual(probe["case_count"], 23)
+        self.assertTrue(
+            all(case["status"] == "pass" for case in probe["cases"].values())
+        )
+        synthetic = probe["cases"]["synthetic_origin_excluded"]
+        self.assertEqual(synthetic["seed_path"], "internal_evaluation_fixture")
+        self.assertEqual(synthetic["evidence_origin"], "evaluation_fixture")
+        self.assertEqual(synthetic["public_run_status"], 404)
+        self.assertFalse(synthetic["capabilities_run_advertised"])
+        self.assertFalse(synthetic["offline_demo_feature_advertised"])
+        self.assertTrue(synthetic["synthetic_origin_excluded"])
+        self.assertEqual(
+            synthetic["learner_projection_counts"],
+            {
+                "health_runs": 0,
+                "skills": 0,
+                "misconceptions": 0,
+                "review_tasks": 0,
+                "today_tasks": 0,
+            },
+        )
+        self.assertEqual(synthetic["dossier_status"], 404)
+        for human_case in (
+            "failed_with_candidate",
+            "successful_transfer",
+            "correct_first_failed_transfer",
+        ):
+            self.assertEqual(
+                probe["cases"][human_case]["source"],
+                "real_POST_v1_attempts_human_local_interactive",
+            )
+        self.assertEqual(
+            probe["cases"]["strict_input"]["sensitive_id_classes"],
+            [
+                "github_classic",
+                "github_fine_grained",
+                "google_api_key",
+                "national_id",
+                "npm_token",
+                "openai_key",
+                "phone",
+                "slack_bot_token",
+            ],
+        )
+        self.assertEqual(
+            probe["cases"]["successful_transfer"]["task_kind"],
+            "delayed_retention",
+        )
+        self.assertEqual(
+            probe["cases"]["overdue_plus_1_old_evidence"][
+                "recent_evidence_count"
+            ],
+            0,
+        )
+        self.assertEqual(
+            probe["cases"]["three_failure_recovery_load"][
+                "review_schedule_count"
+            ],
+            3,
+        )
+        self.assertEqual(
+            probe["cases"]["three_failure_recovery_load"][
+                "three_day_unique_task_count"
+            ],
+            3,
+        )
+        self.assertEqual(
+            probe["cases"]["partial_migration_restart"][
+                "healthy_reopen_total_changes"
+            ],
+            0,
+        )
+        self.assertEqual(
+            probe["cases"]["partial_migration_restart"][
+                "legacy_create_receipt_status"
+            ],
+            409,
+        )
+        self.assertLessEqual(
+            probe["cases"]["dynamic_arrival_fairness"]["oldest_return_day"],
+            8,
+        )
+        self.assertEqual(
+            probe["cases"]["accepted_budget_retry"]["error_code"],
+            "budget_below_accepted_commitment",
+        )
+        self.assertGreater(
+            probe["cases"]["multiple_accepted_commitments"][
+                "accepted_commitment_count"
+            ],
+            probe["cases"]["multiple_accepted_commitments"][
+                "max_non_accepted_tasks"
+            ],
+        )
+        self.assertTrue(
+            probe["cases"]["user_marked_completion"][
+                "skill_report_unchanged"
+            ]
+        )
+
+    def test_schedule_probe_is_cached_per_context(self) -> None:
+        result = {"status": "pass", "errors": [], "cases": {}}
+        with patch.object(runner, "_probe_schedule_api", return_value=result) as probe:
+            context = runner.Context()
+            self.assertIs(context.probe_schedule_api(), result)
+            self.assertIs(context.probe_schedule_api(), result)
+        probe.assert_called_once_with()
+
+    def test_schedule_gate_no_write_does_not_create_reports(self) -> None:
+        original_report_dir = runner.REPORT_DIR
+        try:
+            with tempfile.TemporaryDirectory() as directory:
+                absent_report_dir = Path(directory) / "reports-must-stay-absent"
+                runner.REPORT_DIR = absent_report_dir
+                self.assertEqual(
+                    runner.main(["--gate", "today_plan_schedule", "--no-write"]),
+                    0,
+                )
+                self.assertFalse(absent_report_dir.exists())
+        finally:
+            runner.REPORT_DIR = original_report_dir
+
+    def test_written_schedule_evidence_is_sanitized(self) -> None:
+        secret_canary = "gh" + "p_" + "abcdefghijklmnopqrstuvwxyz"
+        context = runner.Context()
+        context.schedule_api_probe = {
+            "schema_version": "lumi.today-plan-eval-evidence.v1",
+            "status": "fail",
+            "errors": [
+                "raw.canary@example.invalid /Users/private/schedule "
+                + secret_canary
+            ],
+            "cases": {},
+        }
+        original_report_dir = runner.REPORT_DIR
+        try:
+            with tempfile.TemporaryDirectory() as directory:
+                runner.REPORT_DIR = Path(directory)
+                runner.write_outputs(
+                    {
+                        "run_id": "run-test-schedule",
+                        "generated_at": "2026-07-11T00:00:00+00:00",
+                        "repository": "/Users/private/project",
+                        "overall_status": "fail",
+                        "summary": {
+                            "pass": 0,
+                            "fail": 1,
+                            "pending": 0,
+                            "total": 1,
+                        },
+                        "gates": [],
+                    },
+                    context,
+                )
+                serialized = (
+                    Path(directory) / "today-plan-evidence-latest.json"
+                ).read_text()
+        finally:
+            runner.REPORT_DIR = original_report_dir
+        self.assertNotIn("raw.canary@example.invalid", serialized)
+        self.assertNotIn("/Users/", serialized)
+        self.assertNotIn(secret_canary, serialized)
+        self.assertIn("[EMAIL]", serialized)
+        self.assertIn("[REDACTED_SECRET]", serialized)
+
+    def test_extended_opaque_secret_shapes_are_sanitized(self) -> None:
+        canaries = [
+            "s" + "k-" + "A" * 32,
+            "gh" + "p_" + "A" * 36,
+            "github" + "_pat_" + "A" * 40,
+            "AIza" + "Sy" + "A" * 33,
+            "n" + "pm_" + "A" * 36,
+            "xo" + "xb-" + "123456789012-123456789012-" + "A" * 24,
+        ]
+        sanitized = runner._sanitize_report_string(" ".join(canaries))
+        for canary in canaries:
+            self.assertNotIn(canary, sanitized)
+        self.assertEqual(sanitized.count("[REDACTED_SECRET]"), len(canaries))
+
+    def test_eval_public_ids_are_stable_opaque_and_domain_separated(self) -> None:
+        run_id = runner._eval_public_run_id("same logical label")
+        command_id = runner._eval_public_command_id("same logical label")
+        self.assertRegex(run_id, r"^r_[A-P]{40}$")
+        self.assertRegex(command_id, r"^c_[A-P]{40}$")
+        self.assertEqual(
+            run_id,
+            runner._eval_public_run_id("same logical label"),
+        )
+        self.assertNotEqual(
+            run_id.removeprefix("r_"),
+            command_id.removeprefix("c_"),
+        )
+        self.assertNotEqual(run_id, runner._eval_public_run_id("other label"))
 
     def test_p0_gates_propagate_shared_probe_failures(self) -> None:
         broken = runner.Context()

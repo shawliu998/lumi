@@ -49,8 +49,8 @@ python3 -m hermes_integration --db /tmp/hermes-ambiguous.sqlite3 run ambiguous
 python3 -m hermes_integration --db /tmp/hermes-offline.sqlite3 run offline
 ```
 
-The `success` scenario confirms independent transfer, `ambiguous` triggers a
-disambiguating probe and records failed transfer, and `offline` proves the full
+The `success` scenario records successful independent verification, `ambiguous`
+triggers a disambiguating probe and records failed verification, and `offline` proves the full
 loop and replay need no network or model call. Every mastery delta includes its
 attempt evidence, engine provenance, mastery/verification model versions, and
 learning-policy version.

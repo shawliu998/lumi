@@ -1,0 +1,257 @@
+{
+  "schema_version": "lumi.today-plan-eval-evidence.v1",
+  "status": "pass",
+  "transport": "real_loopback_http_with_production_router",
+  "calendar": "injected_local_date_provider_for_deterministic_day_transitions",
+  "assertion_count": 2675,
+  "case_count": 23,
+  "cases": {
+    "empty": {
+      "empty_reason": "no_recorded_evidence",
+      "receipt_exact_replay": true,
+      "projection_verified": true,
+      "assertion_count": 140,
+      "status": "pass",
+      "errors": []
+    },
+    "synthetic_origin_excluded": {
+      "seed_path": "internal_evaluation_fixture",
+      "evidence_origin": "evaluation_fixture",
+      "public_run_status": 404,
+      "capabilities_run_advertised": false,
+      "offline_demo_feature_advertised": false,
+      "synthetic_origin_excluded": true,
+      "learner_projection_counts": {
+        "health_runs": 0,
+        "skills": 0,
+        "misconceptions": 0,
+        "review_tasks": 0,
+        "today_tasks": 0
+      },
+      "dossier_status": 404,
+      "assertion_count": 22,
+      "status": "pass",
+      "errors": []
+    },
+    "failed_with_candidate": {
+      "source": "real_POST_v1_attempts_human_local_interactive",
+      "task_kind": "cause_probe",
+      "due_offset_days": 1,
+      "cause_confirmation_status": "unconfirmed",
+      "definition_status": "authored_engineering_estimate_unvalidated",
+      "resolved_evidence_ref_count": 4,
+      "verified_replay_count": 2,
+      "assertion_count": 710,
+      "status": "pass",
+      "errors": []
+    },
+    "successful_transfer": {
+      "source": "real_POST_v1_attempts_human_local_interactive",
+      "task_kind": "delayed_retention",
+      "due_offset_days": 3,
+      "cause_confirmation_status": null,
+      "definition_status": "authored_engineering_estimate_unvalidated",
+      "resolved_evidence_ref_count": 5,
+      "verified_replay_count": 2,
+      "assertion_count": 773,
+      "status": "pass",
+      "errors": []
+    },
+    "correct_first_failed_transfer": {
+      "source": "real_POST_v1_attempts_human_local_interactive",
+      "task_kind": "independent_retry",
+      "due_offset_days": 1,
+      "cause_confirmation_status": null,
+      "definition_status": "authored_engineering_estimate_unvalidated",
+      "resolved_evidence_ref_count": 3,
+      "verified_replay_count": 2,
+      "assertion_count": 596,
+      "status": "pass",
+      "errors": []
+    },
+    "budget": {
+      "daily_budget_minutes": 20,
+      "selected_minutes": 15,
+      "due_count": 2,
+      "assertion_count": 4,
+      "status": "pass",
+      "errors": []
+    },
+    "overdue_plus_3_catch_up": {
+      "task_kind": "delayed_retention",
+      "policy_offset_days": 3,
+      "base_due_on": "2026-07-14",
+      "initial_due_on": "2026-07-21",
+      "scheduling_adjustment": "overdue_catch_up",
+      "assertion_count": 91,
+      "status": "pass",
+      "errors": []
+    },
+    "overdue_plus_1_old_evidence": {
+      "age_days": 20,
+      "task_kind": "independent_retry",
+      "policy_offset_days": 1,
+      "scheduling_adjustment": "overdue_catch_up",
+      "eligible_evidence_count": 1,
+      "recent_evidence_count": 0,
+      "assertion_count": 64,
+      "status": "pass",
+      "errors": []
+    },
+    "three_failure_recovery_load": {
+      "failed_attempt_count": 3,
+      "review_schedule_count": 3,
+      "today_task_count": 1,
+      "max_non_accepted_tasks": 1,
+      "three_day_unique_task_count": 3,
+      "assertion_count": 19,
+      "status": "pass",
+      "errors": []
+    },
+    "partial_migration_restart": {
+      "nullable_fields_repaired": 5,
+      "remaining_task_field_nulls": 0,
+      "missing_task_snapshots": 0,
+      "auditable_contract_migration_count": 1,
+      "healthy_reopen_total_changes": 0,
+      "second_restart_stable": true,
+      "legacy_create_receipt_status": 409,
+      "legacy_transition_receipt_status": 409,
+      "assertion_count": 27,
+      "status": "pass",
+      "errors": []
+    },
+    "dynamic_arrival_fairness": {
+      "days_with_new_arrivals": 8,
+      "oldest_return_day": 4,
+      "final_review_schedule_count": 11,
+      "presentation_count": 9,
+      "assertion_count": 38,
+      "status": "pass",
+      "errors": []
+    },
+    "strict_input": {
+      "forbidden_field_count": 5,
+      "sensitive_id_count": 8,
+      "sensitive_id_classes": [
+        "github_classic",
+        "github_fine_grained",
+        "google_api_key",
+        "national_id",
+        "npm_token",
+        "openai_key",
+        "phone",
+        "slack_bot_token"
+      ],
+      "rejected_writes_are_noop": true,
+      "assertion_count": 38,
+      "status": "pass",
+      "errors": []
+    },
+    "fresh_create_receipt": {
+      "cross_instance": true,
+      "http_statuses": [
+        201,
+        201
+      ],
+      "receipt_exact_replay": true,
+      "event_frame_count": 1,
+      "assertion_count": 10,
+      "status": "pass",
+      "errors": []
+    },
+    "receipt_and_cas": {
+      "cross_instance": true,
+      "receipt_exact_replay": true,
+      "cas_statuses": [
+        200,
+        409
+      ],
+      "final_plan_version": 3,
+      "final_plan_frame_count": 3,
+      "assertion_count": 23,
+      "status": "pass",
+      "errors": []
+    },
+    "skip_postpone_resurface": {
+      "resurfaced_task_count": 2,
+      "verified_replay_count": 3,
+      "historical_read_only": true,
+      "assertion_count": 19,
+      "status": "pass",
+      "errors": []
+    },
+    "historical_plan": {
+      "task_version_unchanged": true,
+      "historical_read_only": true,
+      "assertion_count": 5,
+      "status": "pass",
+      "errors": []
+    },
+    "skewed_sidecar_clock": {
+      "old_plan_date": "2026-07-12",
+      "current_plan_date": "2026-07-13",
+      "stale_create_status": 409,
+      "old_write_status": 409,
+      "current_plan_version": 1,
+      "assertion_count": 12,
+      "status": "pass",
+      "errors": []
+    },
+    "missed_existing_on_policy": {
+      "task_id_unchanged": true,
+      "scheduling_adjustment": "on_policy_window",
+      "overdue_catch_up_count": 0,
+      "assertion_count": 10,
+      "status": "pass",
+      "errors": []
+    },
+    "accepted_continues_next_day": {
+      "task_id_unchanged": true,
+      "state_next_day": "accepted",
+      "replay_terminal_before_complete": "task_accepted",
+      "assertion_count": 16,
+      "status": "pass",
+      "errors": []
+    },
+    "accepted_budget_retry": {
+      "low_budget_status": 409,
+      "error_code": "budget_below_accepted_commitment",
+      "retry_same_command_id": true,
+      "high_budget_status": 201,
+      "required_minutes": 15,
+      "assertion_count": 13,
+      "status": "pass",
+      "errors": []
+    },
+    "multiple_accepted_commitments": {
+      "accepted_commitment_count": 3,
+      "mode": "recovery_load",
+      "max_non_accepted_tasks": 1,
+      "selected_task_count": 3,
+      "required_minutes": 36,
+      "assertion_count": 20,
+      "status": "pass",
+      "errors": []
+    },
+    "user_marked_completion": {
+      "completion_semantics": "user_marked_not_learning_evidence",
+      "learning_trace_unchanged": true,
+      "skill_report_unchanged": true,
+      "verified_replay_count": 2,
+      "next_day_empty_reason": "no_pending_review_tasks",
+      "next_day_overdue_catch_up_count": 0,
+      "assertion_count": 21,
+      "status": "pass",
+      "errors": []
+    },
+    "exam_deadline": {
+      "empty_reason": "task_due_after_exam",
+      "withheld_count": 1,
+      "assertion_count": 4,
+      "status": "pass",
+      "errors": []
+    }
+  },
+  "errors": []
+}

@@ -1,0 +1,289 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lumi.local/contracts/today-plan.schema.json",
+  "title": "Lumi TodayPlan response",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "plan_id",
+    "plan_date",
+    "exam_date",
+    "status",
+    "version",
+    "scheduler_policy_version",
+    "basis",
+    "empty_reason",
+    "evidence_refs",
+    "tasks",
+    "mastery_write_capability",
+    "created_at",
+    "updated_at",
+    "links",
+    "event_stream"
+  ],
+  "properties": {
+    "schema_version": {"const": "lumi.today-plan.v1"},
+    "plan_id": {"type": "string", "pattern": "^today-[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+    "plan_date": {"$ref": "#/$defs/date"},
+    "exam_date": {"type": ["string", "null"], "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+    "status": {"enum": ["empty", "active", "handled", "completed"]},
+    "version": {"type": "integer", "minimum": 1},
+    "scheduler_policy_version": {"const": "lumi.deterministic-scheduler.v1"},
+    "basis": {"$ref": "#/$defs/basis"},
+    "empty_reason": {
+      "type": ["string", "null"],
+      "enum": [
+        null,
+        "no_recorded_evidence",
+        "no_task_due_today",
+        "task_due_after_exam",
+        "activity_unavailable",
+        "no_task_within_guardrail",
+        "no_pending_review_tasks"
+      ]
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {"type": "string", "pattern": "^trace:[A-Za-z0-9_.:-]{1,96}:event:[1-9][0-9]*:[0-9a-f]{64}#pointer=/"}
+    },
+    "tasks": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/task"}
+    },
+    "mastery_write_capability": {"const": false},
+    "created_at": {"type": "string", "minLength": 1},
+    "updated_at": {"type": "string", "minLength": 1},
+    "links": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["self", "replay", "review_schedule"],
+      "properties": {
+        "self": {"type": "string", "pattern": "^/v1/today-plans/"},
+        "replay": {"type": "string", "pattern": "^/v1/today-plans/.+/replay$"},
+        "review_schedule": {"const": "/v1/review-schedule"}
+      }
+    },
+    "event_stream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stream_type", "stream_id", "version", "trace_verified", "projection_verified"],
+      "properties": {
+        "stream_type": {"const": "today_plan"},
+        "stream_id": {"type": "string", "pattern": "^today-[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+        "version": {"type": "integer", "minimum": 1},
+        "trace_verified": {"const": true},
+        "projection_verified": {"const": true}
+      }
+    }
+  },
+  "$defs": {
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "basis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "evidence_status",
+        "inputs_used",
+        "excluded_inputs",
+        "recent_evidence_counts_by_domain",
+        "evidence_count_unit",
+        "workload_guardrail",
+        "exam_window",
+        "due_review_count",
+        "selected_task_count",
+        "future_review_task_count",
+        "duration_policy",
+        "retention_window_policy",
+        "retry_window_policy",
+        "schedule_windows",
+        "task_definition_status"
+      ],
+      "properties": {
+        "evidence_status": {"enum": ["unavailable", "recorded"]},
+        "inputs_used": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "excluded_inputs": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "recent_evidence_counts_by_domain": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["xingce", "shenlun", "interview"],
+          "properties": {
+            "xingce": {"type": "integer", "minimum": 0},
+            "shenlun": {"type": "integer", "minimum": 0},
+            "interview": {"type": "integer", "minimum": 0}
+          }
+        },
+        "evidence_count_unit": {"const": "trace_backed_planning_evidence_record"},
+        "workload_guardrail": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "recent_attempt_count",
+            "recent_failed_attempt_count",
+            "eligible_evidence_count",
+            "recent_evidence_count",
+            "max_non_accepted_tasks",
+            "daily_budget_minutes",
+            "withheld_activity_count",
+            "withheld_exam_deadline_count",
+            "overdue_catch_up_count",
+            "event_timezone_offsets_minutes",
+            "basis"
+          ],
+          "properties": {
+            "mode": {"enum": ["standard_load", "reduced_load", "recovery_load"]},
+            "recent_attempt_count": {"type": "integer", "minimum": 0},
+            "recent_failed_attempt_count": {"type": "integer", "minimum": 0},
+            "eligible_evidence_count": {"type": "integer", "minimum": 0},
+            "recent_evidence_count": {"type": "integer", "minimum": 0},
+            "max_non_accepted_tasks": {"type": "integer", "minimum": 1, "maximum": 3},
+            "daily_budget_minutes": {"type": "integer", "minimum": 5, "maximum": 240},
+            "withheld_activity_count": {"type": "integer", "minimum": 0},
+            "withheld_exam_deadline_count": {"type": "integer", "minimum": 0},
+            "overdue_catch_up_count": {"type": "integer", "minimum": 0},
+            "event_timezone_offsets_minutes": {
+              "type": "array",
+              "items": {"type": "integer", "minimum": -720, "maximum": 840}
+            },
+            "basis": {"const": "fixed_engineering_policy_not_population_calibrated"}
+          }
+        },
+        "exam_window": {"enum": ["not_provided", "near", "normal"]},
+        "due_review_count": {"type": "integer", "minimum": 0},
+        "selected_task_count": {"type": "integer", "minimum": 0},
+        "future_review_task_count": {"type": "integer", "minimum": 0},
+        "duration_policy": {"const": "fixed_estimate_not_population_calibrated"},
+        "retention_window_policy": {"const": "engineering_default_plus_3_days_unvalidated"},
+        "retry_window_policy": {"const": "engineering_default_plus_1_day_unvalidated"},
+        "schedule_windows": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["cause_probe_days", "independent_retry_days", "delayed_retention_days", "calibration", "exam_adjustment"],
+          "properties": {
+            "cause_probe_days": {"const": 1},
+            "independent_retry_days": {"const": 1},
+            "delayed_retention_days": {"const": 3},
+            "calibration": {"const": "fixed_engineering_policy_unvalidated"},
+            "exam_adjustment": {"const": "withhold_if_due_after_exam"}
+          }
+        },
+        "task_definition_status": {"const": "authored_engineering_estimate_unvalidated"}
+      }
+    },
+    "task": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "task_id",
+        "source_key",
+        "task_kind",
+        "domain",
+        "skill_id",
+        "reason",
+        "expected_duration_minutes",
+        "success_criterion",
+        "skip_consequence",
+        "evidence_refs",
+        "activity_ref",
+        "cause_id",
+        "cause_label",
+        "cause_confirmation_status",
+        "definition_status",
+        "policy_offset_days",
+        "base_due_on",
+        "initial_due_on",
+        "scheduling_adjustment",
+        "schedule_window",
+        "completion_semantics",
+        "state",
+        "due_on",
+        "version",
+        "created_at",
+        "updated_at",
+        "ordinal"
+      ],
+      "properties": {
+        "schema_version": {"const": "lumi.review-schedule.v1"},
+        "task_id": {"type": "string", "pattern": "^review-[0-9a-f]{24}$"},
+        "source_key": {"type": "string", "pattern": "^(cause|skill):[0-9a-f]{64}$"},
+        "task_kind": {"enum": ["cause_probe", "independent_retry", "delayed_retention"]},
+        "domain": {"enum": ["xingce", "shenlun", "interview"]},
+        "skill_id": {"type": "string", "minLength": 1},
+        "reason": {"type": "string", "minLength": 1},
+        "expected_duration_minutes": {"type": "integer", "minimum": 1, "maximum": 60},
+        "success_criterion": {"type": "string", "minLength": 1},
+        "skip_consequence": {"type": "string", "minLength": 1},
+        "evidence_refs": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/evidence_ref"}},
+        "activity_ref": {"$ref": "#/$defs/activity_ref"},
+        "cause_id": {"type": ["string", "null"]},
+        "cause_label": {"type": ["string", "null"]},
+        "cause_confirmation_status": {"type": ["string", "null"], "enum": [null, "unconfirmed"]},
+        "definition_status": {"const": "authored_engineering_estimate_unvalidated"},
+        "policy_offset_days": {"type": "integer", "enum": [1, 3]},
+        "base_due_on": {"$ref": "#/$defs/date"},
+        "initial_due_on": {"$ref": "#/$defs/date"},
+        "scheduling_adjustment": {"enum": ["on_policy_window", "overdue_catch_up"]},
+        "schedule_window": {"$ref": "#/$defs/schedule_window"},
+        "completion_semantics": {"type": ["string", "null"], "enum": [null, "user_marked_not_learning_evidence"]},
+        "state": {"enum": ["scheduled", "accepted", "completed", "postponed", "skipped"]},
+        "due_on": {"$ref": "#/$defs/date"},
+        "version": {"type": "integer", "minimum": 1},
+        "created_at": {"type": "string", "minLength": 1},
+        "updated_at": {"type": "string", "minLength": 1},
+        "ordinal": {"type": "integer", "minimum": 1}
+      }
+    },
+    "activity_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fixture_id", "fixture_content_sha256", "availability", "launch_method", "launch_endpoint", "launch_schema_version", "novelty_status"],
+      "properties": {
+        "fixture_id": {"type": "string", "minLength": 1},
+        "fixture_content_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "availability": {"const": "launchable"},
+        "launch_method": {"const": "POST"},
+        "launch_endpoint": {"const": "/v1/attempts"},
+        "launch_schema_version": {"const": "hermes.attempt-session.v1"},
+        "novelty_status": {"const": "same_fixture_retest_not_novel_item"}
+      }
+    },
+    "schedule_window": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["policy_offset_days", "base_due_on", "initial_due_on", "scheduling_adjustment", "calibration", "exam_adjustment"],
+      "properties": {
+        "policy_offset_days": {"type": "integer", "enum": [1, 3]},
+        "base_due_on": {"$ref": "#/$defs/date"},
+        "initial_due_on": {"$ref": "#/$defs/date"},
+        "scheduling_adjustment": {"enum": ["on_policy_window", "overdue_catch_up"]},
+        "calibration": {"const": "fixed_engineering_policy_unvalidated"},
+        "exam_adjustment": {"const": "withhold_if_due_after_exam"}
+      }
+    },
+    "evidence_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref", "kind", "source_type", "run_id", "event_seq", "event_hash", "event_kind", "json_pointer", "semantic", "subject_id", "phase", "claim_status", "confirmation_status"],
+      "properties": {
+        "ref": {"type": "string", "pattern": "^trace:"},
+        "kind": {"enum": ["trace_observation", "trace_skill_evidence", "candidate_cause", "trace_terminal"]},
+        "source_type": {"const": "trace_event"},
+        "run_id": {"type": "string", "pattern": "^[A-Za-z0-9_.:-]{1,96}$"},
+        "event_seq": {"type": "integer", "minimum": 1},
+        "event_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "event_kind": {"type": "string", "minLength": 1},
+        "json_pointer": {"type": "string", "pattern": "^/"},
+        "semantic": {"enum": ["verification_effective", "initial_answer_passed", "candidate_hypothesis", "candidate_claim_status", "terminal_completed"]},
+        "subject_id": {"type": ["string", "null"]},
+        "phase": {"type": ["string", "null"]},
+        "claim_status": {"type": ["string", "null"], "enum": [null, "unconfirmed_hypothesis", "supported_hypothesis"]},
+        "confirmation_status": {"type": ["string", "null"], "enum": [null, "unconfirmed"]}
+      }
+    }
+  }
+}

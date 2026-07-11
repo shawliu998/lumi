@@ -62,9 +62,13 @@ npm run build:debug-app
 ```
 
 Artifacts are emitted under `src-tauri/target/<profile>/bundle/`. The debug-app
-command signs every nested Mach-O and the final bundle with an ad-hoc identity,
-then requires strict deep verification to pass. This is a local integrity gate,
-not Developer ID signing or notarization. Recheck an existing debug artifact with:
+command rebuilds and checks the staged sidecar, builds the Tauri bundle, runs a
+bundle-resident check that proves the app tree is unchanged, then signs every
+nested Mach-O and the final bundle with an ad-hoc identity and requires strict
+deep verification to pass. The signing script reports a stable file count by
+default; pass `--verbose` directly to it only for per-file diagnostics. This is
+a local integrity gate, not Developer ID signing or notarization. Recheck an
+existing debug artifact with:
 
 ```sh
 npm run check:signature
@@ -72,8 +76,11 @@ npm run check:bundled-sidecar
 ```
 
 `check:bundled-sidecar` starts the exact bundle-resident launcher/runtime and
-rechecks its version, 42-scenario capability, termination, and PII/secret
-identifier rejection.
+rechecks its version, bounded catalog capability, termination, closed opaque
+run/command identifier profiles, and PII/secret identifier rejection. It also
+isolates HOME/cache/temp/pycache and fails if the `.app` content tree or root
+mtime changes. Public batch/demo runs and evaluation learning modes are not
+advertised by the product sidecar.
 
 After a debug app build, verify that Tauri itself starts the packaged sidecar,
 waits for its health handshake, and terminates it when Lumi quits:

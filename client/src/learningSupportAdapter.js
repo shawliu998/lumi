@@ -1,3 +1,5 @@
+import { createCommandId, isCommandId } from "./publicLearningId.js";
+
 export const ASSISTANCE_ACTIONS = [
   { ordinal: 1, action: "retry", label: "再试一次" },
   { ordinal: 2, action: "locate_evidence", label: "定位信息" },
@@ -104,11 +106,11 @@ export function appendAssistance(state, result) {
 }
 
 export function createAssistanceCommandId() {
-  if (globalThis.crypto?.randomUUID) return `assist-${globalThis.crypto.randomUUID()}`;
-  return `assist-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+  return createCommandId();
 }
 
 export function buildAssistanceCommand({ session, elapsedTimeSeconds, commandId }) {
+  if (!isCommandId(commandId)) throw new TypeError("assistance command_id does not match the closed public profile");
   return {
     phase: "probe",
     expected_version: session.state_version,
@@ -166,7 +168,6 @@ function evidenceCopy(reference) {
 
 function normalizeCandidate(candidate, index, defaultLearningStatus = "unavailable") {
   const copy = causeCopy(candidate);
-  const probability = Number(candidate?.probability ?? candidate?.ranking_probability);
   const supporting = candidate?.supporting_evidence_refs
     || candidate?.supporting_evidence
     || candidate?.evidence
@@ -179,7 +180,6 @@ function normalizeCandidate(candidate, index, defaultLearningStatus = "unavailab
     rank: Number(candidate?.rank) || index + 1,
     label: copy.label,
     subtype: copy.subtype,
-    probability: Number.isFinite(probability) ? probability : null,
     claimStatus: candidate.claim_status,
     learningStatus: candidate?.learning_status || defaultLearningStatus,
     supportingEvidence: supporting.map(evidenceCopy),

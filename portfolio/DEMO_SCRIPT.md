@@ -1,16 +1,17 @@
 # Lumi Mac demo script
 
-Status: **P0.1 executable runbook; P0.2/P1/P2 scenes are listed separately as
+Status: **P0.2 executable runbook; P0.3/P0.4, P1, and P2 product scenes remain
 future work and must not be demonstrated as current capability**
 
 Current executable evidence: the evaluation harness retains verified success,
 ambiguous, and offline integration replays in
 `evals/reports/integration-*-trajectory-latest.json`, and validates the full
-42-case domain contract matrix. The Mac shell and three core screens are now
-captured and visually gated in `client/design-qa.md`. The same report records a
+42-case domain contract matrix. The Mac shell and 28 current/retained visual
+artifacts are dimension/hash-gated in `client/design-qa.md`. The same report records a
 real visible first answer → targeted probe/help → cause-specific teaching →
 independent verification flow, report refresh, offline/error fallbacks, and 409
-recovery. Exact trace versions are evidence, not a stable product promise.
+recovery, plus evidence-cited TodayPlan/ReviewSchedule states. Exact trace
+versions are evidence, not a stable product promise.
 
 The evaluator also has black-box real-attempt and multi-step continuation gates.
 The latter proves the versioned local HTTP state sequence and can supply the
@@ -26,14 +27,22 @@ and its audit trail, not a generic chatbot conversation.
 - [x] Confirm `attempt_api`, `cohort_prior_guardrail`,
   `attempt_continuation`, `progressive_assistance`, and
   `misconception_dossier` pass in the freshly generated report.
+- [x] Confirm final cut `run-20260711T132028Z` passes
+  `today_plan_schedule`.
 - [x] Confirm local/offline mode is visible in the Mac client.
-- [x] Use a synthetic learner identity and sanitized content.
+- [x] Use the real visible learner-answer flow; do not seed or fabricate an
+  answer in SQLite or a QA harness.
+- [x] Let the client generate opaque run/command IDs; do not type a name, email,
+  phone number, timestamp, or semantic label as an identifier.
+- [x] Treat the owned synthetic fixture as content provenance, not as a
+  synthetic learner response. If the QA date seam is used, state that only the
+  local date is injected and production ignores it.
 - [x] Confirm `$HOME/Desktop/shenlun-agent-platform` is not a runtime dependency.
 
 Mac shell evidence:
 
 - visual QA: `client/design-qa.md`
-- current screenshots: the allow-listed authentic P0.1 files in
+- current screenshots: the 28 allow-listed P0.2/P0.1 files in
   `client/design-qa.md`
 - managed sidecar lifecycle: `cd desktop && npm run check:managed-app`
 - local app: `desktop/src-tauri/target/debug/bundle/macos/Lumi.app`
@@ -48,9 +57,10 @@ Show the Today view before and after one completed local run.
 Narration:
 
 > Lumi is a local-first learning agent. Its structured learner state is the
-> source of truth; chat memory cannot silently change learning state. The page
-> shows only sidecar-backed run/skill counts. Today scheduling is not connected
-> yet, so Lumi does not invent a task list.
+> source of truth; chat memory cannot silently change learning state. Lumi does
+> not invent a plan: before creation it reads an honest empty state from the
+> local sidecar. After a completed human-local trace becomes due, TodayPlan cites
+> that trace and ReviewSchedule persists the task independently from mastery.
 
 Evidence to open:
 
@@ -76,7 +86,7 @@ Evidence:
 
 - attempt ID: `<ATTEMPT_ID>`
 - diagnosis trace ID: `<TRACE_ID>`
-- ranked probabilities before probe: `<VALUES>`
+- ordered candidate hypotheses and claim statuses: `<VALUES>`
 - gate/report link: `<REPORT_PATH>`
 
 ## Scene 3 — probe, revise, and teach (2 minutes)
@@ -100,7 +110,7 @@ Evidence:
 - verifier result: `<VERIFIER_RESULT>`
 - teaching intervention ID/version: `<INTERVENTION>`
 
-## Scene 4 — independent transfer and KT update (90 seconds)
+## Scene 4 — independent verification, KT update, and scheduling (2 minutes)
 
 Complete an isomorphic item without hints. Open the before/after state diff.
 
@@ -109,7 +119,11 @@ Expected behavior:
 - Hinted work is not counted as independent transfer.
 - The mastery delta links to exactly the triggering evidence.
 - BKT/PFA/IRT components, ensemble version, disagreement, and uncertainty remain inspectable.
-- No review schedule is claimed in P0.1; that independent store is P0.2.
+- The +3 label is a fixed, unvalidated engineering window.
+- The scheduled activity is a same-fixture independent retest and does not
+  establish transfer to an unseen parallel item.
+- Accept, postpone, skip, or user-mark completion through the real API;
+  completion changes schedule state only and leaves KT unchanged.
 
 Evidence:
 
@@ -117,7 +131,7 @@ Evidence:
 - intervention outcome: `<TRUE_FALSE_OR_INCONCLUSIVE>`
 - mastery before/after: `<VALUES>`
 - formula/policy version: `<VERSION>`
-- scheduled review: `unavailable in P0.1`
+- scheduled review: `evals/reports/today-plan-evidence-latest.json`
 
 ## Scene 5 — trace and replay evidence (90 seconds)
 
@@ -133,7 +147,7 @@ Open the local trace/replay API or release JSON and locate:
 
 Replay the persisted frames and show that the hash chain verifies without
 invoking a model or writing new learning evidence. There is no Agent Lab UI in
-P0.1.
+P0.2.
 
 Evidence:
 
@@ -145,8 +159,9 @@ Evidence:
 
 Stop the sidecar or return an invalid health contract. The client must disable
 the write path, show unavailable state, and never substitute demo history. As a
-separate backend check, run the deterministic offline fixture and verify zero
-model calls plus hash-valid replay. Item quarantine is not a P0.1 UI capability.
+separate internal evaluation check, run the deterministic offline fixture and
+verify zero model calls plus hash-valid replay; public batch/demo execution is
+disabled. Item quarantine is not a P0.2 UI capability.
 
 Evidence:
 
@@ -168,12 +183,12 @@ production Shenlun source reuse.
 
 ## Future scenes — do not demo as current
 
-- P0.2: evidence-cited Today plan and independent ReviewSchedule transitions.
 - P0.3/P0.4: Study Pack and Shenlun process-coach UI.
 - P1: durable jobs, Agent Lab, longitudinal KT, confirmed preference memory,
   registries, and bounded background workers.
 - P2: consented analytics, eligible cohort priors, delayed retention, coach view,
-  and policy replay.
+  policy replay, and isolated synthetic engineering simulation that never enters
+  learner or population evidence.
 
 ## Closing claim
 

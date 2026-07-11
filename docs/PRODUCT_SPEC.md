@@ -1,5 +1,11 @@
 # Lumi v0 product specification
 
+This is the target product specification. The verified P0.2 slice is narrower:
+one visible Xingce learning path, a same-fixture review activity, per-run KT, and
+an evidence-cited TodayPlan/ReviewSchedule. It does not yet provide Agent Lab,
+full Shenlun/Interview practice, calibrated forgetting or cohort priors,
+unseen-item transfer evidence, or population learning-effect results.
+
 ## Product statement
 
 Lumi is a local-first macOS learning agent for Chinese civil-service exam

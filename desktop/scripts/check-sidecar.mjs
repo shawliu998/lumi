@@ -1,8 +1,9 @@
-import { mkdtemp, rm } from "node:fs/promises";
+import { lstat, mkdir, mkdtemp, readFile, readdir, readlink, rm } from "node:fs/promises";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { spawn } from "node:child_process";
+import { createHash } from "node:crypto";
 
 const desktopRoot = resolve(import.meta.dirname, "..");
 const checkBundledSidecar = process.argv.includes("--bundle");
@@ -14,6 +15,44 @@ const runtimeDirectory = checkBundledSidecar
   ? resolve(appPath, "Contents/Resources/sidecar-runtime")
   : resolve(desktopRoot, "src-tauri/resources/sidecar-runtime");
 const EXPECTED_SIDECAR_VERSION = "0.2.0";
+
+function opaquePublicId(prefix, label) {
+  const alphabet = "ABCDEFGHIJKLMNOP";
+  const digest = createHash("sha256").update(label).digest().subarray(0, 20);
+  return `${prefix}_${[...digest]
+    .map((byte) => `${alphabet[byte >> 4]}${alphabet[byte & 15]}`)
+    .join("")}`;
+}
+
+async function bundleTreeDigest(root) {
+  const digest = createHash("sha256");
+
+  async function visit(path, relativePath) {
+    const metadata = await lstat(path);
+    digest.update(`${relativePath}\0${metadata.mode}\0`);
+    if (metadata.isDirectory()) {
+      digest.update("directory\0");
+      const entries = await readdir(path);
+      for (const entry of entries.sort()) {
+        await visit(resolve(path, entry), `${relativePath}/${entry}`);
+      }
+      return;
+    }
+    if (metadata.isSymbolicLink()) {
+      digest.update(`symlink\0${await readlink(path)}\0`);
+      return;
+    }
+    if (metadata.isFile()) {
+      digest.update("file\0");
+      digest.update(await readFile(path));
+      return;
+    }
+    digest.update("other\0");
+  }
+
+  await visit(root, ".");
+  return digest.digest("hex");
+}
 
 function reserveLoopbackPort() {
   return new Promise((resolvePort, reject) => {
@@ -79,9 +118,34 @@ function waitForExit(child, timeoutMs = 4_000) {
 
 const port = await reserveLoopbackPort();
 const stateDirectory = await mkdtemp(resolve(tmpdir(), "hermes-sidecar-check-"));
+const isolatedHome = resolve(stateDirectory, "home");
+const isolatedCache = resolve(stateDirectory, "cache");
+const isolatedConfig = resolve(stateDirectory, "config");
+const isolatedData = resolve(stateDirectory, "data");
+const isolatedPycache = resolve(stateDirectory, "pycache");
+await Promise.all([
+  mkdir(isolatedHome),
+  mkdir(isolatedCache),
+  mkdir(isolatedConfig),
+  mkdir(isolatedData),
+  mkdir(isolatedPycache),
+]);
+const bundleTreeBefore = checkBundledSidecar ? await bundleTreeDigest(appPath) : undefined;
+const bundleMtimeBefore = checkBundledSidecar ? (await lstat(appPath)).mtimeMs : undefined;
 const child = spawn(launcher, ["--db", resolve(stateDirectory, "sidecar.sqlite3"), "serve", "--port", String(port)], {
   stdio: ["ignore", "pipe", "pipe"],
-  env: { ...process.env, HERMES_SIDECAR_RUNTIME_DIR: runtimeDirectory }
+  env: {
+    ...process.env,
+    HERMES_SIDECAR_RUNTIME_DIR: runtimeDirectory,
+    HOME: isolatedHome,
+    TMPDIR: stateDirectory,
+    XDG_CACHE_HOME: isolatedCache,
+    XDG_CONFIG_HOME: isolatedConfig,
+    XDG_DATA_HOME: isolatedData,
+    PYTHONDONTWRITEBYTECODE: "1",
+    PYTHONPYCACHEPREFIX: isolatedPycache,
+    PYTHONNOUSERSITE: "1",
+  }
 });
 let stderr = "";
 child.stderr.setEncoding("utf8");
@@ -101,11 +165,32 @@ try {
   ) {
     throw new Error(`unexpected capabilities payload: ${JSON.stringify(capabilities)}`);
   }
-  const tokenTail = "abcdefghijklmnopqrstuvwxyz" + "123456";
+  const advertisedEndpoints = capabilities.body.endpoints ?? {};
+  if (
+    Object.hasOwn(advertisedEndpoints, "run") ||
+    Object.keys(advertisedEndpoints).some((name) => name.includes("offline")) ||
+    JSON.stringify(capabilities.body).toLowerCase().includes("offline")
+  ) {
+    throw new Error(`capabilities advertised a removed run/offline product path: ${JSON.stringify(capabilities)}`);
+  }
+  const disabledRuns = await requestJson(port, "/v1/runs", {
+    method: "POST",
+    body: { mode: "offline", run_id: opaquePublicId("r", "disabled-public-runs") },
+  });
+  if (disabledRuns.status !== 404) {
+    throw new Error(`public POST /v1/runs was not disabled: ${JSON.stringify(disabledRuns)}`);
+  }
   const rejectedRunIds = [
+    "legacy-safe-run",
+    "0123456789abcdef0123456789abcdef",
+    "550e8400-e29b-41d4-a716-446655440000",
     "run-013800138000",
-    "run-" + "sk-" + tokenTail,
-    "run-" + "ghp_" + tokenTail,
+    "sk_live_" + "A".repeat(32),
+    "ghp_" + "A".repeat(36),
+    "github_pat_" + "A".repeat(82),
+    "AIzaSy" + "A".repeat(33),
+    "npm_" + "A".repeat(36),
+    "xoxb-" + "A".repeat(24) + "-" + "B".repeat(24),
   ];
   const attemptBody = {
     fixture_id: "xingce.data-analysis.growth-rate.synthetic-01",
@@ -122,17 +207,29 @@ try {
       throw new Error(`unsafe run identifier was not rejected: ${JSON.stringify(rejected)}`);
     }
   }
+  const afterRejectedRuns = await requestHealth(port);
+  if (afterRejectedRuns.body.run_count !== health.run_count) {
+    throw new Error("rejected run identifiers changed learner-visible run_count");
+  }
   const accepted = await requestJson(port, "/v1/attempts", {
     method: "POST",
-    body: { ...attemptBody, run_id: "desktop-identifier-guard" },
+    body: { ...attemptBody, run_id: opaquePublicId("r", "desktop-identifier-guard") },
   });
   if (accepted.status !== 201) {
     throw new Error(`identifier guard setup attempt failed: ${JSON.stringify(accepted)}`);
   }
+  const traceBeforeRejectedCommands = await requestJson(port, accepted.body.links.trace);
   const rejectedCommandIds = [
+    "legacy-command",
+    "0123456789abcdef0123456789abcdef",
+    "550e8400-e29b-41d4-a716-446655440000",
     "cmd-013800138000",
-    "cmd-" + "sk-" + tokenTail,
-    "cmd-" + "ghp_" + tokenTail,
+    "sk_live_" + "A".repeat(32),
+    "ghp_" + "A".repeat(36),
+    "github_pat_" + "A".repeat(82),
+    "AIzaSy" + "A".repeat(33),
+    "npm_" + "A".repeat(36),
+    "xoxb-" + "A".repeat(24) + "-" + "B".repeat(24),
   ];
   for (const commandId of rejectedCommandIds) {
     const rejected = await requestJson(port, accepted.body.links.assist, {
@@ -151,6 +248,10 @@ try {
       throw new Error(`unsafe command identifier was not rejected: ${JSON.stringify(rejected)}`);
     }
   }
+  const traceAfterRejectedCommands = await requestJson(port, accepted.body.links.trace);
+  if (JSON.stringify(traceAfterRejectedCommands.body) !== JSON.stringify(traceBeforeRejectedCommands.body)) {
+    throw new Error("rejected command identifiers changed the learning trace");
+  }
   const exit = waitForExit(child);
   child.kill("SIGTERM");
   await exit;
@@ -163,8 +264,20 @@ try {
     if (error.message === "sidecar still answered health checks after termination") throw error;
   }
   const source = checkBundledSidecar ? "bundled" : "staged";
-  console.log(`Sidecar ${source} health, 42-scenario capabilities, identifier guards, and termination checks passed (version ${health.version}).`);
+  const integrity = checkBundledSidecar
+    ? ` Bundle tree SHA-256 ${bundleTreeBefore} was unchanged.`
+    : "";
+  console.log(`Sidecar ${source} health, 42-scenario capabilities, identifier guards, and termination checks passed (version ${health.version}).${integrity}`);
 } finally {
   if (!child.killed) child.kill("SIGKILL");
   await rm(stateDirectory, { recursive: true, force: true });
+  if (checkBundledSidecar) {
+    const bundleTreeAfter = await bundleTreeDigest(appPath);
+    const bundleMtimeAfter = (await lstat(appPath)).mtimeMs;
+    if (bundleTreeAfter !== bundleTreeBefore || bundleMtimeAfter !== bundleMtimeBefore) {
+      throw new Error(
+        `bundled sidecar check mutated Lumi.app (tree ${bundleTreeBefore} -> ${bundleTreeAfter}; mtime ${bundleMtimeBefore} -> ${bundleMtimeAfter})`
+      );
+    }
+  }
 }

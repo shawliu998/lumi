@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import sqlite3
+import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -31,16 +32,63 @@ class TraceVersionConflict(RuntimeError):
         self.actual_version = actual_version
 
 
+def retry_sqlite_locked(operation: Any) -> Any:
+    """Retry only SQLite's short-lived initialization lock contention.
+
+    Setting WAL mode and idempotent DDL can raise ``database is locked``
+    immediately even when the connection has a busy timeout.  The local
+    sidecar may open trace and schedule stores concurrently, so initialization
+    must be restartable instead of leaking a transient lock as HTTP 500.
+    """
+
+    delays = (0.01, 0.02, 0.05, 0.1, 0.2, 0.4, 0.8, 1.0)
+    for attempt in range(len(delays) + 1):
+        try:
+            return operation()
+        except sqlite3.OperationalError as exc:
+            message = str(exc).lower()
+            if (
+                attempt == len(delays)
+                or ("locked" not in message and "busy" not in message)
+            ):
+                raise
+            time.sleep(delays[attempt])
+    raise AssertionError("unreachable SQLite retry state")
+
+
+def open_sqlite_connection(path: str | Path) -> sqlite3.Connection:
+    """Open one local SQLite connection with race-safe WAL initialization."""
+
+    connection = sqlite3.connect(str(path), timeout=10, isolation_level=None)
+    connection.row_factory = sqlite3.Row
+    connection.execute("PRAGMA foreign_keys = ON")
+    connection.execute("PRAGMA busy_timeout = 10000")
+
+    def ensure_wal() -> None:
+        current = str(connection.execute("PRAGMA journal_mode").fetchone()[0]).lower()
+        if current in {"wal", "memory"}:
+            return
+        result = str(
+            connection.execute("PRAGMA journal_mode = WAL").fetchone()[0]
+        ).lower()
+        if result != "wal":
+            raise sqlite3.OperationalError("unable to enable SQLite WAL mode")
+
+    try:
+        retry_sqlite_locked(ensure_wal)
+    except Exception:
+        connection.close()
+        raise
+    return connection
+
+
 class EventStore:
     """SQLite append-only trace store with a per-run tamper-evident hash chain."""
 
     def __init__(self, path: str | Path = ":memory:") -> None:
         self.path = str(path)
-        self._connection = sqlite3.connect(self.path, timeout=10, isolation_level=None)
-        self._connection.row_factory = sqlite3.Row
-        self._connection.execute("PRAGMA foreign_keys = ON")
-        self._connection.execute("PRAGMA journal_mode = WAL")
-        self._create_schema()
+        self._connection = open_sqlite_connection(self.path)
+        retry_sqlite_locked(self._create_schema)
 
     def close(self) -> None:
         self._connection.close()

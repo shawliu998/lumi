@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from datetime import date, datetime, timezone, tzinfo
 import hashlib
 import json
 from pathlib import Path
-import re
+import secrets
 import threading
-from typing import Any
+from typing import Any, Callable
 
 from hermes_integration.loop import (
     SCENARIOS,
@@ -23,6 +24,25 @@ from hermes_integration.learning_support import (
     prompt_instance_id,
 )
 from hermes_runtime.diff import state_diff
+from hermes_runtime.state import RunStatus
+from hermes_runtime.schedule import (
+    ActivityRef,
+    EvidenceRef,
+    PlanningEvidence,
+    ScheduleBudgetBelowAcceptedCommitment,
+    ScheduleCommandConflict,
+    ScheduleError,
+    ScheduleHistoricalPlan,
+    ScheduleNotFound,
+    ScheduleStore,
+    ScheduleTaskVersionConflict,
+    ScheduleTransitionError,
+    ScheduleValidationError,
+    ScheduleVersionConflict,
+    valid_public_command_identifier,
+    valid_public_run_identifier,
+    valid_stored_run_identifier,
+)
 from hermes_runtime.store import EventStore, TraceVersionConflict
 
 from .catalog import ScenarioCatalog
@@ -30,14 +50,6 @@ from .dossier import project_misconception_dossier
 
 
 SERVICE_VERSION = "0.2.0"
-
-_IDENTIFIER_PHONE_PATTERN = re.compile(r"1[3-9]\d{9}")
-_IDENTIFIER_NATIONAL_ID_PATTERN = re.compile(r"\d{17}[0-9Xx]")
-_IDENTIFIER_SECRET_PATTERN = re.compile(
-    r"(?:sk-[A-Za-z0-9_-]{20,}|gh[pousr]_[A-Za-z0-9]{20,})",
-    re.IGNORECASE,
-)
-
 
 class ServiceError(RuntimeError):
     def __init__(self, status: int, code: str, message: str) -> None:
@@ -48,15 +60,29 @@ class ServiceError(RuntimeError):
 
 
 class SidecarApplication:
-    def __init__(self, database: str | Path) -> None:
+    def __init__(
+        self,
+        database: str | Path,
+        *,
+        today_provider: Callable[[], date] | None = None,
+        planning_timezone: tzinfo | None = None,
+    ) -> None:
         self.database = str(database)
         self.catalog = ScenarioCatalog()
         self._continuation_lock = threading.Lock()
+        self._today_provider = today_provider or date.today
+        self._planning_timezone = (
+            planning_timezone
+            or datetime.now().astimezone().tzinfo
+            or timezone.utc
+        )
 
     def health(self) -> dict[str, Any]:
         store = EventStore(self.database)
-        run_count = len(store.run_ids())
-        store.close()
+        try:
+            run_count = len(_human_attempt_run_ids(store))
+        finally:
+            store.close()
         return {
             "status": "ok",
             "service": "hermes-local-sidecar",
@@ -73,7 +99,6 @@ class SidecarApplication:
             "api_version": "v1",
             "local_only": True,
             "domains": sorted({item["domain"] for item in scenarios}),
-            "learning_modes": sorted(SCENARIOS),
             "scenario_count": len(scenarios),
             "features": [
                 "representative-scenario-catalog",
@@ -82,20 +107,26 @@ class SidecarApplication:
                 "optimistic-attempt-continuation-v1",
                 "progressive-assistance-v1",
                 "event-sourced-misconception-dossier-v1",
+                "explainable-today-plan-v1",
+                "independent-review-schedule-v1",
                 "append-only-trace",
                 "hash-verified-replay",
                 "skill-summary",
-                "offline-deterministic-path",
             ],
             "endpoints": {
                 "health": "GET /v1/health",
                 "capabilities": "GET /v1/capabilities",
                 "scenarios": "GET /v1/scenarios",
-                "run": "POST /v1/runs",
                 "attempt": "POST /v1/attempts",
                 "attempt_response": "POST /v1/attempts/{run_id}/responses",
                 "assistance": "POST /v1/attempts/{run_id}/assistance",
                 "misconception": "GET /v1/misconceptions/{run_id}",
+                "today_plan_create": "POST /v1/today-plans",
+                "today_plan": "GET /v1/today-plans/{plan_id}",
+                "today_plan_command": "POST /v1/today-plans/{plan_id}/tasks/{task_id}/commands",
+                "today_plan_replay": "GET /v1/today-plans/{plan_id}/replay",
+                "review_schedule": "GET /v1/review-schedule",
+                "review_task_replay": "GET /v1/review-schedule/{task_id}/replay",
                 "trace": "GET /v1/runs/{run_id}/trace",
                 "replay": "GET /v1/runs/{run_id}/replay",
                 "skills": "GET /v1/skills/report",
@@ -144,13 +175,9 @@ class SidecarApplication:
                 "invalid_response_time",
                 "response_time_seconds must be a number in [0, 7200]",
             )
-        if run_id is not None and (
-            not isinstance(run_id, str)
-            or not run_id
-            or len(run_id) > 96
-            or not _safe_identifier(run_id)
-        ):
+        if run_id is not None and not valid_public_run_identifier(run_id):
             raise ServiceError(400, "invalid_run_id", "run_id contains unsupported characters")
+        public_run_id = run_id or _new_public_run_id()
         try:
             session, result = run_attempt(
                 fixture,
@@ -158,7 +185,7 @@ class SidecarApplication:
                 float(confidence),
                 float(response_time_seconds),
                 self.database,
-                run_id=run_id,
+                run_id=public_run_id,
             )
         except ValueError as exc:
             if "already exists" in str(exc):
@@ -255,7 +282,7 @@ class SidecarApplication:
         confidence: float,
         response_time_seconds: float,
     ) -> dict[str, Any]:
-        if not isinstance(run_id, str) or not _safe_identifier(run_id):
+        if not _valid_stored_run_id(run_id):
             raise ServiceError(400, "invalid_run_id", "run_id contains unsupported characters")
         if not isinstance(phase, str) or phase not in {"probe", "verification"}:
             raise ServiceError(400, "invalid_phase", "phase must be probe or verification")
@@ -386,7 +413,7 @@ class SidecarApplication:
         elapsed_time_seconds: float,
         command_id: str,
     ) -> dict[str, Any]:
-        if not isinstance(run_id, str) or not _safe_identifier(run_id):
+        if not _valid_stored_run_id(run_id):
             raise ServiceError(400, "invalid_run_id", "run_id contains unsupported characters")
         if not isinstance(phase, str) or phase not in {"probe", "verification"}:
             raise ServiceError(400, "invalid_phase", "phase must be probe or verification")
@@ -407,7 +434,7 @@ class SidecarApplication:
             or not 0 <= elapsed_time_seconds <= 7200
         ):
             raise ServiceError(400, "invalid_elapsed_time", "elapsed_time_seconds must be in [0, 7200]")
-        if not isinstance(command_id, str) or not command_id or len(command_id) > 96 or not _safe_identifier(command_id):
+        if not valid_public_command_identifier(command_id):
             raise ServiceError(400, "invalid_command_id", "command_id contains unsupported characters")
         fingerprint = _assistance_fingerprint(
             run_id,
@@ -554,7 +581,7 @@ class SidecarApplication:
             store.close()
 
     def misconception_dossier(self, run_id: str) -> dict[str, Any]:
-        if not isinstance(run_id, str) or not _safe_identifier(run_id):
+        if not _valid_stored_run_id(run_id):
             raise ServiceError(400, "invalid_run_id", "run_id contains unsupported characters")
         store = EventStore(self.database)
         try:
@@ -562,6 +589,8 @@ class SidecarApplication:
                 state = store.load_state(run_id)
             except KeyError:
                 raise ServiceError(404, "run_not_found", "attempt session does not exist") from None
+            if not _is_human_local_attempt_state(state):
+                raise ServiceError(404, "run_not_found", "attempt session does not exist")
             fixture = self._session_fixture(state, store)
             return project_misconception_dossier(store, run_id, fixture)
         finally:
@@ -574,6 +603,8 @@ class SidecarApplication:
             for run_id in store.run_ids():
                 try:
                     state = store.load_state(run_id)
+                    if not _is_human_local_attempt_state(state):
+                        continue
                     fixture = self._session_fixture(state, store)
                     dossier = project_misconception_dossier(store, run_id, fixture)
                 except (KeyError, ValueError):
@@ -606,6 +637,472 @@ class SidecarApplication:
             }
         finally:
             store.close()
+
+    def create_today_plan(
+        self,
+        plan_date: Any,
+        exam_date: Any,
+        daily_budget_minutes: Any,
+        expected_version: Any,
+        command_id: Any,
+    ) -> dict[str, Any]:
+        if not isinstance(plan_date, str):
+            raise ServiceError(400, "invalid_plan_date", "plan_date must be YYYY-MM-DD")
+        try:
+            parsed_plan_date = date.fromisoformat(plan_date)
+        except ValueError:
+            raise ServiceError(
+                400, "invalid_plan_date", "plan_date must be YYYY-MM-DD"
+            ) from None
+        if parsed_plan_date.isoformat() != plan_date:
+            raise ServiceError(
+                400, "invalid_plan_date", "plan_date must be YYYY-MM-DD"
+            )
+        if exam_date is not None and not isinstance(exam_date, str):
+            raise ServiceError(400, "invalid_exam_date", "exam_date must be null or YYYY-MM-DD")
+        if isinstance(exam_date, str):
+            try:
+                parsed_exam_date = date.fromisoformat(exam_date)
+            except ValueError:
+                raise ServiceError(
+                    400,
+                    "invalid_exam_date",
+                    "exam_date must be null or YYYY-MM-DD",
+                ) from None
+            if parsed_exam_date.isoformat() != exam_date:
+                raise ServiceError(
+                    400,
+                    "invalid_exam_date",
+                    "exam_date must be null or YYYY-MM-DD",
+                )
+        if (
+            isinstance(daily_budget_minutes, bool)
+            or not isinstance(daily_budget_minutes, int)
+        ):
+            raise ServiceError(
+                400,
+                "invalid_daily_budget",
+                "daily_budget_minutes must be an integer in [5, 240]",
+            )
+        if (
+            isinstance(expected_version, bool)
+            or not isinstance(expected_version, int)
+        ):
+            raise ServiceError(400, "invalid_version", "expected_version must be 0 for a new plan")
+        if not valid_public_command_identifier(command_id):
+            raise ServiceError(400, "invalid_command_id", "command_id contains unsupported characters")
+        server_today = self._today_provider()
+        if not isinstance(server_today, date):
+            raise ServiceError(500, "clock_unavailable", "local date provider is unavailable")
+        if plan_date != server_today.isoformat():
+            store = ScheduleStore(
+                self.database, planning_timezone=self._planning_timezone
+            )
+            try:
+                try:
+                    replay = store.replay_create_today_plan_command(
+                        plan_date=plan_date,
+                        exam_date=exam_date,
+                        daily_budget_minutes=daily_budget_minutes,
+                        expected_version=expected_version,
+                        command_id=command_id,
+                    )
+                except ScheduleError as exc:
+                    raise _schedule_service_error(exc) from None
+            finally:
+                store.close()
+            if replay is not None:
+                return replay
+            raise ServiceError(
+                409,
+                "plan_date_mismatch",
+                "plan_date must equal the local service date",
+            )
+        try:
+            evidence = self._planning_evidence(plan_date)
+            store = ScheduleStore(
+                self.database, planning_timezone=self._planning_timezone
+            )
+            try:
+                return store.create_today_plan(
+                    plan_date=plan_date,
+                    exam_date=exam_date,
+                    daily_budget_minutes=daily_budget_minutes,
+                    expected_version=expected_version,
+                    command_id=command_id,
+                    evidence=evidence,
+                )
+            finally:
+                store.close()
+        except ScheduleError as exc:
+            raise _schedule_service_error(exc) from None
+
+    def today_plan(self, plan_id: str) -> dict[str, Any]:
+        if not _valid_plan_id(plan_id):
+            raise ServiceError(400, "invalid_plan_id", "plan_id contains unsupported characters")
+        store = ScheduleStore(
+            self.database, planning_timezone=self._planning_timezone
+        )
+        try:
+            try:
+                return store.load_plan(plan_id)
+            except ScheduleError as exc:
+                raise _schedule_service_error(exc) from None
+        finally:
+            store.close()
+
+    def transition_today_plan_task(
+        self,
+        plan_id: str,
+        task_id: str,
+        action: Any,
+        expected_version: Any,
+        expected_task_version: Any,
+        command_id: Any,
+        postpone_until: Any = None,
+    ) -> dict[str, Any]:
+        if not _valid_plan_id(plan_id):
+            raise ServiceError(400, "invalid_plan_id", "plan_id contains unsupported characters")
+        if not _valid_task_id(task_id):
+            raise ServiceError(400, "invalid_task_id", "task_id contains unsupported characters")
+        if not isinstance(action, str):
+            raise ServiceError(400, "invalid_action", "action must be a supported schedule action")
+        if action not in {"accept", "complete", "postpone", "skip"}:
+            raise ServiceError(
+                400,
+                "invalid_action",
+                "action must be accept, complete, postpone, or skip",
+            )
+        if (
+            isinstance(expected_version, bool)
+            or not isinstance(expected_version, int)
+        ):
+            raise ServiceError(400, "invalid_version", "expected_version must be a positive integer")
+        if (
+            isinstance(expected_task_version, bool)
+            or not isinstance(expected_task_version, int)
+        ):
+            raise ServiceError(
+                400,
+                "invalid_task_version",
+                "expected_task_version must be a positive integer",
+            )
+        if not valid_public_command_identifier(command_id):
+            raise ServiceError(400, "invalid_command_id", "command_id contains unsupported characters")
+        if postpone_until is not None and not isinstance(postpone_until, str):
+            raise ServiceError(400, "invalid_postpone_until", "postpone_until must be YYYY-MM-DD")
+        server_today = self._today_provider()
+        if not isinstance(server_today, date):
+            raise ServiceError(500, "clock_unavailable", "local date provider is unavailable")
+        store = ScheduleStore(
+            self.database, planning_timezone=self._planning_timezone
+        )
+        try:
+            try:
+                return store.transition_task(
+                    plan_id=plan_id,
+                    task_id=task_id,
+                    action=action,
+                    action_date=server_today.isoformat(),
+                    expected_version=expected_version,
+                    expected_task_version=expected_task_version,
+                    command_id=command_id,
+                    postpone_until=postpone_until,
+                )
+            except ScheduleError as exc:
+                raise _schedule_service_error(exc) from None
+        finally:
+            store.close()
+
+    def review_schedule(self) -> dict[str, Any]:
+        store = ScheduleStore(
+            self.database, planning_timezone=self._planning_timezone
+        )
+        try:
+            return store.review_schedule()
+        finally:
+            store.close()
+
+    def schedule_replay(self, stream_type: str, stream_id: str) -> dict[str, Any]:
+        if stream_type not in {"today_plan", "review_task"}:
+            raise ServiceError(400, "invalid_stream_type", "schedule stream type is invalid")
+        valid_stream_id = (
+            _valid_plan_id(stream_id)
+            if stream_type == "today_plan"
+            else _valid_task_id(stream_id)
+        )
+        if not valid_stream_id:
+            raise ServiceError(400, "invalid_stream_id", "stream identifier is invalid")
+        store = ScheduleStore(
+            self.database, planning_timezone=self._planning_timezone
+        )
+        try:
+            try:
+                return store.replay(stream_type, stream_id)
+            except ScheduleError as exc:
+                raise _schedule_service_error(exc) from None
+        finally:
+            store.close()
+
+    def _planning_evidence(self, plan_date: str) -> list[PlanningEvidence]:
+        """Project only trace-backed, per-run evidence allowed by scheduler v1."""
+
+        store = EventStore(self.database)
+        try:
+            projected: list[PlanningEvidence] = []
+            for run_id in store.run_ids():
+                events = store.events(run_id)
+                if not events or not store.verify(run_id):
+                    continue
+                try:
+                    state = store.load_state(run_id)
+                    fixture = self._session_fixture(state, store)
+                except (KeyError, ServiceError, ValueError):
+                    continue
+                # Batch/demo scenarios are evaluation fixtures, not learner
+                # activity. Only a completed real staged attempt may seed Today.
+                if (
+                    state.context.get("scenario") != "attempt"
+                    or state.context.get("evidence_origin")
+                    != "human_local_interactive"
+                    or state.status is not RunStatus.COMPLETED
+                ):
+                    continue
+                domain = str(fixture["domain"])
+                fixture_skills = {
+                    str(item["skill_id"]): float(item["weight"])
+                    for item in fixture["skills"]
+                }
+                fallback_skill_id = min(
+                    fixture_skills,
+                    key=lambda item: (-fixture_skills[item], item),
+                )
+                fixture_hash = str(state.context["fixture_content_sha256"])
+                activity_ref = ActivityRef(
+                    fixture_id=str(fixture["fixture_id"]),
+                    fixture_content_sha256=fixture_hash,
+                    availability=(
+                        "launchable"
+                        if fixture["fixture_id"]
+                        == "xingce.data-analysis.growth-rate.synthetic-01"
+                        else "activity_unavailable"
+                    ),
+                )
+                terminal_event = next(
+                    (
+                        event
+                        for event in reversed(events)
+                        if event.kind == "phase_completed"
+                        and event.payload.get("phase") == "reflect"
+                        and event.payload.get("state_after", {}).get("status")
+                        == "completed"
+                    ),
+                    None,
+                )
+                if terminal_event is None:
+                    continue
+                terminal_ref = _trace_evidence_ref(
+                    run_id,
+                    terminal_event,
+                    kind="trace_terminal",
+                    json_pointer="/state_after/status",
+                    semantic="terminal_completed",
+                    phase="reflect",
+                )
+                observe_event = next(
+                    (
+                        event
+                        for event in reversed(events)
+                        if event.kind == "phase_completed"
+                        and event.payload.get("phase") == "observe"
+                    ),
+                    None,
+                )
+                if observe_event is None:
+                    continue
+                observe_ref = _trace_evidence_ref(
+                    run_id,
+                    observe_event,
+                    kind="trace_observation",
+                    json_pointer="/output/score/passed",
+                    semantic="initial_answer_passed",
+                    phase="observe",
+                )
+                update_event = next(
+                    (
+                        event
+                        for event in reversed(events)
+                        if event.kind == "phase_completed"
+                        and event.payload.get("phase") == "update"
+                    ),
+                    None,
+                )
+                initial_failed = (
+                    observe_event.payload.get("output", {})
+                    .get("score", {})
+                    .get("passed")
+                    is not True
+                )
+                if update_event is not None:
+                    update = update_event.payload.get("output", {})
+                    update_skill_id = update.get("skill_id")
+                    if (
+                        update.get("commit_status") == "committed"
+                        and isinstance(update_skill_id, str)
+                        and update_skill_id in fixture_skills
+                    ):
+                        effective = update.get("evidence", {}).get(
+                            "verification_effective"
+                        )
+                        occurred_on, timezone_offset = self._event_local_basis(
+                            update_event.occurred_at
+                        )
+                        projected.append(
+                            PlanningEvidence(
+                                evidence_ref=_trace_evidence_ref(
+                                    run_id,
+                                    update_event,
+                                    kind="trace_skill_evidence",
+                                    json_pointer="/output/evidence/verification_effective",
+                                    semantic="verification_effective",
+                                    phase="update",
+                                ),
+                                supporting_refs=(observe_ref, terminal_ref),
+                                occurred_at=update_event.occurred_at,
+                                occurred_on=occurred_on,
+                                timezone_offset_minutes=timezone_offset,
+                                domain=domain,
+                                skill_id=update_skill_id,
+                                verification_effective=(
+                                    effective if isinstance(effective, bool) else None
+                                ),
+                                # The review kind follows independent transfer,
+                                # not whether the learner's first answer was wrong.
+                                attempt_failed=effective is not True,
+                                activity_ref=activity_ref,
+                            )
+                        )
+
+                diagnose_event = next(
+                    (
+                        event
+                        for event in reversed(events)
+                        if event.kind == "phase_completed"
+                        and event.payload.get("phase") == "diagnose"
+                    ),
+                    None,
+                )
+                # A correct first answer does not provide an observed error from
+                # which to project a cause hypothesis. A later failed transfer
+                # remains a generic independent-retry signal in P0.2.
+                if diagnose_event is None or not initial_failed:
+                    continue
+                ranked = (
+                    diagnose_event.payload.get("output", {})
+                    .get("diagnosis", {})
+                    .get("hypotheses", [])
+                )
+                assessments_event = next(
+                    (event for event in reversed(events) if event.kind == "probe_assessed"),
+                    None,
+                )
+                assessment_by_cause = {
+                    str(item.get("cause_id")): (index, item)
+                    for index, item in enumerate(
+                        assessments_event.payload.get("assessments", [])
+                        if assessments_event is not None
+                        else []
+                    )
+                    if isinstance(item, dict) and isinstance(item.get("cause_id"), str)
+                }
+                authored_causes = {
+                    str(item["cause_id"]): str(item["label"])
+                    for item in fixture["diagnosis"]["candidate_causes"]
+                }
+                for hypothesis_index, hypothesis in enumerate(ranked):
+                    if not isinstance(hypothesis, dict) or not isinstance(
+                        hypothesis.get("cause_id"), str
+                    ):
+                        continue
+                    cause_id = str(hypothesis["cause_id"])
+                    assessment = assessment_by_cause.get(cause_id)
+                    claim_status = (
+                        str(assessment[1].get("claim_status", "unconfirmed_hypothesis"))
+                        if assessment is not None
+                        else "unconfirmed_hypothesis"
+                    )
+                    if (
+                        claim_status == "refuted_hypothesis"
+                        or cause_id not in authored_causes
+                    ):
+                        continue
+                    diagnose_ref = _trace_evidence_ref(
+                        run_id,
+                        diagnose_event,
+                        kind="candidate_cause",
+                        json_pointer=(
+                            f"/output/diagnosis/hypotheses/{hypothesis_index}/status"
+                        ),
+                        semantic="candidate_hypothesis",
+                        phase="diagnose",
+                        subject_id=cause_id,
+                        claim_status="unconfirmed_hypothesis",
+                        confirmation_status="unconfirmed",
+                    )
+                    if assessment is not None and assessments_event is not None:
+                        primary_ref = _trace_evidence_ref(
+                            run_id,
+                            assessments_event,
+                            kind="candidate_cause",
+                            json_pointer=f"/assessments/{assessment[0]}/claim_status",
+                            semantic="candidate_claim_status",
+                            subject_id=cause_id,
+                            claim_status=claim_status,
+                            confirmation_status="unconfirmed",
+                        )
+                        supporting_refs = (diagnose_ref, observe_ref, terminal_ref)
+                        occurred_at = assessments_event.occurred_at
+                    else:
+                        primary_ref = diagnose_ref
+                        supporting_refs = (observe_ref, terminal_ref)
+                        occurred_at = diagnose_event.occurred_at
+                    occurred_on, timezone_offset = self._event_local_basis(occurred_at)
+                    projected.append(
+                        PlanningEvidence(
+                            evidence_ref=primary_ref,
+                            supporting_refs=supporting_refs,
+                            occurred_at=occurred_at,
+                            occurred_on=occurred_on,
+                            timezone_offset_minutes=timezone_offset,
+                            domain=domain,
+                            skill_id=(
+                                str(update_event.payload.get("output", {}).get("skill_id"))
+                                if update_event is not None
+                                and update_event.payload.get("output", {}).get("skill_id")
+                                in fixture_skills
+                                else fallback_skill_id
+                            ),
+                            verification_effective=None,
+                            attempt_failed=initial_failed,
+                            cause_id=cause_id,
+                            cause_label=authored_causes[cause_id],
+                            activity_ref=activity_ref,
+                        )
+                    )
+                    break
+            return projected
+        finally:
+            store.close()
+
+    def _event_local_basis(self, occurred_at: str) -> tuple[str, int]:
+        parsed = datetime.fromisoformat(occurred_at.replace("Z", "+00:00"))
+        if parsed.tzinfo is None:
+            raise ValueError("trace event time must include a timezone")
+        local = parsed.astimezone(self._planning_timezone)
+        offset = local.utcoffset()
+        if offset is None:
+            raise ValueError("planning timezone offset is unavailable")
+        return local.date().isoformat(), int(offset.total_seconds() // 60)
 
     @staticmethod
     def _session_fixture(state: Any, store: EventStore) -> dict[str, Any]:
@@ -655,12 +1152,7 @@ class SidecarApplication:
     def run_learning_loop(self, mode: str, run_id: str | None = None) -> dict[str, Any]:
         if not isinstance(mode, str) or mode not in SCENARIOS:
             raise ServiceError(400, "invalid_mode", "mode must be success, ambiguous, or offline")
-        if run_id is not None and (
-            not isinstance(run_id, str)
-            or not run_id
-            or len(run_id) > 96
-            or not _safe_identifier(run_id)
-        ):
+        if run_id is not None and not _valid_stored_run_id(run_id):
             raise ServiceError(400, "invalid_run_id", "run_id contains unsupported characters")
         try:
             session, result = run_scenario(mode, self.database, run_id=run_id)
@@ -710,7 +1202,7 @@ class SidecarApplication:
         }
 
     def replay(self, run_id: str) -> dict[str, Any]:
-        if not _safe_identifier(run_id):
+        if not _valid_stored_run_id(run_id):
             raise ServiceError(400, "invalid_run_id", "run_id contains unsupported characters")
         store = EventStore(self.database)
         try:
@@ -741,6 +1233,12 @@ class SidecarApplication:
                 }
             )
             for run_id in store.run_ids():
+                try:
+                    state = store.load_state(run_id)
+                except KeyError:
+                    continue
+                if not _is_human_local_attempt_state(state):
+                    continue
                 for event in store.events(run_id):
                     if event.kind != "phase_completed" or event.payload.get("phase") != "update":
                         continue
@@ -785,7 +1283,7 @@ class SidecarApplication:
             store.close()
 
     def _events(self, run_id: str) -> tuple[list[Any], bool]:
-        if not isinstance(run_id, str) or not _safe_identifier(run_id):
+        if not _valid_stored_run_id(run_id):
             raise ServiceError(400, "invalid_run_id", "run_id contains unsupported characters")
         store = EventStore(self.database)
         try:
@@ -797,16 +1295,136 @@ class SidecarApplication:
             store.close()
 
 
-def _safe_identifier(value: Any) -> bool:
+def _schedule_service_error(error: ScheduleError) -> ServiceError:
+    if isinstance(error, ScheduleNotFound):
+        return ServiceError(404, "schedule_not_found", "the requested schedule record does not exist")
+    if isinstance(error, ScheduleVersionConflict):
+        return ServiceError(
+            409,
+            "stale_schedule_version",
+            "expected_version does not match the current TodayPlan version",
+        )
+    if isinstance(error, ScheduleTaskVersionConflict):
+        return ServiceError(
+            409,
+            "stale_task_version",
+            "the TodayPlan task snapshot no longer matches the ReviewSchedule task",
+        )
+    if isinstance(error, ScheduleHistoricalPlan):
+        return ServiceError(
+            409,
+            "historical_plan_read_only",
+            "historical TodayPlans are read-only; create or open the current local date plan",
+        )
+    if isinstance(error, ScheduleBudgetBelowAcceptedCommitment):
+        return ServiceError(
+            409,
+            "budget_below_accepted_commitment",
+            (
+                "daily_budget_minutes must be at least "
+                f"{error.required_minutes} to keep accepted commitments actionable"
+            ),
+        )
+    if isinstance(error, ScheduleCommandConflict):
+        return ServiceError(
+            409,
+            "command_conflict",
+            "command_id was already used for a different schedule command",
+        )
+    if isinstance(error, ScheduleTransitionError):
+        return ServiceError(
+            409,
+            "invalid_schedule_transition",
+            "the requested task transition is not allowed from its current state",
+        )
+    if isinstance(error, ScheduleValidationError):
+        return ServiceError(400, "invalid_schedule_command", str(error))
+    return ServiceError(409, "schedule_rejected", "the schedule command was rejected")
+
+
+def _trace_evidence_ref(
+    run_id: str,
+    event: Any,
+    *,
+    kind: str,
+    json_pointer: str,
+    semantic: str,
+    subject_id: str | None = None,
+    phase: str | None = None,
+    claim_status: str | None = None,
+    confirmation_status: str | None = None,
+) -> EvidenceRef:
+    ref = (
+        f"trace:{run_id}:event:{event.seq}:{event.event_hash}"
+        f"#pointer={json_pointer}"
+    )
+    return EvidenceRef(
+        ref=ref,
+        kind=kind,
+        source_type="trace_event",
+        run_id=run_id,
+        event_seq=event.seq,
+        event_hash=event.event_hash,
+        event_kind=event.kind,
+        json_pointer=json_pointer,
+        semantic=semantic,
+        subject_id=subject_id,
+        phase=phase,
+        claim_status=claim_status,
+        confirmation_status=confirmation_status,
+    )
+
+
+def _valid_stored_run_id(value: Any) -> bool:
+    return valid_stored_run_identifier(value)
+
+
+def _new_public_run_id() -> str:
+    alphabet = "ABCDEFGHIJKLMNOP"
+    return "r_" + "".join(
+        f"{alphabet[byte >> 4]}{alphabet[byte & 15]}"
+        for byte in secrets.token_bytes(20)
+    )
+
+
+def _is_human_local_attempt_state(state: Any) -> bool:
+    context = getattr(state, "context", None)
+    return (
+        isinstance(context, dict)
+        and context.get("scenario") == "attempt"
+        and context.get("evidence_origin") == "human_local_interactive"
+    )
+
+
+def _human_attempt_run_ids(store: EventStore) -> list[str]:
+    run_ids: list[str] = []
+    for run_id in store.run_ids():
+        try:
+            state = store.load_state(run_id)
+        except (KeyError, ValueError):
+            continue
+        if _is_human_local_attempt_state(state):
+            run_ids.append(run_id)
+    return run_ids
+
+
+def _valid_plan_id(value: Any) -> bool:
+    if not isinstance(value, str) or not value.startswith("today-"):
+        return False
+    raw_date = value.removeprefix("today-")
+    try:
+        parsed = date.fromisoformat(raw_date)
+    except ValueError:
+        return False
+    return parsed.isoformat() == raw_date
+
+
+def _valid_task_id(value: Any) -> bool:
     return (
         isinstance(value, str)
-        and bool(value)
-        and len(value) <= 96
-        and re.fullmatch(r"[A-Za-z0-9_.:-]+", value) is not None
-        and re.search(r"[A-Za-z]", value) is not None
-        and _IDENTIFIER_PHONE_PATTERN.search(value) is None
-        and _IDENTIFIER_NATIONAL_ID_PATTERN.search(value) is None
-        and _IDENTIFIER_SECRET_PATTERN.search(value) is None
+        and value.startswith("review-")
+        and len(value) == len("review-") + 24
+        and all(character in "0123456789abcdef" for character in value[7:])
     )
 
 

@@ -14,7 +14,7 @@
     "dev": "sh scripts/tauri.sh dev",
     "dev:frontend": "npm --prefix ../client run dev -- --host 127.0.0.1 --port 1420 --strictPort",
     "build": "npm run build:sidecar && npm run check:sidecar && sh scripts/tauri.sh build",
-    "build:debug-app": "npm run build:sidecar && npm run check:sidecar && sh scripts/tauri.sh build --debug --bundles app && npm run sign:debug-app && npm run check:bundled-sidecar"
+    "build:debug-app": "npm run build:sidecar && npm run check:sidecar && sh scripts/tauri.sh build --debug --bundles app && npm run check:bundled-sidecar && npm run sign:debug-app && npm run check:signature"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.11.4"
