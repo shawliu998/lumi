@@ -1,8 +1,10 @@
 # Lumi P0.2 completion audit
 
-Status: **verified P0.2 source cut; Git publication pending**
+Status: **verified and Git-published P0.2 milestone**
 
 - Release run: `run-20260711T132028Z`
+- Implementation commit: `5e8709d0a1e35bfa85d5a91db2bb42dba9e10af0`
+- Published branch: `origin/codex/lumi-p0-p1-p2`
 - Release report: `evals/reports/latest.json` and `evals/reports/latest.md`
 - Release gates: **16/16 pass, 0 fail, 0 pending**
 - Full verifier: **17/17 checks pass**
@@ -81,6 +83,7 @@ fairness, peer/common-error, or learning-effect outputs.
 ## Gate decision
 
 All bounded P0.2 engineering, client, desktop, privacy, and read-only gates are
-closed for release run `run-20260711T132028Z`. P0.2 is ready for an intentional
-Git implementation commit and evidence follow-up commit. P0.3 Study Pack is the
-next production slice; the wider P0/P1/P2 objective remains active.
+closed for release run `run-20260711T132028Z`. The implementation is recorded at
+`5e8709d0a1e35bfa85d5a91db2bb42dba9e10af0` on
+`origin/codex/lumi-p0-p1-p2`. P0.3 Study Pack is the next production slice; the
+wider P0/P1/P2 objective remains active.

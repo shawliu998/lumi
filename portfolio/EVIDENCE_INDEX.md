@@ -1,8 +1,9 @@
 # Lumi claim-to-evidence index
 
-Status: **P0.2 verified evidence index; the authoritative source cut is
-`evals/reports/latest.json` run `run-20260711T132028Z`; Git publication is the
-next repository action, and population claims remain prohibited**
+Status: **P0.2 verified and published evidence index; the authoritative source
+cut is `evals/reports/latest.json` run `run-20260711T132028Z`, implemented at
+`5e8709d0a1e35bfa85d5a91db2bb42dba9e10af0`; population claims remain
+prohibited**
 
 No portfolio claim is ready until it has an artifact, scope, reproducible command,
 and limitation. Prefer machine-readable release reports and trace IDs over screenshots.

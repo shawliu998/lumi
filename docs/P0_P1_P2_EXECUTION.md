@@ -2,8 +2,9 @@
 
 Status: active. P0.1 is verified and published on
 `origin/codex/lumi-p0-p1-p2` at implementation commit `c62c66a`. P0.2 is
-verified by final release cut `run-20260711T132028Z`; P0.3 is the next production
-slice. Later phases may prepare read-only audits and isolated evaluation
+verified by final release cut `run-20260711T132028Z` and published at
+implementation commit `5e8709d0a1e35bfa85d5a91db2bb42dba9e10af0`; P0.3
+is the next production slice. Later phases may prepare read-only audits and isolated evaluation
 scaffolding, but production implementation cannot be merged before the
 preceding phase passes.
 

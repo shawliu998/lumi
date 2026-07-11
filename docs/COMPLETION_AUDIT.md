@@ -6,7 +6,7 @@ mean population learning efficacy or production distribution has been proved.
 
 | Requirement | Status | Authoritative evidence | Remaining limitation |
 | --- | --- | --- | --- |
-| `peikao` is the Lumi main repository | complete | root `README.md`, `AGENTS.md`, module layout; `origin=https://github.com/shawliu998/zhishixingqiu.git`; published P0.1 implementation commit `c62c66a` | review/merge remains pending; implementation continues on the milestone branch |
+| `peikao` is the Lumi main repository | complete | root `README.md`, `AGENTS.md`, module layout; `origin=https://github.com/shawliu998/zhishixingqiu.git`; P0.1 commit `c62c66a`; P0.2 implementation commit `5e8709d0a1e35bfa85d5a91db2bb42dba9e10af0` | review/merge remains pending; implementation continues on the milestone branch |
 | Production Shenlun repository remains read-only | complete | `scripts/check_boundaries.py`; release `readonly_boundary` gate | must remain an operational invariant on every future run |
 | Editable Xingce data factory | complete for bounded factory | `$HOME/Documents/xingcetiku/hermes`; 100-item overlay build/validation; `ENRICHMENT_AUDIT_V1.md` | 97/100 have candidate skill/misconception mappings; 3 remain explicitly blocked by missing key content |
 | Explainable KT and cause diagnosis | complete for deterministic v0 | `engine/` tests; release `diagnosis` and `kt` gates | no population calibration or delayed-retention evidence yet |
@@ -25,7 +25,8 @@ mean population learning efficacy or production distribution has been proved.
 
 ## Current release state
 
-P0.2 has passed adversarial security and evidence re-audit, the final 16/16
+P0.2 at implementation commit
+`5e8709d0a1e35bfa85d5a91db2bb42dba9e10af0` has passed adversarial security and evidence re-audit, the final 16/16
 release cut, the 17/17 full verifier, strict/deep signed `Lumi.app` checks,
 bundle-tree non-mutation, managed sidecar lifecycle, and the frozen Shenlun
 boundary. This proves bounded local scheduling mechanics, not delayed retention
