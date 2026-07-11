@@ -1,0 +1,41 @@
+{
+  "schema_version": "hermes.domain-fixture.v1",
+  "fixture_id": "interview.organization.reading-day.synthetic-01",
+  "domain": "interview",
+  "path": "organization",
+  "mode": "success",
+  "module": "组织计划/社区活动",
+  "scenario_response": "首先调研年龄和参与人数，明确培养亲子共读习惯的目标。其次协调场地、招募志愿者并按年龄分组设计流程，同时做好安全预案。最后收集满意度反馈，建立阅读打卡并复盘。",
+  "execution": {"connectivity": "local", "cloud_calls_expected": 0, "fallback": "not_needed", "scorer": "deterministic_local"},
+  "expected_semantics": {"score": "pass", "cause_status": "unconfirmed_hypothesis"},
+  "task": {"prompt": "单位准备在社区开展周末亲子阅读日，由你负责，你怎么组织？", "response_mode": "spoken_text"},
+  "skills": [{"skill_id": "interview.organization.goal-audience", "weight": 0.25}, {"skill_id": "interview.organization.execution", "weight": 0.45}, {"skill_id": "interview.organization.evaluation", "weight": 0.30}],
+  "scoring": {
+    "adapter": "interview_rubric_v1", "max_score": 6, "pass_score": 4, "min_structure_markers": 2,
+    "criteria": [
+      {"criterion_id": "needs-and-goal", "keywords": ["调研需求", "年龄", "参与人数", "目标"], "min_hits": 1, "points": 2},
+      {"criterion_id": "execution-details", "keywords": ["场地", "招募", "分组", "安全预案", "流程"], "min_hits": 2, "points": 2},
+      {"criterion_id": "feedback", "keywords": ["反馈", "复盘", "阅读打卡", "满意度"], "min_hits": 1, "points": 2}
+    ]
+  },
+  "diagnosis": {
+    "semantics": "ranked_unconfirmed_hypotheses",
+    "evidence_catalog": [
+      {"evidence_id": "criterion_missing:needs-and-goal", "description": "未定义对象需求与活动目标"},
+      {"evidence_id": "criterion_missing:execution-details", "description": "执行安排缺少至少两个操作点"},
+      {"evidence_id": "criterion_missing:feedback", "description": "活动结束后没有反馈与持续机制"},
+      {"evidence_id": "structure_missing", "description": "回答缺少阶段层次"}
+    ],
+    "candidate_causes": [
+      {"cause_id": "process-template-recitation", "label": "只背前中后流程，未结合亲子阅读场景", "synthetic_prior": 0.36, "evidence_refs": ["criterion_missing:execution-details"], "is_ground_truth": false},
+      {"cause_id": "goal-audience-disconnected", "label": "活动动作没有从儿童年龄和家庭需求出发", "synthetic_prior": 0.32, "evidence_refs": ["criterion_missing:needs-and-goal"], "is_ground_truth": false},
+      {"cause_id": "closure-without-outcome", "label": "以活动结束替代效果评估和持续参与", "synthetic_prior": 0.20, "evidence_refs": ["criterion_missing:feedback"], "is_ground_truth": false},
+      {"cause_id": "oral-structure-weak", "label": "组织步骤缺少清晰阶段标记", "synthetic_prior": 0.12, "evidence_refs": ["structure_missing"], "is_ground_truth": false}
+    ]
+  },
+  "probe": {"prompt": "如果参与儿童分为4—6岁和9—11岁，你会如何调整分组内容？", "targets": ["goal-audience-disconnected", "process-template-recitation"]},
+  "teach": {"prompt": "以目标和人群为起点，倒推活动内容、资源、风险与效果指标。", "strategy": "backward-event-design"},
+  "independent_verify": {"prompt": "组织一次社区老年智能手机课堂，须体现需求分层、执行细节、安全和课后反馈。", "response_mode": "spoken_text", "pass_condition": {"required_dimensions": ["audience", "execution", "risk", "feedback"], "minimum_dimensions": 3}},
+  "samples": {"passing_response": "首先调研年龄和参与人数，明确培养亲子共读习惯的目标。其次协调场地、招募志愿者并按年龄分组设计流程，同时做好安全预案。最后收集满意度反馈，建立阅读打卡并复盘。", "failing_response": "首先制定方案，然后做好宣传，活动当天维持秩序，最后总结经验。"},
+  "provenance": {"content_origin": "synthetic_original", "authoring_note": "合成社区活动面试题", "prior_source": "synthetic_engineering_prior_v1"}
+}

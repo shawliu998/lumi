@@ -1,0 +1,297 @@
+{
+  "trace_id": "trace-f4eb731e08273ff3",
+  "schema_version": "trajectory-v1",
+  "case_id": "xingce.data_analysis.growth_rate.ambiguous.v1",
+  "created_at": "2026-07-11T00:00:00+00:00",
+  "observation": {
+    "attempt_id": "attempt-demo-001",
+    "evidence_ids": [
+      "attempt:attempt-demo-001"
+    ],
+    "payload": {
+      "attempt_id": "attempt-demo-001",
+      "learner_id": "learner-demo-redacted",
+      "item_id": "item-growth-rate-001",
+      "item_type": "xingce.data_analysis.growth_rate",
+      "correct": false,
+      "response_time_seconds": 74.0,
+      "confidence": 0.72,
+      "selected_option": "B",
+      "hints_used": 0,
+      "independently_answered": true,
+      "observed_at": "2026-07-11T00:00:00+00:00",
+      "cause_likelihoods": {
+        "base_current_reversal": 2.4,
+        "percentage_point_confusion": 1.6,
+        "arithmetic_slip": 0.8
+      },
+      "evidence_features": {
+        "option_mapping_version": "growth-rate-distractors-v1",
+        "option_b_matches": "reversed_base_current_formula"
+      }
+    }
+  },
+  "policy_decision": {
+    "decision_id": "decision-probe-001",
+    "policy_version": "harness-probe-policy-v1",
+    "action": "request_discriminating_probe",
+    "reason": "ranked cause base_current_reversal remains a hypothesis; verify before teaching claim",
+    "model_tier": "deterministic_baseline"
+  },
+  "tool_calls": [
+    {
+      "call_id": "call-diagnosis-001",
+      "tool": "hermes_explainable_learning_model.diagnose",
+      "version": "0.1.0",
+      "input_evidence_ids": [
+        "attempt:attempt-demo-001"
+      ],
+      "output": {
+        "sha256": "1ec20b973a59838d72da0bccaf17f6ca377b15ac4ed3ea43a7032b4ad97cc812",
+        "result": {
+          "attempt_id": "attempt-demo-001",
+          "hypotheses": [
+            {
+              "cause_id": "base_current_reversal",
+              "probability": 0.722468058585229,
+              "cohort_component": 0.42,
+              "learner_component": 0.5257142857142857,
+              "evidence_likelihood": 2.4,
+              "evidence": [
+                "cohort_prior",
+                "learner_history",
+                "attempt_feature_likelihood"
+              ]
+            },
+            {
+              "cause_id": "percentage_point_confusion",
+              "probability": 0.23857899657214093,
+              "cohort_component": 0.33,
+              "learner_component": 0.33142857142857146,
+              "evidence_likelihood": 1.6,
+              "evidence": [
+                "cohort_prior",
+                "learner_history",
+                "attempt_feature_likelihood"
+              ]
+            },
+            {
+              "cause_id": "arithmetic_slip",
+              "probability": 0.0389529448426301,
+              "cohort_component": 0.25,
+              "learner_component": 0.14285714285714285,
+              "evidence_likelihood": 0.8,
+              "evidence": [
+                "cohort_prior",
+                "learner_history",
+                "attempt_feature_likelihood"
+              ]
+            }
+          ],
+          "uncertainty": 0.6400584790137556,
+          "provenance": {
+            "attempt": {
+              "attempt_id": "attempt-demo-001",
+              "item_id": "item-growth-rate-001",
+              "item_type": "xingce.data_analysis.growth_rate",
+              "observed_at": "2026-07-11T00:00:00+00:00",
+              "selected_option": "B",
+              "response_time_seconds": 74.0,
+              "confidence": 0.72,
+              "hints_used": 0,
+              "independently_answered": true,
+              "features": {
+                "option_mapping_version": "growth-rate-distractors-v1",
+                "option_b_matches": "reversed_base_current_formula"
+              }
+            },
+            "cohort_sources": [
+              {
+                "cause_id": "base_current_reversal",
+                "cohort_id": "cold-start-growth-rate",
+                "sample_size": 120,
+                "source_version": "expert-seeded-prior-v1"
+              },
+              {
+                "cause_id": "percentage_point_confusion",
+                "cohort_id": "cold-start-growth-rate",
+                "sample_size": 120,
+                "source_version": "expert-seeded-prior-v1"
+              },
+              {
+                "cause_id": "arithmetic_slip",
+                "cohort_id": "cold-start-growth-rate",
+                "sample_size": 120,
+                "source_version": "expert-seeded-prior-v1"
+              }
+            ],
+            "learner_history_version": "learner-history-demo-v1",
+            "learner_history_exposure_count": 7,
+            "formula": "normalize(cohort_prior * learner_dirichlet_posterior * evidence_likelihood)"
+          },
+          "model_version": "hierarchical-cause-baseline-v1"
+        }
+      }
+    },
+    {
+      "call_id": "call-verification-001",
+      "tool": "hermes_explainable_learning_model.verify_intervention",
+      "version": "0.1.0",
+      "input_evidence_ids": [
+        "attempt:attempt-demo-probe-001"
+      ],
+      "output": {
+        "sha256": "4d7596e60b30632b371f3527ae39b82eff612719858677817b65939389f77c64",
+        "result": {
+          "post_state": {
+            "learner_id": "learner-demo-redacted",
+            "skill_id": "xingce.data_analysis.growth_rate.base_current",
+            "bkt_mastery": 0.7347945205479453,
+            "successes": 2.0,
+            "failures": 2.0,
+            "irt_theta": -0.10945587477855045,
+            "evidence_count": 4,
+            "mastery": 0.5751921245771141,
+            "uncertainty": 0.40476676779245535,
+            "last_updated_at": "2026-07-11T05:11:10.021712+00:00",
+            "provenance": [
+              {
+                "attempt": {
+                  "attempt_id": "attempt-demo-probe-001",
+                  "item_id": "item-growth-rate-probe-001",
+                  "item_type": "xingce.data_analysis.growth_rate.probe",
+                  "observed_at": "2026-07-11T00:05:00+00:00",
+                  "selected_option": "C",
+                  "response_time_seconds": 51.0,
+                  "confidence": 0.81,
+                  "hints_used": 0,
+                  "independently_answered": true,
+                  "features": {
+                    "isomorphic_transfer": true
+                  }
+                },
+                "skill_weight": 1.0,
+                "item_difficulty": 0.0,
+                "components": {
+                  "bkt": 0.7347945205479453,
+                  "pfa": 0.37754066879814546,
+                  "irt_1pl": 0.4726633183184894
+                },
+                "ensemble_weights": {
+                  "bkt": 0.5,
+                  "pfa": 0.3,
+                  "irt_1pl": 0.2
+                },
+                "formula_version": "bkt-pfa-rasch-ensemble-v1"
+              }
+            ]
+          },
+          "verification": {
+            "intervention_id": "intervention-demo-001",
+            "pre_mastery": 0.34,
+            "post_mastery": 0.5751921245771141,
+            "mastery_gain": 0.23519212457711408,
+            "independently_verified": true,
+            "effective": true,
+            "reason": "effective: independent correct transfer with mastery gain",
+            "provenance": {
+              "verification_attempt": {
+                "attempt_id": "attempt-demo-probe-001",
+                "item_id": "item-growth-rate-probe-001",
+                "item_type": "xingce.data_analysis.growth_rate.probe",
+                "observed_at": "2026-07-11T00:05:00+00:00",
+                "selected_option": "C",
+                "response_time_seconds": 51.0,
+                "confidence": 0.81,
+                "hints_used": 0,
+                "independently_answered": true,
+                "features": {
+                  "isomorphic_transfer": true
+                }
+              },
+              "minimum_gain": 0.02,
+              "model_version": "independent-transfer-check-v1"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "state_transition": {
+    "learner_id": "learner-demo-redacted",
+    "skill_id": "xingce.data_analysis.growth_rate.base_current",
+    "before": {
+      "learner_id": "learner-demo-redacted",
+      "skill_id": "xingce.data_analysis.growth_rate.base_current",
+      "bkt_mastery": 0.34,
+      "successes": 1.0,
+      "failures": 2.0,
+      "irt_theta": -0.25,
+      "evidence_count": 3,
+      "mastery": 0.34,
+      "uncertainty": 0.66,
+      "last_updated_at": "2026-07-10T00:00:00+00:00",
+      "provenance": []
+    },
+    "after": {
+      "learner_id": "learner-demo-redacted",
+      "skill_id": "xingce.data_analysis.growth_rate.base_current",
+      "bkt_mastery": 0.7347945205479453,
+      "successes": 2.0,
+      "failures": 2.0,
+      "irt_theta": -0.10945587477855045,
+      "evidence_count": 4,
+      "mastery": 0.5751921245771141,
+      "uncertainty": 0.40476676779245535,
+      "last_updated_at": "2026-07-11T05:11:10.021712+00:00",
+      "provenance": [
+        {
+          "attempt": {
+            "attempt_id": "attempt-demo-probe-001",
+            "item_id": "item-growth-rate-probe-001",
+            "item_type": "xingce.data_analysis.growth_rate.probe",
+            "observed_at": "2026-07-11T00:05:00+00:00",
+            "selected_option": "C",
+            "response_time_seconds": 51.0,
+            "confidence": 0.81,
+            "hints_used": 0,
+            "independently_answered": true,
+            "features": {
+              "isomorphic_transfer": true
+            }
+          },
+          "skill_weight": 1.0,
+          "item_difficulty": 0.0,
+          "components": {
+            "bkt": 0.7347945205479453,
+            "pfa": 0.37754066879814546,
+            "irt_1pl": 0.4726633183184894
+          },
+          "ensemble_weights": {
+            "bkt": 0.5,
+            "pfa": 0.3,
+            "irt_1pl": 0.2
+          },
+          "formula_version": "bkt-pfa-rasch-ensemble-v1"
+        }
+      ]
+    },
+    "evidence_ids": [
+      "attempt:attempt-demo-probe-001"
+    ],
+    "formula_version": "bkt-pfa-rasch-ensemble-v1"
+  },
+  "evaluation": {
+    "evaluator_version": "independent-transfer-check-v1",
+    "independent_transfer": true,
+    "outcome": true,
+    "evidence_ids": [
+      "attempt:attempt-demo-probe-001"
+    ]
+  },
+  "privacy": {
+    "local_only": true,
+    "redaction_version": "fixture-redaction-v1",
+    "cloud_disclosure": null
+  }
+}

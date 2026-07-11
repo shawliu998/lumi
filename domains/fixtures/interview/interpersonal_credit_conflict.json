@@ -1,0 +1,41 @@
+{
+  "schema_version": "hermes.domain-fixture.v1",
+  "fixture_id": "interview.interpersonal.credit-conflict.synthetic-01",
+  "domain": "interview",
+  "path": "interpersonal",
+  "mode": "success",
+  "module": "人际关系/协作冲突",
+  "scenario_response": "首先保持冷静并核对工作记录。其次私下沟通，了解原因并客观说明贡献。若是疏漏可共同补充说明，并明确分工；若反复发生且影响工作，必要时汇报。",
+  "execution": {"connectivity": "local", "cloud_calls_expected": 0, "fallback": "not_needed", "scorer": "deterministic_local"},
+  "expected_semantics": {"score": "pass", "cause_status": "unconfirmed_hypothesis"},
+  "task": {"prompt": "你和同事共同完成报告，汇报时同事把主要成果都归到自己名下，你怎么办？", "response_mode": "spoken_text"},
+  "skills": [{"skill_id": "interview.interpersonal.emotion-control", "weight": 0.2}, {"skill_id": "interview.interpersonal.fact-communication", "weight": 0.45}, {"skill_id": "interview.interpersonal.team-repair", "weight": 0.35}],
+  "scoring": {
+    "adapter": "interview_rubric_v1", "max_score": 6, "pass_score": 4, "min_structure_markers": 2,
+    "criteria": [
+      {"criterion_id": "calm-and-facts", "keywords": ["保持冷静", "核对事实", "工作记录"], "min_hits": 1, "points": 2},
+      {"criterion_id": "private-communication", "keywords": ["私下沟通", "了解原因", "说明贡献"], "min_hits": 2, "points": 2},
+      {"criterion_id": "repair-and-escalation", "keywords": ["共同补充", "明确分工", "必要时汇报", "避免影响工作"], "min_hits": 2, "points": 2}
+    ]
+  },
+  "diagnosis": {
+    "semantics": "ranked_unconfirmed_hypotheses",
+    "evidence_catalog": [
+      {"evidence_id": "criterion_missing:calm-and-facts", "description": "未体现情绪控制和事实核验"},
+      {"evidence_id": "criterion_missing:private-communication", "description": "没有先进行直接、私下沟通"},
+      {"evidence_id": "criterion_missing:repair-and-escalation", "description": "没有修复协作或设置升级条件"},
+      {"evidence_id": "structure_missing", "description": "回答缺少行动顺序"}
+    ],
+    "candidate_causes": [
+      {"cause_id": "conflict-immediate-escalation", "label": "未核实和沟通便直接公开或向上升级", "synthetic_prior": 0.38, "evidence_refs": ["criterion_missing:private-communication", "criterion_missing:calm-and-facts"], "is_ground_truth": false},
+      {"cause_id": "harmony-over-rights", "label": "为表面和谐回避贡献边界与事实澄清", "synthetic_prior": 0.27, "evidence_refs": ["criterion_missing:calm-and-facts", "criterion_missing:repair-and-escalation"], "is_ground_truth": false},
+      {"cause_id": "relationship-without-work-goal", "label": "只处理情绪，未修复后续工作协作", "synthetic_prior": 0.23, "evidence_refs": ["criterion_missing:repair-and-escalation"], "is_ground_truth": false},
+      {"cause_id": "oral-structure-weak", "label": "沟通、修复、升级条件次序不清", "synthetic_prior": 0.12, "evidence_refs": ["structure_missing"], "is_ground_truth": false}
+    ]
+  },
+  "probe": {"prompt": "如果同事称是无意遗漏，你如何用一句事实陈述开启私下沟通？", "targets": ["conflict-immediate-escalation", "harmony-over-rights"]},
+  "teach": {"prompt": "练习‘稳情绪—核事实—私下沟通—共同修复—条件升级’路径。", "strategy": "graded-conflict-response"},
+  "independent_verify": {"prompt": "同事未按约定提供数据导致你延期，请给出事实沟通、补救协作和条件升级方案。", "response_mode": "spoken_text", "pass_condition": {"required_dimensions": ["facts", "direct_communication", "repair", "conditional_escalation"], "minimum_dimensions": 3}},
+  "samples": {"passing_response": "首先保持冷静并核对工作记录。其次私下沟通，了解原因并客观说明贡献。若是疏漏可共同补充说明，并明确今后分工；若反复发生且影响工作，必要时据实汇报。", "failing_response": "我会立刻在会上指出他的问题，并向领导投诉。"},
+  "provenance": {"content_origin": "synthetic_original", "authoring_note": "合成协作冲突面试题", "prior_source": "synthetic_engineering_prior_v1"}
+}

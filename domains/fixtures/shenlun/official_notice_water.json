@@ -1,0 +1,39 @@
+{
+  "schema_version": "hermes.domain-fixture.v1",
+  "fixture_id": "shenlun.official-writing.water-notice.synthetic-01",
+  "domain": "shenlun",
+  "path": "official_writing",
+  "mode": "success",
+  "module": "应用文/通知",
+  "scenario_response": "通知：7月15日9:00—13:00因清洗水箱暂停供水，请居民提前储水并关闭水龙头。清泉社区居委会",
+  "execution": {"connectivity": "local", "cloud_calls_expected": 0, "fallback": "not_needed", "scorer": "deterministic_local"},
+  "expected_semantics": {"score": "pass", "cause_status": "unconfirmed_hypothesis"},
+  "task": {"prompt": "合成情境：清泉社区7月15日9:00—13:00清洗水箱，期间暂停供水。请以居委会名义写一则通知，提醒居民提前储水并关闭水龙头。", "response_mode": "short_text"},
+  "skills": [{"skill_id": "shenlun.official-writing.format", "weight": 0.3}, {"skill_id": "shenlun.official-writing.complete-information", "weight": 0.5}, {"skill_id": "shenlun.official-writing.tone", "weight": 0.2}],
+  "scoring": {
+    "adapter": "shenlun_rubric_v1", "max_score": 6, "pass_score": 4,
+    "criteria": [
+      {"criterion_id": "time-and-event", "keywords": ["7月15日9:00—13:00", "清洗水箱", "暂停供水"], "min_hits": 2, "points": 2},
+      {"criterion_id": "resident-actions", "keywords": ["提前储水", "关闭水龙头"], "min_hits": 2, "points": 2},
+      {"criterion_id": "notice-identity", "keywords": ["通知", "清泉社区居委会"], "min_hits": 2, "points": 2}
+    ]
+  },
+  "diagnosis": {
+    "semantics": "ranked_unconfirmed_hypotheses",
+    "evidence_catalog": [
+      {"evidence_id": "criterion_missing:time-and-event", "description": "停水时间或事由不完整"},
+      {"evidence_id": "criterion_missing:resident-actions", "description": "居民操作提醒不完整"},
+      {"evidence_id": "criterion_missing:notice-identity", "description": "文种或发布主体缺失"}
+    ],
+    "candidate_causes": [
+      {"cause_id": "five-elements-incomplete", "label": "通知的时间、事项、对象、动作、主体要素遗漏", "synthetic_prior": 0.50, "evidence_refs": ["criterion_missing:time-and-event", "criterion_missing:resident-actions", "criterion_missing:notice-identity"], "is_ground_truth": false},
+      {"cause_id": "format-awareness-weak", "label": "未按通知文种呈现标题与落款", "synthetic_prior": 0.28, "evidence_refs": ["criterion_missing:notice-identity"], "is_ground_truth": false},
+      {"cause_id": "reader-action-not-specified", "label": "只说明事件，未明确居民应做什么", "synthetic_prior": 0.22, "evidence_refs": ["criterion_missing:resident-actions"], "is_ground_truth": false}
+    ]
+  },
+  "probe": {"prompt": "不写正文，先列出时间、事项、对象、居民动作、发布主体五个槽位。", "targets": ["five-elements-incomplete", "format-awareness-weak"]},
+  "teach": {"prompt": "用通知槽位模板完成信息检查，再组织成简洁正文。", "strategy": "genre-slot-template"},
+  "independent_verify": {"prompt": "为社区7月20日14:00消防演练写通知，含集合地点、安全提醒和落款。", "response_mode": "short_text", "pass_condition": {"required_slots": ["title", "time", "event", "action", "issuer"], "minimum_slots": 5}},
+  "samples": {"passing_response": "通知：7月15日9:00—13:00因清洗水箱暂停供水，请居民提前储水并关闭水龙头。清泉社区居委会", "failing_response": "明天社区会停水，请大家注意。"},
+  "provenance": {"content_origin": "synthetic_original", "authoring_note": "合成社区通知情境", "prior_source": "synthetic_engineering_prior_v1"}
+}

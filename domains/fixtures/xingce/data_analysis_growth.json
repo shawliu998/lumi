@@ -1,0 +1,43 @@
+{
+  "schema_version": "hermes.domain-fixture.v1",
+  "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+  "domain": "xingce",
+  "path": "data_analysis",
+  "mode": "success",
+  "module": "资料分析/增长率",
+  "scenario_response": "B",
+  "execution": {"connectivity": "local", "cloud_calls_expected": 0, "fallback": "not_needed", "scorer": "deterministic_local"},
+  "expected_semantics": {"score": "pass", "cause_status": "unconfirmed_hypothesis"},
+  "task": {
+    "prompt": "某园区产值由2024年的200亿元增至2025年的230亿元，同比增长率约为多少？",
+    "response_mode": "single_choice",
+    "options": {"A": "13.0%", "B": "15.0%", "C": "30.0%", "D": "115.0%"}
+  },
+  "skills": [
+    {"skill_id": "xingce.data.growth.identify-base-current", "weight": 0.35},
+    {"skill_id": "xingce.data.growth.compute-rate", "weight": 0.65}
+  ],
+  "scoring": {
+    "adapter": "xingce_mcq_v1", "max_score": 1, "pass_score": 1, "correct_option": "B",
+    "distractor_evidence": {"A": "used_current_as_denominator", "C": "used_increment_as_rate", "D": "reported_ratio_not_growth"}
+  },
+  "diagnosis": {
+    "semantics": "ranked_unconfirmed_hypotheses",
+    "evidence_catalog": [
+      {"evidence_id": "answer_incorrect", "description": "选择与标准答案不同"},
+      {"evidence_id": "used_current_as_denominator", "description": "选项A对应30/230"},
+      {"evidence_id": "used_increment_as_rate", "description": "选项C直接使用增量30"},
+      {"evidence_id": "reported_ratio_not_growth", "description": "选项D对应230/200"}
+    ],
+    "candidate_causes": [
+      {"cause_id": "denominator-current-base-confusion", "label": "增长率分母误用现期量", "synthetic_prior": 0.38, "evidence_refs": ["answer_incorrect", "used_current_as_denominator"], "is_ground_truth": false},
+      {"cause_id": "increment-rate-confusion", "label": "把增长量当作增长率", "synthetic_prior": 0.22, "evidence_refs": ["answer_incorrect", "used_increment_as_rate"], "is_ground_truth": false},
+      {"cause_id": "ratio-growth-confusion", "label": "只算现期/基期而未减1", "synthetic_prior": 0.40, "evidence_refs": ["answer_incorrect", "reported_ratio_not_growth"], "is_ground_truth": false}
+    ]
+  },
+  "probe": {"prompt": "若只告诉你现期120、基期100，请先写出增长率公式，不计算。", "targets": ["denominator-current-base-confusion", "ratio-growth-confusion"]},
+  "teach": {"prompt": "用‘增长量÷基期量’的量纲解释公式，并让学习者标记基期。", "strategy": "worked-example-fading"},
+  "independent_verify": {"prompt": "某指标由80升到92，增长率是多少？", "response_mode": "single_choice", "pass_condition": {"correct_option": "C", "options": {"A": "12%", "B": "13%", "C": "15%", "D": "115%"}}},
+  "samples": {"passing_response": "B", "failing_response": "A"},
+  "provenance": {"content_origin": "synthetic_original", "authoring_note": "自有合成数值，无外部题目文本", "prior_source": "synthetic_engineering_prior_v1"}
+}

@@ -1,0 +1,3356 @@
+{
+  "run_id": "eval-integration-ambiguous",
+  "trace_verified": true,
+  "frames": [
+    {
+      "seq": 1,
+      "kind": "run_started",
+      "diff": [],
+      "state": {
+        "artifacts": {},
+        "context": {
+          "execution_mode": "local",
+          "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+          "network_opt_in": false,
+          "scenario": "ambiguous"
+        },
+        "cycle": 1,
+        "domain": "xingce",
+        "goal": "complete verified learning loop for 资料分析/增长率",
+        "last_error": null,
+        "learner_id": "integration-learner",
+        "max_cycles": 1,
+        "max_steps": 32,
+        "phase": "observe",
+        "run_id": "eval-integration-ambiguous",
+        "schema_version": 1,
+        "status": "running",
+        "step_count": 0
+      }
+    },
+    {
+      "seq": 2,
+      "kind": "phase_completed",
+      "diff": [
+        {
+          "op": "add",
+          "path": "/artifacts/observe",
+          "value": [
+            {
+              "adapter_version": "deterministic-domain-adapters-v1",
+              "attempt": {
+                "attempt_id": "eval-integration-ambiguous:initial",
+                "cause_likelihoods": {
+                  "denominator-current-base-confusion": 0.9999999999999999,
+                  "increment-rate-confusion": 1.0,
+                  "ratio-growth-confusion": 0.9999999999999999
+                },
+                "confidence": 0.3,
+                "correct": false,
+                "evidence_features": {
+                  "adapter_version": "deterministic-domain-adapters-v1",
+                  "domain_observations": [
+                    {
+                      "evidence": "learner selection",
+                      "kind": "response",
+                      "observation_id": "selected_option",
+                      "value": "X"
+                    },
+                    {
+                      "evidence": "exact option comparison",
+                      "kind": "score",
+                      "observation_id": "answer_correct",
+                      "value": false
+                    }
+                  ]
+                },
+                "hints_used": 0,
+                "independently_answered": true,
+                "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "item_type": "资料分析/增长率",
+                "learner_id": "integration-learner",
+                "observed_at": "2026-07-11T00:00:00+00:00",
+                "response_time_seconds": 60.0,
+                "selected_option": "X"
+              },
+              "evidence": [
+                {
+                  "evidence": "learner selection",
+                  "kind": "response",
+                  "observation_id": "selected_option",
+                  "value": "X"
+                },
+                {
+                  "evidence": "exact option comparison",
+                  "kind": "score",
+                  "observation_id": "answer_correct",
+                  "value": false
+                }
+              ],
+              "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+              "response_evidence": {
+                "original_length": 1,
+                "policy_version": "attempt-response-redaction-v1",
+                "redacted_text": "X",
+                "redactions": [],
+                "sha256": "4b68ab3847feda7d6c62c1fbcbeebfa35eab7351ed5e78f4ddadea5df64b8015"
+              },
+              "score": {
+                "adapter_version": "deterministic-domain-adapters-v1",
+                "cause_candidates": [
+                  {
+                    "cause_id": "ratio-growth-confusion",
+                    "evidence_ids": [
+                      "answer_incorrect"
+                    ],
+                    "is_ground_truth": false,
+                    "label": "只算现期/基期而未减1",
+                    "prior": 0.4,
+                    "probability": 0.39999999999999997,
+                    "status": "unconfirmed_hypothesis"
+                  },
+                  {
+                    "cause_id": "denominator-current-base-confusion",
+                    "evidence_ids": [
+                      "answer_incorrect"
+                    ],
+                    "is_ground_truth": false,
+                    "label": "增长率分母误用现期量",
+                    "prior": 0.38,
+                    "probability": 0.37999999999999995,
+                    "status": "unconfirmed_hypothesis"
+                  },
+                  {
+                    "cause_id": "increment-rate-confusion",
+                    "evidence_ids": [
+                      "answer_incorrect"
+                    ],
+                    "is_ground_truth": false,
+                    "label": "把增长量当作增长率",
+                    "prior": 0.22,
+                    "probability": 0.22,
+                    "status": "unconfirmed_hypothesis"
+                  }
+                ],
+                "domain": "xingce",
+                "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "max_score": 1.0,
+                "observations": [
+                  {
+                    "evidence": "learner selection",
+                    "kind": "response",
+                    "observation_id": "selected_option",
+                    "value": "X"
+                  },
+                  {
+                    "evidence": "exact option comparison",
+                    "kind": "score",
+                    "observation_id": "answer_correct",
+                    "value": false
+                  }
+                ],
+                "passed": false,
+                "score": 0.0
+              }
+            }
+          ]
+        },
+        {
+          "old": "observe",
+          "op": "replace",
+          "path": "/phase",
+          "value": "diagnose"
+        },
+        {
+          "old": 0,
+          "op": "replace",
+          "path": "/step_count",
+          "value": 1
+        }
+      ],
+      "state": {
+        "artifacts": {
+          "observe": [
+            {
+              "adapter_version": "deterministic-domain-adapters-v1",
+              "attempt": {
+                "attempt_id": "eval-integration-ambiguous:initial",
+                "cause_likelihoods": {
+                  "denominator-current-base-confusion": 0.9999999999999999,
+                  "increment-rate-confusion": 1.0,
+                  "ratio-growth-confusion": 0.9999999999999999
+                },
+                "confidence": 0.3,
+                "correct": false,
+                "evidence_features": {
+                  "adapter_version": "deterministic-domain-adapters-v1",
+                  "domain_observations": [
+                    {
+                      "evidence": "learner selection",
+                      "kind": "response",
+                      "observation_id": "selected_option",
+                      "value": "X"
+                    },
+                    {
+                      "evidence": "exact option comparison",
+                      "kind": "score",
+                      "observation_id": "answer_correct",
+                      "value": false
+                    }
+                  ]
+                },
+                "hints_used": 0,
+                "independently_answered": true,
+                "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "item_type": "资料分析/增长率",
+                "learner_id": "integration-learner",
+                "observed_at": "2026-07-11T00:00:00+00:00",
+                "response_time_seconds": 60.0,
+                "selected_option": "X"
+              },
+              "evidence": [
+                {
+                  "evidence": "learner selection",
+                  "kind": "response",
+                  "observation_id": "selected_option",
+                  "value": "X"
+                },
+                {
+                  "evidence": "exact option comparison",
+                  "kind": "score",
+                  "observation_id": "answer_correct",
+                  "value": false
+                }
+              ],
+              "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+              "response_evidence": {
+                "original_length": 1,
+                "policy_version": "attempt-response-redaction-v1",
+                "redacted_text": "X",
+                "redactions": [],
+                "sha256": "4b68ab3847feda7d6c62c1fbcbeebfa35eab7351ed5e78f4ddadea5df64b8015"
+              },
+              "score": {
+                "adapter_version": "deterministic-domain-adapters-v1",
+                "cause_candidates": [
+                  {
+                    "cause_id": "ratio-growth-confusion",
+                    "evidence_ids": [
+                      "answer_incorrect"
+                    ],
+                    "is_ground_truth": false,
+                    "label": "只算现期/基期而未减1",
+                    "prior": 0.4,
+                    "probability": 0.39999999999999997,
+                    "status": "unconfirmed_hypothesis"
+                  },
+                  {
+                    "cause_id": "denominator-current-base-confusion",
+                    "evidence_ids": [
+                      "answer_incorrect"
+                    ],
+                    "is_ground_truth": false,
+                    "label": "增长率分母误用现期量",
+                    "prior": 0.38,
+                    "probability": 0.37999999999999995,
+                    "status": "unconfirmed_hypothesis"
+                  },
+                  {
+                    "cause_id": "increment-rate-confusion",
+                    "evidence_ids": [
+                      "answer_incorrect"
+                    ],
+                    "is_ground_truth": false,
+                    "label": "把增长量当作增长率",
+                    "prior": 0.22,
+                    "probability": 0.22,
+                    "status": "unconfirmed_hypothesis"
+                  }
+                ],
+                "domain": "xingce",
+                "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "max_score": 1.0,
+                "observations": [
+                  {
+                    "evidence": "learner selection",
+                    "kind": "response",
+                    "observation_id": "selected_option",
+                    "value": "X"
+                  },
+                  {
+                    "evidence": "exact option comparison",
+                    "kind": "score",
+                    "observation_id": "answer_correct",
+                    "value": false
+                  }
+                ],
+                "passed": false,
+                "score": 0.0
+              }
+            }
+          ]
+        },
+        "context": {
+          "execution_mode": "local",
+          "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+          "network_opt_in": false,
+          "scenario": "ambiguous"
+        },
+        "cycle": 1,
+        "domain": "xingce",
+        "goal": "complete verified learning loop for 资料分析/增长率",
+        "last_error": null,
+        "learner_id": "integration-learner",
+        "max_cycles": 1,
+        "max_steps": 32,
+        "phase": "diagnose",
+        "run_id": "eval-integration-ambiguous",
+        "schema_version": 1,
+        "status": "running",
+        "step_count": 1
+      }
+    },
+    {
+      "seq": 3,
+      "kind": "phase_completed",
+      "diff": [
+        {
+          "op": "add",
+          "path": "/artifacts/diagnose",
+          "value": [
+            {
+              "decision": "disambiguate_hypotheses",
+              "diagnosis": {
+                "attempt_id": "eval-integration-ambiguous:initial",
+                "hypotheses": [
+                  {
+                    "cause_id": "ratio-growth-confusion",
+                    "cohort_component": 0.4,
+                    "evidence": [
+                      "engineering_prior",
+                      "learner_history",
+                      "attempt_feature_likelihood"
+                    ],
+                    "evidence_likelihood": 0.9999999999999999,
+                    "learner_component": 0.4,
+                    "probability": 0.45351473922902497,
+                    "status": "unconfirmed_hypothesis"
+                  },
+                  {
+                    "cause_id": "denominator-current-base-confusion",
+                    "cohort_component": 0.38,
+                    "evidence": [
+                      "engineering_prior",
+                      "learner_history",
+                      "attempt_feature_likelihood"
+                    ],
+                    "evidence_likelihood": 0.9999999999999999,
+                    "learner_component": 0.38,
+                    "probability": 0.40929705215419493,
+                    "status": "unconfirmed_hypothesis"
+                  },
+                  {
+                    "cause_id": "increment-rate-confusion",
+                    "cohort_component": 0.22,
+                    "evidence": [
+                      "engineering_prior",
+                      "learner_history",
+                      "attempt_feature_likelihood"
+                    ],
+                    "evidence_likelihood": 1.0,
+                    "learner_component": 0.22,
+                    "probability": 0.13718820861678005,
+                    "status": "unconfirmed_hypothesis"
+                  }
+                ],
+                "model_version": "hierarchical-cause-baseline-v1",
+                "provenance": {
+                  "attempt": {
+                    "attempt_id": "eval-integration-ambiguous:initial",
+                    "confidence": 0.3,
+                    "features": {
+                      "adapter_version": "deterministic-domain-adapters-v1",
+                      "domain_observations": [
+                        {
+                          "evidence": "learner selection",
+                          "kind": "response",
+                          "observation_id": "selected_option",
+                          "value": "X"
+                        },
+                        {
+                          "evidence": "exact option comparison",
+                          "kind": "score",
+                          "observation_id": "answer_correct",
+                          "value": false
+                        }
+                      ]
+                    },
+                    "hints_used": 0,
+                    "independently_answered": true,
+                    "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                    "item_type": "资料分析/增长率",
+                    "observed_at": "2026-07-11T00:00:00+00:00",
+                    "response_time_seconds": 60.0,
+                    "selected_option": "X"
+                  },
+                  "cohort_sources": [
+                    {
+                      "cause_id": "denominator-current-base-confusion",
+                      "cohort_id": "synthetic-fixture-cold-start",
+                      "sample_size": 0,
+                      "source_version": "synthetic_engineering_prior_v1"
+                    },
+                    {
+                      "cause_id": "increment-rate-confusion",
+                      "cohort_id": "synthetic-fixture-cold-start",
+                      "sample_size": 0,
+                      "source_version": "synthetic_engineering_prior_v1"
+                    },
+                    {
+                      "cause_id": "ratio-growth-confusion",
+                      "cohort_id": "synthetic-fixture-cold-start",
+                      "sample_size": 0,
+                      "source_version": "synthetic_engineering_prior_v1"
+                    }
+                  ],
+                  "formula": "normalize(cohort_prior * learner_dirichlet_posterior * evidence_likelihood)",
+                  "learner_history_exposure_count": 0,
+                  "learner_history_version": "integration-scenario-history-v1"
+                },
+                "uncertainty": 0.9072793759119459
+              },
+              "engine_tool": {
+                "name": "hermes_explainable_learning_model",
+                "version": "0.1.0"
+              },
+              "model_version": "hierarchical-cause-baseline-v1",
+              "policy_version": "integration-learning-policy-v1"
+            }
+          ]
+        },
+        {
+          "old": "diagnose",
+          "op": "replace",
+          "path": "/phase",
+          "value": "probe"
+        },
+        {
+          "old": 1,
+          "op": "replace",
+          "path": "/step_count",
+          "value": 2
+        }
+      ],
+      "state": {
+        "artifacts": {
+          "diagnose": [
+            {
+              "decision": "disambiguate_hypotheses",
+              "diagnosis": {
+                "attempt_id": "eval-integration-ambiguous:initial",
+                "hypotheses": [
+                  {
+                    "cause_id": "ratio-growth-confusion",
+                    "cohort_component": 0.4,
+                    "evidence": [
+                      "engineering_prior",
+                      "learner_history",
+                      "attempt_feature_likelihood"
+                    ],
+                    "evidence_likelihood": 0.9999999999999999,
+                    "learner_component": 0.4,
+                    "probability": 0.45351473922902497,
+                    "status": "unconfirmed_hypothesis"
+                  },
+                  {
+                    "cause_id": "denominator-current-base-confusion",
+                    "cohort_component": 0.38,
+                    "evidence": [
+                      "engineering_prior",
+                      "learner_history",
+                      "attempt_feature_likelihood"
+                    ],
+                    "evidence_likelihood": 0.9999999999999999,
+                    "learner_component": 0.38,
+                    "probability": 0.40929705215419493,
+                    "status": "unconfirmed_hypothesis"
+                  },
+                  {
+                    "cause_id": "increment-rate-confusion",
+                    "cohort_component": 0.22,
+                    "evidence": [
+                      "engineering_prior",
+                      "learner_history",
+                      "attempt_feature_likelihood"
+                    ],
+                    "evidence_likelihood": 1.0,
+                    "learner_component": 0.22,
+                    "probability": 0.13718820861678005,
+                    "status": "unconfirmed_hypothesis"
+                  }
+                ],
+                "model_version": "hierarchical-cause-baseline-v1",
+                "provenance": {
+                  "attempt": {
+                    "attempt_id": "eval-integration-ambiguous:initial",
+                    "confidence": 0.3,
+                    "features": {
+                      "adapter_version": "deterministic-domain-adapters-v1",
+                      "domain_observations": [
+                        {
+                          "evidence": "learner selection",
+                          "kind": "response",
+                          "observation_id": "selected_option",
+                          "value": "X"
+                        },
+                        {
+                          "evidence": "exact option comparison",
+                          "kind": "score",
+                          "observation_id": "answer_correct",
+                          "value": false
+                        }
+                      ]
+                    },
+                    "hints_used": 0,
+                    "independently_answered": true,
+                    "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                    "item_type": "资料分析/增长率",
+                    "observed_at": "2026-07-11T00:00:00+00:00",
+                    "response_time_seconds": 60.0,
+                    "selected_option": "X"
+                  },
+                  "cohort_sources": [
+                    {
+                      "cause_id": "denominator-current-base-confusion",
+                      "cohort_id": "synthetic-fixture-cold-start",
+                      "sample_size": 0,
+                      "source_version": "synthetic_engineering_prior_v1"
+                    },
+                    {
+                      "cause_id": "increment-rate-confusion",
+                      "cohort_id": "synthetic-fixture-cold-start",
+                      "sample_size": 0,
+                      "source_version": "synthetic_engineering_prior_v1"
+                    },
+                    {
+                      "cause_id": "ratio-growth-confusion",
+                      "cohort_id": "synthetic-fixture-cold-start",
+                      "sample_size": 0,
+                      "source_version": "synthetic_engineering_prior_v1"
+                    }
+                  ],
+                  "formula": "normalize(cohort_prior * learner_dirichlet_posterior * evidence_likelihood)",
+                  "learner_history_exposure_count": 0,
+                  "learner_history_version": "integration-scenario-history-v1"
+                },
+                "uncertainty": 0.9072793759119459
+              },
+              "engine_tool": {
+                "name": "hermes_explainable_learning_model",
+                "version": "0.1.0"
+              },
+              "model_version": "hierarchical-cause-baseline-v1",
+              "policy_version": "integration-learning-policy-v1"
+            }
+          ],
+          "observe": [
+            {
+              "adapter_version": "deterministic-domain-adapters-v1",
+              "attempt": {
+                "attempt_id": "eval-integration-ambiguous:initial",
+                "cause_likelihoods": {
+                  "denominator-current-base-confusion": 0.9999999999999999,
+                  "increment-rate-confusion": 1.0,
+                  "ratio-growth-confusion": 0.9999999999999999
+                },
+                "confidence": 0.3,
+                "correct": false,
+                "evidence_features": {
+                  "adapter_version": "deterministic-domain-adapters-v1",
+                  "domain_observations": [
+                    {
+                      "evidence": "learner selection",
+                      "kind": "response",
+                      "observation_id": "selected_option",
+                      "value": "X"
+                    },
+                    {
+                      "evidence": "exact option comparison",
+                      "kind": "score",
+                      "observation_id": "answer_correct",
+                      "value": false
+                    }
+                  ]
+                },
+                "hints_used": 0,
+                "independently_answered": true,
+                "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "item_type": "资料分析/增长率",
+                "learner_id": "integration-learner",
+                "observed_at": "2026-07-11T00:00:00+00:00",
+                "response_time_seconds": 60.0,
+                "selected_option": "X"
+              },
+              "evidence": [
+                {
+                  "evidence": "learner selection",
+                  "kind": "response",
+                  "observation_id": "selected_option",
+                  "value": "X"
+                },
+                {
+                  "evidence": "exact option comparison",
+                  "kind": "score",
+                  "observation_id": "answer_correct",
+                  "value": false
+                }
+              ],
+              "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+              "response_evidence": {
+                "original_length": 1,
+                "policy_version": "attempt-response-redaction-v1",
+                "redacted_text": "X",
+                "redactions": [],
+                "sha256": "4b68ab3847feda7d6c62c1fbcbeebfa35eab7351ed5e78f4ddadea5df64b8015"
+              },
+              "score": {
+                "adapter_version": "deterministic-domain-adapters-v1",
+                "cause_candidates": [
+                  {
+                    "cause_id": "ratio-growth-confusion",
+                    "evidence_ids": [
+                      "answer_incorrect"
+                    ],
+                    "is_ground_truth": false,
+                    "label": "只算现期/基期而未减1",
+                    "prior": 0.4,
+                    "probability": 0.39999999999999997,
+                    "status": "unconfirmed_hypothesis"
+                  },
+                  {
+                    "cause_id": "denominator-current-base-confusion",
+                    "evidence_ids": [
+                      "answer_incorrect"
+                    ],
+                    "is_ground_truth": false,
+                    "label": "增长率分母误用现期量",
+                    "prior": 0.38,
+                    "probability": 0.37999999999999995,
+                    "status": "unconfirmed_hypothesis"
+                  },
+                  {
+                    "cause_id": "increment-rate-confusion",
+                    "evidence_ids": [
+                      "answer_incorrect"
+                    ],
+                    "is_ground_truth": false,
+                    "label": "把增长量当作增长率",
+                    "prior": 0.22,
+                    "probability": 0.22,
+                    "status": "unconfirmed_hypothesis"
+                  }
+                ],
+                "domain": "xingce",
+                "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "max_score": 1.0,
+                "observations": [
+                  {
+                    "evidence": "learner selection",
+                    "kind": "response",
+                    "observation_id": "selected_option",
+                    "value": "X"
+                  },
+                  {
+                    "evidence": "exact option comparison",
+                    "kind": "score",
+                    "observation_id": "answer_correct",
+                    "value": false
+                  }
+                ],
+                "passed": false,
+                "score": 0.0
+              }
+            }
+          ]
+        },
+        "context": {
+          "execution_mode": "local",
+          "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+          "network_opt_in": false,
+          "scenario": "ambiguous"
+        },
+        "cycle": 1,
+        "domain": "xingce",
+        "goal": "complete verified learning loop for 资料分析/增长率",
+        "last_error": null,
+        "learner_id": "integration-learner",
+        "max_cycles": 1,
+        "max_steps": 32,
+        "phase": "probe",
+        "run_id": "eval-integration-ambiguous",
+        "schema_version": 1,
+        "status": "running",
+        "step_count": 2
+      }
+    },
+    {
+      "seq": 4,
+      "kind": "phase_completed",
+      "diff": [
+        {
+          "op": "add",
+          "path": "/artifacts/probe",
+          "value": [
+            {
+              "policy_version": "integration-learning-policy-v1",
+              "prompt": "若只告诉你现期120、基期100，请先写出增长率公式，不计算。",
+              "response": "我不确定分母和是否减一。",
+              "response_status": "observed",
+              "selection": "disambiguate_hypotheses",
+              "targets": [
+                "denominator-current-base-confusion",
+                "ratio-growth-confusion"
+              ],
+              "top_hypothesis": "ratio-growth-confusion"
+            }
+          ]
+        },
+        {
+          "old": "probe",
+          "op": "replace",
+          "path": "/phase",
+          "value": "teach"
+        },
+        {
+          "old": 2,
+          "op": "replace",
+          "path": "/step_count",
+          "value": 3
+        }
+      ],
+      "state": {
+        "artifacts": {
+          "diagnose": [
+            {
+              "decision": "disambiguate_hypotheses",
+              "diagnosis": {
+                "attempt_id": "eval-integration-ambiguous:initial",
+                "hypotheses": [
+                  {
+                    "cause_id": "ratio-growth-confusion",
+                    "cohort_component": 0.4,
+                    "evidence": [
+                      "engineering_prior",
+                      "learner_history",
+                      "attempt_feature_likelihood"
+                    ],
+                    "evidence_likelihood": 0.9999999999999999,
+                    "learner_component": 0.4,
+                    "probability": 0.45351473922902497,
+                    "status": "unconfirmed_hypothesis"
+                  },
+                  {
+                    "cause_id": "denominator-current-base-confusion",
+                    "cohort_component": 0.38,
+                    "evidence": [
+                      "engineering_prior",
+                      "learner_history",
+                      "attempt_feature_likelihood"
+                    ],
+                    "evidence_likelihood": 0.9999999999999999,
+                    "learner_component": 0.38,
+                    "probability": 0.40929705215419493,
+                    "status": "unconfirmed_hypothesis"
+                  },
+                  {
+                    "cause_id": "increment-rate-confusion",
+                    "cohort_component": 0.22,
+                    "evidence": [
+                      "engineering_prior",
+                      "learner_history",
+                      "attempt_feature_likelihood"
+                    ],
+                    "evidence_likelihood": 1.0,
+                    "learner_component": 0.22,
+                    "probability": 0.13718820861678005,
+                    "status": "unconfirmed_hypothesis"
+                  }
+                ],
+                "model_version": "hierarchical-cause-baseline-v1",
+                "provenance": {
+                  "attempt": {
+                    "attempt_id": "eval-integration-ambiguous:initial",
+                    "confidence": 0.3,
+                    "features": {
+                      "adapter_version": "deterministic-domain-adapters-v1",
+                      "domain_observations": [
+                        {
+                          "evidence": "learner selection",
+                          "kind": "response",
+                          "observation_id": "selected_option",
+                          "value": "X"
+                        },
+                        {
+                          "evidence": "exact option comparison",
+                          "kind": "score",
+                          "observation_id": "answer_correct",
+                          "value": false
+                        }
+                      ]
+                    },
+                    "hints_used": 0,
+                    "independently_answered": true,
+                    "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                    "item_type": "资料分析/增长率",
+                    "observed_at": "2026-07-11T00:00:00+00:00",
+                    "response_time_seconds": 60.0,
+                    "selected_option": "X"
+                  },
+                  "cohort_sources": [
+                    {
+                      "cause_id": "denominator-current-base-confusion",
+                      "cohort_id": "synthetic-fixture-cold-start",
+                      "sample_size": 0,
+                      "source_version": "synthetic_engineering_prior_v1"
+                    },
+                    {
+                      "cause_id": "increment-rate-confusion",
+                      "cohort_id": "synthetic-fixture-cold-start",
+                      "sample_size": 0,
+                      "source_version": "synthetic_engineering_prior_v1"
+                    },
+                    {
+                      "cause_id": "ratio-growth-confusion",
+                      "cohort_id": "synthetic-fixture-cold-start",
+                      "sample_size": 0,
+                      "source_version": "synthetic_engineering_prior_v1"
+                    }
+                  ],
+                  "formula": "normalize(cohort_prior * learner_dirichlet_posterior * evidence_likelihood)",
+                  "learner_history_exposure_count": 0,
+                  "learner_history_version": "integration-scenario-history-v1"
+                },
+                "uncertainty": 0.9072793759119459
+              },
+              "engine_tool": {
+                "name": "hermes_explainable_learning_model",
+                "version": "0.1.0"
+              },
+              "model_version": "hierarchical-cause-baseline-v1",
+              "policy_version": "integration-learning-policy-v1"
+            }
+          ],
+          "observe": [
+            {
+              "adapter_version": "deterministic-domain-adapters-v1",
+              "attempt": {
+                "attempt_id": "eval-integration-ambiguous:initial",
+                "cause_likelihoods": {
+                  "denominator-current-base-confusion": 0.9999999999999999,
+                  "increment-rate-confusion": 1.0,
+                  "ratio-growth-confusion": 0.9999999999999999
+                },
+                "confidence": 0.3,
+                "correct": false,
+                "evidence_features": {
+                  "adapter_version": "deterministic-domain-adapters-v1",
+                  "domain_observations": [
+                    {
+                      "evidence": "learner selection",
+                      "kind": "response",
+                      "observation_id": "selected_option",
+                      "value": "X"
+                    },
+                    {
+                      "evidence": "exact option comparison",
+                      "kind": "score",
+                      "observation_id": "answer_correct",
+                      "value": false
+                    }
+                  ]
+                },
+                "hints_used": 0,
+                "independently_answered": true,
+                "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "item_type": "资料分析/增长率",
+                "learner_id": "integration-learner",
+                "observed_at": "2026-07-11T00:00:00+00:00",
+                "response_time_seconds": 60.0,
+                "selected_option": "X"
+              },
+              "evidence": [
+                {
+                  "evidence": "learner selection",
+                  "kind": "response",
+                  "observation_id": "selected_option",
+                  "value": "X"
+                },
+                {
+                  "evidence": "exact option comparison",
+                  "kind": "score",
+                  "observation_id": "answer_correct",
+                  "value": false
+                }
+              ],
+              "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+              "response_evidence": {
+                "original_length": 1,
+                "policy_version": "attempt-response-redaction-v1",
+                "redacted_text": "X",
+                "redactions": [],
+                "sha256": "4b68ab3847feda7d6c62c1fbcbeebfa35eab7351ed5e78f4ddadea5df64b8015"
+              },
+              "score": {
+                "adapter_version": "deterministic-domain-adapters-v1",
+                "cause_candidates": [
+                  {
+                    "cause_id": "ratio-growth-confusion",
+                    "evidence_ids": [
+                      "answer_incorrect"
+                    ],
+                    "is_ground_truth": false,
+                    "label": "只算现期/基期而未减1",
+                    "prior": 0.4,
+                    "probability": 0.39999999999999997,
+                    "status": "unconfirmed_hypothesis"
+                  },
+                  {
+                    "cause_id": "denominator-current-base-confusion",
+                    "evidence_ids": [
+                      "answer_incorrect"
+                    ],
+                    "is_ground_truth": false,
+                    "label": "增长率分母误用现期量",
+                    "prior": 0.38,
+                    "probability": 0.37999999999999995,
+                    "status": "unconfirmed_hypothesis"
+                  },
+                  {
+                    "cause_id": "increment-rate-confusion",
+                    "evidence_ids": [
+                      "answer_incorrect"
+                    ],
+                    "is_ground_truth": false,
+                    "label": "把增长量当作增长率",
+                    "prior": 0.22,
+                    "probability": 0.22,
+                    "status": "unconfirmed_hypothesis"
+                  }
+                ],
+                "domain": "xingce",
+                "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "max_score": 1.0,
+                "observations": [
+                  {
+                    "evidence": "learner selection",
+                    "kind": "response",
+                    "observation_id": "selected_option",
+                    "value": "X"
+                  },
+                  {
+                    "evidence": "exact option comparison",
+                    "kind": "score",
+                    "observation_id": "answer_correct",
+                    "value": false
+                  }
+                ],
+                "passed": false,
+                "score": 0.0
+              }
+            }
+          ],
+          "probe": [
+            {
+              "policy_version": "integration-learning-policy-v1",
+              "prompt": "若只告诉你现期120、基期100，请先写出增长率公式，不计算。",
+              "response": "我不确定分母和是否减一。",
+              "response_status": "observed",
+              "selection": "disambiguate_hypotheses",
+              "targets": [
+                "denominator-current-base-confusion",
+                "ratio-growth-confusion"
+              ],
+              "top_hypothesis": "ratio-growth-confusion"
+            }
+          ]
+        },
+        "context": {
+          "execution_mode": "local",
+          "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+          "network_opt_in": false,
+          "scenario": "ambiguous"
+        },
+        "cycle": 1,
+        "domain": "xingce",
+        "goal": "complete verified learning loop for 资料分析/增长率",
+        "last_error": null,
+        "learner_id": "integration-learner",
+        "max_cycles": 1,
+        "max_steps": 32,
+        "phase": "teach",
+        "run_id": "eval-integration-ambiguous",
+        "schema_version": 1,
+        "status": "running",
+        "step_count": 3
+      }
+    },
+    {
+      "seq": 5,
+      "kind": "phase_completed",
+      "diff": [
+        {
+          "op": "add",
+          "path": "/artifacts/teach",
+          "value": [
+            {
+              "based_on": {
+                "probe_response": "我不确定分母和是否减一。",
+                "probe_selection": "disambiguate_hypotheses",
+                "top_hypothesis": "ratio-growth-confusion"
+              },
+              "independent_verification_prompt": "某指标由80升到92，增长率是多少？",
+              "independent_verification_response_mode": "single_choice",
+              "policy_version": "integration-learning-policy-v1",
+              "prompt": "用‘增长量÷基期量’的量纲解释公式，并让学习者标记基期。",
+              "strategy": "worked-example-fading"
+            }
+          ]
+        },
+        {
+          "old": "teach",
+          "op": "replace",
+          "path": "/phase",
+          "value": "verify"
+        },
+        {
+          "old": 3,
+          "op": "replace",
+          "path": "/step_count",
+          "value": 4
+        }
+      ],
+      "state": {
+        "artifacts": {
+          "diagnose": [
+            {
+              "decision": "disambiguate_hypotheses",
+              "diagnosis": {
+                "attempt_id": "eval-integration-ambiguous:initial",
+                "hypotheses": [
+                  {
+                    "cause_id": "ratio-growth-confusion",
+                    "cohort_component": 0.4,
+                    "evidence": [
+                      "engineering_prior",
+                      "learner_history",
+                      "attempt_feature_likelihood"
+                    ],
+                    "evidence_likelihood": 0.9999999999999999,
+                    "learner_component": 0.4,
+                    "probability": 0.45351473922902497,
+                    "status": "unconfirmed_hypothesis"
+                  },
+                  {
+                    "cause_id": "denominator-current-base-confusion",
+                    "cohort_component": 0.38,
+                    "evidence": [
+                      "engineering_prior",
+                      "learner_history",
+                      "attempt_feature_likelihood"
+                    ],
+                    "evidence_likelihood": 0.9999999999999999,
+                    "learner_component": 0.38,
+                    "probability": 0.40929705215419493,
+                    "status": "unconfirmed_hypothesis"
+                  },
+                  {
+                    "cause_id": "increment-rate-confusion",
+                    "cohort_component": 0.22,
+                    "evidence": [
+                      "engineering_prior",
+                      "learner_history",
+                      "attempt_feature_likelihood"
+                    ],
+                    "evidence_likelihood": 1.0,
+                    "learner_component": 0.22,
+                    "probability": 0.13718820861678005,
+                    "status": "unconfirmed_hypothesis"
+                  }
+                ],
+                "model_version": "hierarchical-cause-baseline-v1",
+                "provenance": {
+                  "attempt": {
+                    "attempt_id": "eval-integration-ambiguous:initial",
+                    "confidence": 0.3,
+                    "features": {
+                      "adapter_version": "deterministic-domain-adapters-v1",
+                      "domain_observations": [
+                        {
+                          "evidence": "learner selection",
+                          "kind": "response",
+                          "observation_id": "selected_option",
+                          "value": "X"
+                        },
+                        {
+                          "evidence": "exact option comparison",
+                          "kind": "score",
+                          "observation_id": "answer_correct",
+                          "value": false
+                        }
+                      ]
+                    },
+                    "hints_used": 0,
+                    "independently_answered": true,
+                    "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                    "item_type": "资料分析/增长率",
+                    "observed_at": "2026-07-11T00:00:00+00:00",
+                    "response_time_seconds": 60.0,
+                    "selected_option": "X"
+                  },
+                  "cohort_sources": [
+                    {
+                      "cause_id": "denominator-current-base-confusion",
+                      "cohort_id": "synthetic-fixture-cold-start",
+                      "sample_size": 0,
+                      "source_version": "synthetic_engineering_prior_v1"
+                    },
+                    {
+                      "cause_id": "increment-rate-confusion",
+                      "cohort_id": "synthetic-fixture-cold-start",
+                      "sample_size": 0,
+                      "source_version": "synthetic_engineering_prior_v1"
+                    },
+                    {
+                      "cause_id": "ratio-growth-confusion",
+                      "cohort_id": "synthetic-fixture-cold-start",
+                      "sample_size": 0,
+                      "source_version": "synthetic_engineering_prior_v1"
+                    }
+                  ],
+                  "formula": "normalize(cohort_prior * learner_dirichlet_posterior * evidence_likelihood)",
+                  "learner_history_exposure_count": 0,
+                  "learner_history_version": "integration-scenario-history-v1"
+                },
+                "uncertainty": 0.9072793759119459
+              },
+              "engine_tool": {
+                "name": "hermes_explainable_learning_model",
+                "version": "0.1.0"
+              },
+              "model_version": "hierarchical-cause-baseline-v1",
+              "policy_version": "integration-learning-policy-v1"
+            }
+          ],
+          "observe": [
+            {
+              "adapter_version": "deterministic-domain-adapters-v1",
+              "attempt": {
+                "attempt_id": "eval-integration-ambiguous:initial",
+                "cause_likelihoods": {
+                  "denominator-current-base-confusion": 0.9999999999999999,
+                  "increment-rate-confusion": 1.0,
+                  "ratio-growth-confusion": 0.9999999999999999
+                },
+                "confidence": 0.3,
+                "correct": false,
+                "evidence_features": {
+                  "adapter_version": "deterministic-domain-adapters-v1",
+                  "domain_observations": [
+                    {
+                      "evidence": "learner selection",
+                      "kind": "response",
+                      "observation_id": "selected_option",
+                      "value": "X"
+                    },
+                    {
+                      "evidence": "exact option comparison",
+                      "kind": "score",
+                      "observation_id": "answer_correct",
+                      "value": false
+                    }
+                  ]
+                },
+                "hints_used": 0,
+                "independently_answered": true,
+                "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "item_type": "资料分析/增长率",
+                "learner_id": "integration-learner",
+                "observed_at": "2026-07-11T00:00:00+00:00",
+                "response_time_seconds": 60.0,
+                "selected_option": "X"
+              },
+              "evidence": [
+                {
+                  "evidence": "learner selection",
+                  "kind": "response",
+                  "observation_id": "selected_option",
+                  "value": "X"
+                },
+                {
+                  "evidence": "exact option comparison",
+                  "kind": "score",
+                  "observation_id": "answer_correct",
+                  "value": false
+                }
+              ],
+              "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+              "response_evidence": {
+                "original_length": 1,
+                "policy_version": "attempt-response-redaction-v1",
+                "redacted_text": "X",
+                "redactions": [],
+                "sha256": "4b68ab3847feda7d6c62c1fbcbeebfa35eab7351ed5e78f4ddadea5df64b8015"
+              },
+              "score": {
+                "adapter_version": "deterministic-domain-adapters-v1",
+                "cause_candidates": [
+                  {
+                    "cause_id": "ratio-growth-confusion",
+                    "evidence_ids": [
+                      "answer_incorrect"
+                    ],
+                    "is_ground_truth": false,
+                    "label": "只算现期/基期而未减1",
+                    "prior": 0.4,
+                    "probability": 0.39999999999999997,
+                    "status": "unconfirmed_hypothesis"
+                  },
+                  {
+                    "cause_id": "denominator-current-base-confusion",
+                    "evidence_ids": [
+                      "answer_incorrect"
+                    ],
+                    "is_ground_truth": false,
+                    "label": "增长率分母误用现期量",
+                    "prior": 0.38,
+                    "probability": 0.37999999999999995,
+                    "status": "unconfirmed_hypothesis"
+                  },
+                  {
+                    "cause_id": "increment-rate-confusion",
+                    "evidence_ids": [
+                      "answer_incorrect"
+                    ],
+                    "is_ground_truth": false,
+                    "label": "把增长量当作增长率",
+                    "prior": 0.22,
+                    "probability": 0.22,
+                    "status": "unconfirmed_hypothesis"
+                  }
+                ],
+                "domain": "xingce",
+                "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "max_score": 1.0,
+                "observations": [
+                  {
+                    "evidence": "learner selection",
+                    "kind": "response",
+                    "observation_id": "selected_option",
+                    "value": "X"
+                  },
+                  {
+                    "evidence": "exact option comparison",
+                    "kind": "score",
+                    "observation_id": "answer_correct",
+                    "value": false
+                  }
+                ],
+                "passed": false,
+                "score": 0.0
+              }
+            }
+          ],
+          "probe": [
+            {
+              "policy_version": "integration-learning-policy-v1",
+              "prompt": "若只告诉你现期120、基期100，请先写出增长率公式，不计算。",
+              "response": "我不确定分母和是否减一。",
+              "response_status": "observed",
+              "selection": "disambiguate_hypotheses",
+              "targets": [
+                "denominator-current-base-confusion",
+                "ratio-growth-confusion"
+              ],
+              "top_hypothesis": "ratio-growth-confusion"
+            }
+          ],
+          "teach": [
+            {
+              "based_on": {
+                "probe_response": "我不确定分母和是否减一。",
+                "probe_selection": "disambiguate_hypotheses",
+                "top_hypothesis": "ratio-growth-confusion"
+              },
+              "independent_verification_prompt": "某指标由80升到92，增长率是多少？",
+              "independent_verification_response_mode": "single_choice",
+              "policy_version": "integration-learning-policy-v1",
+              "prompt": "用‘增长量÷基期量’的量纲解释公式，并让学习者标记基期。",
+              "strategy": "worked-example-fading"
+            }
+          ]
+        },
+        "context": {
+          "execution_mode": "local",
+          "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+          "network_opt_in": false,
+          "scenario": "ambiguous"
+        },
+        "cycle": 1,
+        "domain": "xingce",
+        "goal": "complete verified learning loop for 资料分析/增长率",
+        "last_error": null,
+        "learner_id": "integration-learner",
+        "max_cycles": 1,
+        "max_steps": 32,
+        "phase": "verify",
+        "run_id": "eval-integration-ambiguous",
+        "schema_version": 1,
+        "status": "running",
+        "step_count": 4
+      }
+    },
+    {
+      "seq": 6,
+      "kind": "phase_completed",
+      "diff": [
+        {
+          "op": "add",
+          "path": "/artifacts/verify",
+          "value": [
+            {
+              "engine_tool": {
+                "name": "hermes_explainable_learning_model",
+                "version": "0.1.0"
+              },
+              "initial_update_state": {
+                "bkt_mastery": 0.25266101694915255,
+                "evidence_count": 1,
+                "failures": 0.35,
+                "irt_theta": -0.04375,
+                "last_updated_at": "2026-07-11T05:11:09.431337+00:00",
+                "learner_id": "integration-learner",
+                "mastery": 0.3179550732662862,
+                "provenance": [
+                  {
+                    "attempt": {
+                      "attempt_id": "eval-integration-ambiguous:initial",
+                      "confidence": 0.3,
+                      "features": {
+                        "adapter_version": "deterministic-domain-adapters-v1",
+                        "domain_observations": [
+                          {
+                            "evidence": "learner selection",
+                            "kind": "response",
+                            "observation_id": "selected_option",
+                            "value": "X"
+                          },
+                          {
+                            "evidence": "exact option comparison",
+                            "kind": "score",
+                            "observation_id": "answer_correct",
+                            "value": false
+                          }
+                        ]
+                      },
+                      "hints_used": 0,
+                      "independently_answered": true,
+                      "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                      "item_type": "资料分析/增长率",
+                      "observed_at": "2026-07-11T00:00:00+00:00",
+                      "response_time_seconds": 60.0,
+                      "selected_option": "X"
+                    },
+                    "components": {
+                      "bkt": 0.25266101694915255,
+                      "irt_1pl": 0.48906424425435574,
+                      "pfa": 0.31270571980279593
+                    },
+                    "ensemble_weights": {
+                      "bkt": 0.5,
+                      "irt_1pl": 0.2,
+                      "pfa": 0.3
+                    },
+                    "formula_version": "bkt-pfa-rasch-ensemble-v1",
+                    "item_difficulty": 0.0,
+                    "skill_weight": 0.35
+                  }
+                ],
+                "skill_id": "xingce.data.growth.identify-base-current",
+                "successes": 0.0,
+                "uncertainty": 0.5222120647774644
+              },
+              "post_state": {
+                "bkt_mastery": 0.15568101269954387,
+                "evidence_count": 2,
+                "failures": 1.35,
+                "irt_theta": -0.16601606106358893,
+                "last_updated_at": "2026-07-11T05:11:09.431445+00:00",
+                "learner_id": "integration-learner",
+                "mastery": 0.24804851356480737,
+                "provenance": [
+                  {
+                    "attempt": {
+                      "attempt_id": "eval-integration-ambiguous:initial",
+                      "confidence": 0.3,
+                      "features": {
+                        "adapter_version": "deterministic-domain-adapters-v1",
+                        "domain_observations": [
+                          {
+                            "evidence": "learner selection",
+                            "kind": "response",
+                            "observation_id": "selected_option",
+                            "value": "X"
+                          },
+                          {
+                            "evidence": "exact option comparison",
+                            "kind": "score",
+                            "observation_id": "answer_correct",
+                            "value": false
+                          }
+                        ]
+                      },
+                      "hints_used": 0,
+                      "independently_answered": true,
+                      "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                      "item_type": "资料分析/增长率",
+                      "observed_at": "2026-07-11T00:00:00+00:00",
+                      "response_time_seconds": 60.0,
+                      "selected_option": "X"
+                    },
+                    "components": {
+                      "bkt": 0.25266101694915255,
+                      "irt_1pl": 0.48906424425435574,
+                      "pfa": 0.31270571980279593
+                    },
+                    "ensemble_weights": {
+                      "bkt": 0.5,
+                      "irt_1pl": 0.2,
+                      "pfa": 0.3
+                    },
+                    "formula_version": "bkt-pfa-rasch-ensemble-v1",
+                    "item_difficulty": 0.0,
+                    "skill_weight": 0.35
+                  },
+                  {
+                    "attempt": {
+                      "attempt_id": "eval-integration-ambiguous:independent-verify",
+                      "confidence": 0.3,
+                      "features": {
+                        "different_prompt": true,
+                        "scoring": "exact_option_comparison:v1"
+                      },
+                      "hints_used": 0,
+                      "independently_answered": true,
+                      "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
+                      "item_type": "资料分析/增长率",
+                      "observed_at": "2026-07-11T00:05:00+00:00",
+                      "response_time_seconds": 60.0,
+                      "selected_option": "A"
+                    },
+                    "components": {
+                      "bkt": 0.15568101269954387,
+                      "irt_1pl": 0.45859104823220515,
+                      "pfa": 0.2616326585619813
+                    },
+                    "ensemble_weights": {
+                      "bkt": 0.5,
+                      "irt_1pl": 0.2,
+                      "pfa": 0.3
+                    },
+                    "formula_version": "bkt-pfa-rasch-ensemble-v1",
+                    "item_difficulty": 0.0,
+                    "skill_weight": 1.0
+                  }
+                ],
+                "skill_id": "xingce.data.growth.identify-base-current",
+                "successes": 0.0,
+                "uncertainty": 0.4556615375506533
+              },
+              "prompt": "某指标由80升到92，增长率是多少？",
+              "response": "A",
+              "response_evidence": {
+                "original_length": 1,
+                "policy_version": "attempt-response-redaction-v1",
+                "redacted_text": "A",
+                "redactions": [],
+                "sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd"
+              },
+              "verification": {
+                "effective": false,
+                "independently_verified": true,
+                "intervention_id": "eval-integration-ambiguous:teach",
+                "mastery_gain": -0.06990655970147883,
+                "post_mastery": 0.24804851356480737,
+                "pre_mastery": 0.3179550732662862,
+                "provenance": {
+                  "minimum_gain": 0.02,
+                  "model_version": "independent-transfer-check-v1",
+                  "verification_attempt": {
+                    "attempt_id": "eval-integration-ambiguous:independent-verify",
+                    "confidence": 0.3,
+                    "features": {
+                      "different_prompt": true,
+                      "scoring": "exact_option_comparison:v1"
+                    },
+                    "hints_used": 0,
+                    "independently_answered": true,
+                    "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
+                    "item_type": "资料分析/增长率",
+                    "observed_at": "2026-07-11T00:05:00+00:00",
+                    "response_time_seconds": 60.0,
+                    "selected_option": "A"
+                  }
+                },
+                "reason": "not yet effective: independent transfer criterion was not met"
+              },
+              "verification_attempt": {
+                "attempt_id": "eval-integration-ambiguous:independent-verify",
+                "cause_likelihoods": {},
+                "confidence": 0.3,
+                "correct": false,
+                "evidence_features": {
+                  "different_prompt": true,
+                  "scoring": "exact_option_comparison:v1"
+                },
+                "hints_used": 0,
+                "independently_answered": true,
+                "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
+                "item_type": "资料分析/增长率",
+                "learner_id": "integration-learner",
+                "observed_at": "2026-07-11T00:05:00+00:00",
+                "response_time_seconds": 60.0,
+                "selected_option": "A"
+              }
+            }
+          ]
+        },
+        {
+          "old": "verify",
+          "op": "replace",
+          "path": "/phase",
+          "value": "update"
+        },
+        {
+          "old": 4,
+          "op": "replace",
+          "path": "/step_count",
+          "value": 5
+        }
+      ],
+      "state": {
+        "artifacts": {
+          "diagnose": [
+            {
+              "decision": "disambiguate_hypotheses",
+              "diagnosis": {
+                "attempt_id": "eval-integration-ambiguous:initial",
+                "hypotheses": [
+                  {
+                    "cause_id": "ratio-growth-confusion",
+                    "cohort_component": 0.4,
+                    "evidence": [
+                      "engineering_prior",
+                      "learner_history",
+                      "attempt_feature_likelihood"
+                    ],
+                    "evidence_likelihood": 0.9999999999999999,
+                    "learner_component": 0.4,
+                    "probability": 0.45351473922902497,
+                    "status": "unconfirmed_hypothesis"
+                  },
+                  {
+                    "cause_id": "denominator-current-base-confusion",
+                    "cohort_component": 0.38,
+                    "evidence": [
+                      "engineering_prior",
+                      "learner_history",
+                      "attempt_feature_likelihood"
+                    ],
+                    "evidence_likelihood": 0.9999999999999999,
+                    "learner_component": 0.38,
+                    "probability": 0.40929705215419493,
+                    "status": "unconfirmed_hypothesis"
+                  },
+                  {
+                    "cause_id": "increment-rate-confusion",
+                    "cohort_component": 0.22,
+                    "evidence": [
+                      "engineering_prior",
+                      "learner_history",
+                      "attempt_feature_likelihood"
+                    ],
+                    "evidence_likelihood": 1.0,
+                    "learner_component": 0.22,
+                    "probability": 0.13718820861678005,
+                    "status": "unconfirmed_hypothesis"
+                  }
+                ],
+                "model_version": "hierarchical-cause-baseline-v1",
+                "provenance": {
+                  "attempt": {
+                    "attempt_id": "eval-integration-ambiguous:initial",
+                    "confidence": 0.3,
+                    "features": {
+                      "adapter_version": "deterministic-domain-adapters-v1",
+                      "domain_observations": [
+                        {
+                          "evidence": "learner selection",
+                          "kind": "response",
+                          "observation_id": "selected_option",
+                          "value": "X"
+                        },
+                        {
+                          "evidence": "exact option comparison",
+                          "kind": "score",
+                          "observation_id": "answer_correct",
+                          "value": false
+                        }
+                      ]
+                    },
+                    "hints_used": 0,
+                    "independently_answered": true,
+                    "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                    "item_type": "资料分析/增长率",
+                    "observed_at": "2026-07-11T00:00:00+00:00",
+                    "response_time_seconds": 60.0,
+                    "selected_option": "X"
+                  },
+                  "cohort_sources": [
+                    {
+                      "cause_id": "denominator-current-base-confusion",
+                      "cohort_id": "synthetic-fixture-cold-start",
+                      "sample_size": 0,
+                      "source_version": "synthetic_engineering_prior_v1"
+                    },
+                    {
+                      "cause_id": "increment-rate-confusion",
+                      "cohort_id": "synthetic-fixture-cold-start",
+                      "sample_size": 0,
+                      "source_version": "synthetic_engineering_prior_v1"
+                    },
+                    {
+                      "cause_id": "ratio-growth-confusion",
+                      "cohort_id": "synthetic-fixture-cold-start",
+                      "sample_size": 0,
+                      "source_version": "synthetic_engineering_prior_v1"
+                    }
+                  ],
+                  "formula": "normalize(cohort_prior * learner_dirichlet_posterior * evidence_likelihood)",
+                  "learner_history_exposure_count": 0,
+                  "learner_history_version": "integration-scenario-history-v1"
+                },
+                "uncertainty": 0.9072793759119459
+              },
+              "engine_tool": {
+                "name": "hermes_explainable_learning_model",
+                "version": "0.1.0"
+              },
+              "model_version": "hierarchical-cause-baseline-v1",
+              "policy_version": "integration-learning-policy-v1"
+            }
+          ],
+          "observe": [
+            {
+              "adapter_version": "deterministic-domain-adapters-v1",
+              "attempt": {
+                "attempt_id": "eval-integration-ambiguous:initial",
+                "cause_likelihoods": {
+                  "denominator-current-base-confusion": 0.9999999999999999,
+                  "increment-rate-confusion": 1.0,
+                  "ratio-growth-confusion": 0.9999999999999999
+                },
+                "confidence": 0.3,
+                "correct": false,
+                "evidence_features": {
+                  "adapter_version": "deterministic-domain-adapters-v1",
+                  "domain_observations": [
+                    {
+                      "evidence": "learner selection",
+                      "kind": "response",
+                      "observation_id": "selected_option",
+                      "value": "X"
+                    },
+                    {
+                      "evidence": "exact option comparison",
+                      "kind": "score",
+                      "observation_id": "answer_correct",
+                      "value": false
+                    }
+                  ]
+                },
+                "hints_used": 0,
+                "independently_answered": true,
+                "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "item_type": "资料分析/增长率",
+                "learner_id": "integration-learner",
+                "observed_at": "2026-07-11T00:00:00+00:00",
+                "response_time_seconds": 60.0,
+                "selected_option": "X"
+              },
+              "evidence": [
+                {
+                  "evidence": "learner selection",
+                  "kind": "response",
+                  "observation_id": "selected_option",
+                  "value": "X"
+                },
+                {
+                  "evidence": "exact option comparison",
+                  "kind": "score",
+                  "observation_id": "answer_correct",
+                  "value": false
+                }
+              ],
+              "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+              "response_evidence": {
+                "original_length": 1,
+                "policy_version": "attempt-response-redaction-v1",
+                "redacted_text": "X",
+                "redactions": [],
+                "sha256": "4b68ab3847feda7d6c62c1fbcbeebfa35eab7351ed5e78f4ddadea5df64b8015"
+              },
+              "score": {
+                "adapter_version": "deterministic-domain-adapters-v1",
+                "cause_candidates": [
+                  {
+                    "cause_id": "ratio-growth-confusion",
+                    "evidence_ids": [
+                      "answer_incorrect"
+                    ],
+                    "is_ground_truth": false,
+                    "label": "只算现期/基期而未减1",
+                    "prior": 0.4,
+                    "probability": 0.39999999999999997,
+                    "status": "unconfirmed_hypothesis"
+                  },
+                  {
+                    "cause_id": "denominator-current-base-confusion",
+                    "evidence_ids": [
+                      "answer_incorrect"
+                    ],
+                    "is_ground_truth": false,
+                    "label": "增长率分母误用现期量",
+                    "prior": 0.38,
+                    "probability": 0.37999999999999995,
+                    "status": "unconfirmed_hypothesis"
+                  },
+                  {
+                    "cause_id": "increment-rate-confusion",
+                    "evidence_ids": [
+                      "answer_incorrect"
+                    ],
+                    "is_ground_truth": false,
+                    "label": "把增长量当作增长率",
+                    "prior": 0.22,
+                    "probability": 0.22,
+                    "status": "unconfirmed_hypothesis"
+                  }
+                ],
+                "domain": "xingce",
+                "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "max_score": 1.0,
+                "observations": [
+                  {
+                    "evidence": "learner selection",
+                    "kind": "response",
+                    "observation_id": "selected_option",
+                    "value": "X"
+                  },
+                  {
+                    "evidence": "exact option comparison",
+                    "kind": "score",
+                    "observation_id": "answer_correct",
+                    "value": false
+                  }
+                ],
+                "passed": false,
+                "score": 0.0
+              }
+            }
+          ],
+          "probe": [
+            {
+              "policy_version": "integration-learning-policy-v1",
+              "prompt": "若只告诉你现期120、基期100，请先写出增长率公式，不计算。",
+              "response": "我不确定分母和是否减一。",
+              "response_status": "observed",
+              "selection": "disambiguate_hypotheses",
+              "targets": [
+                "denominator-current-base-confusion",
+                "ratio-growth-confusion"
+              ],
+              "top_hypothesis": "ratio-growth-confusion"
+            }
+          ],
+          "teach": [
+            {
+              "based_on": {
+                "probe_response": "我不确定分母和是否减一。",
+                "probe_selection": "disambiguate_hypotheses",
+                "top_hypothesis": "ratio-growth-confusion"
+              },
+              "independent_verification_prompt": "某指标由80升到92，增长率是多少？",
+              "independent_verification_response_mode": "single_choice",
+              "policy_version": "integration-learning-policy-v1",
+              "prompt": "用‘增长量÷基期量’的量纲解释公式，并让学习者标记基期。",
+              "strategy": "worked-example-fading"
+            }
+          ],
+          "verify": [
+            {
+              "engine_tool": {
+                "name": "hermes_explainable_learning_model",
+                "version": "0.1.0"
+              },
+              "initial_update_state": {
+                "bkt_mastery": 0.25266101694915255,
+                "evidence_count": 1,
+                "failures": 0.35,
+                "irt_theta": -0.04375,
+                "last_updated_at": "2026-07-11T05:11:09.431337+00:00",
+                "learner_id": "integration-learner",
+                "mastery": 0.3179550732662862,
+                "provenance": [
+                  {
+                    "attempt": {
+                      "attempt_id": "eval-integration-ambiguous:initial",
+                      "confidence": 0.3,
+                      "features": {
+                        "adapter_version": "deterministic-domain-adapters-v1",
+                        "domain_observations": [
+                          {
+                            "evidence": "learner selection",
+                            "kind": "response",
+                            "observation_id": "selected_option",
+                            "value": "X"
+                          },
+                          {
+                            "evidence": "exact option comparison",
+                            "kind": "score",
+                            "observation_id": "answer_correct",
+                            "value": false
+                          }
+                        ]
+                      },
+                      "hints_used": 0,
+                      "independently_answered": true,
+                      "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                      "item_type": "资料分析/增长率",
+                      "observed_at": "2026-07-11T00:00:00+00:00",
+                      "response_time_seconds": 60.0,
+                      "selected_option": "X"
+                    },
+                    "components": {
+                      "bkt": 0.25266101694915255,
+                      "irt_1pl": 0.48906424425435574,
+                      "pfa": 0.31270571980279593
+                    },
+                    "ensemble_weights": {
+                      "bkt": 0.5,
+                      "irt_1pl": 0.2,
+                      "pfa": 0.3
+                    },
+                    "formula_version": "bkt-pfa-rasch-ensemble-v1",
+                    "item_difficulty": 0.0,
+                    "skill_weight": 0.35
+                  }
+                ],
+                "skill_id": "xingce.data.growth.identify-base-current",
+                "successes": 0.0,
+                "uncertainty": 0.5222120647774644
+              },
+              "post_state": {
+                "bkt_mastery": 0.15568101269954387,
+                "evidence_count": 2,
+                "failures": 1.35,
+                "irt_theta": -0.16601606106358893,
+                "last_updated_at": "2026-07-11T05:11:09.431445+00:00",
+                "learner_id": "integration-learner",
+                "mastery": 0.24804851356480737,
+                "provenance": [
+                  {
+                    "attempt": {
+                      "attempt_id": "eval-integration-ambiguous:initial",
+                      "confidence": 0.3,
+                      "features": {
+                        "adapter_version": "deterministic-domain-adapters-v1",
+                        "domain_observations": [
+                          {
+                            "evidence": "learner selection",
+                            "kind": "response",
+                            "observation_id": "selected_option",
+                            "value": "X"
+                          },
+                          {
+                            "evidence": "exact option comparison",
+                            "kind": "score",
+                            "observation_id": "answer_correct",
+                            "value": false
+                          }
+                        ]
+                      },
+                      "hints_used": 0,
+                      "independently_answered": true,
+                      "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                      "item_type": "资料分析/增长率",
+                      "observed_at": "2026-07-11T00:00:00+00:00",
+                      "response_time_seconds": 60.0,
+                      "selected_option": "X"
+                    },
+                    "components": {
+                      "bkt": 0.25266101694915255,
+                      "irt_1pl": 0.48906424425435574,
+                      "pfa": 0.31270571980279593
+                    },
+                    "ensemble_weights": {
+                      "bkt": 0.5,
+                      "irt_1pl": 0.2,
+                      "pfa": 0.3
+                    },
+                    "formula_version": "bkt-pfa-rasch-ensemble-v1",
+                    "item_difficulty": 0.0,
+                    "skill_weight": 0.35
+                  },
+                  {
+                    "attempt": {
+                      "attempt_id": "eval-integration-ambiguous:independent-verify",
+                      "confidence": 0.3,
+                      "features": {
+                        "different_prompt": true,
+                        "scoring": "exact_option_comparison:v1"
+                      },
+                      "hints_used": 0,
+                      "independently_answered": true,
+                      "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
+                      "item_type": "资料分析/增长率",
+                      "observed_at": "2026-07-11T00:05:00+00:00",
+                      "response_time_seconds": 60.0,
+                      "selected_option": "A"
+                    },
+                    "components": {
+                      "bkt": 0.15568101269954387,
+                      "irt_1pl": 0.45859104823220515,
+                      "pfa": 0.2616326585619813
+                    },
+                    "ensemble_weights": {
+                      "bkt": 0.5,
+                      "irt_1pl": 0.2,
+                      "pfa": 0.3
+                    },
+                    "formula_version": "bkt-pfa-rasch-ensemble-v1",
+                    "item_difficulty": 0.0,
+                    "skill_weight": 1.0
+                  }
+                ],
+                "skill_id": "xingce.data.growth.identify-base-current",
+                "successes": 0.0,
+                "uncertainty": 0.4556615375506533
+              },
+              "prompt": "某指标由80升到92，增长率是多少？",
+              "response": "A",
+              "response_evidence": {
+                "original_length": 1,
+                "policy_version": "attempt-response-redaction-v1",
+                "redacted_text": "A",
+                "redactions": [],
+                "sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd"
+              },
+              "verification": {
+                "effective": false,
+                "independently_verified": true,
+                "intervention_id": "eval-integration-ambiguous:teach",
+                "mastery_gain": -0.06990655970147883,
+                "post_mastery": 0.24804851356480737,
+                "pre_mastery": 0.3179550732662862,
+                "provenance": {
+                  "minimum_gain": 0.02,
+                  "model_version": "independent-transfer-check-v1",
+                  "verification_attempt": {
+                    "attempt_id": "eval-integration-ambiguous:independent-verify",
+                    "confidence": 0.3,
+                    "features": {
+                      "different_prompt": true,
+                      "scoring": "exact_option_comparison:v1"
+                    },
+                    "hints_used": 0,
+                    "independently_answered": true,
+                    "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
+                    "item_type": "资料分析/增长率",
+                    "observed_at": "2026-07-11T00:05:00+00:00",
+                    "response_time_seconds": 60.0,
+                    "selected_option": "A"
+                  }
+                },
+                "reason": "not yet effective: independent transfer criterion was not met"
+              },
+              "verification_attempt": {
+                "attempt_id": "eval-integration-ambiguous:independent-verify",
+                "cause_likelihoods": {},
+                "confidence": 0.3,
+                "correct": false,
+                "evidence_features": {
+                  "different_prompt": true,
+                  "scoring": "exact_option_comparison:v1"
+                },
+                "hints_used": 0,
+                "independently_answered": true,
+                "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
+                "item_type": "资料分析/增长率",
+                "learner_id": "integration-learner",
+                "observed_at": "2026-07-11T00:05:00+00:00",
+                "response_time_seconds": 60.0,
+                "selected_option": "A"
+              }
+            }
+          ]
+        },
+        "context": {
+          "execution_mode": "local",
+          "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+          "network_opt_in": false,
+          "scenario": "ambiguous"
+        },
+        "cycle": 1,
+        "domain": "xingce",
+        "goal": "complete verified learning loop for 资料分析/增长率",
+        "last_error": null,
+        "learner_id": "integration-learner",
+        "max_cycles": 1,
+        "max_steps": 32,
+        "phase": "update",
+        "run_id": "eval-integration-ambiguous",
+        "schema_version": 1,
+        "status": "running",
+        "step_count": 5
+      }
+    },
+    {
+      "seq": 7,
+      "kind": "phase_completed",
+      "diff": [
+        {
+          "op": "add",
+          "path": "/artifacts/update",
+          "value": [
+            {
+              "evidence": {
+                "engine_provenance": [
+                  {
+                    "attempt": {
+                      "attempt_id": "eval-integration-ambiguous:initial",
+                      "confidence": 0.3,
+                      "features": {
+                        "adapter_version": "deterministic-domain-adapters-v1",
+                        "domain_observations": [
+                          {
+                            "evidence": "learner selection",
+                            "kind": "response",
+                            "observation_id": "selected_option",
+                            "value": "X"
+                          },
+                          {
+                            "evidence": "exact option comparison",
+                            "kind": "score",
+                            "observation_id": "answer_correct",
+                            "value": false
+                          }
+                        ]
+                      },
+                      "hints_used": 0,
+                      "independently_answered": true,
+                      "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                      "item_type": "资料分析/增长率",
+                      "observed_at": "2026-07-11T00:00:00+00:00",
+                      "response_time_seconds": 60.0,
+                      "selected_option": "X"
+                    },
+                    "components": {
+                      "bkt": 0.25266101694915255,
+                      "irt_1pl": 0.48906424425435574,
+                      "pfa": 0.31270571980279593
+                    },
+                    "ensemble_weights": {
+                      "bkt": 0.5,
+                      "irt_1pl": 0.2,
+                      "pfa": 0.3
+                    },
+                    "formula_version": "bkt-pfa-rasch-ensemble-v1",
+                    "item_difficulty": 0.0,
+                    "skill_weight": 0.35
+                  },
+                  {
+                    "attempt": {
+                      "attempt_id": "eval-integration-ambiguous:independent-verify",
+                      "confidence": 0.3,
+                      "features": {
+                        "different_prompt": true,
+                        "scoring": "exact_option_comparison:v1"
+                      },
+                      "hints_used": 0,
+                      "independently_answered": true,
+                      "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
+                      "item_type": "资料分析/增长率",
+                      "observed_at": "2026-07-11T00:05:00+00:00",
+                      "response_time_seconds": 60.0,
+                      "selected_option": "A"
+                    },
+                    "components": {
+                      "bkt": 0.15568101269954387,
+                      "irt_1pl": 0.45859104823220515,
+                      "pfa": 0.2616326585619813
+                    },
+                    "ensemble_weights": {
+                      "bkt": 0.5,
+                      "irt_1pl": 0.2,
+                      "pfa": 0.3
+                    },
+                    "formula_version": "bkt-pfa-rasch-ensemble-v1",
+                    "item_difficulty": 0.0,
+                    "skill_weight": 1.0
+                  }
+                ],
+                "independently_verified": true,
+                "initial_attempt_id": "eval-integration-ambiguous:initial",
+                "verification_attempt_id": "eval-integration-ambiguous:independent-verify",
+                "verification_effective": false
+              },
+              "mastery_delta": -0.051951486435,
+              "model_version": {
+                "engine_tool": "0.1.0",
+                "mastery": "bkt-pfa-rasch-ensemble-v1",
+                "verification": "independent-transfer-check-v1"
+              },
+              "new_mastery": 0.24804851356480737,
+              "policy_version": "integration-learning-policy-v1",
+              "previous_mastery": 0.3,
+              "skill_id": "xingce.data.growth.identify-base-current",
+              "uncertainty": 0.4556615375506533
+            }
+          ]
+        },
+        {
+          "old": "update",
+          "op": "replace",
+          "path": "/phase",
+          "value": "reflect"
+        },
+        {
+          "old": 5,
+          "op": "replace",
+          "path": "/step_count",
+          "value": 6
+        }
+      ],
+      "state": {
+        "artifacts": {
+          "diagnose": [
+            {
+              "decision": "disambiguate_hypotheses",
+              "diagnosis": {
+                "attempt_id": "eval-integration-ambiguous:initial",
+                "hypotheses": [
+                  {
+                    "cause_id": "ratio-growth-confusion",
+                    "cohort_component": 0.4,
+                    "evidence": [
+                      "engineering_prior",
+                      "learner_history",
+                      "attempt_feature_likelihood"
+                    ],
+                    "evidence_likelihood": 0.9999999999999999,
+                    "learner_component": 0.4,
+                    "probability": 0.45351473922902497,
+                    "status": "unconfirmed_hypothesis"
+                  },
+                  {
+                    "cause_id": "denominator-current-base-confusion",
+                    "cohort_component": 0.38,
+                    "evidence": [
+                      "engineering_prior",
+                      "learner_history",
+                      "attempt_feature_likelihood"
+                    ],
+                    "evidence_likelihood": 0.9999999999999999,
+                    "learner_component": 0.38,
+                    "probability": 0.40929705215419493,
+                    "status": "unconfirmed_hypothesis"
+                  },
+                  {
+                    "cause_id": "increment-rate-confusion",
+                    "cohort_component": 0.22,
+                    "evidence": [
+                      "engineering_prior",
+                      "learner_history",
+                      "attempt_feature_likelihood"
+                    ],
+                    "evidence_likelihood": 1.0,
+                    "learner_component": 0.22,
+                    "probability": 0.13718820861678005,
+                    "status": "unconfirmed_hypothesis"
+                  }
+                ],
+                "model_version": "hierarchical-cause-baseline-v1",
+                "provenance": {
+                  "attempt": {
+                    "attempt_id": "eval-integration-ambiguous:initial",
+                    "confidence": 0.3,
+                    "features": {
+                      "adapter_version": "deterministic-domain-adapters-v1",
+                      "domain_observations": [
+                        {
+                          "evidence": "learner selection",
+                          "kind": "response",
+                          "observation_id": "selected_option",
+                          "value": "X"
+                        },
+                        {
+                          "evidence": "exact option comparison",
+                          "kind": "score",
+                          "observation_id": "answer_correct",
+                          "value": false
+                        }
+                      ]
+                    },
+                    "hints_used": 0,
+                    "independently_answered": true,
+                    "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                    "item_type": "资料分析/增长率",
+                    "observed_at": "2026-07-11T00:00:00+00:00",
+                    "response_time_seconds": 60.0,
+                    "selected_option": "X"
+                  },
+                  "cohort_sources": [
+                    {
+                      "cause_id": "denominator-current-base-confusion",
+                      "cohort_id": "synthetic-fixture-cold-start",
+                      "sample_size": 0,
+                      "source_version": "synthetic_engineering_prior_v1"
+                    },
+                    {
+                      "cause_id": "increment-rate-confusion",
+                      "cohort_id": "synthetic-fixture-cold-start",
+                      "sample_size": 0,
+                      "source_version": "synthetic_engineering_prior_v1"
+                    },
+                    {
+                      "cause_id": "ratio-growth-confusion",
+                      "cohort_id": "synthetic-fixture-cold-start",
+                      "sample_size": 0,
+                      "source_version": "synthetic_engineering_prior_v1"
+                    }
+                  ],
+                  "formula": "normalize(cohort_prior * learner_dirichlet_posterior * evidence_likelihood)",
+                  "learner_history_exposure_count": 0,
+                  "learner_history_version": "integration-scenario-history-v1"
+                },
+                "uncertainty": 0.9072793759119459
+              },
+              "engine_tool": {
+                "name": "hermes_explainable_learning_model",
+                "version": "0.1.0"
+              },
+              "model_version": "hierarchical-cause-baseline-v1",
+              "policy_version": "integration-learning-policy-v1"
+            }
+          ],
+          "observe": [
+            {
+              "adapter_version": "deterministic-domain-adapters-v1",
+              "attempt": {
+                "attempt_id": "eval-integration-ambiguous:initial",
+                "cause_likelihoods": {
+                  "denominator-current-base-confusion": 0.9999999999999999,
+                  "increment-rate-confusion": 1.0,
+                  "ratio-growth-confusion": 0.9999999999999999
+                },
+                "confidence": 0.3,
+                "correct": false,
+                "evidence_features": {
+                  "adapter_version": "deterministic-domain-adapters-v1",
+                  "domain_observations": [
+                    {
+                      "evidence": "learner selection",
+                      "kind": "response",
+                      "observation_id": "selected_option",
+                      "value": "X"
+                    },
+                    {
+                      "evidence": "exact option comparison",
+                      "kind": "score",
+                      "observation_id": "answer_correct",
+                      "value": false
+                    }
+                  ]
+                },
+                "hints_used": 0,
+                "independently_answered": true,
+                "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "item_type": "资料分析/增长率",
+                "learner_id": "integration-learner",
+                "observed_at": "2026-07-11T00:00:00+00:00",
+                "response_time_seconds": 60.0,
+                "selected_option": "X"
+              },
+              "evidence": [
+                {
+                  "evidence": "learner selection",
+                  "kind": "response",
+                  "observation_id": "selected_option",
+                  "value": "X"
+                },
+                {
+                  "evidence": "exact option comparison",
+                  "kind": "score",
+                  "observation_id": "answer_correct",
+                  "value": false
+                }
+              ],
+              "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+              "response_evidence": {
+                "original_length": 1,
+                "policy_version": "attempt-response-redaction-v1",
+                "redacted_text": "X",
+                "redactions": [],
+                "sha256": "4b68ab3847feda7d6c62c1fbcbeebfa35eab7351ed5e78f4ddadea5df64b8015"
+              },
+              "score": {
+                "adapter_version": "deterministic-domain-adapters-v1",
+                "cause_candidates": [
+                  {
+                    "cause_id": "ratio-growth-confusion",
+                    "evidence_ids": [
+                      "answer_incorrect"
+                    ],
+                    "is_ground_truth": false,
+                    "label": "只算现期/基期而未减1",
+                    "prior": 0.4,
+                    "probability": 0.39999999999999997,
+                    "status": "unconfirmed_hypothesis"
+                  },
+                  {
+                    "cause_id": "denominator-current-base-confusion",
+                    "evidence_ids": [
+                      "answer_incorrect"
+                    ],
+                    "is_ground_truth": false,
+                    "label": "增长率分母误用现期量",
+                    "prior": 0.38,
+                    "probability": 0.37999999999999995,
+                    "status": "unconfirmed_hypothesis"
+                  },
+                  {
+                    "cause_id": "increment-rate-confusion",
+                    "evidence_ids": [
+                      "answer_incorrect"
+                    ],
+                    "is_ground_truth": false,
+                    "label": "把增长量当作增长率",
+                    "prior": 0.22,
+                    "probability": 0.22,
+                    "status": "unconfirmed_hypothesis"
+                  }
+                ],
+                "domain": "xingce",
+                "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "max_score": 1.0,
+                "observations": [
+                  {
+                    "evidence": "learner selection",
+                    "kind": "response",
+                    "observation_id": "selected_option",
+                    "value": "X"
+                  },
+                  {
+                    "evidence": "exact option comparison",
+                    "kind": "score",
+                    "observation_id": "answer_correct",
+                    "value": false
+                  }
+                ],
+                "passed": false,
+                "score": 0.0
+              }
+            }
+          ],
+          "probe": [
+            {
+              "policy_version": "integration-learning-policy-v1",
+              "prompt": "若只告诉你现期120、基期100，请先写出增长率公式，不计算。",
+              "response": "我不确定分母和是否减一。",
+              "response_status": "observed",
+              "selection": "disambiguate_hypotheses",
+              "targets": [
+                "denominator-current-base-confusion",
+                "ratio-growth-confusion"
+              ],
+              "top_hypothesis": "ratio-growth-confusion"
+            }
+          ],
+          "teach": [
+            {
+              "based_on": {
+                "probe_response": "我不确定分母和是否减一。",
+                "probe_selection": "disambiguate_hypotheses",
+                "top_hypothesis": "ratio-growth-confusion"
+              },
+              "independent_verification_prompt": "某指标由80升到92，增长率是多少？",
+              "independent_verification_response_mode": "single_choice",
+              "policy_version": "integration-learning-policy-v1",
+              "prompt": "用‘增长量÷基期量’的量纲解释公式，并让学习者标记基期。",
+              "strategy": "worked-example-fading"
+            }
+          ],
+          "update": [
+            {
+              "evidence": {
+                "engine_provenance": [
+                  {
+                    "attempt": {
+                      "attempt_id": "eval-integration-ambiguous:initial",
+                      "confidence": 0.3,
+                      "features": {
+                        "adapter_version": "deterministic-domain-adapters-v1",
+                        "domain_observations": [
+                          {
+                            "evidence": "learner selection",
+                            "kind": "response",
+                            "observation_id": "selected_option",
+                            "value": "X"
+                          },
+                          {
+                            "evidence": "exact option comparison",
+                            "kind": "score",
+                            "observation_id": "answer_correct",
+                            "value": false
+                          }
+                        ]
+                      },
+                      "hints_used": 0,
+                      "independently_answered": true,
+                      "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                      "item_type": "资料分析/增长率",
+                      "observed_at": "2026-07-11T00:00:00+00:00",
+                      "response_time_seconds": 60.0,
+                      "selected_option": "X"
+                    },
+                    "components": {
+                      "bkt": 0.25266101694915255,
+                      "irt_1pl": 0.48906424425435574,
+                      "pfa": 0.31270571980279593
+                    },
+                    "ensemble_weights": {
+                      "bkt": 0.5,
+                      "irt_1pl": 0.2,
+                      "pfa": 0.3
+                    },
+                    "formula_version": "bkt-pfa-rasch-ensemble-v1",
+                    "item_difficulty": 0.0,
+                    "skill_weight": 0.35
+                  },
+                  {
+                    "attempt": {
+                      "attempt_id": "eval-integration-ambiguous:independent-verify",
+                      "confidence": 0.3,
+                      "features": {
+                        "different_prompt": true,
+                        "scoring": "exact_option_comparison:v1"
+                      },
+                      "hints_used": 0,
+                      "independently_answered": true,
+                      "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
+                      "item_type": "资料分析/增长率",
+                      "observed_at": "2026-07-11T00:05:00+00:00",
+                      "response_time_seconds": 60.0,
+                      "selected_option": "A"
+                    },
+                    "components": {
+                      "bkt": 0.15568101269954387,
+                      "irt_1pl": 0.45859104823220515,
+                      "pfa": 0.2616326585619813
+                    },
+                    "ensemble_weights": {
+                      "bkt": 0.5,
+                      "irt_1pl": 0.2,
+                      "pfa": 0.3
+                    },
+                    "formula_version": "bkt-pfa-rasch-ensemble-v1",
+                    "item_difficulty": 0.0,
+                    "skill_weight": 1.0
+                  }
+                ],
+                "independently_verified": true,
+                "initial_attempt_id": "eval-integration-ambiguous:initial",
+                "verification_attempt_id": "eval-integration-ambiguous:independent-verify",
+                "verification_effective": false
+              },
+              "mastery_delta": -0.051951486435,
+              "model_version": {
+                "engine_tool": "0.1.0",
+                "mastery": "bkt-pfa-rasch-ensemble-v1",
+                "verification": "independent-transfer-check-v1"
+              },
+              "new_mastery": 0.24804851356480737,
+              "policy_version": "integration-learning-policy-v1",
+              "previous_mastery": 0.3,
+              "skill_id": "xingce.data.growth.identify-base-current",
+              "uncertainty": 0.4556615375506533
+            }
+          ],
+          "verify": [
+            {
+              "engine_tool": {
+                "name": "hermes_explainable_learning_model",
+                "version": "0.1.0"
+              },
+              "initial_update_state": {
+                "bkt_mastery": 0.25266101694915255,
+                "evidence_count": 1,
+                "failures": 0.35,
+                "irt_theta": -0.04375,
+                "last_updated_at": "2026-07-11T05:11:09.431337+00:00",
+                "learner_id": "integration-learner",
+                "mastery": 0.3179550732662862,
+                "provenance": [
+                  {
+                    "attempt": {
+                      "attempt_id": "eval-integration-ambiguous:initial",
+                      "confidence": 0.3,
+                      "features": {
+                        "adapter_version": "deterministic-domain-adapters-v1",
+                        "domain_observations": [
+                          {
+                            "evidence": "learner selection",
+                            "kind": "response",
+                            "observation_id": "selected_option",
+                            "value": "X"
+                          },
+                          {
+                            "evidence": "exact option comparison",
+                            "kind": "score",
+                            "observation_id": "answer_correct",
+                            "value": false
+                          }
+                        ]
+                      },
+                      "hints_used": 0,
+                      "independently_answered": true,
+                      "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                      "item_type": "资料分析/增长率",
+                      "observed_at": "2026-07-11T00:00:00+00:00",
+                      "response_time_seconds": 60.0,
+                      "selected_option": "X"
+                    },
+                    "components": {
+                      "bkt": 0.25266101694915255,
+                      "irt_1pl": 0.48906424425435574,
+                      "pfa": 0.31270571980279593
+                    },
+                    "ensemble_weights": {
+                      "bkt": 0.5,
+                      "irt_1pl": 0.2,
+                      "pfa": 0.3
+                    },
+                    "formula_version": "bkt-pfa-rasch-ensemble-v1",
+                    "item_difficulty": 0.0,
+                    "skill_weight": 0.35
+                  }
+                ],
+                "skill_id": "xingce.data.growth.identify-base-current",
+                "successes": 0.0,
+                "uncertainty": 0.5222120647774644
+              },
+              "post_state": {
+                "bkt_mastery": 0.15568101269954387,
+                "evidence_count": 2,
+                "failures": 1.35,
+                "irt_theta": -0.16601606106358893,
+                "last_updated_at": "2026-07-11T05:11:09.431445+00:00",
+                "learner_id": "integration-learner",
+                "mastery": 0.24804851356480737,
+                "provenance": [
+                  {
+                    "attempt": {
+                      "attempt_id": "eval-integration-ambiguous:initial",
+                      "confidence": 0.3,
+                      "features": {
+                        "adapter_version": "deterministic-domain-adapters-v1",
+                        "domain_observations": [
+                          {
+                            "evidence": "learner selection",
+                            "kind": "response",
+                            "observation_id": "selected_option",
+                            "value": "X"
+                          },
+                          {
+                            "evidence": "exact option comparison",
+                            "kind": "score",
+                            "observation_id": "answer_correct",
+                            "value": false
+                          }
+                        ]
+                      },
+                      "hints_used": 0,
+                      "independently_answered": true,
+                      "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                      "item_type": "资料分析/增长率",
+                      "observed_at": "2026-07-11T00:00:00+00:00",
+                      "response_time_seconds": 60.0,
+                      "selected_option": "X"
+                    },
+                    "components": {
+                      "bkt": 0.25266101694915255,
+                      "irt_1pl": 0.48906424425435574,
+                      "pfa": 0.31270571980279593
+                    },
+                    "ensemble_weights": {
+                      "bkt": 0.5,
+                      "irt_1pl": 0.2,
+                      "pfa": 0.3
+                    },
+                    "formula_version": "bkt-pfa-rasch-ensemble-v1",
+                    "item_difficulty": 0.0,
+                    "skill_weight": 0.35
+                  },
+                  {
+                    "attempt": {
+                      "attempt_id": "eval-integration-ambiguous:independent-verify",
+                      "confidence": 0.3,
+                      "features": {
+                        "different_prompt": true,
+                        "scoring": "exact_option_comparison:v1"
+                      },
+                      "hints_used": 0,
+                      "independently_answered": true,
+                      "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
+                      "item_type": "资料分析/增长率",
+                      "observed_at": "2026-07-11T00:05:00+00:00",
+                      "response_time_seconds": 60.0,
+                      "selected_option": "A"
+                    },
+                    "components": {
+                      "bkt": 0.15568101269954387,
+                      "irt_1pl": 0.45859104823220515,
+                      "pfa": 0.2616326585619813
+                    },
+                    "ensemble_weights": {
+                      "bkt": 0.5,
+                      "irt_1pl": 0.2,
+                      "pfa": 0.3
+                    },
+                    "formula_version": "bkt-pfa-rasch-ensemble-v1",
+                    "item_difficulty": 0.0,
+                    "skill_weight": 1.0
+                  }
+                ],
+                "skill_id": "xingce.data.growth.identify-base-current",
+                "successes": 0.0,
+                "uncertainty": 0.4556615375506533
+              },
+              "prompt": "某指标由80升到92，增长率是多少？",
+              "response": "A",
+              "response_evidence": {
+                "original_length": 1,
+                "policy_version": "attempt-response-redaction-v1",
+                "redacted_text": "A",
+                "redactions": [],
+                "sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd"
+              },
+              "verification": {
+                "effective": false,
+                "independently_verified": true,
+                "intervention_id": "eval-integration-ambiguous:teach",
+                "mastery_gain": -0.06990655970147883,
+                "post_mastery": 0.24804851356480737,
+                "pre_mastery": 0.3179550732662862,
+                "provenance": {
+                  "minimum_gain": 0.02,
+                  "model_version": "independent-transfer-check-v1",
+                  "verification_attempt": {
+                    "attempt_id": "eval-integration-ambiguous:independent-verify",
+                    "confidence": 0.3,
+                    "features": {
+                      "different_prompt": true,
+                      "scoring": "exact_option_comparison:v1"
+                    },
+                    "hints_used": 0,
+                    "independently_answered": true,
+                    "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
+                    "item_type": "资料分析/增长率",
+                    "observed_at": "2026-07-11T00:05:00+00:00",
+                    "response_time_seconds": 60.0,
+                    "selected_option": "A"
+                  }
+                },
+                "reason": "not yet effective: independent transfer criterion was not met"
+              },
+              "verification_attempt": {
+                "attempt_id": "eval-integration-ambiguous:independent-verify",
+                "cause_likelihoods": {},
+                "confidence": 0.3,
+                "correct": false,
+                "evidence_features": {
+                  "different_prompt": true,
+                  "scoring": "exact_option_comparison:v1"
+                },
+                "hints_used": 0,
+                "independently_answered": true,
+                "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
+                "item_type": "资料分析/增长率",
+                "learner_id": "integration-learner",
+                "observed_at": "2026-07-11T00:05:00+00:00",
+                "response_time_seconds": 60.0,
+                "selected_option": "A"
+              }
+            }
+          ]
+        },
+        "context": {
+          "execution_mode": "local",
+          "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+          "network_opt_in": false,
+          "scenario": "ambiguous"
+        },
+        "cycle": 1,
+        "domain": "xingce",
+        "goal": "complete verified learning loop for 资料分析/增长率",
+        "last_error": null,
+        "learner_id": "integration-learner",
+        "max_cycles": 1,
+        "max_steps": 32,
+        "phase": "reflect",
+        "run_id": "eval-integration-ambiguous",
+        "schema_version": 1,
+        "status": "running",
+        "step_count": 6
+      }
+    },
+    {
+      "seq": 8,
+      "kind": "phase_completed",
+      "diff": [
+        {
+          "op": "add",
+          "path": "/artifacts/reflect",
+          "value": [
+            {
+              "continue": false,
+              "mastery_delta": -0.051951486435,
+              "next_action": "schedule_targeted_retry",
+              "outcome": "not_yet_mastered",
+              "policy_version": "integration-learning-policy-v1"
+            }
+          ]
+        },
+        {
+          "old": "reflect",
+          "op": "replace",
+          "path": "/phase",
+          "value": "complete"
+        },
+        {
+          "old": "running",
+          "op": "replace",
+          "path": "/status",
+          "value": "completed"
+        },
+        {
+          "old": 6,
+          "op": "replace",
+          "path": "/step_count",
+          "value": 7
+        }
+      ],
+      "state": {
+        "artifacts": {
+          "diagnose": [
+            {
+              "decision": "disambiguate_hypotheses",
+              "diagnosis": {
+                "attempt_id": "eval-integration-ambiguous:initial",
+                "hypotheses": [
+                  {
+                    "cause_id": "ratio-growth-confusion",
+                    "cohort_component": 0.4,
+                    "evidence": [
+                      "engineering_prior",
+                      "learner_history",
+                      "attempt_feature_likelihood"
+                    ],
+                    "evidence_likelihood": 0.9999999999999999,
+                    "learner_component": 0.4,
+                    "probability": 0.45351473922902497,
+                    "status": "unconfirmed_hypothesis"
+                  },
+                  {
+                    "cause_id": "denominator-current-base-confusion",
+                    "cohort_component": 0.38,
+                    "evidence": [
+                      "engineering_prior",
+                      "learner_history",
+                      "attempt_feature_likelihood"
+                    ],
+                    "evidence_likelihood": 0.9999999999999999,
+                    "learner_component": 0.38,
+                    "probability": 0.40929705215419493,
+                    "status": "unconfirmed_hypothesis"
+                  },
+                  {
+                    "cause_id": "increment-rate-confusion",
+                    "cohort_component": 0.22,
+                    "evidence": [
+                      "engineering_prior",
+                      "learner_history",
+                      "attempt_feature_likelihood"
+                    ],
+                    "evidence_likelihood": 1.0,
+                    "learner_component": 0.22,
+                    "probability": 0.13718820861678005,
+                    "status": "unconfirmed_hypothesis"
+                  }
+                ],
+                "model_version": "hierarchical-cause-baseline-v1",
+                "provenance": {
+                  "attempt": {
+                    "attempt_id": "eval-integration-ambiguous:initial",
+                    "confidence": 0.3,
+                    "features": {
+                      "adapter_version": "deterministic-domain-adapters-v1",
+                      "domain_observations": [
+                        {
+                          "evidence": "learner selection",
+                          "kind": "response",
+                          "observation_id": "selected_option",
+                          "value": "X"
+                        },
+                        {
+                          "evidence": "exact option comparison",
+                          "kind": "score",
+                          "observation_id": "answer_correct",
+                          "value": false
+                        }
+                      ]
+                    },
+                    "hints_used": 0,
+                    "independently_answered": true,
+                    "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                    "item_type": "资料分析/增长率",
+                    "observed_at": "2026-07-11T00:00:00+00:00",
+                    "response_time_seconds": 60.0,
+                    "selected_option": "X"
+                  },
+                  "cohort_sources": [
+                    {
+                      "cause_id": "denominator-current-base-confusion",
+                      "cohort_id": "synthetic-fixture-cold-start",
+                      "sample_size": 0,
+                      "source_version": "synthetic_engineering_prior_v1"
+                    },
+                    {
+                      "cause_id": "increment-rate-confusion",
+                      "cohort_id": "synthetic-fixture-cold-start",
+                      "sample_size": 0,
+                      "source_version": "synthetic_engineering_prior_v1"
+                    },
+                    {
+                      "cause_id": "ratio-growth-confusion",
+                      "cohort_id": "synthetic-fixture-cold-start",
+                      "sample_size": 0,
+                      "source_version": "synthetic_engineering_prior_v1"
+                    }
+                  ],
+                  "formula": "normalize(cohort_prior * learner_dirichlet_posterior * evidence_likelihood)",
+                  "learner_history_exposure_count": 0,
+                  "learner_history_version": "integration-scenario-history-v1"
+                },
+                "uncertainty": 0.9072793759119459
+              },
+              "engine_tool": {
+                "name": "hermes_explainable_learning_model",
+                "version": "0.1.0"
+              },
+              "model_version": "hierarchical-cause-baseline-v1",
+              "policy_version": "integration-learning-policy-v1"
+            }
+          ],
+          "observe": [
+            {
+              "adapter_version": "deterministic-domain-adapters-v1",
+              "attempt": {
+                "attempt_id": "eval-integration-ambiguous:initial",
+                "cause_likelihoods": {
+                  "denominator-current-base-confusion": 0.9999999999999999,
+                  "increment-rate-confusion": 1.0,
+                  "ratio-growth-confusion": 0.9999999999999999
+                },
+                "confidence": 0.3,
+                "correct": false,
+                "evidence_features": {
+                  "adapter_version": "deterministic-domain-adapters-v1",
+                  "domain_observations": [
+                    {
+                      "evidence": "learner selection",
+                      "kind": "response",
+                      "observation_id": "selected_option",
+                      "value": "X"
+                    },
+                    {
+                      "evidence": "exact option comparison",
+                      "kind": "score",
+                      "observation_id": "answer_correct",
+                      "value": false
+                    }
+                  ]
+                },
+                "hints_used": 0,
+                "independently_answered": true,
+                "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "item_type": "资料分析/增长率",
+                "learner_id": "integration-learner",
+                "observed_at": "2026-07-11T00:00:00+00:00",
+                "response_time_seconds": 60.0,
+                "selected_option": "X"
+              },
+              "evidence": [
+                {
+                  "evidence": "learner selection",
+                  "kind": "response",
+                  "observation_id": "selected_option",
+                  "value": "X"
+                },
+                {
+                  "evidence": "exact option comparison",
+                  "kind": "score",
+                  "observation_id": "answer_correct",
+                  "value": false
+                }
+              ],
+              "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+              "response_evidence": {
+                "original_length": 1,
+                "policy_version": "attempt-response-redaction-v1",
+                "redacted_text": "X",
+                "redactions": [],
+                "sha256": "4b68ab3847feda7d6c62c1fbcbeebfa35eab7351ed5e78f4ddadea5df64b8015"
+              },
+              "score": {
+                "adapter_version": "deterministic-domain-adapters-v1",
+                "cause_candidates": [
+                  {
+                    "cause_id": "ratio-growth-confusion",
+                    "evidence_ids": [
+                      "answer_incorrect"
+                    ],
+                    "is_ground_truth": false,
+                    "label": "只算现期/基期而未减1",
+                    "prior": 0.4,
+                    "probability": 0.39999999999999997,
+                    "status": "unconfirmed_hypothesis"
+                  },
+                  {
+                    "cause_id": "denominator-current-base-confusion",
+                    "evidence_ids": [
+                      "answer_incorrect"
+                    ],
+                    "is_ground_truth": false,
+                    "label": "增长率分母误用现期量",
+                    "prior": 0.38,
+                    "probability": 0.37999999999999995,
+                    "status": "unconfirmed_hypothesis"
+                  },
+                  {
+                    "cause_id": "increment-rate-confusion",
+                    "evidence_ids": [
+                      "answer_incorrect"
+                    ],
+                    "is_ground_truth": false,
+                    "label": "把增长量当作增长率",
+                    "prior": 0.22,
+                    "probability": 0.22,
+                    "status": "unconfirmed_hypothesis"
+                  }
+                ],
+                "domain": "xingce",
+                "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "max_score": 1.0,
+                "observations": [
+                  {
+                    "evidence": "learner selection",
+                    "kind": "response",
+                    "observation_id": "selected_option",
+                    "value": "X"
+                  },
+                  {
+                    "evidence": "exact option comparison",
+                    "kind": "score",
+                    "observation_id": "answer_correct",
+                    "value": false
+                  }
+                ],
+                "passed": false,
+                "score": 0.0
+              }
+            }
+          ],
+          "probe": [
+            {
+              "policy_version": "integration-learning-policy-v1",
+              "prompt": "若只告诉你现期120、基期100，请先写出增长率公式，不计算。",
+              "response": "我不确定分母和是否减一。",
+              "response_status": "observed",
+              "selection": "disambiguate_hypotheses",
+              "targets": [
+                "denominator-current-base-confusion",
+                "ratio-growth-confusion"
+              ],
+              "top_hypothesis": "ratio-growth-confusion"
+            }
+          ],
+          "reflect": [
+            {
+              "continue": false,
+              "mastery_delta": -0.051951486435,
+              "next_action": "schedule_targeted_retry",
+              "outcome": "not_yet_mastered",
+              "policy_version": "integration-learning-policy-v1"
+            }
+          ],
+          "teach": [
+            {
+              "based_on": {
+                "probe_response": "我不确定分母和是否减一。",
+                "probe_selection": "disambiguate_hypotheses",
+                "top_hypothesis": "ratio-growth-confusion"
+              },
+              "independent_verification_prompt": "某指标由80升到92，增长率是多少？",
+              "independent_verification_response_mode": "single_choice",
+              "policy_version": "integration-learning-policy-v1",
+              "prompt": "用‘增长量÷基期量’的量纲解释公式，并让学习者标记基期。",
+              "strategy": "worked-example-fading"
+            }
+          ],
+          "update": [
+            {
+              "evidence": {
+                "engine_provenance": [
+                  {
+                    "attempt": {
+                      "attempt_id": "eval-integration-ambiguous:initial",
+                      "confidence": 0.3,
+                      "features": {
+                        "adapter_version": "deterministic-domain-adapters-v1",
+                        "domain_observations": [
+                          {
+                            "evidence": "learner selection",
+                            "kind": "response",
+                            "observation_id": "selected_option",
+                            "value": "X"
+                          },
+                          {
+                            "evidence": "exact option comparison",
+                            "kind": "score",
+                            "observation_id": "answer_correct",
+                            "value": false
+                          }
+                        ]
+                      },
+                      "hints_used": 0,
+                      "independently_answered": true,
+                      "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                      "item_type": "资料分析/增长率",
+                      "observed_at": "2026-07-11T00:00:00+00:00",
+                      "response_time_seconds": 60.0,
+                      "selected_option": "X"
+                    },
+                    "components": {
+                      "bkt": 0.25266101694915255,
+                      "irt_1pl": 0.48906424425435574,
+                      "pfa": 0.31270571980279593
+                    },
+                    "ensemble_weights": {
+                      "bkt": 0.5,
+                      "irt_1pl": 0.2,
+                      "pfa": 0.3
+                    },
+                    "formula_version": "bkt-pfa-rasch-ensemble-v1",
+                    "item_difficulty": 0.0,
+                    "skill_weight": 0.35
+                  },
+                  {
+                    "attempt": {
+                      "attempt_id": "eval-integration-ambiguous:independent-verify",
+                      "confidence": 0.3,
+                      "features": {
+                        "different_prompt": true,
+                        "scoring": "exact_option_comparison:v1"
+                      },
+                      "hints_used": 0,
+                      "independently_answered": true,
+                      "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
+                      "item_type": "资料分析/增长率",
+                      "observed_at": "2026-07-11T00:05:00+00:00",
+                      "response_time_seconds": 60.0,
+                      "selected_option": "A"
+                    },
+                    "components": {
+                      "bkt": 0.15568101269954387,
+                      "irt_1pl": 0.45859104823220515,
+                      "pfa": 0.2616326585619813
+                    },
+                    "ensemble_weights": {
+                      "bkt": 0.5,
+                      "irt_1pl": 0.2,
+                      "pfa": 0.3
+                    },
+                    "formula_version": "bkt-pfa-rasch-ensemble-v1",
+                    "item_difficulty": 0.0,
+                    "skill_weight": 1.0
+                  }
+                ],
+                "independently_verified": true,
+                "initial_attempt_id": "eval-integration-ambiguous:initial",
+                "verification_attempt_id": "eval-integration-ambiguous:independent-verify",
+                "verification_effective": false
+              },
+              "mastery_delta": -0.051951486435,
+              "model_version": {
+                "engine_tool": "0.1.0",
+                "mastery": "bkt-pfa-rasch-ensemble-v1",
+                "verification": "independent-transfer-check-v1"
+              },
+              "new_mastery": 0.24804851356480737,
+              "policy_version": "integration-learning-policy-v1",
+              "previous_mastery": 0.3,
+              "skill_id": "xingce.data.growth.identify-base-current",
+              "uncertainty": 0.4556615375506533
+            }
+          ],
+          "verify": [
+            {
+              "engine_tool": {
+                "name": "hermes_explainable_learning_model",
+                "version": "0.1.0"
+              },
+              "initial_update_state": {
+                "bkt_mastery": 0.25266101694915255,
+                "evidence_count": 1,
+                "failures": 0.35,
+                "irt_theta": -0.04375,
+                "last_updated_at": "2026-07-11T05:11:09.431337+00:00",
+                "learner_id": "integration-learner",
+                "mastery": 0.3179550732662862,
+                "provenance": [
+                  {
+                    "attempt": {
+                      "attempt_id": "eval-integration-ambiguous:initial",
+                      "confidence": 0.3,
+                      "features": {
+                        "adapter_version": "deterministic-domain-adapters-v1",
+                        "domain_observations": [
+                          {
+                            "evidence": "learner selection",
+                            "kind": "response",
+                            "observation_id": "selected_option",
+                            "value": "X"
+                          },
+                          {
+                            "evidence": "exact option comparison",
+                            "kind": "score",
+                            "observation_id": "answer_correct",
+                            "value": false
+                          }
+                        ]
+                      },
+                      "hints_used": 0,
+                      "independently_answered": true,
+                      "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                      "item_type": "资料分析/增长率",
+                      "observed_at": "2026-07-11T00:00:00+00:00",
+                      "response_time_seconds": 60.0,
+                      "selected_option": "X"
+                    },
+                    "components": {
+                      "bkt": 0.25266101694915255,
+                      "irt_1pl": 0.48906424425435574,
+                      "pfa": 0.31270571980279593
+                    },
+                    "ensemble_weights": {
+                      "bkt": 0.5,
+                      "irt_1pl": 0.2,
+                      "pfa": 0.3
+                    },
+                    "formula_version": "bkt-pfa-rasch-ensemble-v1",
+                    "item_difficulty": 0.0,
+                    "skill_weight": 0.35
+                  }
+                ],
+                "skill_id": "xingce.data.growth.identify-base-current",
+                "successes": 0.0,
+                "uncertainty": 0.5222120647774644
+              },
+              "post_state": {
+                "bkt_mastery": 0.15568101269954387,
+                "evidence_count": 2,
+                "failures": 1.35,
+                "irt_theta": -0.16601606106358893,
+                "last_updated_at": "2026-07-11T05:11:09.431445+00:00",
+                "learner_id": "integration-learner",
+                "mastery": 0.24804851356480737,
+                "provenance": [
+                  {
+                    "attempt": {
+                      "attempt_id": "eval-integration-ambiguous:initial",
+                      "confidence": 0.3,
+                      "features": {
+                        "adapter_version": "deterministic-domain-adapters-v1",
+                        "domain_observations": [
+                          {
+                            "evidence": "learner selection",
+                            "kind": "response",
+                            "observation_id": "selected_option",
+                            "value": "X"
+                          },
+                          {
+                            "evidence": "exact option comparison",
+                            "kind": "score",
+                            "observation_id": "answer_correct",
+                            "value": false
+                          }
+                        ]
+                      },
+                      "hints_used": 0,
+                      "independently_answered": true,
+                      "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                      "item_type": "资料分析/增长率",
+                      "observed_at": "2026-07-11T00:00:00+00:00",
+                      "response_time_seconds": 60.0,
+                      "selected_option": "X"
+                    },
+                    "components": {
+                      "bkt": 0.25266101694915255,
+                      "irt_1pl": 0.48906424425435574,
+                      "pfa": 0.31270571980279593
+                    },
+                    "ensemble_weights": {
+                      "bkt": 0.5,
+                      "irt_1pl": 0.2,
+                      "pfa": 0.3
+                    },
+                    "formula_version": "bkt-pfa-rasch-ensemble-v1",
+                    "item_difficulty": 0.0,
+                    "skill_weight": 0.35
+                  },
+                  {
+                    "attempt": {
+                      "attempt_id": "eval-integration-ambiguous:independent-verify",
+                      "confidence": 0.3,
+                      "features": {
+                        "different_prompt": true,
+                        "scoring": "exact_option_comparison:v1"
+                      },
+                      "hints_used": 0,
+                      "independently_answered": true,
+                      "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
+                      "item_type": "资料分析/增长率",
+                      "observed_at": "2026-07-11T00:05:00+00:00",
+                      "response_time_seconds": 60.0,
+                      "selected_option": "A"
+                    },
+                    "components": {
+                      "bkt": 0.15568101269954387,
+                      "irt_1pl": 0.45859104823220515,
+                      "pfa": 0.2616326585619813
+                    },
+                    "ensemble_weights": {
+                      "bkt": 0.5,
+                      "irt_1pl": 0.2,
+                      "pfa": 0.3
+                    },
+                    "formula_version": "bkt-pfa-rasch-ensemble-v1",
+                    "item_difficulty": 0.0,
+                    "skill_weight": 1.0
+                  }
+                ],
+                "skill_id": "xingce.data.growth.identify-base-current",
+                "successes": 0.0,
+                "uncertainty": 0.4556615375506533
+              },
+              "prompt": "某指标由80升到92，增长率是多少？",
+              "response": "A",
+              "response_evidence": {
+                "original_length": 1,
+                "policy_version": "attempt-response-redaction-v1",
+                "redacted_text": "A",
+                "redactions": [],
+                "sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd"
+              },
+              "verification": {
+                "effective": false,
+                "independently_verified": true,
+                "intervention_id": "eval-integration-ambiguous:teach",
+                "mastery_gain": -0.06990655970147883,
+                "post_mastery": 0.24804851356480737,
+                "pre_mastery": 0.3179550732662862,
+                "provenance": {
+                  "minimum_gain": 0.02,
+                  "model_version": "independent-transfer-check-v1",
+                  "verification_attempt": {
+                    "attempt_id": "eval-integration-ambiguous:independent-verify",
+                    "confidence": 0.3,
+                    "features": {
+                      "different_prompt": true,
+                      "scoring": "exact_option_comparison:v1"
+                    },
+                    "hints_used": 0,
+                    "independently_answered": true,
+                    "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
+                    "item_type": "资料分析/增长率",
+                    "observed_at": "2026-07-11T00:05:00+00:00",
+                    "response_time_seconds": 60.0,
+                    "selected_option": "A"
+                  }
+                },
+                "reason": "not yet effective: independent transfer criterion was not met"
+              },
+              "verification_attempt": {
+                "attempt_id": "eval-integration-ambiguous:independent-verify",
+                "cause_likelihoods": {},
+                "confidence": 0.3,
+                "correct": false,
+                "evidence_features": {
+                  "different_prompt": true,
+                  "scoring": "exact_option_comparison:v1"
+                },
+                "hints_used": 0,
+                "independently_answered": true,
+                "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
+                "item_type": "资料分析/增长率",
+                "learner_id": "integration-learner",
+                "observed_at": "2026-07-11T00:05:00+00:00",
+                "response_time_seconds": 60.0,
+                "selected_option": "A"
+              }
+            }
+          ]
+        },
+        "context": {
+          "execution_mode": "local",
+          "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+          "network_opt_in": false,
+          "scenario": "ambiguous"
+        },
+        "cycle": 1,
+        "domain": "xingce",
+        "goal": "complete verified learning loop for 资料分析/增长率",
+        "last_error": null,
+        "learner_id": "integration-learner",
+        "max_cycles": 1,
+        "max_steps": 32,
+        "phase": "complete",
+        "run_id": "eval-integration-ambiguous",
+        "schema_version": 1,
+        "status": "completed",
+        "step_count": 7
+      }
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "schema_version": "hermes.domain-fixture.v1",
+  "fixture_id": "xingce.verbal.main-idea.synthetic-01",
+  "domain": "xingce",
+  "path": "verbal",
+  "mode": "success",
+  "module": "言语理解/主旨概括",
+  "scenario_response": "C",
+  "execution": {"connectivity": "local", "cloud_calls_expected": 0, "fallback": "not_needed", "scorer": "deterministic_local"},
+  "expected_semantics": {"score": "pass", "cause_status": "unconfirmed_hypothesis"},
+  "task": {
+    "prompt": "社区上线工具共享柜后，居民借用电钻、梯子等低频用品，不再人人购买。柜子虽小，却减少闲置，也让邻里因归还和维护产生更多协作。这段文字意在说明什么？",
+    "response_mode": "single_choice",
+    "options": {"A": "共享柜能节省社区空间", "B": "低频工具不值得个人购买", "C": "共享工具兼具资源与社区价值", "D": "居民应负责工具维护"}
+  },
+  "skills": [{"skill_id": "xingce.verbal.main-idea.integrate", "weight": 0.7}, {"skill_id": "xingce.verbal.scope-control", "weight": 0.3}],
+  "scoring": {"adapter": "xingce_mcq_v1", "max_score": 1, "pass_score": 1, "correct_option": "C", "distractor_evidence": {"A": "captured_single_benefit", "B": "overgeneralized_detail", "D": "treated_detail_as-thesis"}},
+  "diagnosis": {
+    "semantics": "ranked_unconfirmed_hypotheses",
+    "evidence_catalog": [
+      {"evidence_id": "answer_incorrect", "description": "主旨选择错误"},
+      {"evidence_id": "captured_single_benefit", "description": "只覆盖资源效益"},
+      {"evidence_id": "overgeneralized_detail", "description": "由低频用品细节推出绝对判断"},
+      {"evidence_id": "treated_detail_as-thesis", "description": "把维护细节当中心"}
+    ],
+    "candidate_causes": [
+      {"cause_id": "benefit-integration-missed", "label": "未整合并列的资源与协作价值", "synthetic_prior": 0.50, "evidence_refs": ["answer_incorrect", "captured_single_benefit"], "is_ground_truth": false},
+      {"cause_id": "detail-overgeneralization", "label": "将局部信息扩大为主旨", "synthetic_prior": 0.28, "evidence_refs": ["answer_incorrect", "overgeneralized_detail"], "is_ground_truth": false},
+      {"cause_id": "detail-as-main", "label": "没有区分支撑细节与中心结论", "synthetic_prior": 0.22, "evidence_refs": ["answer_incorrect", "treated_detail_as-thesis"], "is_ground_truth": false}
+    ]
+  },
+  "probe": {"prompt": "分别用四字概括文段中的两个效果，再合并成一句话。", "targets": ["benefit-integration-missed", "detail-as-main"]},
+  "teach": {"prompt": "标出‘减少闲置’与‘促进协作’两个并列结果，练习选择覆盖面最完整的表述。", "strategy": "coverage-comparison"},
+  "independent_verify": {"prompt": "合成短文同时写到夜市延长营业增加收入、也激活街区交往；选择同时覆盖经济与社会效果的选项。", "response_mode": "single_choice", "pass_condition": {"correct_option": "D"}},
+  "samples": {"passing_response": "C", "failing_response": "A"},
+  "provenance": {"content_origin": "synthetic_original", "authoring_note": "自有合成短文", "prior_source": "synthetic_engineering_prior_v1"}
+}

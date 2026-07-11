@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.hermes.invalid/schemas/domain-fixture.v1.json",
+  "title": "Lumi representative domain fixture",
+  "type": "object",
+  "required": [
+    "schema_version", "fixture_id", "domain", "path", "mode", "module",
+    "scenario_response", "execution", "expected_semantics", "task", "skills",
+    "scoring", "diagnosis", "probe", "teach", "independent_verify", "provenance"
+  ],
+  "properties": {
+    "schema_version": {"const": "hermes.domain-fixture.v1"},
+    "fixture_id": {"type": "string", "minLength": 1},
+    "domain": {"enum": ["xingce", "shenlun", "interview"]},
+    "path": {"type": "string", "minLength": 1},
+    "mode": {"enum": ["success", "ambiguous", "offline"]},
+    "module": {"type": "string", "minLength": 1},
+    "scenario_response": {"type": "string", "minLength": 1},
+    "execution": {
+      "type": "object",
+      "required": ["connectivity", "cloud_calls_expected", "fallback", "scorer"],
+      "properties": {
+        "connectivity": {"enum": ["local", "offline"]},
+        "cloud_calls_expected": {"type": "integer", "minimum": 0},
+        "fallback": {"enum": ["not_needed", "deterministic_local"]},
+        "scorer": {"const": "deterministic_local"}
+      }
+    },
+    "expected_semantics": {
+      "type": "object",
+      "required": ["score", "cause_status"],
+      "properties": {
+        "score": {"enum": ["pass", "fail", "deterministic_local"]},
+        "cause_status": {"const": "unconfirmed_hypothesis"}
+      }
+    },
+    "task": {
+      "type": "object",
+      "required": ["prompt", "response_mode"],
+      "properties": {"prompt": {"type": "string"}, "response_mode": {"type": "string"}}
+    },
+    "skills": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "required": ["skill_id", "weight"],
+        "properties": {"skill_id": {"type": "string"}, "weight": {"type": "number", "exclusiveMinimum": 0, "maximum": 1}}
+      }
+    },
+    "scoring": {
+      "type": "object", "required": ["adapter", "max_score", "pass_score"],
+      "properties": {
+        "adapter": {"enum": ["xingce_mcq_v1", "shenlun_rubric_v1", "interview_rubric_v1"]},
+        "max_score": {"type": "number", "exclusiveMinimum": 0},
+        "pass_score": {"type": "number", "minimum": 0}
+      }
+    },
+    "diagnosis": {
+      "type": "object", "required": ["semantics", "evidence_catalog", "candidate_causes"],
+      "properties": {
+        "semantics": {"const": "ranked_unconfirmed_hypotheses"},
+        "evidence_catalog": {"type": "array", "minItems": 1},
+        "candidate_causes": {
+          "type": "array", "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["cause_id", "label", "synthetic_prior", "evidence_refs", "is_ground_truth"],
+            "properties": {
+              "cause_id": {"type": "string"}, "label": {"type": "string"},
+              "synthetic_prior": {"type": "number", "minimum": 0, "maximum": 1},
+              "evidence_refs": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+              "is_ground_truth": {"const": false}
+            }
+          }
+        }
+      }
+    },
+    "probe": {"$ref": "#/$defs/promptNode"},
+    "teach": {"$ref": "#/$defs/promptNode"},
+    "independent_verify": {
+      "allOf": [
+        {"$ref": "#/$defs/promptNode"},
+        {"type": "object", "required": ["pass_condition"]}
+      ]
+    },
+    "provenance": {
+      "type": "object", "required": ["content_origin", "prior_source"],
+      "properties": {
+        "content_origin": {"const": "synthetic_original"},
+        "prior_source": {"type": "string"}
+      }
+    }
+  },
+  "$defs": {
+    "promptNode": {
+      "type": "object", "required": ["prompt"],
+      "properties": {"prompt": {"type": "string", "minLength": 1}}
+    }
+  }
+}

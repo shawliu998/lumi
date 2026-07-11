@@ -1,0 +1,39 @@
+{
+  "schema_version": "hermes.domain-fixture.v1",
+  "fixture_id": "shenlun.countermeasure.rural-bus.synthetic-01",
+  "domain": "shenlun",
+  "path": "recommendation",
+  "mode": "success",
+  "module": "提出对策/交通服务",
+  "scenario_response": "根据客流动态调度，赶集日增班；增设电话查询等适老服务；建立巡检台账及时修复站牌。",
+  "execution": {"connectivity": "local", "cloud_calls_expected": 0, "fallback": "not_needed", "scorer": "deterministic_local"},
+  "expected_semantics": {"score": "pass", "cause_status": "unconfirmed_hypothesis"},
+  "task": {"prompt": "合成材料：乡村公交客流随赶集日波动，固定班次常空驶；老人不会用线上查车；多个村站牌破损。请提出改进建议，不超过160字。", "response_mode": "short_text"},
+  "skills": [{"skill_id": "shenlun.countermeasure.problem-solution-map", "weight": 0.45}, {"skill_id": "shenlun.countermeasure.operability", "weight": 0.35}, {"skill_id": "shenlun.countermeasure.coverage", "weight": 0.20}],
+  "scoring": {
+    "adapter": "shenlun_rubric_v1", "max_score": 6, "pass_score": 4,
+    "criteria": [
+      {"criterion_id": "dynamic-scheduling", "keywords": ["赶集日增班", "动态调度", "预约响应"], "min_hits": 1, "points": 2},
+      {"criterion_id": "offline-information", "keywords": ["电话查询", "线下告知", "适老服务"], "min_hits": 1, "points": 2},
+      {"criterion_id": "station-maintenance", "keywords": ["修复站牌", "巡检站牌", "维护站点"], "min_hits": 1, "points": 2}
+    ]
+  },
+  "diagnosis": {
+    "semantics": "ranked_unconfirmed_hypotheses",
+    "evidence_catalog": [
+      {"evidence_id": "criterion_missing:dynamic-scheduling", "description": "未回应客流波动与空驶"},
+      {"evidence_id": "criterion_missing:offline-information", "description": "未回应老人不会线上查车"},
+      {"evidence_id": "criterion_missing:station-maintenance", "description": "未回应站牌破损"}
+    ],
+    "candidate_causes": [
+      {"cause_id": "solution-problem-mismatch", "label": "对策没有逐项对应材料问题", "synthetic_prior": 0.45, "evidence_refs": ["criterion_missing:dynamic-scheduling", "criterion_missing:station-maintenance"], "is_ground_truth": false},
+      {"cause_id": "digital-only-assumption", "label": "默认所有群体都能使用线上服务", "synthetic_prior": 0.32, "evidence_refs": ["criterion_missing:offline-information"], "is_ground_truth": false},
+      {"cause_id": "slogan-without-mechanism", "label": "只写加强管理而缺少执行机制", "synthetic_prior": 0.23, "evidence_refs": ["criterion_missing:dynamic-scheduling"], "is_ground_truth": false}
+    ]
+  },
+  "probe": {"prompt": "建立三行表：材料问题、服务对象、可执行动作；检查是否一一对应。", "targets": ["solution-problem-mismatch", "digital-only-assumption"]},
+  "teach": {"prompt": "用‘主体+动作+对象/场景+机制’改写泛化对策。", "strategy": "actionability-rewrite"},
+  "independent_verify": {"prompt": "针对社区食堂客流波动、不会扫码、菜单牌模糊提出三条对应措施。", "response_mode": "short_text", "pass_condition": {"minimum_mapped_actions": 3}},
+  "samples": {"passing_response": "根据客流动态调度，赶集日增班；增设电话查询等适老服务；建立巡检台账及时修复站牌。", "failing_response": "加强宣传和管理，开发更好的线上小程序。"},
+  "provenance": {"content_origin": "synthetic_original", "authoring_note": "合成乡村交通情境", "prior_source": "synthetic_engineering_prior_v1"}
+}

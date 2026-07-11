@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.hermes/contracts/trajectory-v1.json",
+  "title": "Lumi auditable learning trajectory",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["trace_id", "schema_version", "case_id", "created_at", "observation", "policy_decision", "tool_calls", "state_transition", "evaluation", "privacy"],
+  "properties": {
+    "trace_id": {"type": "string", "minLength": 1},
+    "schema_version": {"type": "string", "const": "trajectory-v1"},
+    "case_id": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string", "minLength": 1},
+    "observation": {
+      "type": "object",
+      "required": ["attempt_id", "evidence_ids", "payload"],
+      "properties": {
+        "attempt_id": {"type": "string"},
+        "evidence_ids": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "payload": {"type": "object"}
+      }
+    },
+    "policy_decision": {
+      "type": "object",
+      "required": ["decision_id", "policy_version", "action", "reason", "model_tier"],
+      "properties": {
+        "decision_id": {"type": "string"},
+        "policy_version": {"type": "string"},
+        "action": {"type": "string"},
+        "reason": {"type": "string"},
+        "model_tier": {"type": "string"}
+      }
+    },
+    "tool_calls": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["call_id", "tool", "version", "input_evidence_ids", "output"],
+        "properties": {
+          "call_id": {"type": "string"},
+          "tool": {"type": "string"},
+          "version": {"type": "string"},
+          "input_evidence_ids": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+          "output": {"type": "object"}
+        }
+      }
+    },
+    "state_transition": {
+      "type": "object",
+      "required": ["learner_id", "skill_id", "before", "after", "evidence_ids", "formula_version"],
+      "properties": {
+        "learner_id": {"type": "string"},
+        "skill_id": {"type": "string"},
+        "before": {"type": "object"},
+        "after": {"type": "object"},
+        "evidence_ids": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "formula_version": {"type": "string"}
+      }
+    },
+    "evaluation": {
+      "type": "object",
+      "required": ["evaluator_version", "independent_transfer", "outcome", "evidence_ids"],
+      "properties": {
+        "evaluator_version": {"type": "string"},
+        "independent_transfer": {"type": "boolean"},
+        "outcome": {"type": ["boolean", "null"]},
+        "evidence_ids": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+      }
+    },
+    "privacy": {
+      "type": "object",
+      "required": ["local_only", "redaction_version", "cloud_disclosure"],
+      "properties": {
+        "local_only": {"type": "boolean"},
+        "redaction_version": {"type": "string"},
+        "cloud_disclosure": {"type": ["object", "null"]}
+      }
+    }
+  }
+}

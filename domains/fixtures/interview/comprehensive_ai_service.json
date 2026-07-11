@@ -1,0 +1,40 @@
+{
+  "schema_version": "hermes.domain-fixture.v1",
+  "fixture_id": "interview.comprehensive.ai-service.synthetic-01",
+  "domain": "interview",
+  "path": "comprehensive_analysis",
+  "mode": "success",
+  "module": "综合分析/技术治理",
+  "scenario_response": "首先，AI客服能全天候分流咨询、提高效率。其次，老年人和复杂事项仍可能遇到数字鸿沟或误判。最后，应保留人工并设置一键转人工，形成人机协同。",
+  "execution": {"connectivity": "local", "cloud_calls_expected": 0, "fallback": "not_needed", "scorer": "deterministic_local"},
+  "expected_semantics": {"score": "pass", "cause_status": "unconfirmed_hypothesis"},
+  "task": {"prompt": "有人认为政务服务全面使用AI客服后，就不再需要人工窗口。你怎么看？", "response_mode": "spoken_text"},
+  "skills": [{"skill_id": "interview.analysis.position", "weight": 0.25}, {"skill_id": "interview.analysis.balance", "weight": 0.40}, {"skill_id": "interview.analysis.solution", "weight": 0.35}],
+  "scoring": {
+    "adapter": "interview_rubric_v1", "max_score": 6, "pass_score": 4, "min_structure_markers": 2,
+    "criteria": [
+      {"criterion_id": "benefit", "keywords": ["提高效率", "全天候", "分流"], "min_hits": 1, "points": 2},
+      {"criterion_id": "risk", "keywords": ["老年人", "复杂事项", "误判", "数字鸿沟"], "min_hits": 1, "points": 2},
+      {"criterion_id": "hybrid-solution", "keywords": ["保留人工", "人机协同", "转人工"], "min_hits": 1, "points": 2}
+    ]
+  },
+  "diagnosis": {
+    "semantics": "ranked_unconfirmed_hypotheses",
+    "evidence_catalog": [
+      {"evidence_id": "criterion_missing:benefit", "description": "未说明AI服务价值"},
+      {"evidence_id": "criterion_missing:risk", "description": "未识别适用边界与风险"},
+      {"evidence_id": "criterion_missing:hybrid-solution", "description": "没有提出人机协同机制"},
+      {"evidence_id": "structure_missing", "description": "回答缺少至少两个层次标记"}
+    ],
+    "candidate_causes": [
+      {"cause_id": "binary-technology-stance", "label": "把技术议题处理成支持或反对的二元选择", "synthetic_prior": 0.42, "evidence_refs": ["criterion_missing:risk", "criterion_missing:benefit"], "is_ground_truth": false},
+      {"cause_id": "boundary-not-operationalized", "label": "识别风险但没有设计转人工边界", "synthetic_prior": 0.33, "evidence_refs": ["criterion_missing:hybrid-solution"], "is_ground_truth": false},
+      {"cause_id": "oral-structure-weak", "label": "观点、分析、对策层次没有口头标记", "synthetic_prior": 0.25, "evidence_refs": ["structure_missing"], "is_ground_truth": false}
+    ]
+  },
+  "probe": {"prompt": "分别列出AI最适合和最不适合处理的一类事项，并说明转人工条件。", "targets": ["binary-technology-stance", "boundary-not-operationalized"]},
+  "teach": {"prompt": "按‘表态—价值—边界—机制’四段，用首先、其次、最后组织90秒回答。", "strategy": "oral-four-part-frame"},
+  "independent_verify": {"prompt": "对于‘线上政务应彻底取代线下大厅’发表90秒观点，须包含价值、边界和协同方案。", "response_mode": "spoken_text", "pass_condition": {"required_dimensions": ["benefit", "risk", "hybrid-solution"], "minimum_dimensions": 3}},
+  "samples": {"passing_response": "首先，AI客服能全天候分流咨询、提高效率。其次，老年人和复杂事项仍可能遇到数字鸿沟或误判。最后，应保留人工并设置一键转人工，形成人机协同。", "failing_response": "AI代表未来，应该全面使用，这样办事就方便了。"},
+  "provenance": {"content_origin": "synthetic_original", "authoring_note": "合成技术治理面试题", "prior_source": "synthetic_engineering_prior_v1"}
+}

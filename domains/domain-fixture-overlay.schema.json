@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.hermes.invalid/schemas/domain-fixture-overlay.v1.json",
+  "title": "Lumi independently addressable scenario overlay",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "fixture_id", "extends", "domain", "path", "mode", "scenario_response", "execution", "expected_semantics"],
+  "properties": {
+    "schema_version": {"const": "hermes.domain-fixture-overlay.v1"},
+    "fixture_id": {"type": "string", "minLength": 1},
+    "extends": {"type": "string", "pattern": "^[^/]+\\.json$"},
+    "domain": {"enum": ["xingce", "shenlun", "interview"]},
+    "path": {"type": "string", "minLength": 1},
+    "mode": {"enum": ["ambiguous", "offline"]},
+    "scenario_response": {"type": "string", "minLength": 1},
+    "execution": {
+      "type": "object",
+      "required": ["connectivity", "cloud_calls_expected", "fallback", "scorer"],
+      "properties": {
+        "connectivity": {"enum": ["local", "offline"]},
+        "cloud_calls_expected": {"const": 0},
+        "provider_invoked": {"type": "boolean"},
+        "fallback": {"enum": ["not_needed", "deterministic_local"]},
+        "scorer": {"const": "deterministic_local"}
+      }
+    },
+    "expected_semantics": {
+      "type": "object",
+      "required": ["score", "cause_status", "agent_action"],
+      "properties": {
+        "score": {"enum": ["fail", "deterministic_local"]},
+        "cause_status": {"const": "unconfirmed_hypothesis"},
+        "minimum_candidates": {"type": "integer", "minimum": 2},
+        "agent_action": {"enum": ["request_discriminating_probe", "local_probe_then_defer_generative_feedback"]}
+      }
+    }
+  }
+}

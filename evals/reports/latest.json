@@ -1,0 +1,2107 @@
+{
+  "schema_version": "release-report-v1",
+  "run_id": "run-20260711T051110Z",
+  "generated_at": "2026-07-11T05:11:10.387175+00:00",
+  "repository": "/Users/a1-6/Documents/peikao",
+  "overall_status": "pass",
+  "summary": {
+    "pass": 13,
+    "fail": 0,
+    "pending": 0,
+    "total": 13
+  },
+  "gates": [
+    {
+      "name": "contracts",
+      "status": "pass",
+      "summary": "3 schemas and canonical fixture validated",
+      "evidence": [
+        {
+          "schema": "release_report.schema.json",
+          "sha256": "febdfa875d92732857cc05c34bd2fcb350251bed9fb0e523e7aa73993845d23d"
+        },
+        {
+          "schema": "representative_case.schema.json",
+          "sha256": "f0ca8d39488a97feb7920de019c858f2563269f95779ba7d5021bf80c4334ebc"
+        },
+        {
+          "schema": "trajectory.schema.json",
+          "sha256": "aeea1d26690a31ab67b7cf9d08d19b8540f58f4f04a7764e4b2adc3665744730"
+        }
+      ],
+      "blocking": true,
+      "duration_ms": 1
+    },
+    {
+      "name": "fixtures",
+      "status": "pass",
+      "summary": "42/42 domain fixtures resolve and cover every required path/mode exactly once",
+      "evidence": [
+        {
+          "valid_fixture_count": 42,
+          "unique_fixture_ids": 42,
+          "required_case_count": 42
+        },
+        {
+          "present": [
+            [
+              "interview",
+              "comprehensive_analysis",
+              "ambiguous"
+            ],
+            [
+              "interview",
+              "comprehensive_analysis",
+              "offline"
+            ],
+            [
+              "interview",
+              "comprehensive_analysis",
+              "success"
+            ],
+            [
+              "interview",
+              "emergency",
+              "ambiguous"
+            ],
+            [
+              "interview",
+              "emergency",
+              "offline"
+            ],
+            [
+              "interview",
+              "emergency",
+              "success"
+            ],
+            [
+              "interview",
+              "interpersonal",
+              "ambiguous"
+            ],
+            [
+              "interview",
+              "interpersonal",
+              "offline"
+            ],
+            [
+              "interview",
+              "interpersonal",
+              "success"
+            ],
+            [
+              "interview",
+              "organization",
+              "ambiguous"
+            ],
+            [
+              "interview",
+              "organization",
+              "offline"
+            ],
+            [
+              "interview",
+              "organization",
+              "success"
+            ],
+            [
+              "shenlun",
+              "comprehensive_analysis",
+              "ambiguous"
+            ],
+            [
+              "shenlun",
+              "comprehensive_analysis",
+              "offline"
+            ],
+            [
+              "shenlun",
+              "comprehensive_analysis",
+              "success"
+            ],
+            [
+              "shenlun",
+              "essay",
+              "ambiguous"
+            ],
+            [
+              "shenlun",
+              "essay",
+              "offline"
+            ],
+            [
+              "shenlun",
+              "essay",
+              "success"
+            ],
+            [
+              "shenlun",
+              "official_writing",
+              "ambiguous"
+            ],
+            [
+              "shenlun",
+              "official_writing",
+              "offline"
+            ],
+            [
+              "shenlun",
+              "official_writing",
+              "success"
+            ],
+            [
+              "shenlun",
+              "recommendation",
+              "ambiguous"
+            ],
+            [
+              "shenlun",
+              "recommendation",
+              "offline"
+            ],
+            [
+              "shenlun",
+              "recommendation",
+              "success"
+            ],
+            [
+              "shenlun",
+              "summary",
+              "ambiguous"
+            ],
+            [
+              "shenlun",
+              "summary",
+              "offline"
+            ],
+            [
+              "shenlun",
+              "summary",
+              "success"
+            ],
+            [
+              "xingce",
+              "common_political_knowledge",
+              "ambiguous"
+            ],
+            [
+              "xingce",
+              "common_political_knowledge",
+              "offline"
+            ],
+            [
+              "xingce",
+              "common_political_knowledge",
+              "success"
+            ],
+            [
+              "xingce",
+              "data_analysis",
+              "ambiguous"
+            ],
+            [
+              "xingce",
+              "data_analysis",
+              "offline"
+            ],
+            [
+              "xingce",
+              "data_analysis",
+              "success"
+            ],
+            [
+              "xingce",
+              "judgment",
+              "ambiguous"
+            ],
+            [
+              "xingce",
+              "judgment",
+              "offline"
+            ],
+            [
+              "xingce",
+              "judgment",
+              "success"
+            ],
+            [
+              "xingce",
+              "quantitative",
+              "ambiguous"
+            ],
+            [
+              "xingce",
+              "quantitative",
+              "offline"
+            ],
+            [
+              "xingce",
+              "quantitative",
+              "success"
+            ],
+            [
+              "xingce",
+              "verbal",
+              "ambiguous"
+            ],
+            [
+              "xingce",
+              "verbal",
+              "offline"
+            ],
+            [
+              "xingce",
+              "verbal",
+              "success"
+            ]
+          ]
+        },
+        {
+          "missing": []
+        },
+        {
+          "extra": [],
+          "duplicate_fixture_ids": []
+        },
+        {
+          "fixtures": [
+            {
+              "fixture": "domains/fixtures/interview/comprehensive_ai_service.json",
+              "fixture_id": "interview.comprehensive.ai-service.synthetic-01",
+              "resolved_sha256": "f0a6125171eb78df236af8df887f786191411ec291641288d882839ac4794d5a"
+            },
+            {
+              "fixture": "domains/fixtures/interview/comprehensive_ai_service_ambiguous.json",
+              "fixture_id": "interview.comprehensive.ai-service.ambiguous-01",
+              "resolved_sha256": "f8f41b63ba1dacbecd9ae3f743a948697099743adec04106ccc76dc9e0e26826"
+            },
+            {
+              "fixture": "domains/fixtures/interview/comprehensive_ai_service_offline.json",
+              "fixture_id": "interview.comprehensive.ai-service.offline-01",
+              "resolved_sha256": "bc0e8c862244d694d93b1d9f0f88e7a572ad4bdea92356dc9bd4b37e694bca84"
+            },
+            {
+              "fixture": "domains/fixtures/interview/emergency_power_outage.json",
+              "fixture_id": "interview.emergency.power-outage.synthetic-01",
+              "resolved_sha256": "bcede9eee9dd25a6fee6154a3117a35ae4f287ab972825a80653dc49dc0cf7a3"
+            },
+            {
+              "fixture": "domains/fixtures/interview/emergency_power_outage_ambiguous.json",
+              "fixture_id": "interview.emergency.power-outage.ambiguous-01",
+              "resolved_sha256": "1e181d633ef4da88fabf01e1371f46976a23f9d525a72f373a3668d6b7cc7ca9"
+            },
+            {
+              "fixture": "domains/fixtures/interview/emergency_power_outage_offline.json",
+              "fixture_id": "interview.emergency.power-outage.offline-01",
+              "resolved_sha256": "f9e05c639aca05166b98e69418a3dd0871673b74fddc800036f7bc0b42c026d3"
+            },
+            {
+              "fixture": "domains/fixtures/interview/interpersonal_credit_conflict.json",
+              "fixture_id": "interview.interpersonal.credit-conflict.synthetic-01",
+              "resolved_sha256": "238d46c8fa9aa5188655dcce606a74614861551cf292e7ace8c706dda273a50b"
+            },
+            {
+              "fixture": "domains/fixtures/interview/interpersonal_credit_conflict_ambiguous.json",
+              "fixture_id": "interview.interpersonal.credit-conflict.ambiguous-01",
+              "resolved_sha256": "3a8f9639c32028cf612d6196bb960e95f69aef8b4a4236ed61ea9dcbc09c8f4f"
+            },
+            {
+              "fixture": "domains/fixtures/interview/interpersonal_credit_conflict_offline.json",
+              "fixture_id": "interview.interpersonal.credit-conflict.offline-01",
+              "resolved_sha256": "4da48df124ac34bbe9bf212df250dc51c2281ea6bc3676cfa50215b06d6c5c19"
+            },
+            {
+              "fixture": "domains/fixtures/interview/organization_reading_day.json",
+              "fixture_id": "interview.organization.reading-day.synthetic-01",
+              "resolved_sha256": "a81a6c7ed7ccf9774092d444ead84ac81895963647a01a0af5059943c4331971"
+            },
+            {
+              "fixture": "domains/fixtures/interview/organization_reading_day_ambiguous.json",
+              "fixture_id": "interview.organization.reading-day.ambiguous-01",
+              "resolved_sha256": "0d07af8ba9d2fc32878f25eb697602dbff0e4fa209556b7548bc22060b6ae77d"
+            },
+            {
+              "fixture": "domains/fixtures/interview/organization_reading_day_offline.json",
+              "fixture_id": "interview.organization.reading-day.offline-01",
+              "resolved_sha256": "9bfe1258d0391f974c3ecae0b7055973e7054d8581f4eba70510b22393edfcd7"
+            },
+            {
+              "fixture": "domains/fixtures/shenlun/analysis_night_market.json",
+              "fixture_id": "shenlun.analysis.night-market.synthetic-01",
+              "resolved_sha256": "183f61e3c5afe733606267de6d248165cc77cef8b6fa17405f5d396193559ab1"
+            },
+            {
+              "fixture": "domains/fixtures/shenlun/analysis_night_market_ambiguous.json",
+              "fixture_id": "shenlun.analysis.night-market.ambiguous-01",
+              "resolved_sha256": "313329c1e6bf263d5b3d02cea0e5a765fee745f6946badbaace5eb3271752557"
+            },
+            {
+              "fixture": "domains/fixtures/shenlun/analysis_night_market_offline.json",
+              "fixture_id": "shenlun.analysis.night-market.offline-01",
+              "resolved_sha256": "469b116ac91a6f81077c83680ab33e4b4e02d312b62083780ce32c77859f2e7a"
+            },
+            {
+              "fixture": "domains/fixtures/shenlun/countermeasure_rural_bus.json",
+              "fixture_id": "shenlun.countermeasure.rural-bus.synthetic-01",
+              "resolved_sha256": "68937553a18bc581d64e5dfffacd18351bb1764abfeb1042eef7f41503e1be33"
+            },
+            {
+              "fixture": "domains/fixtures/shenlun/countermeasure_rural_bus_ambiguous.json",
+              "fixture_id": "shenlun.countermeasure.rural-bus.ambiguous-01",
+              "resolved_sha256": "661e1d72f387fb0db66f19eeb6e7196d662cd6e1daa89f5b0c554c59458e2e68"
+            },
+            {
+              "fixture": "domains/fixtures/shenlun/countermeasure_rural_bus_offline.json",
+              "fixture_id": "shenlun.countermeasure.rural-bus.offline-01",
+              "resolved_sha256": "2ebb5543e209106c0cc13fad82ac510bc1f3cf0f9cbac7d53b45c3bdd31b53ef"
+            },
+            {
+              "fixture": "domains/fixtures/shenlun/essay_digital_inclusion.json",
+              "fixture_id": "shenlun.essay.digital-inclusion.synthetic-01",
+              "resolved_sha256": "c3dbaccea11eb0ec97d9b3bf5e3875cb823927f2fafd27a53bc3909a13500f9c"
+            },
+            {
+              "fixture": "domains/fixtures/shenlun/essay_digital_inclusion_ambiguous.json",
+              "fixture_id": "shenlun.essay.digital-inclusion.ambiguous-01",
+              "resolved_sha256": "b386f55cc3a641a5333ace0f8d5b2e77952b39156c2ff620df1461dc7a2c4bec"
+            },
+            {
+              "fixture": "domains/fixtures/shenlun/essay_digital_inclusion_offline.json",
+              "fixture_id": "shenlun.essay.digital-inclusion.offline-01",
+              "resolved_sha256": "639f8d3e86a253cb7c303171a4166cc268b4362df84669060511f8066a4b25b4"
+            },
+            {
+              "fixture": "domains/fixtures/shenlun/official_notice_water.json",
+              "fixture_id": "shenlun.official-writing.water-notice.synthetic-01",
+              "resolved_sha256": "899922312fe99098db0d0f114f2af5c061941fd9ddc61bbab1a9e88995ac1153"
+            },
+            {
+              "fixture": "domains/fixtures/shenlun/official_notice_water_ambiguous.json",
+              "fixture_id": "shenlun.official-writing.water-notice.ambiguous-01",
+              "resolved_sha256": "27b46d6cab0c2a4197ed0ad9630389976d6a0789b82d6282250692bf6681c18f"
+            },
+            {
+              "fixture": "domains/fixtures/shenlun/official_notice_water_offline.json",
+              "fixture_id": "shenlun.official-writing.water-notice.offline-01",
+              "resolved_sha256": "01a37d898871267729d4d4c5eaeb0d15502b184d73e073878a6a43264f8227f6"
+            },
+            {
+              "fixture": "domains/fixtures/shenlun/summary_service_station.json",
+              "fixture_id": "shenlun.summary.service-station.synthetic-01",
+              "resolved_sha256": "3c0815543853a3da1e4d23f9c75cddc21eff635c41916f87de7f7a40442b8626"
+            },
+            {
+              "fixture": "domains/fixtures/shenlun/summary_service_station_ambiguous.json",
+              "fixture_id": "shenlun.summary.service-station.ambiguous-01",
+              "resolved_sha256": "c42bb811e0f0916b256790b030b0f660fa094428ad866ddfa788cae29e6107f3"
+            },
+            {
+              "fixture": "domains/fixtures/shenlun/summary_service_station_offline.json",
+              "fixture_id": "shenlun.summary.service-station.offline-01",
+              "resolved_sha256": "ad33e76f76c4a508adf1b2a24befaf9e304969e715c406c89df5fe6b23890350"
+            },
+            {
+              "fixture": "domains/fixtures/xingce/common_sense_scientific_method.json",
+              "fixture_id": "xingce.common-sense.scientific-method.synthetic-01",
+              "resolved_sha256": "cec73f172ea177a155b6e6b900816f043fa1868204438f0c5c789acd098ac3c4"
+            },
+            {
+              "fixture": "domains/fixtures/xingce/common_sense_scientific_method_ambiguous.json",
+              "fixture_id": "xingce.common-sense.scientific-method.ambiguous-01",
+              "resolved_sha256": "eb0a467c3604d5045d238a04f9e58880276ea84ab35c87eda313bed2d804e450"
+            },
+            {
+              "fixture": "domains/fixtures/xingce/common_sense_scientific_method_offline.json",
+              "fixture_id": "xingce.common-sense.scientific-method.offline-01",
+              "resolved_sha256": "6924154795bcf7eecf10a4a8e221b653cb1bfb8bc45a766ba305289409c0177b"
+            },
+            {
+              "fixture": "domains/fixtures/xingce/data_analysis_growth.json",
+              "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+              "resolved_sha256": "2c6becc89a4ef3c7d51eacae7f35c27599fa2c1efe323d033c8747e63535a1c3"
+            },
+            {
+              "fixture": "domains/fixtures/xingce/data_analysis_growth_ambiguous.json",
+              "fixture_id": "xingce.data-analysis.growth-rate.ambiguous-01",
+              "resolved_sha256": "70ca5f096c6fd1680ddc105b8eb1694a11b8b7b47b38e3f21b0b3998c2233d89"
+            },
+            {
+              "fixture": "domains/fixtures/xingce/data_analysis_growth_offline.json",
+              "fixture_id": "xingce.data-analysis.growth-rate.offline-01",
+              "resolved_sha256": "13fb57e69151d1047d62a531814ab2d2bb98c061fbfb93cce263debb2ae5964f"
+            },
+            {
+              "fixture": "domains/fixtures/xingce/judgment_necessary_condition.json",
+              "fixture_id": "xingce.judgment.necessary-condition.synthetic-01",
+              "resolved_sha256": "308469b28883c5696d4da796e6047b8fc6ca1f9f097f4b9f02f53cb0ab7de277"
+            },
+            {
+              "fixture": "domains/fixtures/xingce/judgment_necessary_condition_ambiguous.json",
+              "fixture_id": "xingce.judgment.necessary-condition.ambiguous-01",
+              "resolved_sha256": "ad37284f060f08edf248fbfe189718658db41bd46bb5923a7fa1c4798ca704db"
+            },
+            {
+              "fixture": "domains/fixtures/xingce/judgment_necessary_condition_offline.json",
+              "fixture_id": "xingce.judgment.necessary-condition.offline-01",
+              "resolved_sha256": "d89e90265bb6403427110884a405201a4f2251361697a6954c4e9a2852701a3b"
+            },
+            {
+              "fixture": "domains/fixtures/xingce/quantity_work_rate.json",
+              "fixture_id": "xingce.quantity.work-rate.synthetic-01",
+              "resolved_sha256": "b452c54a0b48da17c947b8bb497b6ba4587fd73c0e9de6d1187218053a1d5d5c"
+            },
+            {
+              "fixture": "domains/fixtures/xingce/quantity_work_rate_ambiguous.json",
+              "fixture_id": "xingce.quantity.work-rate.ambiguous-01",
+              "resolved_sha256": "5367e0b8893f9741007e4e4795ee3b475a59769909a3d3a4533d1b4a520606cf"
+            },
+            {
+              "fixture": "domains/fixtures/xingce/quantity_work_rate_offline.json",
+              "fixture_id": "xingce.quantity.work-rate.offline-01",
+              "resolved_sha256": "6271f43595ce76b047c6c93873973223c6d7eb7a9e3f9db7295b29d1d1f04dcc"
+            },
+            {
+              "fixture": "domains/fixtures/xingce/verbal_main_idea.json",
+              "fixture_id": "xingce.verbal.main-idea.synthetic-01",
+              "resolved_sha256": "4abe168b4fb0eaef682b53b9870cf54cf6863faa902cb2de43c2d9c1d9d70305"
+            },
+            {
+              "fixture": "domains/fixtures/xingce/verbal_main_idea_ambiguous.json",
+              "fixture_id": "xingce.verbal.main-idea.ambiguous-01",
+              "resolved_sha256": "3d2d2256b1bdd5a042f60aaf2e0bc73244369af45d67fdcdfc658b0924750bed"
+            },
+            {
+              "fixture": "domains/fixtures/xingce/verbal_main_idea_offline.json",
+              "fixture_id": "xingce.verbal.main-idea.offline-01",
+              "resolved_sha256": "3741d4c35a42243a99abf57c61fd9b00b31a4a358027846b30dc3b5ec237e757"
+            }
+          ]
+        }
+      ],
+      "blocking": true,
+      "duration_ms": 10
+    },
+    {
+      "name": "engine_tests",
+      "status": "pass",
+      "summary": "deterministic engine tests passed",
+      "evidence": [
+        {
+          "command": [
+            "/opt/homebrew/opt/python@3.14/bin/python3.14",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "/Users/a1-6/Documents/peikao/engine/tests",
+            "-v"
+          ],
+          "exit_code": 0,
+          "output": "test_counts_cannot_exceed_attempts (test_cohort.CohortPriorTests.test_counts_cannot_exceed_attempts) ... ok\ntest_eligible_aggregate_is_shrunk_and_provenance_carries_sample_size (test_cohort.CohortPriorTests.test_eligible_aggregate_is_shrunk_and_provenance_carries_sample_size) ... ok\ntest_small_cohort_fails_closed_without_exposing_counts (test_cohort.CohortPriorTests.test_small_cohort_fails_closed_without_exposing_counts) ... ok\ntest_unknown_taxonomy_cause_is_rejected (test_cohort.CohortPriorTests.test_unknown_taxonomy_cause_is_rejected) ... ok\ntest_unreviewed_aggregate_never_influences_prior (test_cohort.CohortPriorTests.test_unreviewed_aggregate_never_influences_prior) ... ok\ntest_distractor_and_history_raise_specific_cause (test_diagnosis.DiagnosisTests.test_distractor_and_history_raise_specific_cause) ... ok\ntest_invalid_empty_prior_is_rejected (test_diagnosis.DiagnosisTests.test_invalid_empty_prior_is_rejected) ... ok\ntest_tool_boundary_is_json_friendly (test_diagnosis.DiagnosisTests.test_tool_boundary_is_json_friendly) ... ok\ntest_complex_diagnosis_routes_to_strong_model (test_guardrails.RoutingAndGuardrailTests.test_complex_diagnosis_routes_to_strong_model) ... ok\ntest_low_cost_output_requires_independent_probe (test_guardrails.RoutingAndGuardrailTests.test_low_cost_output_requires_independent_probe) ... ok\ntest_routine_generation_routes_to_balanced_model (test_guardrails.RoutingAndGuardrailTests.test_routine_generation_routes_to_balanced_model) ... ok\ntest_schema_guard_rejects_unnormalized_or_unproven_claims (test_guardrails.RoutingAndGuardrailTests.test_schema_guard_rejects_unnormalized_or_unproven_claims) ... ok\ntest_correct_attempt_increases_mastery_and_records_components (test_mastery.MasteryTests.test_correct_attempt_increases_mastery_and_records_components) ... ok\ntest_hinted_verification_is_inconclusive (test_mastery.MasteryTests.test_hinted_verification_is_inconclusive) ... ok\ntest_incorrect_attempt_reduces_mastery (test_mastery.MasteryTests.test_incorrect_attempt_reduces_mastery) ... ok\ntest_independent_verification_can_mark_teaching_effective (test_mastery.MasteryTests.test_independent_verification_can_mark_teaching_effective) ... ok\ntest_tool_update_is_serializable (test_mastery.MasteryTests.test_tool_update_is_serializable) ... ok\n\n----------------------------------------------------------------------\nRan 17 tests in 0.001s\n\nOK"
+        }
+      ],
+      "blocking": true,
+      "duration_ms": 55
+    },
+    {
+      "name": "integration_surfaces",
+      "status": "pass",
+      "summary": "domain contracts and offline runtime demo/replay surfaces passed their real probes",
+      "evidence": [
+        {
+          "runtime_tests": {
+            "command": [
+              "/opt/homebrew/opt/python@3.14/bin/python3.14",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              "/Users/a1-6/Documents/peikao/runtime/tests",
+              "-v"
+            ],
+            "exit_code": 0,
+            "output": "test_guardrail_blocks_protected_path (test_runtime.RuntimeTests.test_guardrail_blocks_protected_path) ... ok\ntest_interrupt_resume_reconstructs_from_database (test_runtime.RuntimeTests.test_interrupt_resume_reconstructs_from_database) ... ok\ntest_model_calls_are_recorded (test_runtime.RuntimeTests.test_model_calls_are_recorded) ... ok\ntest_model_routing_quality_first (test_runtime.RuntimeTests.test_model_routing_quality_first) ... ok\ntest_replay_does_not_invoke_tools (test_runtime.RuntimeTests.test_replay_does_not_invoke_tools) ... ok\ntest_tool_schema_rejects_invalid_output (test_runtime.RuntimeTests.test_tool_schema_rejects_invalid_output) ... ok\ntest_trace_is_append_only_and_redacts_secrets (test_runtime.RuntimeTests.test_trace_is_append_only_and_redacts_secrets) ... ok\ntest_two_cycle_demo_completes_with_typed_artifacts (test_runtime.RuntimeTests.test_two_cycle_demo_completes_with_typed_artifacts) ... ok\n\n----------------------------------------------------------------------\nRan 8 tests in 0.028s\n\nOK"
+          }
+        },
+        {
+          "domains_tests": {
+            "command": [
+              "/opt/homebrew/opt/python@3.14/bin/python3.14",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              "/Users/a1-6/Documents/peikao/domains/tests",
+              "-v"
+            ],
+            "exit_code": 0,
+            "output": "test_all_candidates_remain_unconfirmed (test_domain_contract.DeterministicAdapterTests.test_all_candidates_remain_unconfirmed) ... ok\ntest_ambiguous_scenarios_request_probe_and_keep_multiple_hypotheses (test_domain_contract.DeterministicAdapterTests.test_ambiguous_scenarios_request_probe_and_keep_multiple_hypotheses) ... ok\ntest_offline_scenarios_use_only_local_deterministic_fallback (test_domain_contract.DeterministicAdapterTests.test_offline_scenarios_use_only_local_deterministic_fallback) ... ok\ntest_passing_sample_scores_higher_than_failing_sample (test_domain_contract.DeterministicAdapterTests.test_passing_sample_scores_higher_than_failing_sample) ... ok\ntest_replay_is_byte_stable (test_domain_contract.DeterministicAdapterTests.test_replay_is_byte_stable) ... ok\ntest_score_observations_are_not_causal_labels (test_domain_contract.DeterministicAdapterTests.test_score_observations_are_not_causal_labels) ... ok\ntest_success_scenarios_pass_with_no_asserted_cause (test_domain_contract.DeterministicAdapterTests.test_success_scenarios_pass_with_no_asserted_cause) ... ok\ntest_complete_14_by_3_scenario_matrix (test_domain_contract.DomainContractTests.test_complete_14_by_3_scenario_matrix) ... ok\ntest_every_fixture_validates (test_domain_contract.DomainContractTests.test_every_fixture_validates) ... ok\ntest_rejects_ground_truth_cause_claim (test_domain_contract.DomainContractTests.test_rejects_ground_truth_cause_claim) ... ok\ntest_rejects_non_independent_verification (test_domain_contract.DomainContractTests.test_rejects_non_independent_verification) ... ok\ntest_representative_coverage (test_domain_contract.DomainContractTests.test_representative_coverage) ... ok\n\n----------------------------------------------------------------------\nRan 12 tests in 0.021s\n\nOK"
+          }
+        },
+        {
+          "integration_tests": {
+            "command": [
+              "/opt/homebrew/opt/python@3.14/bin/python3.14",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              "/Users/a1-6/Documents/peikao/integration/tests",
+              "-v"
+            ],
+            "exit_code": 0,
+            "output": "test_ambiguous_case_selects_disambiguating_probe (test_learning_loop.IntegrationLoopTests.test_ambiguous_case_selects_disambiguating_probe) ... ok\ntest_continuation_rejects_out_of_order_and_stale_versions (test_learning_loop.IntegrationLoopTests.test_continuation_rejects_out_of_order_and_stale_versions) ... ok\ntest_every_mastery_delta_has_evidence_and_versions (test_learning_loop.IntegrationLoopTests.test_every_mastery_delta_has_evidence_and_versions) ... ok\ntest_offline_case_has_no_fabricated_model_calls_and_replays (test_learning_loop.IntegrationLoopTests.test_offline_case_has_no_fabricated_model_calls_and_replays) ... ok\ntest_real_response_is_scored_raw_but_only_redacted_evidence_is_traced (test_learning_loop.IntegrationLoopTests.test_real_response_is_scored_raw_but_only_redacted_evidence_is_traced) ... ok\ntest_real_responses_drive_distinct_score_and_diagnosis_paths (test_learning_loop.IntegrationLoopTests.test_real_responses_drive_distinct_score_and_diagnosis_paths) ... ok\ntest_real_session_requires_probe_then_verification_before_mastery_update (test_learning_loop.IntegrationLoopTests.test_real_session_requires_probe_then_verification_before_mastery_update) ... ok\ntest_success_runs_domain_engine_runtime_and_verifies_transfer (test_learning_loop.IntegrationLoopTests.test_success_runs_domain_engine_runtime_and_verifies_transfer) ... ok\ntest_trace_contains_all_seven_real_phase_artifacts (test_learning_loop.IntegrationLoopTests.test_trace_contains_all_seven_real_phase_artifacts) ... ok\n\n----------------------------------------------------------------------\nRan 9 tests in 0.148s\n\nOK"
+          }
+        },
+        {
+          "domain_contract_fixtures": [
+            {
+              "fixture": "domains/fixtures/interview/comprehensive_ai_service.json",
+              "sha256": "f0a6125171eb78df236af8df887f786191411ec291641288d882839ac4794d5a"
+            },
+            {
+              "fixture": "domains/fixtures/interview/comprehensive_ai_service_ambiguous.json",
+              "sha256": "f8f41b63ba1dacbecd9ae3f743a948697099743adec04106ccc76dc9e0e26826"
+            },
+            {
+              "fixture": "domains/fixtures/interview/comprehensive_ai_service_offline.json",
+              "sha256": "bc0e8c862244d694d93b1d9f0f88e7a572ad4bdea92356dc9bd4b37e694bca84"
+            },
+            {
+              "fixture": "domains/fixtures/interview/emergency_power_outage.json",
+              "sha256": "bcede9eee9dd25a6fee6154a3117a35ae4f287ab972825a80653dc49dc0cf7a3"
+            },
+            {
+              "fixture": "domains/fixtures/interview/emergency_power_outage_ambiguous.json",
+              "sha256": "1e181d633ef4da88fabf01e1371f46976a23f9d525a72f373a3668d6b7cc7ca9"
+            },
+            {
+              "fixture": "domains/fixtures/interview/emergency_power_outage_offline.json",
+              "sha256": "f9e05c639aca05166b98e69418a3dd0871673b74fddc800036f7bc0b42c026d3"
+            },
+            {
+              "fixture": "domains/fixtures/interview/interpersonal_credit_conflict.json",
+              "sha256": "238d46c8fa9aa5188655dcce606a74614861551cf292e7ace8c706dda273a50b"
+            },
+            {
+              "fixture": "domains/fixtures/interview/interpersonal_credit_conflict_ambiguous.json",
+              "sha256": "3a8f9639c32028cf612d6196bb960e95f69aef8b4a4236ed61ea9dcbc09c8f4f"
+            },
+            {
+              "fixture": "domains/fixtures/interview/interpersonal_credit_conflict_offline.json",
+              "sha256": "4da48df124ac34bbe9bf212df250dc51c2281ea6bc3676cfa50215b06d6c5c19"
+            },
+            {
+              "fixture": "domains/fixtures/interview/organization_reading_day.json",
+              "sha256": "a81a6c7ed7ccf9774092d444ead84ac81895963647a01a0af5059943c4331971"
+            },
+            {
+              "fixture": "domains/fixtures/interview/organization_reading_day_ambiguous.json",
+              "sha256": "0d07af8ba9d2fc32878f25eb697602dbff0e4fa209556b7548bc22060b6ae77d"
+            },
+            {
+              "fixture": "domains/fixtures/interview/organization_reading_day_offline.json",
+              "sha256": "9bfe1258d0391f974c3ecae0b7055973e7054d8581f4eba70510b22393edfcd7"
+            },
+            {
+              "fixture": "domains/fixtures/shenlun/analysis_night_market.json",
+              "sha256": "183f61e3c5afe733606267de6d248165cc77cef8b6fa17405f5d396193559ab1"
+            },
+            {
+              "fixture": "domains/fixtures/shenlun/analysis_night_market_ambiguous.json",
+              "sha256": "313329c1e6bf263d5b3d02cea0e5a765fee745f6946badbaace5eb3271752557"
+            },
+            {
+              "fixture": "domains/fixtures/shenlun/analysis_night_market_offline.json",
+              "sha256": "469b116ac91a6f81077c83680ab33e4b4e02d312b62083780ce32c77859f2e7a"
+            },
+            {
+              "fixture": "domains/fixtures/shenlun/countermeasure_rural_bus.json",
+              "sha256": "68937553a18bc581d64e5dfffacd18351bb1764abfeb1042eef7f41503e1be33"
+            },
+            {
+              "fixture": "domains/fixtures/shenlun/countermeasure_rural_bus_ambiguous.json",
+              "sha256": "661e1d72f387fb0db66f19eeb6e7196d662cd6e1daa89f5b0c554c59458e2e68"
+            },
+            {
+              "fixture": "domains/fixtures/shenlun/countermeasure_rural_bus_offline.json",
+              "sha256": "2ebb5543e209106c0cc13fad82ac510bc1f3cf0f9cbac7d53b45c3bdd31b53ef"
+            },
+            {
+              "fixture": "domains/fixtures/shenlun/essay_digital_inclusion.json",
+              "sha256": "c3dbaccea11eb0ec97d9b3bf5e3875cb823927f2fafd27a53bc3909a13500f9c"
+            },
+            {
+              "fixture": "domains/fixtures/shenlun/essay_digital_inclusion_ambiguous.json",
+              "sha256": "b386f55cc3a641a5333ace0f8d5b2e77952b39156c2ff620df1461dc7a2c4bec"
+            },
+            {
+              "fixture": "domains/fixtures/shenlun/essay_digital_inclusion_offline.json",
+              "sha256": "639f8d3e86a253cb7c303171a4166cc268b4362df84669060511f8066a4b25b4"
+            },
+            {
+              "fixture": "domains/fixtures/shenlun/official_notice_water.json",
+              "sha256": "899922312fe99098db0d0f114f2af5c061941fd9ddc61bbab1a9e88995ac1153"
+            },
+            {
+              "fixture": "domains/fixtures/shenlun/official_notice_water_ambiguous.json",
+              "sha256": "27b46d6cab0c2a4197ed0ad9630389976d6a0789b82d6282250692bf6681c18f"
+            },
+            {
+              "fixture": "domains/fixtures/shenlun/official_notice_water_offline.json",
+              "sha256": "01a37d898871267729d4d4c5eaeb0d15502b184d73e073878a6a43264f8227f6"
+            },
+            {
+              "fixture": "domains/fixtures/shenlun/summary_service_station.json",
+              "sha256": "3c0815543853a3da1e4d23f9c75cddc21eff635c41916f87de7f7a40442b8626"
+            },
+            {
+              "fixture": "domains/fixtures/shenlun/summary_service_station_ambiguous.json",
+              "sha256": "c42bb811e0f0916b256790b030b0f660fa094428ad866ddfa788cae29e6107f3"
+            },
+            {
+              "fixture": "domains/fixtures/shenlun/summary_service_station_offline.json",
+              "sha256": "ad33e76f76c4a508adf1b2a24befaf9e304969e715c406c89df5fe6b23890350"
+            },
+            {
+              "fixture": "domains/fixtures/xingce/common_sense_scientific_method.json",
+              "sha256": "cec73f172ea177a155b6e6b900816f043fa1868204438f0c5c789acd098ac3c4"
+            },
+            {
+              "fixture": "domains/fixtures/xingce/common_sense_scientific_method_ambiguous.json",
+              "sha256": "eb0a467c3604d5045d238a04f9e58880276ea84ab35c87eda313bed2d804e450"
+            },
+            {
+              "fixture": "domains/fixtures/xingce/common_sense_scientific_method_offline.json",
+              "sha256": "6924154795bcf7eecf10a4a8e221b653cb1bfb8bc45a766ba305289409c0177b"
+            },
+            {
+              "fixture": "domains/fixtures/xingce/data_analysis_growth.json",
+              "sha256": "2c6becc89a4ef3c7d51eacae7f35c27599fa2c1efe323d033c8747e63535a1c3"
+            },
+            {
+              "fixture": "domains/fixtures/xingce/data_analysis_growth_ambiguous.json",
+              "sha256": "70ca5f096c6fd1680ddc105b8eb1694a11b8b7b47b38e3f21b0b3998c2233d89"
+            },
+            {
+              "fixture": "domains/fixtures/xingce/data_analysis_growth_offline.json",
+              "sha256": "13fb57e69151d1047d62a531814ab2d2bb98c061fbfb93cce263debb2ae5964f"
+            },
+            {
+              "fixture": "domains/fixtures/xingce/judgment_necessary_condition.json",
+              "sha256": "308469b28883c5696d4da796e6047b8fc6ca1f9f097f4b9f02f53cb0ab7de277"
+            },
+            {
+              "fixture": "domains/fixtures/xingce/judgment_necessary_condition_ambiguous.json",
+              "sha256": "ad37284f060f08edf248fbfe189718658db41bd46bb5923a7fa1c4798ca704db"
+            },
+            {
+              "fixture": "domains/fixtures/xingce/judgment_necessary_condition_offline.json",
+              "sha256": "d89e90265bb6403427110884a405201a4f2251361697a6954c4e9a2852701a3b"
+            },
+            {
+              "fixture": "domains/fixtures/xingce/quantity_work_rate.json",
+              "sha256": "b452c54a0b48da17c947b8bb497b6ba4587fd73c0e9de6d1187218053a1d5d5c"
+            },
+            {
+              "fixture": "domains/fixtures/xingce/quantity_work_rate_ambiguous.json",
+              "sha256": "5367e0b8893f9741007e4e4795ee3b475a59769909a3d3a4533d1b4a520606cf"
+            },
+            {
+              "fixture": "domains/fixtures/xingce/quantity_work_rate_offline.json",
+              "sha256": "6271f43595ce76b047c6c93873973223c6d7eb7a9e3f9db7295b29d1d1f04dcc"
+            },
+            {
+              "fixture": "domains/fixtures/xingce/verbal_main_idea.json",
+              "sha256": "4abe168b4fb0eaef682b53b9870cf54cf6863faa902cb2de43c2d9c1d9d70305"
+            },
+            {
+              "fixture": "domains/fixtures/xingce/verbal_main_idea_ambiguous.json",
+              "sha256": "3d2d2256b1bdd5a042f60aaf2e0bc73244369af45d67fdcdfc658b0924750bed"
+            },
+            {
+              "fixture": "domains/fixtures/xingce/verbal_main_idea_offline.json",
+              "sha256": "3741d4c35a42243a99abf57c61fd9b00b31a4a358027846b30dc3b5ec237e757"
+            }
+          ]
+        },
+        {
+          "runtime_demo": {
+            "command": [
+              "/opt/homebrew/opt/python@3.14/bin/python3.14",
+              "-m",
+              "hermes_runtime",
+              "--db",
+              "/Users/a1-6/Documents/peikao/evals/reports/runtime-probe-f_9uqg4e/trace.sqlite3",
+              "demo",
+              "--run-id",
+              "eval-runtime-probe"
+            ],
+            "exit_code": 0,
+            "output": {
+              "run_id": "eval-runtime-probe",
+              "status": "completed",
+              "phase": "complete",
+              "cycle": 2,
+              "steps": 14,
+              "events": 15,
+              "trace_verified": true,
+              "model_tiers": [
+                "sol",
+                "terra",
+                "light",
+                "sol",
+                "terra",
+                "light"
+              ]
+            }
+          }
+        },
+        {
+          "runtime_replay": {
+            "command": [
+              "/opt/homebrew/opt/python@3.14/bin/python3.14",
+              "-m",
+              "hermes_runtime",
+              "--db",
+              "/Users/a1-6/Documents/peikao/evals/reports/runtime-probe-f_9uqg4e/trace.sqlite3",
+              "replay",
+              "eval-runtime-probe"
+            ],
+            "exit_code": 0,
+            "output": {
+              "run_id": "eval-runtime-probe",
+              "verified": true,
+              "frame_count": 15,
+              "sha256": "5db567d18d075f5b921f54e8538f3d74b125ddce2e229bf21dc8054766a8a027"
+            }
+          }
+        },
+        {
+          "domain_engine_runtime_loop": {
+            "status": "pass",
+            "errors": [],
+            "runs": {
+              "success": {
+                "summary": {
+                  "run_id": "eval-integration-success",
+                  "scenario": "success",
+                  "status": "completed",
+                  "steps": 7,
+                  "diagnosis_decision": "confirm_top_hypothesis",
+                  "verification_effective": true,
+                  "mastery_delta": 0.247389056779,
+                  "outcome": "verified_transfer",
+                  "trace_verified": true,
+                  "model_calls_recorded": 0
+                },
+                "replay_sha256": "a1d33b67a888d192208fb20be000407dc50b606ef649b3ac82d6ec0a0e458f2b",
+                "assertion_errors": []
+              },
+              "ambiguous": {
+                "summary": {
+                  "run_id": "eval-integration-ambiguous",
+                  "scenario": "ambiguous",
+                  "status": "completed",
+                  "steps": 7,
+                  "diagnosis_decision": "disambiguate_hypotheses",
+                  "verification_effective": false,
+                  "mastery_delta": -0.051951486435,
+                  "outcome": "not_yet_mastered",
+                  "trace_verified": true,
+                  "model_calls_recorded": 0
+                },
+                "replay_sha256": "84d2d25a2dd1588afb86223cbf278c94b996d1f5518318aebb07ae24b40b2178",
+                "assertion_errors": []
+              },
+              "offline": {
+                "summary": {
+                  "run_id": "eval-integration-offline",
+                  "scenario": "offline",
+                  "status": "completed",
+                  "steps": 7,
+                  "diagnosis_decision": "confirm_top_hypothesis",
+                  "verification_effective": true,
+                  "mastery_delta": 0.247389056779,
+                  "outcome": "verified_transfer",
+                  "trace_verified": true,
+                  "model_calls_recorded": 0
+                },
+                "replay_sha256": "e4a635d6194361bc6925dc8872a660b71bfa62213598075d202e0a444449093c",
+                "assertion_errors": []
+              }
+            }
+          }
+        }
+      ],
+      "blocking": true,
+      "duration_ms": 1087
+    },
+    {
+      "name": "attempt_api",
+      "status": "pass",
+      "summary": "real POST /v1/attempts preserves zero-cause correctness, unconfirmed error candidates, PII redaction, fail-closed fields, and verified replay",
+      "evidence": [
+        {
+          "status": "pass",
+          "attempt_status": "pass",
+          "continuation_status": "pass",
+          "errors": [],
+          "continuation_errors": [],
+          "cases": {
+            "correct": {
+              "request": {
+                "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "run_id": "eval-api-correct",
+                "response_sha256": "df7e70e5021544f4834bbee64a9e3789febc4be81470df629cad6ddb03320a5c",
+                "contains_pii_test_data": false,
+                "unknown_fields": []
+              },
+              "http_status": 201,
+              "schema_version": "hermes.attempt-session.v1",
+              "run_status": "interrupted",
+              "score_passed": true,
+              "hypothesis_count": 0,
+              "verification": null,
+              "response_evidence": {
+                "original_length": 1,
+                "policy_version": "attempt-response-redaction-v1",
+                "redacted_text": "B",
+                "redactions": [],
+                "sha256": "df7e70e5021544f4834bbee64a9e3789febc4be81470df629cad6ddb03320a5c"
+              },
+              "error": null,
+              "trace_status": 200,
+              "trace_sha256": "71fc7df51e267aee0fc3d2f5a3ee7d9cd9507976370493c740ae0fdc5c82ec0a",
+              "replay_status": 200,
+              "replay_sha256": "61e29c5cf0e72cd90fbb0828dc02616053a8f9506d5c30cb3932d91eff89f072",
+              "rejected_run_trace_status": null
+            },
+            "wrong": {
+              "request": {
+                "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "run_id": "eval-api-wrong",
+                "response_sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
+                "contains_pii_test_data": false,
+                "unknown_fields": []
+              },
+              "http_status": 201,
+              "schema_version": "hermes.attempt-session.v1",
+              "run_status": "interrupted",
+              "score_passed": false,
+              "hypothesis_count": 3,
+              "verification": null,
+              "response_evidence": {
+                "original_length": 1,
+                "policy_version": "attempt-response-redaction-v1",
+                "redacted_text": "A",
+                "redactions": [],
+                "sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd"
+              },
+              "error": null,
+              "trace_status": 200,
+              "trace_sha256": "7a97714fdb1cbaa5c3b41020d4752ed632eff0ac21ee991f1d653a4ab311f873",
+              "replay_status": 200,
+              "replay_sha256": "405eb39fef6f6a0f9f4c0b7e89043006453c788899c5add578a717726d23ba88",
+              "rejected_run_trace_status": null
+            },
+            "pii": {
+              "request": {
+                "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "run_id": "eval-api-pii",
+                "response_sha256": "577bf7450dc0611c7f523f453daf5e7fe4592d0b5ec2f5109768a4b935daec1c",
+                "contains_pii_test_data": true,
+                "unknown_fields": []
+              },
+              "http_status": 201,
+              "schema_version": "hermes.attempt-session.v1",
+              "run_status": "interrupted",
+              "score_passed": false,
+              "hypothesis_count": 3,
+              "verification": null,
+              "response_evidence": {
+                "original_length": 61,
+                "policy_version": "attempt-response-redaction-v1",
+                "redacted_text": "A [EMAIL] [PHONE] [ID]",
+                "redactions": [
+                  "email",
+                  "phone",
+                  "national_id"
+                ],
+                "sha256": "577bf7450dc0611c7f523f453daf5e7fe4592d0b5ec2f5109768a4b935daec1c"
+              },
+              "error": null,
+              "trace_status": 200,
+              "trace_sha256": "bfd9e47db88bb59c8f711f5155670f5953074ba7d06358f5fc0d85d324de75b3",
+              "replay_status": 200,
+              "replay_sha256": "98936669097896d4dc065abb925ef14e223403843b364552f4708adb49776d6e",
+              "rejected_run_trace_status": null
+            },
+            "unknown_field": {
+              "request": {
+                "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "run_id": "eval-api-unknown",
+                "response_sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
+                "contains_pii_test_data": false,
+                "unknown_fields": [
+                  "cause_ground_truth"
+                ]
+              },
+              "http_status": 400,
+              "schema_version": null,
+              "run_status": null,
+              "score_passed": null,
+              "hypothesis_count": 0,
+              "verification": null,
+              "response_evidence": null,
+              "error": {
+                "code": "invalid_body",
+                "message": "request body contains unsupported fields",
+                "request_id": "eval-attempt-api"
+              },
+              "trace_status": null,
+              "trace_sha256": null,
+              "replay_status": null,
+              "replay_sha256": null,
+              "rejected_run_trace_status": 404
+            },
+            "continuation": {
+              "request": {
+                "run_id": "eval-api-wrong",
+                "probe_response_sha256": "5aad0cb27c9b9811ae2ceaf147989e58ba79c758af0215add4bb59f2d6b18edd",
+                "raw_probe_response_retained": false
+              },
+              "before_skill_count": 0,
+              "out_of_order": {
+                "status": 409,
+                "code": "out_of_order"
+              },
+              "after_probe": {
+                "status": 200,
+                "state": "awaiting_verification",
+                "state_version": 9,
+                "mastery_update": null
+              },
+              "stale": {
+                "status": 409,
+                "code": "stale_version"
+              },
+              "completed": {
+                "status": 200,
+                "state": "completed",
+                "state_version": 14,
+                "verification": {
+                  "intervention_id": "eval-api-wrong:teach",
+                  "pre_mastery": 0.3179550732662862,
+                  "post_mastery": 0.5473890567792533,
+                  "mastery_gain": 0.22943398351296712,
+                  "independently_verified": true,
+                  "effective": true,
+                  "reason": "effective: independent correct transfer with mastery gain",
+                  "provenance": {
+                    "verification_attempt": {
+                      "attempt_id": "eval-api-wrong:independent-verify",
+                      "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
+                      "item_type": "资料分析/增长率",
+                      "observed_at": "2026-07-11T00:05:00+00:00",
+                      "selected_option": "C",
+                      "response_time_seconds": 20.0,
+                      "confidence": 0.9,
+                      "hints_used": 0,
+                      "independently_answered": true,
+                      "features": {
+                        "different_prompt": true,
+                        "scoring": "exact_option_comparison:v1"
+                      }
+                    },
+                    "minimum_gain": 0.02,
+                    "model_version": "independent-transfer-check-v1"
+                  }
+                },
+                "mastery_update": {
+                  "skill_id": "xingce.data.growth.identify-base-current",
+                  "previous_mastery": 0.3,
+                  "new_mastery": 0.5473890567792533,
+                  "mastery_delta": 0.247389056779,
+                  "uncertainty": 0.4542183523241705,
+                  "evidence": {
+                    "initial_attempt_id": "eval-api-wrong:initial",
+                    "verification_attempt_id": "eval-api-wrong:independent-verify",
+                    "independently_verified": true,
+                    "verification_effective": true,
+                    "engine_provenance": [
+                      {
+                        "attempt": {
+                          "attempt_id": "eval-api-wrong:initial",
+                          "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                          "item_type": "资料分析/增长率",
+                          "observed_at": "2026-07-11T00:00:00+00:00",
+                          "selected_option": "A",
+                          "response_time_seconds": 31.0,
+                          "confidence": 0.8,
+                          "hints_used": 0,
+                          "independently_answered": true,
+                          "features": {
+                            "adapter_version": "deterministic-domain-adapters-v1",
+                            "domain_observations": [
+                              {
+                                "evidence": "learner selection",
+                                "kind": "response",
+                                "observation_id": "selected_option",
+                                "value": "A"
+                              },
+                              {
+                                "evidence": "exact option comparison",
+                                "kind": "score",
+                                "observation_id": "answer_correct",
+                                "value": false
+                              },
+                              {
+                                "evidence": "selected option A",
+                                "kind": "distractor_pattern",
+                                "observation_id": "used_current_as_denominator",
+                                "value": true
+                              }
+                            ]
+                          }
+                        },
+                        "skill_weight": 0.35,
+                        "item_difficulty": 0.0,
+                        "components": {
+                          "bkt": 0.25266101694915255,
+                          "pfa": 0.31270571980279593,
+                          "irt_1pl": 0.48906424425435574
+                        },
+                        "ensemble_weights": {
+                          "bkt": 0.5,
+                          "pfa": 0.3,
+                          "irt_1pl": 0.2
+                        },
+                        "formula_version": "bkt-pfa-rasch-ensemble-v1"
+                      },
+                      {
+                        "attempt": {
+                          "attempt_id": "eval-api-wrong:independent-verify",
+                          "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
+                          "item_type": "资料分析/增长率",
+                          "observed_at": "2026-07-11T00:05:00+00:00",
+                          "selected_option": "C",
+                          "response_time_seconds": 20.0,
+                          "confidence": 0.9,
+                          "hints_used": 0,
+                          "independently_answered": true,
+                          "features": {
+                            "different_prompt": true,
+                            "scoring": "exact_option_comparison:v1"
+                          }
+                        },
+                        "skill_weight": 1.0,
+                        "item_difficulty": 0.0,
+                        "components": {
+                          "bkt": 0.6509825544526848,
+                          "pfa": 0.3923368301671084,
+                          "irt_1pl": 0.5209836525138919
+                        },
+                        "ensemble_weights": {
+                          "bkt": 0.5,
+                          "pfa": 0.3,
+                          "irt_1pl": 0.2
+                        },
+                        "formula_version": "bkt-pfa-rasch-ensemble-v1"
+                      }
+                    ]
+                  },
+                  "model_version": {
+                    "mastery": "bkt-pfa-rasch-ensemble-v1",
+                    "verification": "independent-transfer-check-v1",
+                    "engine_tool": "0.1.0"
+                  },
+                  "policy_version": "integration-learning-policy-v1"
+                },
+                "reflection": {
+                  "continue": false,
+                  "outcome": "verified_transfer",
+                  "mastery_delta": 0.247389056779,
+                  "next_action": "schedule_delayed_retention",
+                  "policy_version": "integration-learning-policy-v1"
+                }
+              },
+              "after_skill_count": 1,
+              "duplicate_after_complete_status": 409,
+              "trace_sha256": "fbfea7c9332249df4020e83af6e304d221f3f55038f1a57b6edc6c95df053e36",
+              "replay_sha256": "62801a0667c675c74fd4486ab833ab373d0e9608666092e157c3fae080f462ac"
+            }
+          }
+        }
+      ],
+      "blocking": true,
+      "duration_ms": 237
+    },
+    {
+      "name": "cohort_prior_guardrail",
+      "status": "pass",
+      "summary": "privacy/size guardrails pass and the real attempt trace uses sample_size=0 synthetic engineering priors without cohort claims",
+      "evidence": [
+        {
+          "command": [
+            "/opt/homebrew/opt/python@3.14/bin/python3.14",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "/Users/a1-6/Documents/peikao/engine/tests",
+            "-p",
+            "test_cohort.py",
+            "-v"
+          ],
+          "exit_code": 0,
+          "output": "test_counts_cannot_exceed_attempts (test_cohort.CohortPriorTests.test_counts_cannot_exceed_attempts) ... ok\ntest_eligible_aggregate_is_shrunk_and_provenance_carries_sample_size (test_cohort.CohortPriorTests.test_eligible_aggregate_is_shrunk_and_provenance_carries_sample_size) ... ok\ntest_small_cohort_fails_closed_without_exposing_counts (test_cohort.CohortPriorTests.test_small_cohort_fails_closed_without_exposing_counts) ... ok\ntest_unknown_taxonomy_cause_is_rejected (test_cohort.CohortPriorTests.test_unknown_taxonomy_cause_is_rejected) ... ok\ntest_unreviewed_aggregate_never_influences_prior (test_cohort.CohortPriorTests.test_unreviewed_aggregate_never_influences_prior) ... ok\n\n----------------------------------------------------------------------\nRan 5 tests in 0.001s\n\nOK"
+        },
+        {
+          "attempt_trace": {
+            "available": true,
+            "sources": [
+              {
+                "cause_id": "denominator-current-base-confusion",
+                "cohort_id": "synthetic-fixture-cold-start",
+                "sample_size": 0,
+                "source_version": "synthetic_engineering_prior_v1"
+              },
+              {
+                "cause_id": "increment-rate-confusion",
+                "cohort_id": "synthetic-fixture-cold-start",
+                "sample_size": 0,
+                "source_version": "synthetic_engineering_prior_v1"
+              },
+              {
+                "cause_id": "ratio-growth-confusion",
+                "cohort_id": "synthetic-fixture-cold-start",
+                "sample_size": 0,
+                "source_version": "synthetic_engineering_prior_v1"
+              }
+            ],
+            "hypothesis_evidence": [
+              [
+                "engineering_prior",
+                "learner_history",
+                "attempt_feature_likelihood"
+              ],
+              [
+                "engineering_prior",
+                "learner_history",
+                "attempt_feature_likelihood"
+              ],
+              [
+                "engineering_prior",
+                "learner_history",
+                "attempt_feature_likelihood"
+              ]
+            ]
+          }
+        }
+      ],
+      "blocking": true,
+      "duration_ms": 62
+    },
+    {
+      "name": "attempt_continuation",
+      "status": "pass",
+      "summary": "real HTTP session advances awaiting_probe → awaiting_verification → completed; illegal/stale writes fail closed and KT appears only after independent verification",
+      "evidence": [
+        {
+          "status": "pass",
+          "attempt_status": "pass",
+          "continuation_status": "pass",
+          "errors": [],
+          "continuation_errors": [],
+          "cases": {
+            "correct": {
+              "request": {
+                "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "run_id": "eval-api-correct",
+                "response_sha256": "df7e70e5021544f4834bbee64a9e3789febc4be81470df629cad6ddb03320a5c",
+                "contains_pii_test_data": false,
+                "unknown_fields": []
+              },
+              "http_status": 201,
+              "schema_version": "hermes.attempt-session.v1",
+              "run_status": "interrupted",
+              "score_passed": true,
+              "hypothesis_count": 0,
+              "verification": null,
+              "response_evidence": {
+                "original_length": 1,
+                "policy_version": "attempt-response-redaction-v1",
+                "redacted_text": "B",
+                "redactions": [],
+                "sha256": "df7e70e5021544f4834bbee64a9e3789febc4be81470df629cad6ddb03320a5c"
+              },
+              "error": null,
+              "trace_status": 200,
+              "trace_sha256": "71fc7df51e267aee0fc3d2f5a3ee7d9cd9507976370493c740ae0fdc5c82ec0a",
+              "replay_status": 200,
+              "replay_sha256": "61e29c5cf0e72cd90fbb0828dc02616053a8f9506d5c30cb3932d91eff89f072",
+              "rejected_run_trace_status": null
+            },
+            "wrong": {
+              "request": {
+                "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "run_id": "eval-api-wrong",
+                "response_sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
+                "contains_pii_test_data": false,
+                "unknown_fields": []
+              },
+              "http_status": 201,
+              "schema_version": "hermes.attempt-session.v1",
+              "run_status": "interrupted",
+              "score_passed": false,
+              "hypothesis_count": 3,
+              "verification": null,
+              "response_evidence": {
+                "original_length": 1,
+                "policy_version": "attempt-response-redaction-v1",
+                "redacted_text": "A",
+                "redactions": [],
+                "sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd"
+              },
+              "error": null,
+              "trace_status": 200,
+              "trace_sha256": "7a97714fdb1cbaa5c3b41020d4752ed632eff0ac21ee991f1d653a4ab311f873",
+              "replay_status": 200,
+              "replay_sha256": "405eb39fef6f6a0f9f4c0b7e89043006453c788899c5add578a717726d23ba88",
+              "rejected_run_trace_status": null
+            },
+            "pii": {
+              "request": {
+                "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "run_id": "eval-api-pii",
+                "response_sha256": "577bf7450dc0611c7f523f453daf5e7fe4592d0b5ec2f5109768a4b935daec1c",
+                "contains_pii_test_data": true,
+                "unknown_fields": []
+              },
+              "http_status": 201,
+              "schema_version": "hermes.attempt-session.v1",
+              "run_status": "interrupted",
+              "score_passed": false,
+              "hypothesis_count": 3,
+              "verification": null,
+              "response_evidence": {
+                "original_length": 61,
+                "policy_version": "attempt-response-redaction-v1",
+                "redacted_text": "A [EMAIL] [PHONE] [ID]",
+                "redactions": [
+                  "email",
+                  "phone",
+                  "national_id"
+                ],
+                "sha256": "577bf7450dc0611c7f523f453daf5e7fe4592d0b5ec2f5109768a4b935daec1c"
+              },
+              "error": null,
+              "trace_status": 200,
+              "trace_sha256": "bfd9e47db88bb59c8f711f5155670f5953074ba7d06358f5fc0d85d324de75b3",
+              "replay_status": 200,
+              "replay_sha256": "98936669097896d4dc065abb925ef14e223403843b364552f4708adb49776d6e",
+              "rejected_run_trace_status": null
+            },
+            "unknown_field": {
+              "request": {
+                "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "run_id": "eval-api-unknown",
+                "response_sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
+                "contains_pii_test_data": false,
+                "unknown_fields": [
+                  "cause_ground_truth"
+                ]
+              },
+              "http_status": 400,
+              "schema_version": null,
+              "run_status": null,
+              "score_passed": null,
+              "hypothesis_count": 0,
+              "verification": null,
+              "response_evidence": null,
+              "error": {
+                "code": "invalid_body",
+                "message": "request body contains unsupported fields",
+                "request_id": "eval-attempt-api"
+              },
+              "trace_status": null,
+              "trace_sha256": null,
+              "replay_status": null,
+              "replay_sha256": null,
+              "rejected_run_trace_status": 404
+            },
+            "continuation": {
+              "request": {
+                "run_id": "eval-api-wrong",
+                "probe_response_sha256": "5aad0cb27c9b9811ae2ceaf147989e58ba79c758af0215add4bb59f2d6b18edd",
+                "raw_probe_response_retained": false
+              },
+              "before_skill_count": 0,
+              "out_of_order": {
+                "status": 409,
+                "code": "out_of_order"
+              },
+              "after_probe": {
+                "status": 200,
+                "state": "awaiting_verification",
+                "state_version": 9,
+                "mastery_update": null
+              },
+              "stale": {
+                "status": 409,
+                "code": "stale_version"
+              },
+              "completed": {
+                "status": 200,
+                "state": "completed",
+                "state_version": 14,
+                "verification": {
+                  "intervention_id": "eval-api-wrong:teach",
+                  "pre_mastery": 0.3179550732662862,
+                  "post_mastery": 0.5473890567792533,
+                  "mastery_gain": 0.22943398351296712,
+                  "independently_verified": true,
+                  "effective": true,
+                  "reason": "effective: independent correct transfer with mastery gain",
+                  "provenance": {
+                    "verification_attempt": {
+                      "attempt_id": "eval-api-wrong:independent-verify",
+                      "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
+                      "item_type": "资料分析/增长率",
+                      "observed_at": "2026-07-11T00:05:00+00:00",
+                      "selected_option": "C",
+                      "response_time_seconds": 20.0,
+                      "confidence": 0.9,
+                      "hints_used": 0,
+                      "independently_answered": true,
+                      "features": {
+                        "different_prompt": true,
+                        "scoring": "exact_option_comparison:v1"
+                      }
+                    },
+                    "minimum_gain": 0.02,
+                    "model_version": "independent-transfer-check-v1"
+                  }
+                },
+                "mastery_update": {
+                  "skill_id": "xingce.data.growth.identify-base-current",
+                  "previous_mastery": 0.3,
+                  "new_mastery": 0.5473890567792533,
+                  "mastery_delta": 0.247389056779,
+                  "uncertainty": 0.4542183523241705,
+                  "evidence": {
+                    "initial_attempt_id": "eval-api-wrong:initial",
+                    "verification_attempt_id": "eval-api-wrong:independent-verify",
+                    "independently_verified": true,
+                    "verification_effective": true,
+                    "engine_provenance": [
+                      {
+                        "attempt": {
+                          "attempt_id": "eval-api-wrong:initial",
+                          "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                          "item_type": "资料分析/增长率",
+                          "observed_at": "2026-07-11T00:00:00+00:00",
+                          "selected_option": "A",
+                          "response_time_seconds": 31.0,
+                          "confidence": 0.8,
+                          "hints_used": 0,
+                          "independently_answered": true,
+                          "features": {
+                            "adapter_version": "deterministic-domain-adapters-v1",
+                            "domain_observations": [
+                              {
+                                "evidence": "learner selection",
+                                "kind": "response",
+                                "observation_id": "selected_option",
+                                "value": "A"
+                              },
+                              {
+                                "evidence": "exact option comparison",
+                                "kind": "score",
+                                "observation_id": "answer_correct",
+                                "value": false
+                              },
+                              {
+                                "evidence": "selected option A",
+                                "kind": "distractor_pattern",
+                                "observation_id": "used_current_as_denominator",
+                                "value": true
+                              }
+                            ]
+                          }
+                        },
+                        "skill_weight": 0.35,
+                        "item_difficulty": 0.0,
+                        "components": {
+                          "bkt": 0.25266101694915255,
+                          "pfa": 0.31270571980279593,
+                          "irt_1pl": 0.48906424425435574
+                        },
+                        "ensemble_weights": {
+                          "bkt": 0.5,
+                          "pfa": 0.3,
+                          "irt_1pl": 0.2
+                        },
+                        "formula_version": "bkt-pfa-rasch-ensemble-v1"
+                      },
+                      {
+                        "attempt": {
+                          "attempt_id": "eval-api-wrong:independent-verify",
+                          "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
+                          "item_type": "资料分析/增长率",
+                          "observed_at": "2026-07-11T00:05:00+00:00",
+                          "selected_option": "C",
+                          "response_time_seconds": 20.0,
+                          "confidence": 0.9,
+                          "hints_used": 0,
+                          "independently_answered": true,
+                          "features": {
+                            "different_prompt": true,
+                            "scoring": "exact_option_comparison:v1"
+                          }
+                        },
+                        "skill_weight": 1.0,
+                        "item_difficulty": 0.0,
+                        "components": {
+                          "bkt": 0.6509825544526848,
+                          "pfa": 0.3923368301671084,
+                          "irt_1pl": 0.5209836525138919
+                        },
+                        "ensemble_weights": {
+                          "bkt": 0.5,
+                          "pfa": 0.3,
+                          "irt_1pl": 0.2
+                        },
+                        "formula_version": "bkt-pfa-rasch-ensemble-v1"
+                      }
+                    ]
+                  },
+                  "model_version": {
+                    "mastery": "bkt-pfa-rasch-ensemble-v1",
+                    "verification": "independent-transfer-check-v1",
+                    "engine_tool": "0.1.0"
+                  },
+                  "policy_version": "integration-learning-policy-v1"
+                },
+                "reflection": {
+                  "continue": false,
+                  "outcome": "verified_transfer",
+                  "mastery_delta": 0.247389056779,
+                  "next_action": "schedule_delayed_retention",
+                  "policy_version": "integration-learning-policy-v1"
+                }
+              },
+              "after_skill_count": 1,
+              "duplicate_after_complete_status": 409,
+              "trace_sha256": "fbfea7c9332249df4020e83af6e304d221f3f55038f1a57b6edc6c95df053e36",
+              "replay_sha256": "62801a0667c675c74fd4486ab833ab373d0e9608666092e157c3fae080f462ac"
+            }
+          }
+        }
+      ],
+      "blocking": true,
+      "duration_ms": 5
+    },
+    {
+      "name": "trace",
+      "status": "pass",
+      "summary": "computed engine trajectory is contract-valid and replay evidence is locatable",
+      "evidence": [
+        {
+          "trace_id": "trace-f4eb731e08273ff3",
+          "sha256": "31210748d78402d59a15e0564c9cd8891f8d2c33c8bd5282651bff536d992e96",
+          "trace": {
+            "trace_id": "trace-f4eb731e08273ff3",
+            "schema_version": "trajectory-v1",
+            "case_id": "xingce.data_analysis.growth_rate.ambiguous.v1",
+            "created_at": "2026-07-11T00:00:00+00:00",
+            "observation": {
+              "attempt_id": "attempt-demo-001",
+              "evidence_ids": [
+                "attempt:attempt-demo-001"
+              ],
+              "payload": {
+                "attempt_id": "attempt-demo-001",
+                "learner_id": "learner-demo-redacted",
+                "item_id": "item-growth-rate-001",
+                "item_type": "xingce.data_analysis.growth_rate",
+                "correct": false,
+                "response_time_seconds": 74.0,
+                "confidence": 0.72,
+                "selected_option": "B",
+                "hints_used": 0,
+                "independently_answered": true,
+                "observed_at": "2026-07-11T00:00:00+00:00",
+                "cause_likelihoods": {
+                  "base_current_reversal": 2.4,
+                  "percentage_point_confusion": 1.6,
+                  "arithmetic_slip": 0.8
+                },
+                "evidence_features": {
+                  "option_mapping_version": "growth-rate-distractors-v1",
+                  "option_b_matches": "reversed_base_current_formula"
+                }
+              }
+            },
+            "policy_decision": {
+              "decision_id": "decision-probe-001",
+              "policy_version": "harness-probe-policy-v1",
+              "action": "request_discriminating_probe",
+              "reason": "ranked cause base_current_reversal remains a hypothesis; verify before teaching claim",
+              "model_tier": "deterministic_baseline"
+            },
+            "tool_calls": [
+              {
+                "call_id": "call-diagnosis-001",
+                "tool": "hermes_explainable_learning_model.diagnose",
+                "version": "0.1.0",
+                "input_evidence_ids": [
+                  "attempt:attempt-demo-001"
+                ],
+                "output": {
+                  "sha256": "1ec20b973a59838d72da0bccaf17f6ca377b15ac4ed3ea43a7032b4ad97cc812",
+                  "result": {
+                    "attempt_id": "attempt-demo-001",
+                    "hypotheses": [
+                      {
+                        "cause_id": "base_current_reversal",
+                        "probability": 0.722468058585229,
+                        "cohort_component": 0.42,
+                        "learner_component": 0.5257142857142857,
+                        "evidence_likelihood": 2.4,
+                        "evidence": [
+                          "cohort_prior",
+                          "learner_history",
+                          "attempt_feature_likelihood"
+                        ]
+                      },
+                      {
+                        "cause_id": "percentage_point_confusion",
+                        "probability": 0.23857899657214093,
+                        "cohort_component": 0.33,
+                        "learner_component": 0.33142857142857146,
+                        "evidence_likelihood": 1.6,
+                        "evidence": [
+                          "cohort_prior",
+                          "learner_history",
+                          "attempt_feature_likelihood"
+                        ]
+                      },
+                      {
+                        "cause_id": "arithmetic_slip",
+                        "probability": 0.0389529448426301,
+                        "cohort_component": 0.25,
+                        "learner_component": 0.14285714285714285,
+                        "evidence_likelihood": 0.8,
+                        "evidence": [
+                          "cohort_prior",
+                          "learner_history",
+                          "attempt_feature_likelihood"
+                        ]
+                      }
+                    ],
+                    "uncertainty": 0.6400584790137556,
+                    "provenance": {
+                      "attempt": {
+                        "attempt_id": "attempt-demo-001",
+                        "item_id": "item-growth-rate-001",
+                        "item_type": "xingce.data_analysis.growth_rate",
+                        "observed_at": "2026-07-11T00:00:00+00:00",
+                        "selected_option": "B",
+                        "response_time_seconds": 74.0,
+                        "confidence": 0.72,
+                        "hints_used": 0,
+                        "independently_answered": true,
+                        "features": {
+                          "option_mapping_version": "growth-rate-distractors-v1",
+                          "option_b_matches": "reversed_base_current_formula"
+                        }
+                      },
+                      "cohort_sources": [
+                        {
+                          "cause_id": "base_current_reversal",
+                          "cohort_id": "cold-start-growth-rate",
+                          "sample_size": 120,
+                          "source_version": "expert-seeded-prior-v1"
+                        },
+                        {
+                          "cause_id": "percentage_point_confusion",
+                          "cohort_id": "cold-start-growth-rate",
+                          "sample_size": 120,
+                          "source_version": "expert-seeded-prior-v1"
+                        },
+                        {
+                          "cause_id": "arithmetic_slip",
+                          "cohort_id": "cold-start-growth-rate",
+                          "sample_size": 120,
+                          "source_version": "expert-seeded-prior-v1"
+                        }
+                      ],
+                      "learner_history_version": "learner-history-demo-v1",
+                      "learner_history_exposure_count": 7,
+                      "formula": "normalize(cohort_prior * learner_dirichlet_posterior * evidence_likelihood)"
+                    },
+                    "model_version": "hierarchical-cause-baseline-v1"
+                  }
+                }
+              },
+              {
+                "call_id": "call-verification-001",
+                "tool": "hermes_explainable_learning_model.verify_intervention",
+                "version": "0.1.0",
+                "input_evidence_ids": [
+                  "attempt:attempt-demo-probe-001"
+                ],
+                "output": {
+                  "sha256": "4d7596e60b30632b371f3527ae39b82eff612719858677817b65939389f77c64",
+                  "result": {
+                    "post_state": {
+                      "learner_id": "learner-demo-redacted",
+                      "skill_id": "xingce.data_analysis.growth_rate.base_current",
+                      "bkt_mastery": 0.7347945205479453,
+                      "successes": 2.0,
+                      "failures": 2.0,
+                      "irt_theta": -0.10945587477855045,
+                      "evidence_count": 4,
+                      "mastery": 0.5751921245771141,
+                      "uncertainty": 0.40476676779245535,
+                      "last_updated_at": "2026-07-11T05:11:10.021712+00:00",
+                      "provenance": [
+                        {
+                          "attempt": {
+                            "attempt_id": "attempt-demo-probe-001",
+                            "item_id": "item-growth-rate-probe-001",
+                            "item_type": "xingce.data_analysis.growth_rate.probe",
+                            "observed_at": "2026-07-11T00:05:00+00:00",
+                            "selected_option": "C",
+                            "response_time_seconds": 51.0,
+                            "confidence": 0.81,
+                            "hints_used": 0,
+                            "independently_answered": true,
+                            "features": {
+                              "isomorphic_transfer": true
+                            }
+                          },
+                          "skill_weight": 1.0,
+                          "item_difficulty": 0.0,
+                          "components": {
+                            "bkt": 0.7347945205479453,
+                            "pfa": 0.37754066879814546,
+                            "irt_1pl": 0.4726633183184894
+                          },
+                          "ensemble_weights": {
+                            "bkt": 0.5,
+                            "pfa": 0.3,
+                            "irt_1pl": 0.2
+                          },
+                          "formula_version": "bkt-pfa-rasch-ensemble-v1"
+                        }
+                      ]
+                    },
+                    "verification": {
+                      "intervention_id": "intervention-demo-001",
+                      "pre_mastery": 0.34,
+                      "post_mastery": 0.5751921245771141,
+                      "mastery_gain": 0.23519212457711408,
+                      "independently_verified": true,
+                      "effective": true,
+                      "reason": "effective: independent correct transfer with mastery gain",
+                      "provenance": {
+                        "verification_attempt": {
+                          "attempt_id": "attempt-demo-probe-001",
+                          "item_id": "item-growth-rate-probe-001",
+                          "item_type": "xingce.data_analysis.growth_rate.probe",
+                          "observed_at": "2026-07-11T00:05:00+00:00",
+                          "selected_option": "C",
+                          "response_time_seconds": 51.0,
+                          "confidence": 0.81,
+                          "hints_used": 0,
+                          "independently_answered": true,
+                          "features": {
+                            "isomorphic_transfer": true
+                          }
+                        },
+                        "minimum_gain": 0.02,
+                        "model_version": "independent-transfer-check-v1"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "state_transition": {
+              "learner_id": "learner-demo-redacted",
+              "skill_id": "xingce.data_analysis.growth_rate.base_current",
+              "before": {
+                "learner_id": "learner-demo-redacted",
+                "skill_id": "xingce.data_analysis.growth_rate.base_current",
+                "bkt_mastery": 0.34,
+                "successes": 1.0,
+                "failures": 2.0,
+                "irt_theta": -0.25,
+                "evidence_count": 3,
+                "mastery": 0.34,
+                "uncertainty": 0.66,
+                "last_updated_at": "2026-07-10T00:00:00+00:00",
+                "provenance": []
+              },
+              "after": {
+                "learner_id": "learner-demo-redacted",
+                "skill_id": "xingce.data_analysis.growth_rate.base_current",
+                "bkt_mastery": 0.7347945205479453,
+                "successes": 2.0,
+                "failures": 2.0,
+                "irt_theta": -0.10945587477855045,
+                "evidence_count": 4,
+                "mastery": 0.5751921245771141,
+                "uncertainty": 0.40476676779245535,
+                "last_updated_at": "2026-07-11T05:11:10.021712+00:00",
+                "provenance": [
+                  {
+                    "attempt": {
+                      "attempt_id": "attempt-demo-probe-001",
+                      "item_id": "item-growth-rate-probe-001",
+                      "item_type": "xingce.data_analysis.growth_rate.probe",
+                      "observed_at": "2026-07-11T00:05:00+00:00",
+                      "selected_option": "C",
+                      "response_time_seconds": 51.0,
+                      "confidence": 0.81,
+                      "hints_used": 0,
+                      "independently_answered": true,
+                      "features": {
+                        "isomorphic_transfer": true
+                      }
+                    },
+                    "skill_weight": 1.0,
+                    "item_difficulty": 0.0,
+                    "components": {
+                      "bkt": 0.7347945205479453,
+                      "pfa": 0.37754066879814546,
+                      "irt_1pl": 0.4726633183184894
+                    },
+                    "ensemble_weights": {
+                      "bkt": 0.5,
+                      "pfa": 0.3,
+                      "irt_1pl": 0.2
+                    },
+                    "formula_version": "bkt-pfa-rasch-ensemble-v1"
+                  }
+                ]
+              },
+              "evidence_ids": [
+                "attempt:attempt-demo-probe-001"
+              ],
+              "formula_version": "bkt-pfa-rasch-ensemble-v1"
+            },
+            "evaluation": {
+              "evaluator_version": "independent-transfer-check-v1",
+              "independent_transfer": true,
+              "outcome": true,
+              "evidence_ids": [
+                "attempt:attempt-demo-probe-001"
+              ]
+            },
+            "privacy": {
+              "local_only": true,
+              "redaction_version": "fixture-redaction-v1",
+              "cloud_disclosure": null
+            }
+          }
+        }
+      ],
+      "blocking": true,
+      "duration_ms": 9
+    },
+    {
+      "name": "diagnosis",
+      "status": "pass",
+      "summary": "real engine diagnosis is ranked, normalized, uncertain, and provenance-linked",
+      "evidence": [
+        {
+          "diagnosis_sha256": "1ec20b973a59838d72da0bccaf17f6ca377b15ac4ed3ea43a7032b4ad97cc812",
+          "result": {
+            "attempt_id": "attempt-demo-001",
+            "hypotheses": [
+              {
+                "cause_id": "base_current_reversal",
+                "probability": 0.722468058585229,
+                "cohort_component": 0.42,
+                "learner_component": 0.5257142857142857,
+                "evidence_likelihood": 2.4,
+                "evidence": [
+                  "cohort_prior",
+                  "learner_history",
+                  "attempt_feature_likelihood"
+                ]
+              },
+              {
+                "cause_id": "percentage_point_confusion",
+                "probability": 0.23857899657214093,
+                "cohort_component": 0.33,
+                "learner_component": 0.33142857142857146,
+                "evidence_likelihood": 1.6,
+                "evidence": [
+                  "cohort_prior",
+                  "learner_history",
+                  "attempt_feature_likelihood"
+                ]
+              },
+              {
+                "cause_id": "arithmetic_slip",
+                "probability": 0.0389529448426301,
+                "cohort_component": 0.25,
+                "learner_component": 0.14285714285714285,
+                "evidence_likelihood": 0.8,
+                "evidence": [
+                  "cohort_prior",
+                  "learner_history",
+                  "attempt_feature_likelihood"
+                ]
+              }
+            ],
+            "uncertainty": 0.6400584790137556,
+            "provenance": {
+              "attempt": {
+                "attempt_id": "attempt-demo-001",
+                "item_id": "item-growth-rate-001",
+                "item_type": "xingce.data_analysis.growth_rate",
+                "observed_at": "2026-07-11T00:00:00+00:00",
+                "selected_option": "B",
+                "response_time_seconds": 74.0,
+                "confidence": 0.72,
+                "hints_used": 0,
+                "independently_answered": true,
+                "features": {
+                  "option_mapping_version": "growth-rate-distractors-v1",
+                  "option_b_matches": "reversed_base_current_formula"
+                }
+              },
+              "cohort_sources": [
+                {
+                  "cause_id": "base_current_reversal",
+                  "cohort_id": "cold-start-growth-rate",
+                  "sample_size": 120,
+                  "source_version": "expert-seeded-prior-v1"
+                },
+                {
+                  "cause_id": "percentage_point_confusion",
+                  "cohort_id": "cold-start-growth-rate",
+                  "sample_size": 120,
+                  "source_version": "expert-seeded-prior-v1"
+                },
+                {
+                  "cause_id": "arithmetic_slip",
+                  "cohort_id": "cold-start-growth-rate",
+                  "sample_size": 120,
+                  "source_version": "expert-seeded-prior-v1"
+                }
+              ],
+              "learner_history_version": "learner-history-demo-v1",
+              "learner_history_exposure_count": 7,
+              "formula": "normalize(cohort_prior * learner_dirichlet_posterior * evidence_likelihood)"
+            },
+            "model_version": "hierarchical-cause-baseline-v1"
+          }
+        }
+      ],
+      "blocking": true,
+      "duration_ms": 0
+    },
+    {
+      "name": "kt",
+      "status": "pass",
+      "summary": "real KT update is bounded, versioned, and linked to one evidence event",
+      "evidence": [
+        {
+          "state_sha256": "c4b39c99e92f8d5ad725f7127741dbe0b43fa94eee645a993672ff3f03e405e4",
+          "state": {
+            "learner_id": "learner-demo-redacted",
+            "skill_id": "xingce.data_analysis.growth_rate.base_current",
+            "bkt_mastery": 0.7347945205479453,
+            "successes": 2.0,
+            "failures": 2.0,
+            "irt_theta": -0.10945587477855045,
+            "evidence_count": 4,
+            "mastery": 0.5751921245771141,
+            "uncertainty": 0.40476676779245535,
+            "last_updated_at": "2026-07-11T05:11:10.021396+00:00",
+            "provenance": [
+              {
+                "attempt": {
+                  "attempt_id": "attempt-demo-probe-001",
+                  "item_id": "item-growth-rate-probe-001",
+                  "item_type": "xingce.data_analysis.growth_rate.probe",
+                  "observed_at": "2026-07-11T00:05:00+00:00",
+                  "selected_option": "C",
+                  "response_time_seconds": 51.0,
+                  "confidence": 0.81,
+                  "hints_used": 0,
+                  "independently_answered": true,
+                  "features": {
+                    "isomorphic_transfer": true
+                  }
+                },
+                "skill_weight": 1.0,
+                "item_difficulty": 0.0,
+                "components": {
+                  "bkt": 0.7347945205479453,
+                  "pfa": 0.37754066879814546,
+                  "irt_1pl": 0.4726633183184894
+                },
+                "ensemble_weights": {
+                  "bkt": 0.5,
+                  "pfa": 0.3,
+                  "irt_1pl": 0.2
+                },
+                "formula_version": "bkt-pfa-rasch-ensemble-v1"
+              }
+            ]
+          }
+        }
+      ],
+      "blocking": true,
+      "duration_ms": 0
+    },
+    {
+      "name": "teaching_transfer",
+      "status": "pass",
+      "summary": "success, ambiguous, and offline domain→engine→runtime loops persist teaching, independent transfer, KT, reflection, and verified replay evidence",
+      "evidence": [
+        {
+          "mechanics": {
+            "intervention_id": "intervention-demo-001",
+            "pre_mastery": 0.34,
+            "post_mastery": 0.5751921245771141,
+            "mastery_gain": 0.23519212457711408,
+            "independently_verified": true,
+            "effective": true,
+            "reason": "effective: independent correct transfer with mastery gain",
+            "provenance": {
+              "verification_attempt": {
+                "attempt_id": "attempt-demo-probe-001",
+                "item_id": "item-growth-rate-probe-001",
+                "item_type": "xingce.data_analysis.growth_rate.probe",
+                "observed_at": "2026-07-11T00:05:00+00:00",
+                "selected_option": "C",
+                "response_time_seconds": 51.0,
+                "confidence": 0.81,
+                "hints_used": 0,
+                "independently_answered": true,
+                "features": {
+                  "isomorphic_transfer": true
+                }
+              },
+              "minimum_gain": 0.02,
+              "model_version": "independent-transfer-check-v1"
+            }
+          },
+          "mechanics_sha256": "4d7596e60b30632b371f3527ae39b82eff612719858677817b65939389f77c64"
+        },
+        {
+          "domain_engine_runtime_integration": {
+            "success": {
+              "summary": {
+                "run_id": "eval-integration-success",
+                "scenario": "success",
+                "status": "completed",
+                "steps": 7,
+                "diagnosis_decision": "confirm_top_hypothesis",
+                "verification_effective": true,
+                "mastery_delta": 0.247389056779,
+                "outcome": "verified_transfer",
+                "trace_verified": true,
+                "model_calls_recorded": 0
+              },
+              "replay_sha256": "a1d33b67a888d192208fb20be000407dc50b606ef649b3ac82d6ec0a0e458f2b",
+              "assertion_errors": []
+            },
+            "ambiguous": {
+              "summary": {
+                "run_id": "eval-integration-ambiguous",
+                "scenario": "ambiguous",
+                "status": "completed",
+                "steps": 7,
+                "diagnosis_decision": "disambiguate_hypotheses",
+                "verification_effective": false,
+                "mastery_delta": -0.051951486435,
+                "outcome": "not_yet_mastered",
+                "trace_verified": true,
+                "model_calls_recorded": 0
+              },
+              "replay_sha256": "84d2d25a2dd1588afb86223cbf278c94b996d1f5518318aebb07ae24b40b2178",
+              "assertion_errors": []
+            },
+            "offline": {
+              "summary": {
+                "run_id": "eval-integration-offline",
+                "scenario": "offline",
+                "status": "completed",
+                "steps": 7,
+                "diagnosis_decision": "confirm_top_hypothesis",
+                "verification_effective": true,
+                "mastery_delta": 0.247389056779,
+                "outcome": "verified_transfer",
+                "trace_verified": true,
+                "model_calls_recorded": 0
+              },
+              "replay_sha256": "e4a635d6194361bc6925dc8872a660b71bfa62213598075d202e0a444449093c",
+              "assertion_errors": []
+            }
+          },
+          "errors": []
+        }
+      ],
+      "blocking": true,
+      "duration_ms": 0
+    },
+    {
+      "name": "privacy",
+      "status": "pass",
+      "summary": "local trace privacy contract and static secret scan passed; no cloud operations detected",
+      "evidence": [
+        {
+          "scanned_file_count": 206,
+          "secret_findings": []
+        },
+        {
+          "cloud_marker_files": []
+        },
+        {
+          "trace_privacy": {
+            "local_only": true,
+            "redaction_version": "fixture-redaction-v1",
+            "cloud_disclosure": null
+          }
+        }
+      ],
+      "blocking": true,
+      "duration_ms": 73
+    },
+    {
+      "name": "readonly_boundary",
+      "status": "pass",
+      "summary": "no code dependency or symlink enters the production Shenlun repository",
+      "evidence": [
+        {
+          "forbidden_repository": {
+            "path": "/Users/a1-6/Desktop/shenlun-agent-platform",
+            "exists": true,
+            "head": "b5a6a4065cf401d54b2809ce7639217c95db3f5d",
+            "probe": "read-only rev-parse"
+          },
+          "inspected_symlinks": 12,
+          "protective_references": [],
+          "boundary_command": {
+            "available": true,
+            "exit_code": 0,
+            "output": "{\n  \"path\": \"/Users/a1-6/Desktop/shenlun-agent-platform\",\n  \"exists\": true,\n  \"expected_head\": \"b5a6a4065cf401d54b2809ce7639217c95db3f5d\",\n  \"actual_head\": \"b5a6a4065cf401d54b2809ce7639217c95db3f5d\",\n  \"working_tree_clean\": true,\n  \"baseline_head_unchanged\": true,\n  \"status\": \"pass\"\n}"
+          },
+          "violations": []
+        }
+      ],
+      "blocking": true,
+      "duration_ms": 292
+    }
+  ]
+}

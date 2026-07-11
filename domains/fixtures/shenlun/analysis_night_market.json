@@ -1,0 +1,39 @@
+{
+  "schema_version": "hermes.domain-fixture.v1",
+  "fixture_id": "shenlun.analysis.night-market.synthetic-01",
+  "domain": "shenlun",
+  "path": "comprehensive_analysis",
+  "mode": "success",
+  "module": "综合分析/观点辨析",
+  "scenario_response": "夜市能增加收入、激活消费，但噪声和垃圾也会扰民，因此不能只看热闹，应以精细治理平衡活力与秩序。",
+  "execution": {"connectivity": "local", "cloud_calls_expected": 0, "fallback": "not_needed", "scorer": "deterministic_local"},
+  "expected_semantics": {"score": "pass", "cause_status": "unconfirmed_hypothesis"},
+  "task": {"prompt": "合成材料：夜市延时经营增加摊主收入，也带来噪声与垃圾。有人说‘夜市越热闹，城市治理越成功’。请谈谈对这句话的理解，不超过180字。", "response_mode": "short_text"},
+  "skills": [{"skill_id": "shenlun.analysis.qualify-claim", "weight": 0.35}, {"skill_id": "shenlun.analysis.multi-perspective", "weight": 0.35}, {"skill_id": "shenlun.analysis.conclusion", "weight": 0.30}],
+  "scoring": {
+    "adapter": "shenlun_rubric_v1", "max_score": 6, "pass_score": 4,
+    "criteria": [
+      {"criterion_id": "positive-value", "keywords": ["增加收入", "激活消费", "就业"], "min_hits": 1, "points": 2},
+      {"criterion_id": "negative-externality", "keywords": ["噪声", "垃圾", "扰民"], "min_hits": 1, "points": 2},
+      {"criterion_id": "qualified-conclusion", "keywords": ["不能只看热闹", "平衡活力与秩序", "精细治理"], "min_hits": 1, "points": 2}
+    ]
+  },
+  "diagnosis": {
+    "semantics": "ranked_unconfirmed_hypotheses",
+    "evidence_catalog": [
+      {"evidence_id": "criterion_missing:positive-value", "description": "未分析夜市正向价值"},
+      {"evidence_id": "criterion_missing:negative-externality", "description": "未分析外部成本"},
+      {"evidence_id": "criterion_missing:qualified-conclusion", "description": "未形成有条件结论"}
+    ],
+    "candidate_causes": [
+      {"cause_id": "single-sided-analysis", "label": "只站在单一立场分析复合现象", "synthetic_prior": 0.46, "evidence_refs": ["criterion_missing:positive-value", "criterion_missing:negative-externality"], "is_ground_truth": false},
+      {"cause_id": "absolute-claim-unchecked", "label": "未识别‘越…越…’的绝对化前提", "synthetic_prior": 0.30, "evidence_refs": ["criterion_missing:qualified-conclusion"], "is_ground_truth": false},
+      {"cause_id": "analysis-without-judgment", "label": "罗列现象后缺少评价标准与结论", "synthetic_prior": 0.24, "evidence_refs": ["criterion_missing:qualified-conclusion"], "is_ground_truth": false}
+    ]
+  },
+  "probe": {"prompt": "分别写出该观点成立的一个条件和不成立的一个情形。", "targets": ["absolute-claim-unchecked", "single-sided-analysis"]},
+  "teach": {"prompt": "用‘解释观点—肯定合理性—指出边界—形成判断’四步分析。", "strategy": "claim-boundary-framework"},
+  "independent_verify": {"prompt": "分析‘共享单车投放越多，绿色出行越成功’，要求同时说明价值、成本与条件。", "response_mode": "short_text", "pass_condition": {"required_dimensions": ["value", "cost", "qualified_conclusion"], "minimum_dimensions": 3}},
+  "samples": {"passing_response": "夜市能增加收入、激活消费，但噪声和垃圾也会扰民，因此不能只看热闹，应以精细治理平衡活力与秩序。", "failing_response": "夜市很热闹，能够增加收入，所以这句话完全正确。"},
+  "provenance": {"content_origin": "synthetic_original", "authoring_note": "合成城市治理情境", "prior_source": "synthetic_engineering_prior_v1"}
+}

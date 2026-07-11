@@ -1,0 +1,39 @@
+{
+  "schema_version": "hermes.domain-fixture.v1",
+  "fixture_id": "shenlun.essay.digital-inclusion.synthetic-01",
+  "domain": "shenlun",
+  "path": "essay",
+  "mode": "success",
+  "module": "文章写作/论证结构",
+  "scenario_response": "公共服务应保留线下服务，实现线上提效与线下兜底并重。老年人可能受数字鸿沟影响，服务可达性关乎公平。因此既要推进适老化，也要保留窗口和人工热线，让技术服务所有人。",
+  "execution": {"connectivity": "local", "cloud_calls_expected": 0, "fallback": "not_needed", "scorer": "deterministic_local"},
+  "expected_semantics": {"score": "pass", "cause_status": "unconfirmed_hypothesis"},
+  "task": {"prompt": "围绕‘技术进步也要保留可达的线下服务’写一段300字以内的议论短文。", "response_mode": "long_text"},
+  "skills": [{"skill_id": "shenlun.essay.thesis", "weight": 0.3}, {"skill_id": "shenlun.essay.argument-chain", "weight": 0.45}, {"skill_id": "shenlun.essay.counterargument", "weight": 0.25}],
+  "scoring": {
+    "adapter": "shenlun_rubric_v1", "max_score": 6, "pass_score": 4,
+    "criteria": [
+      {"criterion_id": "clear-thesis", "keywords": ["线上提效与线下兜底并重", "保留线下服务"], "min_hits": 1, "points": 2},
+      {"criterion_id": "causal-reasoning", "keywords": ["数字鸿沟", "老年人", "可达性", "公平"], "min_hits": 2, "points": 2},
+      {"criterion_id": "implementation", "keywords": ["保留窗口", "人工热线", "适老化"], "min_hits": 2, "points": 2}
+    ]
+  },
+  "diagnosis": {
+    "semantics": "ranked_unconfirmed_hypotheses",
+    "evidence_catalog": [
+      {"evidence_id": "criterion_missing:clear-thesis", "description": "中心论点不明确"},
+      {"evidence_id": "criterion_missing:causal-reasoning", "description": "缺少群体、机制或价值层论证"},
+      {"evidence_id": "criterion_missing:implementation", "description": "缺少落地路径"}
+    ],
+    "candidate_causes": [
+      {"cause_id": "topic-as-thesis", "label": "只重复主题，没有形成可辩护的中心判断", "synthetic_prior": 0.35, "evidence_refs": ["criterion_missing:clear-thesis"], "is_ground_truth": false},
+      {"cause_id": "claim-evidence-gap", "label": "观点与结论之间缺少因果机制", "synthetic_prior": 0.40, "evidence_refs": ["criterion_missing:causal-reasoning"], "is_ground_truth": false},
+      {"cause_id": "argument-without-landing", "label": "价值倡议没有转化为执行措施", "synthetic_prior": 0.25, "evidence_refs": ["criterion_missing:implementation"], "is_ground_truth": false}
+    ]
+  },
+  "probe": {"prompt": "用一句话分别写出主张、原因和可执行做法，检查三者能否用‘因为/所以’连接。", "targets": ["topic-as-thesis", "claim-evidence-gap"]},
+  "teach": {"prompt": "搭建‘论点—受影响群体—作用机制—措施—价值回扣’五节点论证链。", "strategy": "argument-map"},
+  "independent_verify": {"prompt": "围绕‘智能设备普及也应提供人工帮助’写一段新论证，包含明确论点、机制与两项措施。", "response_mode": "long_text", "pass_condition": {"required_dimensions": ["thesis", "mechanism", "implementation"], "minimum_dimensions": 3}},
+  "samples": {"passing_response": "公共服务应保留线下服务，实现线上提效与线下兜底并重。老年人可能受数字鸿沟影响，服务可达性关乎公平。因此既要推进适老化，也要保留窗口和人工热线，让技术服务所有人。", "failing_response": "技术发展很重要，线下服务也很重要，我们要高度重视并积极推进。"},
+  "provenance": {"content_origin": "synthetic_original", "authoring_note": "合成数字包容议论文题", "prior_source": "synthetic_engineering_prior_v1"}
+}

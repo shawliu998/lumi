@@ -1,0 +1,52 @@
+{
+  "attempt": {
+    "attempt_id": "attempt-001",
+    "learner_id": "learner-001",
+    "item_id": "growth-rate-017",
+    "item_type": "资料分析/增长率/基期与现期",
+    "correct": false,
+    "response_time_seconds": 91,
+    "confidence": 0.82,
+    "selected_option": "B",
+    "cause_likelihoods": {
+      "base_current_reversal": 3.4,
+      "percentage_point_confusion": 0.7,
+      "arithmetic_error": 0.4
+    },
+    "evidence_features": {
+      "distractor_semantics": "used inverted base/current formula"
+    }
+  },
+  "priors": [
+    {
+      "cause_id": "base_current_reversal",
+      "probability": 0.42,
+      "cohort_id": "mock-exam-beginner",
+      "sample_size": 840,
+      "source_version": "cohort-2026-07"
+    },
+    {
+      "cause_id": "percentage_point_confusion",
+      "probability": 0.33,
+      "cohort_id": "mock-exam-beginner",
+      "sample_size": 840,
+      "source_version": "cohort-2026-07"
+    },
+    {
+      "cause_id": "arithmetic_error",
+      "probability": 0.25,
+      "cohort_id": "mock-exam-beginner",
+      "sample_size": 840,
+      "source_version": "cohort-2026-07"
+    }
+  ],
+  "history": {
+    "counts": {
+      "base_current_reversal": 4,
+      "percentage_point_confusion": 1,
+      "arithmetic_error": 2
+    },
+    "exposure_count": 12,
+    "source_version": "learner-history-2026-07-11"
+  }
+}

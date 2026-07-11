@@ -1,0 +1,10 @@
+node_modules/
+.npm-cache/
+.pip-cache/
+.sidecar-venv/
+.sidecar-build/
+.sidecar-dist/
+.pyinstaller-cache/
+src-tauri/target/
+src-tauri/binaries/hermes-sidecar-aarch64-apple-darwin
+src-tauri/resources/sidecar-runtime/

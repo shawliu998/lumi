@@ -1,0 +1,41 @@
+{
+  "schema_version": "hermes.domain-fixture.v1",
+  "fixture_id": "interview.emergency.power-outage.synthetic-01",
+  "domain": "interview",
+  "path": "emergency",
+  "mode": "success",
+  "module": "应急处突/大厅停电",
+  "scenario_response": "首先开启应急照明、疏导人流，防止拥挤并保障安全。其次联系电力并启动备用电源，同时设置人工受理和分流办理。最后持续说明情况和预计时间，对未办群众登记回访，事后复盘。",
+  "execution": {"connectivity": "local", "cloud_calls_expected": 0, "fallback": "not_needed", "scorer": "deterministic_local"},
+  "expected_semantics": {"score": "pass", "cause_status": "unconfirmed_hypothesis"},
+  "task": {"prompt": "政务大厅人流高峰突然停电，自助设备停机，现场群众焦躁，你是值班负责人，怎么办？", "response_mode": "spoken_text"},
+  "skills": [{"skill_id": "interview.emergency.priority", "weight": 0.35}, {"skill_id": "interview.emergency.coordination", "weight": 0.35}, {"skill_id": "interview.emergency.communication", "weight": 0.30}],
+  "scoring": {
+    "adapter": "interview_rubric_v1", "max_score": 6, "pass_score": 4, "min_structure_markers": 2,
+    "criteria": [
+      {"criterion_id": "safety-order", "keywords": ["疏导人流", "应急照明", "防止拥挤", "保障安全"], "min_hits": 1, "points": 2},
+      {"criterion_id": "restore-and-continuity", "keywords": ["联系电力", "启动备用电源", "人工受理", "分流办理"], "min_hits": 2, "points": 2},
+      {"criterion_id": "communication-followup", "keywords": ["说明情况", "预计时间", "登记回访", "复盘"], "min_hits": 2, "points": 2}
+    ]
+  },
+  "diagnosis": {
+    "semantics": "ranked_unconfirmed_hypotheses",
+    "evidence_catalog": [
+      {"evidence_id": "criterion_missing:safety-order", "description": "未将现场安全和秩序置于首位"},
+      {"evidence_id": "criterion_missing:restore-and-continuity", "description": "没有并行恢复和业务连续方案"},
+      {"evidence_id": "criterion_missing:communication-followup", "description": "信息发布、善后或复盘缺失"},
+      {"evidence_id": "structure_missing", "description": "回答缺少时间顺序或并行任务层次"}
+    ],
+    "candidate_causes": [
+      {"cause_id": "repair-before-safety", "label": "只关注恢复设备，忽略现场人身安全与秩序", "synthetic_prior": 0.37, "evidence_refs": ["criterion_missing:safety-order"], "is_ground_truth": false},
+      {"cause_id": "single-thread-response", "label": "等待维修而未并行保障业务连续", "synthetic_prior": 0.31, "evidence_refs": ["criterion_missing:restore-and-continuity"], "is_ground_truth": false},
+      {"cause_id": "event-only-no-closure", "label": "只处理当下，没有持续告知、登记和复盘", "synthetic_prior": 0.20, "evidence_refs": ["criterion_missing:communication-followup"], "is_ground_truth": false},
+      {"cause_id": "oral-structure-weak", "label": "紧急、并行、善后动作顺序不清", "synthetic_prior": 0.12, "evidence_refs": ["structure_missing"], "is_ground_truth": false}
+    ]
+  },
+  "probe": {"prompt": "停电后的前两分钟，你先做哪两件事？为什么不能先等维修结果？", "targets": ["repair-before-safety", "single-thread-response"]},
+  "teach": {"prompt": "按‘保安全—控现场—查原因—保连续—持续告知—善后复盘’构造并行处置。", "strategy": "incident-command-sequence"},
+  "independent_verify": {"prompt": "办事大厅网络中断且排队增长，请给出安全、恢复、替代办理、沟通和善后安排。", "response_mode": "spoken_text", "pass_condition": {"required_dimensions": ["safety", "restore", "continuity", "communication", "followup"], "minimum_dimensions": 4}},
+  "samples": {"passing_response": "首先开启应急照明、疏导人流，防止拥挤并保障安全。其次联系电力并启动备用电源，同时设置人工受理和分流办理。最后持续说明情况和预计时间，对未办群众登记回访，事后复盘。", "failing_response": "我会马上联系维修人员，等恢复供电后继续办理。"},
+  "provenance": {"content_origin": "synthetic_original", "authoring_note": "合成大厅应急面试题", "prior_source": "synthetic_engineering_prior_v1"}
+}

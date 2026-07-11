@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hermes-local-runtime"
+version = "0.1.0"
+description = "Dependency-light, event-sourced runtime for the local Lumi learning agent"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+hermes-runtime = "hermes_runtime.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["hermes_runtime*"]

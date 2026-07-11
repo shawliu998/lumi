@@ -1,0 +1,9 @@
+{
+  "schema_version": "representative-matrix-v1",
+  "required_modes": ["success", "ambiguous", "offline"],
+  "paths": {
+    "xingce": ["verbal", "judgment", "quantitative", "data_analysis", "common_political_knowledge"],
+    "shenlun": ["summary", "comprehensive_analysis", "recommendation", "official_writing", "essay"],
+    "interview": ["comprehensive_analysis", "organization", "interpersonal", "emergency"]
+  }
+}

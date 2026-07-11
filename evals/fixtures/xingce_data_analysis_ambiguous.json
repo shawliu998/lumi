@@ -1,0 +1,74 @@
+{
+  "case_id": "xingce.data_analysis.growth_rate.ambiguous.v1",
+  "domain": "xingce",
+  "path": "data_analysis",
+  "mode": "ambiguous",
+  "fixture_version": "1.0.0",
+  "input": {
+    "attempt": {
+      "attempt_id": "attempt-demo-001",
+      "learner_id": "learner-demo-redacted",
+      "item_id": "item-growth-rate-001",
+      "item_type": "xingce.data_analysis.growth_rate",
+      "correct": false,
+      "response_time_seconds": 74.0,
+      "confidence": 0.72,
+      "selected_option": "B",
+      "hints_used": 0,
+      "independently_answered": true,
+      "observed_at": "2026-07-11T00:00:00+00:00",
+      "cause_likelihoods": {
+        "base_current_reversal": 2.4,
+        "percentage_point_confusion": 1.6,
+        "arithmetic_slip": 0.8
+      },
+      "evidence_features": {
+        "option_mapping_version": "growth-rate-distractors-v1",
+        "option_b_matches": "reversed_base_current_formula"
+      }
+    },
+    "priors": [
+      {"cause_id": "base_current_reversal", "probability": 0.42, "cohort_id": "cold-start-growth-rate", "sample_size": 120, "source_version": "expert-seeded-prior-v1"},
+      {"cause_id": "percentage_point_confusion", "probability": 0.33, "cohort_id": "cold-start-growth-rate", "sample_size": 120, "source_version": "expert-seeded-prior-v1"},
+      {"cause_id": "arithmetic_slip", "probability": 0.25, "cohort_id": "cold-start-growth-rate", "sample_size": 120, "source_version": "expert-seeded-prior-v1"}
+    ],
+    "history": {
+      "counts": {"base_current_reversal": 2.0, "percentage_point_confusion": 1.0},
+      "exposure_count": 7,
+      "source_version": "learner-history-demo-v1"
+    },
+    "pre_state": {
+      "learner_id": "learner-demo-redacted",
+      "skill_id": "xingce.data_analysis.growth_rate.base_current",
+      "bkt_mastery": 0.34,
+      "successes": 1.0,
+      "failures": 2.0,
+      "irt_theta": -0.25,
+      "evidence_count": 3,
+      "mastery": 0.34,
+      "uncertainty": 0.66,
+      "last_updated_at": "2026-07-10T00:00:00+00:00",
+      "provenance": []
+    },
+    "parameters": {"skill_id": "xingce.data_analysis.growth_rate.base_current"},
+    "verification_attempt": {
+      "attempt_id": "attempt-demo-probe-001",
+      "learner_id": "learner-demo-redacted",
+      "item_id": "item-growth-rate-probe-001",
+      "item_type": "xingce.data_analysis.growth_rate.probe",
+      "correct": true,
+      "response_time_seconds": 51.0,
+      "confidence": 0.81,
+      "selected_option": "C",
+      "hints_used": 0,
+      "independently_answered": true,
+      "observed_at": "2026-07-11T00:05:00+00:00",
+      "cause_likelihoods": {},
+      "evidence_features": {"isomorphic_transfer": true}
+    }
+  },
+  "expectations": {
+    "required_evidence": ["ranked_hypotheses", "cohort_source", "learner_history", "independent_probe", "kt_delta", "formula_version"],
+    "must_not_claim": ["population_learning_gain", "causal_error_certainty", "delayed_retention"]
+  }
+}

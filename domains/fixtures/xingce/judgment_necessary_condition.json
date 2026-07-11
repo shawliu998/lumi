@@ -1,0 +1,37 @@
+{
+  "schema_version": "hermes.domain-fixture.v1",
+  "fixture_id": "xingce.judgment.necessary-condition.synthetic-01",
+  "domain": "xingce",
+  "path": "judgment",
+  "mode": "success",
+  "module": "判断推理/必要条件",
+  "scenario_response": "A",
+  "execution": {"connectivity": "local", "cloud_calls_expected": 0, "fallback": "not_needed", "scorer": "deterministic_local"},
+  "expected_semantics": {"score": "pass", "cause_status": "unconfirmed_hypothesis"},
+  "task": {
+    "prompt": "规定：只有完成安全培训，才能进入实验室。已知小周进入了实验室，可以必然推出什么？",
+    "response_mode": "single_choice",
+    "options": {"A": "小周完成了安全培训", "B": "完成培训的人都进入实验室", "C": "小周喜欢实验", "D": "未培训者也可能进入"}
+  },
+  "skills": [{"skill_id": "xingce.judgment.logic.necessary-condition", "weight": 0.8}, {"skill_id": "xingce.judgment.logic.symbolize", "weight": 0.2}],
+  "scoring": {"adapter": "xingce_mcq_v1", "max_score": 1, "pass_score": 1, "correct_option": "A", "distractor_evidence": {"B": "reversed-implication", "C": "introduced-unsupported", "D": "ignored-rule"}},
+  "diagnosis": {
+    "semantics": "ranked_unconfirmed_hypotheses",
+    "evidence_catalog": [
+      {"evidence_id": "answer_incorrect", "description": "推理结论错误"},
+      {"evidence_id": "reversed-implication", "description": "把进入→培训倒置为培训→进入"},
+      {"evidence_id": "introduced-unsupported", "description": "引入题干没有的偏好"},
+      {"evidence_id": "ignored-rule", "description": "结论直接违反给定规则"}
+    ],
+    "candidate_causes": [
+      {"cause_id": "necessary-sufficient-reversal", "label": "必要条件与充分条件方向混淆", "synthetic_prior": 0.55, "evidence_refs": ["answer_incorrect", "reversed-implication"], "is_ground_truth": false},
+      {"cause_id": "unsupported-premise", "label": "把常识或想象当成题干前提", "synthetic_prior": 0.20, "evidence_refs": ["answer_incorrect", "introduced-unsupported"], "is_ground_truth": false},
+      {"cause_id": "conditional-rule-not-applied", "label": "未把‘只有…才…’转换为后件推出前件", "synthetic_prior": 0.25, "evidence_refs": ["answer_incorrect", "ignored-rule"], "is_ground_truth": false}
+    ]
+  },
+  "probe": {"prompt": "把‘只有有票才能入场’写成箭头关系，并判断已入场者是否有票。", "targets": ["necessary-sufficient-reversal"]},
+  "teach": {"prompt": "用门票作为必要条件，固定练习‘结果发生→必要条件成立’。", "strategy": "analogy-and-symbolization"},
+  "independent_verify": {"prompt": "只有注册后才能提交。小李已提交，哪个结论必真？", "response_mode": "single_choice", "pass_condition": {"correct_option": "A"}},
+  "samples": {"passing_response": "A", "failing_response": "B"},
+  "provenance": {"content_origin": "synthetic_original", "authoring_note": "自有合成逻辑题", "prior_source": "synthetic_engineering_prior_v1"}
+}

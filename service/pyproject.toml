@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hermes-local-sidecar"
+version = "0.1.0"
+description = "Loopback-only stdlib HTTP API for the Lumi macOS client"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+hermes-sidecar = "hermes_service.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["hermes_service*"]

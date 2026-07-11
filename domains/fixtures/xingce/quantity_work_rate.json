@@ -1,0 +1,37 @@
+{
+  "schema_version": "hermes.domain-fixture.v1",
+  "fixture_id": "xingce.quantity.work-rate.synthetic-01",
+  "domain": "xingce",
+  "path": "quantitative",
+  "mode": "success",
+  "module": "数量关系/工程问题",
+  "scenario_response": "B",
+  "execution": {"connectivity": "local", "cloud_calls_expected": 0, "fallback": "not_needed", "scorer": "deterministic_local"},
+  "expected_semantics": {"score": "pass", "cause_status": "unconfirmed_hypothesis"},
+  "task": {
+    "prompt": "甲单独6天完成一项工作，乙单独3天完成。两人效率不变，共同完成需要几天？",
+    "response_mode": "single_choice",
+    "options": {"A": "1天", "B": "2天", "C": "3天", "D": "4.5天"}
+  },
+  "skills": [{"skill_id": "xingce.quantity.work-rate.unit-work", "weight": 0.45}, {"skill_id": "xingce.quantity.work-rate.combine", "weight": 0.55}],
+  "scoring": {"adapter": "xingce_mcq_v1", "max_score": 1, "pass_score": 1, "correct_option": "B", "distractor_evidence": {"A": "added-days-as-rates", "C": "used-faster-worker-only", "D": "averaged-completion-times"}},
+  "diagnosis": {
+    "semantics": "ranked_unconfirmed_hypotheses",
+    "evidence_catalog": [
+      {"evidence_id": "answer_incorrect", "description": "共同工期计算错误"},
+      {"evidence_id": "added-days-as-rates", "description": "将工期直接作效率运算"},
+      {"evidence_id": "used-faster-worker-only", "description": "忽略甲的贡献"},
+      {"evidence_id": "averaged-completion-times", "description": "直接平均6天与3天"}
+    ],
+    "candidate_causes": [
+      {"cause_id": "time-rate-unit-confusion", "label": "没有将工期转成单位时间效率", "synthetic_prior": 0.46, "evidence_refs": ["answer_incorrect", "added-days-as-rates"], "is_ground_truth": false},
+      {"cause_id": "joint-rate-omission", "label": "共同工作时漏加一方效率", "synthetic_prior": 0.19, "evidence_refs": ["answer_incorrect", "used-faster-worker-only"], "is_ground_truth": false},
+      {"cause_id": "arithmetic-mean-heuristic", "label": "误用完成时间算术平均", "synthetic_prior": 0.35, "evidence_refs": ["answer_incorrect", "averaged-completion-times"], "is_ground_truth": false}
+    ]
+  },
+  "probe": {"prompt": "总工作量设为1，分别写出甲、乙每天完成的份额。", "targets": ["time-rate-unit-confusion", "arithmetic-mean-heuristic"]},
+  "teach": {"prompt": "先统一成每天效率，再相加，最后用工作量除以合效率。", "strategy": "unit-rate-table"},
+  "independent_verify": {"prompt": "甲4天、乙12天单独完成，同做需要多久？", "response_mode": "single_choice", "pass_condition": {"correct_option": "C"}},
+  "samples": {"passing_response": "B", "failing_response": "D"},
+  "provenance": {"content_origin": "synthetic_original", "authoring_note": "自有合成工程题", "prior_source": "synthetic_engineering_prior_v1"}
+}

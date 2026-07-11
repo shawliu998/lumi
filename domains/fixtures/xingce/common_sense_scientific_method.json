@@ -1,0 +1,37 @@
+{
+  "schema_version": "hermes.domain-fixture.v1",
+  "fixture_id": "xingce.common-sense.scientific-method.synthetic-01",
+  "domain": "xingce",
+  "path": "common_political_knowledge",
+  "mode": "success",
+  "module": "常识判断/科学方法",
+  "scenario_response": "B",
+  "execution": {"connectivity": "local", "cloud_calls_expected": 0, "fallback": "not_needed", "scorer": "deterministic_local"},
+  "expected_semantics": {"score": "pass", "cause_status": "unconfirmed_hypothesis"},
+  "task": {
+    "prompt": "为判断某肥料是否促进幼苗生长，哪种设计最能减少其他因素干扰？",
+    "response_mode": "single_choice",
+    "options": {"A": "给高幼苗施肥，矮幼苗不施", "B": "同批随机分组，仅一组施肥且其他条件一致", "C": "只记录施肥组一周后的高度", "D": "访问使用过该肥料的种植者"}
+  },
+  "skills": [{"skill_id": "xingce.common.science.control-variable", "weight": 0.6}, {"skill_id": "xingce.common.science.causal-evidence", "weight": 0.4}],
+  "scoring": {"adapter": "xingce_mcq_v1", "max_score": 1, "pass_score": 1, "correct_option": "B", "distractor_evidence": {"A": "selection-bias", "C": "no-control-group", "D": "anecdotal-evidence"}},
+  "diagnosis": {
+    "semantics": "ranked_unconfirmed_hypotheses",
+    "evidence_catalog": [
+      {"evidence_id": "answer_incorrect", "description": "实验设计判断错误"},
+      {"evidence_id": "selection-bias", "description": "处理前两组基线不同"},
+      {"evidence_id": "no-control-group", "description": "只有施肥后的单组观察"},
+      {"evidence_id": "anecdotal-evidence", "description": "以主观访谈代替对照实验"}
+    ],
+    "candidate_causes": [
+      {"cause_id": "randomization-purpose-missed", "label": "未理解随机分组用于平衡基线", "synthetic_prior": 0.34, "evidence_refs": ["answer_incorrect", "selection-bias"], "is_ground_truth": false},
+      {"cause_id": "counterfactual-control-missed", "label": "未识别对照组提供反事实基线", "synthetic_prior": 0.44, "evidence_refs": ["answer_incorrect", "no-control-group"], "is_ground_truth": false},
+      {"cause_id": "evidence-strength-confusion", "label": "把经验陈述等同于因果证据", "synthetic_prior": 0.22, "evidence_refs": ["answer_incorrect", "anecdotal-evidence"], "is_ground_truth": false}
+    ]
+  },
+  "probe": {"prompt": "若两组幼苗起始高度不同，会怎样影响对肥料效果的判断？", "targets": ["randomization-purpose-missed", "counterfactual-control-missed"]},
+  "teach": {"prompt": "用‘只改变一个因素、保留可比较对照’检查实验设计。", "strategy": "causal-checklist"},
+  "independent_verify": {"prompt": "测试新灯光对阅读速度影响，应如何随机分组并控制文本难度？", "response_mode": "single_choice", "pass_condition": {"correct_option": "B"}},
+  "samples": {"passing_response": "B", "failing_response": "C"},
+  "provenance": {"content_origin": "synthetic_original", "authoring_note": "自有合成科学方法题", "prior_source": "synthetic_engineering_prior_v1"}
+}

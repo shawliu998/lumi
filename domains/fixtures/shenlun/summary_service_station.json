@@ -1,0 +1,39 @@
+{
+  "schema_version": "hermes.domain-fixture.v1",
+  "fixture_id": "shenlun.summary.service-station.synthetic-01",
+  "domain": "shenlun",
+  "path": "summary",
+  "mode": "success",
+  "module": "归纳概括/问题概括",
+  "scenario_response": "窗口分散导致重复排队；指引不醒目，老人看不清；预约与叫号不互通，线上线下不衔接。",
+  "execution": {"connectivity": "local", "cloud_calls_expected": 0, "fallback": "not_needed", "scorer": "deterministic_local"},
+  "expected_semantics": {"score": "pass", "cause_status": "unconfirmed_hypothesis"},
+  "task": {"prompt": "合成材料：便民站窗口分散，群众重复排队；办事指引只贴在墙角，老人看不清；线上预约与现场叫号不互通。请概括当前服务问题，不超过80字。", "response_mode": "short_text"},
+  "skills": [{"skill_id": "shenlun.summary.extract-points", "weight": 0.55}, {"skill_id": "shenlun.summary.abstract-label", "weight": 0.25}, {"skill_id": "shenlun.summary.concise", "weight": 0.20}],
+  "scoring": {
+    "adapter": "shenlun_rubric_v1", "max_score": 6, "pass_score": 4,
+    "criteria": [
+      {"criterion_id": "fragmented-window", "keywords": ["窗口分散", "重复排队"], "min_hits": 1, "points": 2},
+      {"criterion_id": "inaccessible-guidance", "keywords": ["指引不醒目", "老人看不清", "指引不便"], "min_hits": 1, "points": 2},
+      {"criterion_id": "online-offline-disconnected", "keywords": ["预约与叫号不互通", "线上线下不衔接"], "min_hits": 1, "points": 2}
+    ]
+  },
+  "diagnosis": {
+    "semantics": "ranked_unconfirmed_hypotheses",
+    "evidence_catalog": [
+      {"evidence_id": "criterion_missing:fragmented-window", "description": "未命中窗口分散或重复排队"},
+      {"evidence_id": "criterion_missing:inaccessible-guidance", "description": "未命中指引可达性问题"},
+      {"evidence_id": "criterion_missing:online-offline-disconnected", "description": "未命中系统不互通"}
+    ],
+    "candidate_causes": [
+      {"cause_id": "parallel-point-omission", "label": "扫描材料时漏掉并列问题点", "synthetic_prior": 0.42, "evidence_refs": ["criterion_missing:online-offline-disconnected", "criterion_missing:inaccessible-guidance"], "is_ground_truth": false},
+      {"cause_id": "example-not-abstracted", "label": "只复述排队现象，未抽象服务布局问题", "synthetic_prior": 0.31, "evidence_refs": ["criterion_missing:fragmented-window"], "is_ground_truth": false},
+      {"cause_id": "stakeholder-accessibility-missed", "label": "忽略老年群体的信息可达性", "synthetic_prior": 0.27, "evidence_refs": ["criterion_missing:inaccessible-guidance"], "is_ground_truth": false}
+    ]
+  },
+  "probe": {"prompt": "按‘地点布局、信息呈现、系统衔接’三栏回看材料，每栏只填一个问题。", "targets": ["parallel-point-omission", "example-not-abstracted"]},
+  "teach": {"prompt": "示范用‘领域标签+具体表现’压缩材料，再让学习者补第三栏。", "strategy": "category-grid-fading"},
+  "independent_verify": {"prompt": "合成材料写到咨询电话多头、表格术语难懂、部门数据重复录入；请独立概括三类问题。", "response_mode": "short_text", "pass_condition": {"required_concepts": ["渠道分散", "表述难懂", "数据不共享"], "minimum_points": 2}},
+  "samples": {"passing_response": "窗口分散导致重复排队；指引不醒目，老人看不清；预约与叫号不互通，线上线下不衔接。", "failing_response": "群众办事体验不好，经常需要排队。"},
+  "provenance": {"content_origin": "synthetic_original", "authoring_note": "合成公共服务情境，未复制外部材料", "prior_source": "synthetic_engineering_prior_v1"}
+}
