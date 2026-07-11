@@ -1,0 +1,4 @@
+reportlab==4.4.2
+pdfplumber==0.11.7
+pypdf==6.10.0
+jsonschema==4.25.0

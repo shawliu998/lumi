@@ -8,7 +8,7 @@ import unittest
 import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -47,9 +47,11 @@ class ScheduleApiTests(unittest.TestCase):
     def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()
         self.database = Path(self.temporary.name) / "sidecar.sqlite3"
-        self.clock = MutableDate(date(2026, 7, 11))
+        self.clock = MutableDate(datetime.now(timezone.utc).date())
         self.application = SidecarApplication(
-            self.database, today_provider=self.clock
+            self.database,
+            today_provider=self.clock,
+            planning_timezone=timezone.utc,
         )
         self.server = create_server(self.application, port=0)
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
@@ -474,7 +476,9 @@ class ScheduleApiTests(unittest.TestCase):
     def test_cross_instance_idempotency_conflict_and_cas(self) -> None:
         _, plan = self.seed_due_plan(2)
         second_application = SidecarApplication(
-            self.database, today_provider=self.clock
+            self.database,
+            today_provider=self.clock,
+            planning_timezone=timezone.utc,
         )
         second_server = create_server(second_application, port=0)
         second_thread = threading.Thread(
@@ -539,7 +543,9 @@ class ScheduleApiTests(unittest.TestCase):
 
     def test_fresh_sidecars_create_one_exact_plan_receipt_under_concurrency(self) -> None:
         second_application = SidecarApplication(
-            self.database, today_provider=self.clock
+            self.database,
+            today_provider=self.clock,
+            planning_timezone=timezone.utc,
         )
         second_server = create_server(second_application, port=0)
         second_thread = threading.Thread(
@@ -580,7 +586,9 @@ class ScheduleApiTests(unittest.TestCase):
         old_task = old_plan["tasks"][0]
         newer_clock = MutableDate(self.clock.value + timedelta(days=1))
         newer_application = SidecarApplication(
-            self.database, today_provider=newer_clock
+            self.database,
+            today_provider=newer_clock,
+            planning_timezone=timezone.utc,
         )
         newer_server = create_server(newer_application, port=0)
         newer_thread = threading.Thread(
@@ -635,7 +643,9 @@ class ScheduleApiTests(unittest.TestCase):
     def test_newer_plan_prevents_stale_sidecar_from_creating_an_older_plan(self) -> None:
         newer_clock = MutableDate(self.clock.value + timedelta(days=1))
         newer_application = SidecarApplication(
-            self.database, today_provider=newer_clock
+            self.database,
+            today_provider=newer_clock,
+            planning_timezone=timezone.utc,
         )
         newer_server = create_server(newer_application, port=0)
         newer_thread = threading.Thread(

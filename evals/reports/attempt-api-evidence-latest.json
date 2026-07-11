@@ -11,10 +11,10 @@
   "cases": {
     "correct": {
       "request": {
-        "unknown_fields": [],
+        "contains_pii_test_data": false,
         "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
         "response_sha256": "df7e70e5021544f4834bbee64a9e3789febc4be81470df629cad6ddb03320a5c",
-        "contains_pii_test_data": false,
+        "unknown_fields": [],
         "run_id_sha256": "28bff14cae7db585f872f04d62a13ff739d7f99db47d8a9de6613b379cc8c6ee"
       },
       "http_status": 201,
@@ -32,17 +32,17 @@
       },
       "error": null,
       "trace_status": 200,
-      "trace_sha256": "faccbf2c3fcfbbb910998cc5fe30016bd48316c3866250f9af483e04c3bbaebb",
+      "trace_sha256": "c83711bfcff87541bb82f2afd61907af64f7f7f9695efc8ac63c8b464ad8a6d7",
       "replay_status": 200,
-      "replay_sha256": "084164c38c68b026ae099a4aa9cdabdf171be4be8241c033cbb6d58fdf519fad",
+      "replay_sha256": "95ce2f55ed12669b230ddc1b02dcf4872a4d965ea16b3cfd993a6b9ce7bb4b3f",
       "rejected_run_trace_status": null
     },
     "wrong": {
       "request": {
-        "unknown_fields": [],
+        "contains_pii_test_data": false,
         "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
         "response_sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
-        "contains_pii_test_data": false,
+        "unknown_fields": [],
         "run_id_sha256": "88f17323e5fe195c4667715d1988a658339217c5418f479d1cd9e9abf1bd96ef"
       },
       "http_status": 201,
@@ -60,17 +60,17 @@
       },
       "error": null,
       "trace_status": 200,
-      "trace_sha256": "6ecde2d8950e966272ec4ca61d7c910c7f17576eaae80a19d27d1bb07bd28490",
+      "trace_sha256": "c38081742087b5d770340ecc1b1a916482ca3b47cb8e61f13ff09554c62f4057",
       "replay_status": 200,
-      "replay_sha256": "6d0f3bf182e9c630810740a4bcbf1de8fabd98fec1f28025f0dc787018199504",
+      "replay_sha256": "ef4fbc452d661e4a162ba52719a451c6ccf5f3aabb683e98773182d58e895fe1",
       "rejected_run_trace_status": null
     },
     "pii": {
       "request": {
-        "unknown_fields": [],
+        "contains_pii_test_data": true,
         "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
         "response_sha256": "fd07ca96eeaa46307b08faef121d6b337b927a4d3194960335e7c5e503d7e1a6",
-        "contains_pii_test_data": true,
+        "unknown_fields": [],
         "run_id_sha256": "190911bcfc96aca64b883ab47161053db0f1b1d4dbe93568e257fde175b52252"
       },
       "http_status": 201,
@@ -98,19 +98,19 @@
       },
       "error": null,
       "trace_status": 200,
-      "trace_sha256": "db3c843b2aab726b7037c6a4f3702c2c7bd3c2c18a68e7589b4c9a09aca14788",
+      "trace_sha256": "b1a34a3469751cc935d9715a277a06ec3cc6459851631dac1bc70180deebc7d2",
       "replay_status": 200,
-      "replay_sha256": "0f546aeac031d9ac181b5ad4808a23486aeb7e62f1bcebaa9e00548b040b3f66",
+      "replay_sha256": "42947f13306b32199917fe3dc2a40cac6a4e61d2cb52aa2c5c557189efc5d835",
       "rejected_run_trace_status": null
     },
     "unknown_field": {
       "request": {
+        "contains_pii_test_data": false,
+        "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+        "response_sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
         "unknown_fields": [
           "cause_ground_truth"
         ],
-        "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
-        "response_sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
-        "contains_pii_test_data": false,
         "run_id_sha256": "85ad5d35fd040ad36cb981bb5a1b392df850428d30b3175bcaecc3e5e3470a9d"
       },
       "http_status": 400,
@@ -169,7 +169,7 @@
               "attempt_id": "r_NEKPAELBPFBAAIMGFGLDIMIHFGDIGJGDLHFJIBHI:independent-verify",
               "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
               "item_type": "资料分析/增长率",
-              "observed_at": "2026-07-11T13:19:34.418250+00:00",
+              "observed_at": "2026-07-11T17:51:55.037101+00:00",
               "selected_option": "C",
               "response_time_seconds": 20.0,
               "confidence": 0.9,
@@ -209,7 +209,7 @@
                   "attempt_id": "r_NEKPAELBPFBAAIMGFGLDIMIHFGDIGJGDLHFJIBHI:initial",
                   "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
                   "item_type": "资料分析/增长率",
-                  "observed_at": "2026-07-11T13:19:34.360222+00:00",
+                  "observed_at": "2026-07-11T17:51:54.977436+00:00",
                   "selected_option": "A",
                   "response_time_seconds": 31.0,
                   "confidence": 0.8,
@@ -258,7 +258,7 @@
                   "attempt_id": "r_NEKPAELBPFBAAIMGFGLDIMIHFGDIGJGDLHFJIBHI:independent-verify",
                   "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
                   "item_type": "资料分析/增长率",
-                  "observed_at": "2026-07-11T13:19:34.418250+00:00",
+                  "observed_at": "2026-07-11T17:51:55.037101+00:00",
                   "selected_option": "C",
                   "response_time_seconds": 20.0,
                   "confidence": 0.9,
@@ -307,8 +307,8 @@
       },
       "after_skill_count": 1,
       "duplicate_after_complete_status": 409,
-      "trace_sha256": "6275161c3f0f1a02d84592f8b0913c48af4407f88c1311ae6f2b9aa418f467f3",
-      "replay_sha256": "704cb842da23b9e6120a6c840552f68ac20e205ddd6c8522d71f2fb50e99d825"
+      "trace_sha256": "7b08944ba6c300e0a81f93f2e0b10201e29bf86518998b2f572827fe583137c8",
+      "replay_sha256": "f364b6207ce76097fa7f56fc23129b99f9ff96532f51355cc760f2c2bb13d5ed"
     },
     "progressive_assistance": {
       "initial_status": 201,
@@ -379,7 +379,7 @@
         "code": "assistance_exhausted"
       },
       "trace_verified": true,
-      "trace_sha256": "00ab968117e7803ce6f1e52688b9d939ecc2411e9cbc8e7ca41812fb13cb4510",
+      "trace_sha256": "c35e5866b75f2c4e4d11680bf5e276d87184883cda81ce508e9077ba151e13ed",
       "assistance_history_count": 6,
       "cohort_evidence_status": "unavailable"
     },

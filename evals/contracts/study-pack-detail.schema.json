@@ -1,0 +1,461 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lumi.local/contracts/study-pack-detail.schema.json",
+  "title": "Lumi learner-facing Study Pack detail projection",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "pack_id",
+    "title",
+    "lifecycle",
+    "version",
+    "source",
+    "artifact_set_digest",
+    "artifact_counts",
+    "artifacts",
+    "candidate_skill_links",
+    "review",
+    "quarantine_reason",
+    "generator",
+    "learning_projection_writes",
+    "created_at",
+    "updated_at",
+    "links"
+  ],
+  "properties": {
+    "schema_version": {"const": "lumi.study-pack-detail.v1"},
+    "pack_id": {"$ref": "#/$defs/pack_id"},
+    "title": {"type": "string", "minLength": 1, "maxLength": 200},
+    "lifecycle": {"enum": ["draft", "review", "published", "quarantined"]},
+    "version": {"type": "integer", "minimum": 1},
+    "source": {"$ref": "#/$defs/source"},
+    "artifact_set_digest": {
+      "oneOf": [
+        {"type": "null"},
+        {"$ref": "#/$defs/sha256"}
+      ]
+    },
+    "artifact_counts": {"$ref": "#/$defs/artifact_counts"},
+    "artifacts": {
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "oneOf": [
+          {"$ref": "#/$defs/notes_artifact"},
+          {"$ref": "#/$defs/card_artifact"},
+          {"$ref": "#/$defs/practice_artifact"},
+          {"$ref": "#/$defs/review_artifact"}
+        ]
+      }
+    },
+    "candidate_skill_links": {
+      "type": "array",
+      "maxItems": 10,
+      "items": {"$ref": "#/$defs/candidate_skill_link"}
+    },
+    "review": {"$ref": "#/$defs/review"},
+    "quarantine_reason": {
+      "type": ["string", "null"],
+      "enum": [
+        null,
+        "source_insufficient_for_pack",
+        "deterministic_verification_failed"
+      ]
+    },
+    "generator": {"$ref": "#/$defs/generator"},
+    "learning_projection_writes": {"$ref": "#/$defs/zero_writes"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "updated_at": {"type": "string", "format": "date-time"},
+    "idempotent_replay": {"type": "boolean"},
+    "links": {"$ref": "#/$defs/links"}
+  },
+  "$defs": {
+    "pack_id": {"type": "string", "pattern": "^p_[A-P]{40}$"},
+    "document_id": {"type": "string", "pattern": "^d_[A-P]{40}$"},
+    "artifact_id": {"type": "string", "pattern": "^a_[A-P]{40}$"},
+    "span_id": {"type": "string", "pattern": "^s_[A-P]{40}$"},
+    "decision_id": {"type": "string", "pattern": "^v_[A-P]{40}$"},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "document_id",
+        "source_version",
+        "input_kind",
+        "media_type",
+        "original_sha256",
+        "normalized_sha256",
+        "byte_count",
+        "locator_count",
+        "codepoint_count",
+        "parser_name",
+        "parser_version",
+        "normalization_name",
+        "normalization_version",
+        "extraction_state",
+        "warning_codes"
+      ],
+      "properties": {
+        "document_id": {"$ref": "#/$defs/document_id"},
+        "source_version": {"type": "integer", "minimum": 1},
+        "input_kind": {"enum": ["pasted_text", "text_pdf"]},
+        "media_type": {"enum": ["text/plain;charset=utf-8", "application/pdf"]},
+        "original_sha256": {"$ref": "#/$defs/sha256"},
+        "normalized_sha256": {"$ref": "#/$defs/sha256"},
+        "byte_count": {"type": "integer", "minimum": 1, "maximum": 8388608},
+        "locator_count": {"type": "integer", "minimum": 1, "maximum": 120},
+        "codepoint_count": {"type": "integer", "minimum": 1, "maximum": 250000},
+        "parser_name": {"type": "string", "minLength": 1, "maxLength": 80},
+        "parser_version": {"type": "string", "minLength": 1, "maxLength": 40},
+        "normalization_name": {"const": "unicode-nfc-canonical-newline"},
+        "normalization_version": {"const": "1.0.0"},
+        "extraction_state": {"enum": ["accepted", "accepted_with_warnings"]},
+        "warning_codes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1, "maxLength": 80}
+        }
+      }
+    },
+    "artifact_counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "study_pack.knowledge_card",
+        "study_pack.one_page_notes",
+        "study_pack.practice_item",
+        "study_pack.review_task"
+      ],
+      "properties": {
+        "study_pack.knowledge_card": {"type": "integer", "minimum": 0, "maximum": 5},
+        "study_pack.one_page_notes": {"type": "integer", "minimum": 0, "maximum": 1},
+        "study_pack.practice_item": {"type": "integer", "minimum": 0, "maximum": 3},
+        "study_pack.review_task": {"type": "integer", "minimum": 0, "maximum": 1}
+      }
+    },
+    "generator_metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "generator_id",
+        "mode",
+        "model_calls",
+        "network_calls",
+        "ocr_calls",
+        "source_normalized_sha256"
+      ],
+      "properties": {
+        "generator_id": {"const": "extractive-local@1"},
+        "mode": {"const": "deterministic_extractive"},
+        "model_calls": {"const": 0},
+        "network_calls": {"const": 0},
+        "ocr_calls": {"const": 0},
+        "source_normalized_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "citation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["field_pointer", "span_ref"],
+      "properties": {
+        "field_pointer": {"type": "string", "pattern": "^/"},
+        "span_ref": {"$ref": "#/$defs/span_id"}
+      }
+    },
+    "citation_array": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "items": {"$ref": "#/$defs/citation"}
+    },
+    "notes_content": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "title", "claims", "citations"],
+      "properties": {
+        "schema_version": {"const": "study_pack.one_page_notes.v1"},
+        "title": {"type": "string", "minLength": 1, "maxLength": 120},
+        "claims": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 5,
+          "items": {"type": "string", "minLength": 8, "maxLength": 2000}
+        },
+        "citations": {"$ref": "#/$defs/citation_array"}
+      }
+    },
+    "card_content": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "question", "answer", "citations"],
+      "properties": {
+        "schema_version": {"const": "study_pack.knowledge_card.v1"},
+        "question": {"type": "string", "minLength": 1, "maxLength": 500},
+        "answer": {"type": "string", "minLength": 1, "maxLength": 2000},
+        "citations": {"$ref": "#/$defs/citation_array"}
+      }
+    },
+    "practice_content": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "item_kind", "prompt", "scorer"],
+      "properties": {
+        "schema_version": {"const": "study_pack.practice_item.v1"},
+        "item_kind": {"enum": ["cloze_exact_v1", "normalized_exact_v1"]},
+        "prompt": {"type": "string", "minLength": 1, "maxLength": 1000},
+        "scorer": {"$ref": "#/$defs/scorer"}
+      }
+    },
+    "review_content": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "instruction",
+        "citations",
+        "scope",
+        "schedule_write_capability"
+      ],
+      "properties": {
+        "schema_version": {"const": "study_pack.review_task.v1"},
+        "instruction": {"type": "string", "minLength": 1, "maxLength": 2500},
+        "citations": {"$ref": "#/$defs/citation_array"},
+        "scope": {"const": "pack_local_only"},
+        "schedule_write_capability": {"const": false}
+      }
+    },
+    "scorer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "version"],
+      "properties": {
+        "kind": {"enum": ["cloze_exact_v1", "normalized_exact_v1"]},
+        "version": {"const": "1.0.0"}
+      }
+    },
+    "notes_artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_id",
+        "pack_id",
+        "artifact_version",
+        "artifact_type",
+        "lifecycle",
+        "content_digest",
+        "generator_id",
+        "generator_metadata",
+        "content"
+      ],
+      "properties": {
+        "artifact_id": {"$ref": "#/$defs/artifact_id"},
+        "pack_id": {"$ref": "#/$defs/pack_id"},
+        "artifact_version": {"type": "integer", "minimum": 1},
+        "artifact_type": {"const": "study_pack.one_page_notes"},
+        "lifecycle": {"enum": ["draft", "review", "published", "quarantined"]},
+        "content_digest": {"$ref": "#/$defs/sha256"},
+        "generator_id": {"const": "extractive-local@1"},
+        "generator_metadata": {"$ref": "#/$defs/generator_metadata"},
+        "content": {"$ref": "#/$defs/notes_content"}
+      }
+    },
+    "card_artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_id",
+        "pack_id",
+        "artifact_version",
+        "artifact_type",
+        "lifecycle",
+        "content_digest",
+        "generator_id",
+        "generator_metadata",
+        "content"
+      ],
+      "properties": {
+        "artifact_id": {"$ref": "#/$defs/artifact_id"},
+        "pack_id": {"$ref": "#/$defs/pack_id"},
+        "artifact_version": {"type": "integer", "minimum": 1},
+        "artifact_type": {"const": "study_pack.knowledge_card"},
+        "lifecycle": {"enum": ["draft", "review", "published", "quarantined"]},
+        "content_digest": {"$ref": "#/$defs/sha256"},
+        "generator_id": {"const": "extractive-local@1"},
+        "generator_metadata": {"$ref": "#/$defs/generator_metadata"},
+        "content": {"$ref": "#/$defs/card_content"}
+      }
+    },
+    "practice_artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_id",
+        "pack_id",
+        "artifact_version",
+        "artifact_type",
+        "lifecycle",
+        "content_digest",
+        "generator_id",
+        "generator_metadata",
+        "content",
+        "links"
+      ],
+      "properties": {
+        "artifact_id": {"$ref": "#/$defs/artifact_id"},
+        "pack_id": {"$ref": "#/$defs/pack_id"},
+        "artifact_version": {"type": "integer", "minimum": 1},
+        "artifact_type": {"const": "study_pack.practice_item"},
+        "lifecycle": {"enum": ["draft", "review", "published", "quarantined"]},
+        "content_digest": {"$ref": "#/$defs/sha256"},
+        "generator_id": {"const": "extractive-local@1"},
+        "generator_metadata": {"$ref": "#/$defs/generator_metadata"},
+        "content": {"$ref": "#/$defs/practice_content"},
+        "links": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["launch"],
+          "properties": {
+            "launch": {"type": "string", "pattern": "^/v1/study-pack-items/a_[A-P]{40}/launch$"}
+          }
+        }
+      }
+    },
+    "review_artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_id",
+        "pack_id",
+        "artifact_version",
+        "artifact_type",
+        "lifecycle",
+        "content_digest",
+        "generator_id",
+        "generator_metadata",
+        "content"
+      ],
+      "properties": {
+        "artifact_id": {"$ref": "#/$defs/artifact_id"},
+        "pack_id": {"$ref": "#/$defs/pack_id"},
+        "artifact_version": {"type": "integer", "minimum": 1},
+        "artifact_type": {"const": "study_pack.review_task"},
+        "lifecycle": {"enum": ["draft", "review", "published", "quarantined"]},
+        "content_digest": {"$ref": "#/$defs/sha256"},
+        "generator_id": {"const": "extractive-local@1"},
+        "generator_metadata": {"$ref": "#/$defs/generator_metadata"},
+        "content": {"$ref": "#/$defs/review_content"}
+      }
+    },
+    "candidate_skill_link": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_id",
+        "label",
+        "skill_id",
+        "status",
+        "taxonomy_version",
+        "taxonomy_digest"
+      ],
+      "properties": {
+        "artifact_id": {"$ref": "#/$defs/artifact_id"},
+        "label": {"type": "string", "minLength": 1, "maxLength": 120},
+        "skill_id": {"type": ["string", "null"], "maxLength": 200},
+        "status": {"const": "unconfirmed_candidate"},
+        "taxonomy_version": {"type": ["string", "null"], "maxLength": 80},
+        "taxonomy_digest": {
+          "oneOf": [
+            {"type": "null"},
+            {"$ref": "#/$defs/sha256"}
+          ]
+        }
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "accepted",
+        "decision_count",
+        "accepted_count",
+        "decision_refs",
+        "reason_codes"
+      ],
+      "properties": {
+        "accepted": {"type": "boolean"},
+        "decision_count": {"type": "integer", "minimum": 0, "maximum": 10},
+        "accepted_count": {"type": "integer", "minimum": 0, "maximum": 10},
+        "decision_refs": {
+          "type": "array",
+          "maxItems": 10,
+          "items": {"$ref": "#/$defs/decision_ref"}
+        },
+        "reason_codes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1, "maxLength": 80}
+        }
+      }
+    },
+    "decision_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decision_id",
+        "artifact_id",
+        "artifact_version",
+        "artifact_digest",
+        "verifier_id",
+        "accepted",
+        "reason_codes"
+      ],
+      "properties": {
+        "decision_id": {"$ref": "#/$defs/decision_id"},
+        "artifact_id": {"$ref": "#/$defs/artifact_id"},
+        "artifact_version": {"type": "integer", "minimum": 1},
+        "artifact_digest": {"$ref": "#/$defs/sha256"},
+        "verifier_id": {"const": "study-pack-deterministic-verifier@1"},
+        "accepted": {"type": "boolean"},
+        "reason_codes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1, "maxLength": 80}
+        }
+      }
+    },
+    "generator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "model_calls", "network_calls", "ocr_calls"],
+      "properties": {
+        "id": {"const": "extractive-local@1"},
+        "model_calls": {"const": 0},
+        "network_calls": {"const": 0},
+        "ocr_calls": {"const": 0}
+      }
+    },
+    "zero_writes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kt", "misconception", "today_plan", "review_schedule"],
+      "properties": {
+        "kt": {"const": false},
+        "misconception": {"const": false},
+        "today_plan": {"const": false},
+        "review_schedule": {"const": false}
+      }
+    },
+    "links": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["self", "commands", "replay"],
+      "properties": {
+        "self": {"type": "string", "pattern": "^/v1/study-packs/p_[A-P]{40}$"},
+        "commands": {"type": "string", "pattern": "^/v1/study-packs/p_[A-P]{40}/commands$"},
+        "replay": {"type": "string", "pattern": "^/v1/study-packs/p_[A-P]{40}/replay$"}
+      }
+    }
+  }
+}

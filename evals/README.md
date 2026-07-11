@@ -36,6 +36,25 @@ python3 evals/run_all.py --no-write
 python3 -m unittest discover -s evals/tests -v
 ```
 
+The `study_pack` gate never installs packages or silently uses the network.
+Its interpreter must already contain the exact versions in
+`evals/fixtures/study_pack/requirements.txt`. The desktop sidecar environment
+is discovered automatically when it is complete; a development environment
+may be selected explicitly:
+
+```bash
+python3 -m venv /tmp/lumi-study-pack-eval
+/tmp/lumi-study-pack-eval/bin/python -m pip install -r evals/fixtures/study_pack/requirements.txt
+LUMI_STUDY_PACK_PYTHON=/tmp/lumi-study-pack-eval/bin/python \
+  python3 evals/run_all.py --gate study_pack --no-write
+```
+
+Dependency provisioning is an explicit developer/build step outside the gate.
+The saved evidence records `eval_dependency_network_calls=0`. Product isolation
+is stated more narrowly: the gate checks the advertised capability surface, the
+subprocess PDF-worker boundary, and every artifact's zero-call generator
+metadata. These are not represented as an OS-level access audit.
+
 ## Gate inventory
 
 | Gate | Evidence |
@@ -47,6 +66,7 @@ python3 -m unittest discover -s evals/tests -v
 | `cohort_prior_guardrail` | minimum/privacy policy plus no-data engineering fallback |
 | `attempt_continuation` | versioned probe/verification states and fail-closed writes |
 | `today_plan_schedule` | real HTTP TodayPlan/ReviewSchedule branches, provenance, timing, commands, replay, and KT separation |
+| `study_pack` | real loopback pasted-text/PDF lifecycle, citation/scorer recomputation, TEST INPUT answer isolation, restart, and adversarial failures |
 | `trace` | replayable observation → decision → state delta → evaluation record |
 | `diagnosis` | ranked hypotheses, normalized uncertainty, cohort provenance |
 | `kt` | bounded mastery, evidence link, versioned state transition |
@@ -117,6 +137,40 @@ process cannot mutate a historical plan after a newer TodayPlan exists. Once all
 pending review tasks are completed, the next day is honestly empty with
 `no_pending_review_tasks`; completed overdue tasks no longer inflate the pending
 catch-up count.
+
+The `study_pack` gate starts the production HTTP router on an ephemeral
+loopback port with a temporary SQLite database. It runs both a Chinese pasted
+text and a real two-page Chinese text-bearing PDF through create, deterministic
+review, publish, every citation, all three launches, one explicitly non-learner
+TEST INPUT answer per source, receipt replay, process restart, and hash-chain /
+projection replay. Every private artifact content digest, artifact-set digest,
+citation slice hash, and correct/incorrect scorer vector is recomputed. Candidate
+skill links remain `unconfirmed_candidate`; Study Pack activity does not update
+KT, misconception, TodayPlan, or ReviewSchedule storage.
+
+The eval-only server injects `evaluation_fixture` at `SidecarApplication`
+construction. It is not an HTTP request field and cannot be selected by a
+caller. The gate verifies both authoritative attempt rows and append-only events:
+exactly two ephemeral evaluation-fixture attempts and zero
+`human_local_interactive` attempts. Production service construction keeps its
+human default.
+
+The same gate fails closed on malformed JSON, empty or over-limit text,
+unknown fields, invalid base64, malformed/encrypted/textless/over-page/oversize
+PDFs, parser timeout, semantic or sensitive identifiers, stale artifact CAS,
+quarantined insufficient source, concurrent publish, and attempted batch or
+synthetic route expansion. Before executing the HTTP loop it runs the fixture
+validator and requires two complete generator reproductions, including the
+artifact-set digests and scorer vectors; schema-only validation cannot pass the
+gate.
+
+`evals/reports/study-pack-evidence-latest.json` is a closed compact projection.
+It contains only hashes, counts, booleans, parser/stable-code metadata, and the
+exact flags `test_input_non_learner=true` and
+`learner_projection_eligible=false`. It never stores source text, an answer,
+the temporary evaluation-fixture attempt record, raw unittest output, entity IDs, or a local
+filesystem path. `--no-write` creates neither this artifact nor a reports
+directory.
 
 The schemas are intentionally dependency-free at runtime: `run_all.py` includes
 a small validator for the subset used here. Installing `jsonschema` is optional.

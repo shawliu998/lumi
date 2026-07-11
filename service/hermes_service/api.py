@@ -20,6 +20,7 @@ DEFAULT_ALLOWED_ORIGINS = frozenset(
     }
 )
 MAX_BODY_BYTES = 64 * 1024
+STUDY_PACK_MAX_BODY_BYTES = 12 * 1024 * 1024
 REQUEST_ID_PATTERN = re.compile(r"^[A-Za-z0-9._-]{1,64}$")
 RUN_ROUTE = re.compile(r"^/v1/runs/([^/]+)/(trace|replay)$")
 ATTEMPT_RESPONSE_ROUTE = re.compile(r"^/v1/attempts/([^/]+)/responses$")
@@ -31,6 +32,18 @@ TODAY_PLAN_TASK_COMMAND_ROUTE = re.compile(
     r"^/v1/today-plans/([^/]+)/tasks/([^/]+)/commands$"
 )
 REVIEW_TASK_REPLAY_ROUTE = re.compile(r"^/v1/review-schedule/([^/]+)/replay$")
+STUDY_PACK_ROUTE = re.compile(r"^/v1/study-packs/([^/]+)$")
+STUDY_PACK_COMMAND_ROUTE = re.compile(r"^/v1/study-packs/([^/]+)/commands$")
+STUDY_PACK_CITATION_ROUTE = re.compile(
+    r"^/v1/study-packs/([^/]+)/citations/([^/]+)$"
+)
+STUDY_PACK_REPLAY_ROUTE = re.compile(r"^/v1/study-packs/([^/]+)/replay$")
+STUDY_PACK_ITEM_LAUNCH_ROUTE = re.compile(
+    r"^/v1/study-pack-items/([^/]+)/launch$"
+)
+STUDY_PACK_ITEM_ATTEMPT_ROUTE = re.compile(
+    r"^/v1/study-pack-items/([^/]+)/attempts$"
+)
 
 
 class LocalThreadingHTTPServer(ThreadingHTTPServer):
@@ -55,8 +68,11 @@ def create_server(
 
 def _handler_factory(application: SidecarApplication, allowed_origins: frozenset[str]) -> type[BaseHTTPRequestHandler]:
     class Handler(BaseHTTPRequestHandler):
-        server_version = "HermesSidecar/0.2"
+        server_version = "HermesSidecar/0.3"
         sys_version = ""
+
+        def version_string(self) -> str:
+            return self.server_version
 
         def do_GET(self) -> None:
             self._dispatch("GET")
@@ -113,6 +129,24 @@ def _handler_factory(application: SidecarApplication, allowed_origins: frozenset
                         body["confidence"],
                         body["response_time_seconds"],
                         body.get("run_id"),
+                    )
+                    self._send(201, payload, request_id, origin)
+                    return
+                if method == "POST" and parsed.path == "/v1/study-packs":
+                    body = self._read_json(
+                        {"title", "source", "command_id"},
+                        max_body_bytes=STUDY_PACK_MAX_BODY_BYTES,
+                    )
+                    if set(body) != {"title", "source", "command_id"}:
+                        raise ServiceError(
+                            400,
+                            "invalid_body",
+                            "Study Pack creation requires title, source, and command_id",
+                        )
+                    payload = application.create_study_pack(
+                        body["title"],
+                        body["source"],
+                        body["command_id"],
                     )
                     self._send(201, payload, request_id, origin)
                     return
@@ -219,6 +253,61 @@ def _handler_factory(application: SidecarApplication, allowed_origins: frozenset
                     )
                     self._send(200, payload, request_id, origin)
                     return
+                study_pack_command_match = STUDY_PACK_COMMAND_ROUTE.fullmatch(
+                    parsed.path
+                )
+                if method == "POST" and study_pack_command_match:
+                    body = self._read_json(
+                        {"action", "expected_version", "command_id"}
+                    )
+                    required = {"action", "expected_version", "command_id"}
+                    if set(body) != required:
+                        raise ServiceError(
+                            400,
+                            "invalid_body",
+                            "Study Pack command requires every declared field",
+                        )
+                    payload = application.command_study_pack(
+                        unquote(study_pack_command_match.group(1)),
+                        body["action"],
+                        body["expected_version"],
+                        body["command_id"],
+                    )
+                    self._send(200, payload, request_id, origin)
+                    return
+                study_pack_attempt_match = STUDY_PACK_ITEM_ATTEMPT_ROUTE.fullmatch(
+                    parsed.path
+                )
+                if method == "POST" and study_pack_attempt_match:
+                    body = self._read_json(
+                        {
+                            "learner_answer",
+                            "expected_pack_version",
+                            "expected_artifact_version",
+                            "command_id",
+                        }
+                    )
+                    required = {
+                        "learner_answer",
+                        "expected_pack_version",
+                        "expected_artifact_version",
+                        "command_id",
+                    }
+                    if set(body) != required:
+                        raise ServiceError(
+                            400,
+                            "invalid_body",
+                            "Study Pack attempt requires every declared field",
+                        )
+                    payload = application.attempt_study_pack_item(
+                        unquote(study_pack_attempt_match.group(1)),
+                        body["learner_answer"],
+                        body["expected_pack_version"],
+                        body["expected_artifact_version"],
+                        body["command_id"],
+                    )
+                    self._send(201, payload, request_id, origin)
+                    return
                 schedule_command_match = TODAY_PLAN_TASK_COMMAND_ROUTE.fullmatch(
                     parsed.path
                 )
@@ -295,6 +384,59 @@ def _handler_factory(application: SidecarApplication, allowed_origins: frozenset
                         "review schedule does not accept query parameters",
                     )
                 return application.review_schedule()
+            if path == "/v1/study-packs":
+                if query:
+                    raise ServiceError(
+                        400,
+                        "invalid_query",
+                        "Study Pack list does not accept query parameters",
+                    )
+                return application.study_packs()
+            study_pack_citation_match = STUDY_PACK_CITATION_ROUTE.fullmatch(path)
+            if study_pack_citation_match:
+                if query:
+                    raise ServiceError(
+                        400,
+                        "invalid_query",
+                        "Study Pack citation does not accept query parameters",
+                    )
+                return application.study_pack_citation(
+                    unquote(study_pack_citation_match.group(1)),
+                    unquote(study_pack_citation_match.group(2)),
+                )
+            study_pack_replay_match = STUDY_PACK_REPLAY_ROUTE.fullmatch(path)
+            if study_pack_replay_match:
+                if query:
+                    raise ServiceError(
+                        400,
+                        "invalid_query",
+                        "Study Pack replay does not accept query parameters",
+                    )
+                return application.study_pack_replay(
+                    unquote(study_pack_replay_match.group(1))
+                )
+            study_pack_item_launch_match = STUDY_PACK_ITEM_LAUNCH_ROUTE.fullmatch(
+                path
+            )
+            if study_pack_item_launch_match:
+                if query:
+                    raise ServiceError(
+                        400,
+                        "invalid_query",
+                        "Study Pack launch does not accept query parameters",
+                    )
+                return application.launch_study_pack_item(
+                    unquote(study_pack_item_launch_match.group(1))
+                )
+            study_pack_match = STUDY_PACK_ROUTE.fullmatch(path)
+            if study_pack_match:
+                if query:
+                    raise ServiceError(
+                        400,
+                        "invalid_query",
+                        "Study Pack does not accept query parameters",
+                    )
+                return application.study_pack(unquote(study_pack_match.group(1)))
             plan_replay_match = TODAY_PLAN_REPLAY_ROUTE.fullmatch(path)
             if plan_replay_match:
                 if query:
@@ -325,7 +467,12 @@ def _handler_factory(application: SidecarApplication, allowed_origins: frozenset
                 return application.trace(run_id) if match.group(2) == "trace" else application.replay(run_id)
             raise ServiceError(404, "route_not_found", "the requested API route does not exist")
 
-        def _read_json(self, allowed_fields: set[str]) -> dict[str, Any]:
+        def _read_json(
+            self,
+            allowed_fields: set[str],
+            *,
+            max_body_bytes: int = MAX_BODY_BYTES,
+        ) -> dict[str, Any]:
             content_type = self.headers.get("Content-Type", "").split(";", 1)[0].strip().lower()
             if content_type != "application/json":
                 raise ServiceError(415, "unsupported_media_type", "Content-Type must be application/json")
@@ -336,7 +483,7 @@ def _handler_factory(application: SidecarApplication, allowed_origins: frozenset
                 length = int(raw_length)
             except ValueError:
                 raise ServiceError(400, "invalid_content_length", "Content-Length must be an integer") from None
-            if length < 0 or length > MAX_BODY_BYTES:
+            if length < 0 or length > max_body_bytes:
                 raise ServiceError(413, "payload_too_large", "request body exceeds the local API limit")
             try:
                 decoded = self.rfile.read(length).decode("utf-8")

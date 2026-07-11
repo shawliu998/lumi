@@ -15,15 +15,20 @@ if [ "$(uname -m)" != "arm64" ]; then
   exit 1
 fi
 
-if [ ! -x "$venv/bin/python" ]; then
-  "$python_bin" -m venv "$venv"
-fi
+rm -rf "$venv" "$build_root" "$dist_root" "$runtime_root"
+"$python_bin" -m venv "$venv"
 
 export PIP_CACHE_DIR="$desktop_root/.pip-cache"
 export PYINSTALLER_CONFIG_DIR="$desktop_root/.pyinstaller-cache"
-"$venv/bin/python" -m pip install --disable-pip-version-check --upgrade "pyinstaller==6.21.0"
+"$venv/bin/python" -m pip install \
+  --disable-pip-version-check \
+  --no-input \
+  --upgrade \
+  "pyinstaller==6.21.0" \
+  "pypdf==6.10.0"
+"$venv/bin/python" -c \
+  'import PyInstaller, pypdf; assert PyInstaller.__version__ == "6.21.0"; assert pypdf.__version__ == "6.10.0"'
 
-rm -rf "$build_root" "$dist_root" "$runtime_root"
 mkdir -p "$(dirname -- "$launcher")" "$runtime_root"
 
 "$venv/bin/python" -m PyInstaller \
@@ -40,11 +45,14 @@ mkdir -p "$(dirname -- "$launcher")" "$runtime_root"
   --paths "$workspace_root/runtime" \
   --paths "$workspace_root/engine" \
   --paths "$workspace_root/domains" \
+  --paths "$workspace_root/study_pack" \
   --collect-submodules hermes_service \
   --collect-submodules hermes_integration \
   --collect-submodules hermes_runtime \
   --collect-submodules hermes_kt \
   --collect-submodules hermes_domains \
+  --collect-submodules lumi_study_pack \
+  --collect-all pypdf \
   --add-data "$workspace_root/domains/fixtures:domains/fixtures" \
   "$desktop_root/sidecars/hermes_sidecar_bootstrap.py"
 

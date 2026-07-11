@@ -1,0 +1,100 @@
+{
+  "contains_pii_or_secrets": false,
+  "files": [
+    {
+      "byte_count": 69,
+      "path": "requirements.txt",
+      "sha256": "8f7bf321f6c50c98501cf4cf45edf6a05875ed20a8adb6ea8acd7adf9db5cbed"
+    },
+    {
+      "byte_count": 21187,
+      "path": "generate_fixtures.py",
+      "sha256": "e8801e1d37593780cdf55bfc50d1f991024ecc2b347bb634f2c90cbd8f0c60cd"
+    },
+    {
+      "byte_count": 21424,
+      "path": "validate_contracts.py",
+      "sha256": "46d4b90d285a6409abe6b237a855dd270878353809435282366e77e919970b58"
+    },
+    {
+      "byte_count": 468,
+      "path": "pasted_text.txt",
+      "sha256": "b4b476e3fbff1f59f01caaf636367f508a541193db2ad2b5380bb1de0d1d54cb"
+    },
+    {
+      "byte_count": 745,
+      "path": "pasted_text.source.json",
+      "sha256": "44b28cfe2e1663dc1ffa3231a70627f6153ecfef32fc35623fd9cfe4ecb433c0"
+    },
+    {
+      "byte_count": 32130,
+      "path": "pasted_text.case.json",
+      "sha256": "9130151666138dbc3017a5a02ae6c87079058f2c1f2e0346e071a92c19ffc009"
+    },
+    {
+      "byte_count": 3566,
+      "path": "text_bearing_chinese.pdf",
+      "sha256": "dd598f6127e24836e0a77a45aeb474802436b99aff0d4b02dc51795aceb5de4a"
+    },
+    {
+      "byte_count": 714,
+      "path": "text_bearing_chinese.source.json",
+      "sha256": "088ffa8fe2d902959a453935256cc396b5ec2fd543eef3c748c527d7431fdaa6"
+    },
+    {
+      "byte_count": 31842,
+      "path": "text_bearing_chinese.case.json",
+      "sha256": "627ecc079ba4839e90a2dec815d2874f59b509a5a1eae43a8bab94b82f92139e"
+    }
+  ],
+  "fixture_origin": "synthetic_original_engineering_only",
+  "generator": {
+    "fixture_generator_version": "lumi-study-pack-fixtures@2",
+    "id_namespace_formula": "sha256(utf8('lumi-p03-fixture:' + namespace + ':' + prefix + ':' + decimal_counter))[:20] -> prefix + 40 A-P nibbles",
+    "id_namespace_version": "lumi-ap-deterministic-fixture-ids@1",
+    "implementation_id": "extractive-local@1",
+    "network_calls": 0,
+    "ocr_calls": 0,
+    "reportlab_invariant": true,
+    "script": "generate_fixtures.py",
+    "script_sha256": "e8801e1d37593780cdf55bfc50d1f991024ecc2b347bb634f2c90cbd8f0c60cd",
+    "web_calls": 0
+  },
+  "pdf_validation": {
+    "all_required_phrases_extracted": true,
+    "encrypted": false,
+    "invariant_mode": true,
+    "page_count": 2,
+    "pdfinfo_version": "pdfinfo version 26.04.0",
+    "pdfplumber_text_sha256": "f71840ca4f6caf5c439c8d262f8b9e580f480a9adb8481512f6e63ee1f4766e3",
+    "pdfplumber_version": "0.11.7",
+    "pdftoppm_version": "pdftoppm version 26.04.0",
+    "pdftotext_sha256": "4a2fdd6109f168acfe97559c85f65cc99444022d454c8a28b5ac76b08287d5e8",
+    "pypdf_text_sha256": "c49c0108901ff0be26a81f749d11cfd5d1c0ca5a0cb1a065691912680ef17762",
+    "pypdf_version": "6.10.0",
+    "render_page_count": 2,
+    "render_png_sha256": [
+      "d663bca01bb6031860471346b3f69e192609fff404dff1a2a5852d943a612d4e",
+      "61240418d770c0493a03e46682e3912d66e409c9c5349d59303b2301333bee4b"
+    ],
+    "reportlab_version": "4.4.2",
+    "required_phrase_count": 6,
+    "temporary_renders_retained": false
+  },
+  "schema_version": "lumi.study-pack-fixture-manifest.v1",
+  "schema_vocabulary_guard": {
+    "attempt_result_records_in_synthetic_cases": 0,
+    "attempt_result_schema_version": "lumi.study-pack-attempt-result.v1",
+    "canonical_attempt_schema_version": "lumi.study-pack-attempt.v1",
+    "canonical_pack_schema_version": "lumi.study-pack.v1",
+    "detail_records_in_synthetic_cases": 0,
+    "detail_schema_version": "lumi.study-pack-detail.v1"
+  },
+  "synthetic_evidence_guard": {
+    "evaluation_fixture_scorer_vectors": 2,
+    "human_local_interactive_records": 0,
+    "product_attempt_ids": 0,
+    "product_practice_attempt_records": 0,
+    "scorer_vectors_are_product_evidence": false
+  }
+}

@@ -5,6 +5,7 @@ use std::{
     fs,
     io::{self, Read, Write},
     net::{SocketAddr, TcpStream},
+    path::PathBuf,
     sync::{Arc, Mutex},
     thread,
     time::{Duration, Instant},
@@ -18,6 +19,7 @@ use tauri_plugin_shell::{
 
 const SIDECAR_NAME: &str = "hermes-sidecar";
 const SIDECAR_PORT: u16 = 8765;
+const SIDECAR_VERSION: &str = "0.3.0";
 const STARTUP_TIMEOUT: Duration = Duration::from_secs(8);
 
 #[derive(Clone, Default)]
@@ -94,9 +96,11 @@ fn start_sidecar(app: &tauri::AppHandle) -> Result<RunningSidecar, Box<dyn Error
     let port = sidecar_port()?;
     ensure_sidecar_port_is_free(port)?;
 
-    let app_data_directory = app.path().app_data_dir()?;
-    fs::create_dir_all(&app_data_directory)?;
-    let database = app_data_directory.join("sidecar.sqlite3");
+    let database = sidecar_database(app)?;
+    let database_parent = database
+        .parent()
+        .ok_or_else(|| io::Error::other("sidecar database path has no parent"))?;
+    fs::create_dir_all(database_parent)?;
     let database = database
         .to_str()
         .ok_or_else(|| io::Error::other("sidecar database path is not valid UTF-8"))?;
@@ -105,12 +109,13 @@ fn start_sidecar(app: &tauri::AppHandle) -> Result<RunningSidecar, Box<dyn Error
         .to_str()
         .ok_or_else(|| io::Error::other("sidecar runtime path is not valid UTF-8"))?;
     let port_argument = port.to_string();
+    let arguments = sidecar_arguments(database, &port_argument)?;
 
     let (events, child) = app
         .shell()
         .sidecar(SIDECAR_NAME)?
         .env("HERMES_SIDECAR_RUNTIME_DIR", runtime_directory)
-        .args(["--db", database, "serve", "--port", &port_argument])
+        .args(arguments)
         .spawn()?;
 
     if let Err(error) = wait_for_sidecar_health(port) {
@@ -126,6 +131,53 @@ fn start_sidecar(app: &tauri::AppHandle) -> Result<RunningSidecar, Box<dyn Error
         child: Some(child),
         events: Some(events),
     })
+}
+
+fn sidecar_database(app: &tauri::AppHandle) -> Result<PathBuf, Box<dyn Error>> {
+    #[cfg(debug_assertions)]
+    if let Some(value) = std::env::var_os("HERMES_SIDECAR_DATABASE") {
+        let path = PathBuf::from(value);
+        if !path.is_absolute() {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "HERMES_SIDECAR_DATABASE must be an absolute path",
+            )
+            .into());
+        }
+        return Ok(path);
+    }
+
+    Ok(app.path().app_data_dir()?.join("sidecar.sqlite3"))
+}
+
+fn sidecar_arguments(database: &str, port: &str) -> io::Result<Vec<String>> {
+    #[cfg(debug_assertions)]
+    match std::env::var("HERMES_SIDECAR_TEST_MODE") {
+        Ok(value) if value == "pdf-worker-health-timeout" => {
+            return Ok(vec!["--lumi-study-pack-pdf-worker".to_owned()]);
+        }
+        Ok(_) => {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "HERMES_SIDECAR_TEST_MODE is unsupported",
+            ));
+        }
+        Err(std::env::VarError::NotUnicode(_)) => {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "HERMES_SIDECAR_TEST_MODE must be valid Unicode",
+            ));
+        }
+        Err(std::env::VarError::NotPresent) => {}
+    }
+
+    Ok(vec![
+        "--db".to_owned(),
+        database.to_owned(),
+        "serve".to_owned(),
+        "--port".to_owned(),
+        port.to_owned(),
+    ])
 }
 
 fn sidecar_port() -> io::Result<u16> {
@@ -198,6 +250,7 @@ fn valid_health_response(response: &str) -> bool {
     (response.starts_with("HTTP/1.0 200") || response.starts_with("HTTP/1.1 200"))
         && response.contains("\"status\":\"ok\"")
         && response.contains("\"service\":\"hermes-local-sidecar\"")
+        && response.contains(&format!("\"version\":\"{SIDECAR_VERSION}\""))
         && response.contains("\"local_only\":true")
 }
 

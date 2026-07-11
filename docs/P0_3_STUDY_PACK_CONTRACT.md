@@ -49,6 +49,13 @@ a draft, but it must pass the same deterministic verifier and may not publish.
   `evidence_origin=human_local_interactive` and
   `activity_kind=within_pack_practice`, but remain outside the P0.1/P0.2
   mastery, dossier, and scheduling projections.
+- The release harness uses a private application-construction setting
+  `evidence_origin=evaluation_fixture` in an automatically deleted database.
+  That origin is not accepted from an HTTP body, cannot be relabelled as a
+  learner attempt, and is never eligible for product learner projections. The
+  frozen-sidecar harness maps the exact private process environment
+  `LUMI_INTERNAL_STUDY_PACK_ATTEMPT_ORIGIN=evaluation_fixture` to that constructor;
+  the Lumi app never sets it, and any other explicit value fails closed.
 
 ## Identifiers and commands
 
@@ -137,6 +144,12 @@ private payload, or raw source outside the question prompt. The attempt response
 may reveal deterministic score, answer, explanation, and cited source context
 only after a real learner answer is accepted.
 
+This is a direct-key disclosure boundary, not a cheating-prevention claim: the
+learner owns the frozen source, and published notes or knowledge cards may
+contain the same source statement. While an item is unanswered, the client must
+show the isolated launch projection and must not render pack notes, card answers,
+or citation context beside the active prompt.
+
 Fixed resource-protection limits for v1 are engineering limits, not learning
 policy: pasted text <= 512 KiB UTF-8; decoded PDF <= 8 MiB; <= 120 pages;
 <= 250,000 normalized code points; parser deadline <= 10 seconds. The Study Pack
@@ -173,8 +186,9 @@ The `study_pack` release gate uses one Chinese pasted-text fixture and one real
 text-bearing PDF fixture through the production loopback router and a temporary
 database. For both sources it must prove:
 
-1. `create -> request_review -> publish -> resolve citation -> launch -> real
-   answer -> replay` works after restart.
+1. `create -> request_review -> publish -> resolve citation -> launch ->
+   explicitly non-learner TEST INPUT answer -> replay` works after restart,
+   while the ordinary product path remains `human_local_interactive`.
 2. Artifact counts, schemas, hashes, page/section citations, scorers, CAS,
    receipts, and hash-chain replay all verify.
 3. Every published required claim/answer has a resolvable citation and every

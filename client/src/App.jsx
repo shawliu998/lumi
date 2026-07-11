@@ -50,6 +50,7 @@ import {
   TodayPlanOverview,
   TodayPracticeScreen,
 } from "./TodayPlanViews";
+import { StudyPackMaterials } from "./StudyPackViews.jsx";
 
 const NAV_ITEMS = [
   { id: "overview", label: "今日学习", icon: House },
@@ -139,6 +140,7 @@ function Sidebar({ page, setPage, collapsed, setCollapsed, onUtility, sidecar, o
             className={page === id ? "nav-item active" : "nav-item"}
             key={id}
             onClick={() => setPage(id)}
+            aria-label={label}
             aria-current={page === id ? "page" : undefined}
             title={collapsed ? label : undefined}
           >
@@ -151,7 +153,7 @@ function Sidebar({ page, setPage, collapsed, setCollapsed, onUtility, sidecar, o
       <div className="sidebar-spacer" />
 
       {sidecar.phase === "offline" || sidecar.phase === "error" ? (
-        <button className={`connection-status ${sidecar.phase}`} onClick={onRetrySidecar} data-testid="sidecar-status" data-state={sidecar.phase} title={collapsed ? connectionTitle : undefined}>
+        <button className={`connection-status ${sidecar.phase}`} onClick={onRetrySidecar} aria-label={`${connectionTitle}，${connectionDetail}，点击重试`} data-testid="sidecar-status" data-state={sidecar.phase} title={collapsed ? connectionTitle : undefined}>
           {connectionContent}
         </button>
       ) : (
@@ -161,12 +163,12 @@ function Sidebar({ page, setPage, collapsed, setCollapsed, onUtility, sidecar, o
       )}
 
       <nav className="secondary-nav" aria-label="辅助导航">
-        <button className="nav-item" onClick={() => onUtility("settings")} title={collapsed ? "设置" : undefined}><Gear size={15} />{!collapsed && <span>设置</span>}</button>
-        <button className="nav-item" onClick={() => onUtility("feedback")} title={collapsed ? "意见反馈" : undefined}><ChatCircleDots size={15} />{!collapsed && <span>意见反馈</span>}</button>
-        <button className="nav-item" onClick={() => onUtility("help")} title={collapsed ? "使用帮助" : undefined}><Question size={15} />{!collapsed && <span>使用帮助</span>}</button>
+        <button className="nav-item" onClick={() => onUtility("settings")} aria-label="设置" title={collapsed ? "设置" : undefined}><Gear size={15} />{!collapsed && <span>设置</span>}</button>
+        <button className="nav-item" onClick={() => onUtility("feedback")} aria-label="意见反馈" title={collapsed ? "意见反馈" : undefined}><ChatCircleDots size={15} />{!collapsed && <span>意见反馈</span>}</button>
+        <button className="nav-item" onClick={() => onUtility("help")} aria-label="使用帮助" title={collapsed ? "使用帮助" : undefined}><Question size={15} />{!collapsed && <span>使用帮助</span>}</button>
       </nav>
 
-      <button className="profile-row" onClick={() => onUtility("profile")} title={collapsed ? "本机学习者" : undefined}>
+      <button className="profile-row" onClick={() => onUtility("profile")} aria-label="本机学习者" title={collapsed ? "本机学习者" : undefined}>
         <span className="avatar">本</span>
         {!collapsed && <><span>本机学习者</span><CaretRight size={15} /></>}
       </button>
@@ -207,7 +209,7 @@ function Topbar({ page, setPage, onSearch, onUtility }) {
           </button>
         ))}
       </nav>
-      <button className="global-search" onClick={onSearch}>
+      <button className="global-search" onClick={onSearch} aria-label="打开全局搜索">
         <MagnifyingGlass size={14} />
         <span>搜索题目、技能或学习记录…</span>
       </button>
@@ -1273,7 +1275,7 @@ export function App() {
           {page === "practice" && <TodayPracticeScreen planning={planning} onCreate={handleCreatePlan} onCommand={handleTaskCommand} onLaunchTask={launchTask} />}
           {page === "tools" && <ToolsScreen favorites={favorites} setFavorites={setFavorites} selectedTool={selectedTool} setSelectedTool={setSelectedTool} toolStage={toolStage} setToolStage={setToolStage} sidecar={sidecar} onRefreshSkills={refreshSkills} setPage={setPage} />}
           {page === "reports" && <ReportsScreen setPage={setPage} sidecar={sidecar} planning={planning} />}
-          {page === "materials" && <AuxiliaryScreen page={page} setPage={setPage} />}
+          {page === "materials" && <StudyPackMaterials />}
         </section>
 
         {commandOpen && <CommandPalette onClose={() => setCommandOpen(false)} setPage={setPage} onOpenTool={openToolByTitle} />}

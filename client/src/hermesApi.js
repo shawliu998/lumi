@@ -12,6 +12,22 @@ import {
   todayPlanId,
 } from "./todayPlanAdapter.js";
 import { createCommandId, createRunId, isRunId } from "./publicLearningId.js";
+import {
+  buildStudyPackAttempt,
+  buildStudyPackCommand,
+  buildStudyPackCreate,
+  normalizeStudyPackAttemptResult,
+  normalizeStudyPackCitation,
+  normalizeStudyPackDetail,
+  normalizeStudyPackLaunch,
+  normalizeStudyPackList,
+  studyPackAttemptPath,
+  studyPackCitationPath,
+  studyPackCommandPath,
+  studyPackLaunchPath,
+  studyPackPath,
+  studyPackReceiptRequiresRefresh,
+} from "./studyPackAdapter.js";
 
 export { createRunId };
 
@@ -38,7 +54,7 @@ export async function fetchHealth() {
   if (
     health?.status !== "ok"
     || health?.service !== "hermes-local-sidecar"
-    || health?.version !== "0.2.0"
+    || health?.version !== "0.3.0"
     || health?.local_only !== true
   ) {
     throw new HermesApiError("本机服务返回了不受支持的健康状态。", {
@@ -58,6 +74,84 @@ export async function fetchSkillReport() {
     });
   }
   return report;
+}
+
+export async function fetchStudyPackList() {
+  return normalizeStudyPackList(await request("/v1/study-packs"));
+}
+
+export async function fetchStudyPack(packId) {
+  return normalizeStudyPackDetail(
+    await request(studyPackPath(packId)),
+    { packId },
+  );
+}
+
+export async function createStudyPack({ title, source, commandId } = {}) {
+  const body = buildStudyPackCreate({ title, source, commandId });
+  const created = normalizeStudyPackDetail(await request("/v1/study-packs", {
+    method: "POST",
+    body,
+    timeoutMs: 15_000,
+  }), { creation: true, title: body.title, sourceKind: body.source.kind });
+  return studyPackReceiptRequiresRefresh(created) ? fetchStudyPack(created.packId) : created;
+}
+
+export async function commandStudyPack({ pack, action, commandId } = {}) {
+  const body = buildStudyPackCommand({ pack, action, commandId });
+  const result = normalizeStudyPackDetail(await request(studyPackCommandPath(pack.packId), {
+    method: "POST",
+    body,
+    timeoutMs: 15_000,
+  }), {
+    packId: pack.packId,
+    action,
+    expectedVersion: pack.version,
+    previousLifecycle: pack.lifecycle,
+  });
+  return studyPackReceiptRequiresRefresh(result) ? fetchStudyPack(pack.packId) : result;
+}
+
+export async function fetchStudyPackCitation({ packId, spanId, source } = {}) {
+  const payload = await request(studyPackCitationPath(packId, spanId));
+  return normalizeStudyPackCitation(payload, {
+    packId,
+    spanId,
+    documentId: source?.documentId,
+    sourceVersion: source?.version,
+    normalizedSha256: source?.normalizedSha256,
+  });
+}
+
+export async function launchStudyPackItem(item) {
+  const expected = {
+    artifactId: item?.artifactId,
+    artifactVersion: item?.artifactVersion,
+    packId: item?.packId,
+    scorer: item?.content?.scorer || item?.scorer,
+  };
+  return normalizeStudyPackLaunch(
+    await request(studyPackLaunchPath(item.artifactId)),
+    expected,
+  );
+}
+
+export async function attemptStudyPackItem({ launch, learnerAnswer, commandId } = {}) {
+  const body = buildStudyPackAttempt({ launch, learnerAnswer, commandId });
+  const payload = await request(studyPackAttemptPath(launch.artifactId), {
+    method: "POST",
+    body,
+  });
+  const result = normalizeStudyPackAttemptResult(payload, { launch });
+  if (!studyPackReceiptRequiresRefresh(result)) return result;
+  const refreshedPack = await fetchStudyPack(launch.packId);
+  if (refreshedPack.version < result.packVersion) {
+    throw new HermesApiError("学习包最新版本与重放记录不一致。", {
+      kind: "contract",
+      code: "invalid_study_pack_replay_projection",
+    });
+  }
+  return { ...result, refreshedPack };
 }
 
 export async function fetchReviewSchedule() {
@@ -361,9 +455,9 @@ function requestLink(link, options) {
   return request(link, options);
 }
 
-async function request(path, { method = "GET", body } = {}) {
+async function request(path, { method = "GET", body, timeoutMs = REQUEST_TIMEOUT_MS } = {}) {
   const controller = new AbortController();
-  const timeout = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
   const requestId = createRequestId();
   try {
     const response = await fetch(`${HERMES_API_BASE}${path}`, {

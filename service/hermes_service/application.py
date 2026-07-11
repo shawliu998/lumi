@@ -9,6 +9,14 @@ import secrets
 import threading
 from typing import Any, Callable
 
+from lumi_study_pack import StudyPackError, StudyPackStore
+from lumi_study_pack.models import validate_command_id, validate_entity_id
+from lumi_study_pack.parsing import PdfBackend
+from lumi_study_pack.store import (
+    ATTEMPT_EVIDENCE_ORIGINS,
+    HUMAN_ATTEMPT_EVIDENCE_ORIGIN,
+)
+
 from hermes_integration.loop import (
     SCENARIOS,
     ContinuationError,
@@ -49,7 +57,7 @@ from .catalog import ScenarioCatalog
 from .dossier import project_misconception_dossier
 
 
-SERVICE_VERSION = "0.2.0"
+SERVICE_VERSION = "0.3.0"
 
 class ServiceError(RuntimeError):
     def __init__(self, status: int, code: str, message: str) -> None:
@@ -66,7 +74,11 @@ class SidecarApplication:
         *,
         today_provider: Callable[[], date] | None = None,
         planning_timezone: tzinfo | None = None,
+        study_pack_pdf_backend: PdfBackend | None = None,
+        study_pack_attempt_evidence_origin: str = HUMAN_ATTEMPT_EVIDENCE_ORIGIN,
     ) -> None:
+        if study_pack_attempt_evidence_origin not in ATTEMPT_EVIDENCE_ORIGINS:
+            raise ValueError("unsupported Study Pack attempt evidence origin")
         self.database = str(database)
         self.catalog = ScenarioCatalog()
         self._continuation_lock = threading.Lock()
@@ -75,6 +87,10 @@ class SidecarApplication:
             planning_timezone
             or datetime.now().astimezone().tzinfo
             or timezone.utc
+        )
+        self._study_pack_pdf_backend = study_pack_pdf_backend
+        self._study_pack_attempt_evidence_origin = (
+            study_pack_attempt_evidence_origin
         )
 
     def health(self) -> dict[str, Any]:
@@ -109,6 +125,7 @@ class SidecarApplication:
                 "event-sourced-misconception-dossier-v1",
                 "explainable-today-plan-v1",
                 "independent-review-schedule-v1",
+                "local-cited-study-pack-v1",
                 "append-only-trace",
                 "hash-verified-replay",
                 "skill-summary",
@@ -127,11 +144,236 @@ class SidecarApplication:
                 "today_plan_replay": "GET /v1/today-plans/{plan_id}/replay",
                 "review_schedule": "GET /v1/review-schedule",
                 "review_task_replay": "GET /v1/review-schedule/{task_id}/replay",
+                "study_pack_create": "POST /v1/study-packs",
+                "study_packs": "GET /v1/study-packs",
+                "study_pack": "GET /v1/study-packs/{pack_id}",
+                "study_pack_command": "POST /v1/study-packs/{pack_id}/commands",
+                "study_pack_citation": "GET /v1/study-packs/{pack_id}/citations/{span_id}",
+                "study_pack_replay": "GET /v1/study-packs/{pack_id}/replay",
+                "study_pack_item_launch": "GET /v1/study-pack-items/{artifact_id}/launch",
+                "study_pack_item_attempt": "POST /v1/study-pack-items/{artifact_id}/attempts",
                 "trace": "GET /v1/runs/{run_id}/trace",
                 "replay": "GET /v1/runs/{run_id}/replay",
                 "skills": "GET /v1/skills/report",
             },
         }
+
+    def create_study_pack(
+        self,
+        title: Any,
+        source: Any,
+        command_id: Any,
+    ) -> dict[str, Any]:
+        _validate_study_pack_command(command_id)
+        store = self._study_pack_store()
+        try:
+            try:
+                result = store.create_pack(
+                    title=title,
+                    source=source,
+                    command_id=command_id,
+                )
+            except StudyPackError as exc:
+                raise _study_pack_service_error(exc) from None
+            return _public_study_pack_projection(result)
+        finally:
+            store.close()
+
+    def study_packs(self) -> dict[str, Any]:
+        store = self._study_pack_store()
+        try:
+            result = store.list_packs()
+        finally:
+            store.close()
+        return {
+            **result,
+            "items": [
+                {
+                    **item,
+                    "links": {"self": f"/v1/study-packs/{item['pack_id']}"},
+                }
+                for item in result["items"]
+            ],
+        }
+
+    def study_pack(self, pack_id: Any) -> dict[str, Any]:
+        _validate_study_pack_entity(pack_id, "p_", "invalid_pack_id")
+        store = self._study_pack_store()
+        try:
+            try:
+                result = store.get_pack(pack_id)
+            except StudyPackError as exc:
+                raise _study_pack_service_error(
+                    exc,
+                    not_found_code="study_pack_not_found",
+                ) from None
+            return _public_study_pack_projection(result)
+        finally:
+            store.close()
+
+    def command_study_pack(
+        self,
+        pack_id: Any,
+        action: Any,
+        expected_version: Any,
+        command_id: Any,
+    ) -> dict[str, Any]:
+        _validate_study_pack_entity(pack_id, "p_", "invalid_pack_id")
+        _validate_study_pack_command(command_id)
+        store = self._study_pack_store()
+        try:
+            try:
+                result = store.command_pack(
+                    pack_id=pack_id,
+                    action=action,
+                    expected_version=expected_version,
+                    command_id=command_id,
+                )
+            except StudyPackError as exc:
+                raise _study_pack_service_error(
+                    exc,
+                    not_found_code="study_pack_not_found",
+                ) from None
+            return _public_study_pack_projection(result)
+        finally:
+            store.close()
+
+    def study_pack_citation(self, pack_id: Any, span_id: Any) -> dict[str, Any]:
+        _validate_study_pack_entity(pack_id, "p_", "invalid_pack_id")
+        _validate_study_pack_entity(span_id, "s_", "invalid_span_id")
+        store = self._study_pack_store()
+        try:
+            try:
+                result = store.resolve_citation(pack_id, span_id)
+            except StudyPackError as exc:
+                raise _study_pack_service_error(
+                    exc,
+                    not_found_code="study_pack_not_found",
+                ) from None
+        finally:
+            store.close()
+        return {
+            **result,
+            "verified": True,
+            "links": {"pack": f"/v1/study-packs/{pack_id}"},
+        }
+
+    def study_pack_replay(self, pack_id: Any) -> dict[str, Any]:
+        _validate_study_pack_entity(pack_id, "p_", "invalid_pack_id")
+        store = self._study_pack_store()
+        try:
+            try:
+                result = store.replay(pack_id)
+            except StudyPackError as exc:
+                raise _study_pack_service_error(
+                    exc,
+                    not_found_code="study_pack_not_found",
+                ) from None
+        finally:
+            store.close()
+        if _contains_private_study_pack_key(result):
+            raise ServiceError(
+                500,
+                "unsafe_study_pack_projection",
+                "Study Pack replay contains a private field",
+            )
+        return result
+
+    def launch_study_pack_item(self, artifact_id: Any) -> dict[str, Any]:
+        _validate_study_pack_entity(
+            artifact_id,
+            "a_",
+            "invalid_artifact_id",
+        )
+        store = self._study_pack_store()
+        try:
+            try:
+                result = store.launch_item(artifact_id)
+            except StudyPackError as exc:
+                raise _study_pack_service_error(
+                    exc,
+                    not_found_code="artifact_unsupported",
+                ) from None
+        finally:
+            store.close()
+        allowed = {
+            "schema_version",
+            "pack_id",
+            "pack_version",
+            "artifact_id",
+            "artifact_version",
+            "item_kind",
+            "prompt",
+            "scorer",
+            "evidence_origin",
+            "activity_kind",
+        }
+        if set(result) != allowed:
+            raise ServiceError(
+                500,
+                "unsafe_study_pack_projection",
+                "Study Pack launch contract contains an unsupported field",
+            )
+        return {
+            **result,
+            "links": {
+                "attempts": f"/v1/study-pack-items/{artifact_id}/attempts",
+                "pack": f"/v1/study-packs/{result['pack_id']}",
+            },
+        }
+
+    def attempt_study_pack_item(
+        self,
+        artifact_id: Any,
+        learner_answer: Any,
+        expected_pack_version: Any,
+        expected_artifact_version: Any,
+        command_id: Any,
+    ) -> dict[str, Any]:
+        _validate_study_pack_entity(
+            artifact_id,
+            "a_",
+            "invalid_artifact_id",
+        )
+        _validate_study_pack_command(command_id)
+        store = self._study_pack_store()
+        try:
+            try:
+                result = store.attempt_item(
+                    artifact_id=artifact_id,
+                    learner_answer=learner_answer,
+                    expected_pack_version=expected_pack_version,
+                    expected_artifact_version=expected_artifact_version,
+                    command_id=command_id,
+                )
+            except StudyPackError as exc:
+                raise _study_pack_service_error(
+                    exc,
+                    not_found_code="artifact_unsupported",
+                ) from None
+        finally:
+            store.close()
+        if _contains_private_attempt_key(result):
+            raise ServiceError(
+                500,
+                "unsafe_study_pack_projection",
+                "Study Pack attempt response contains private learner input",
+            )
+        return {
+            **result,
+            "schema_version": "lumi.study-pack-attempt-result.v1",
+            "links": {
+                "pack": f"/v1/study-packs/{result['pack_id']}",
+                "replay": f"/v1/study-packs/{result['pack_id']}/replay",
+            },
+        }
+
+    def _study_pack_store(self) -> StudyPackStore:
+        return StudyPackStore(
+            self.database,
+            pdf_backend=self._study_pack_pdf_backend,
+            attempt_evidence_origin=self._study_pack_attempt_evidence_origin,
+        )
 
     def scenarios(self, domain: str | None = None, mode: str | None = None) -> dict[str, Any]:
         if domain is not None and (
@@ -1340,6 +1582,178 @@ def _schedule_service_error(error: ScheduleError) -> ServiceError:
     if isinstance(error, ScheduleValidationError):
         return ServiceError(400, "invalid_schedule_command", str(error))
     return ServiceError(409, "schedule_rejected", "the schedule command was rejected")
+
+
+def _study_pack_service_error(
+    error: StudyPackError,
+    *,
+    not_found_code: str = "study_pack_not_found",
+) -> ServiceError:
+    code = error.code
+    if code in {"invalid_source_body", "invalid_command_id", "invalid_answer"}:
+        return ServiceError(400, code, _study_pack_error_message(code))
+    if code == "invalid_entity_id":
+        return ServiceError(404, not_found_code, _study_pack_error_message(not_found_code))
+    if code in {"source_too_large", "answer_too_large"}:
+        return ServiceError(413, code, _study_pack_error_message(code))
+    if code in {
+        "pdf_parse_failed",
+        "pdf_encrypted_unsupported",
+        "pdf_text_unavailable_ocr_required",
+    }:
+        return ServiceError(422, code, _study_pack_error_message(code))
+    if code in {
+        "artifact_unsupported",
+        "artifact_quarantined",
+        "artifact_not_published",
+        "citation_unresolved",
+        "stale_version",
+        "command_conflict",
+        "invalid_transition",
+    }:
+        status = 404 if code == "artifact_unsupported" else 409
+        return ServiceError(status, code, _study_pack_error_message(code))
+    return ServiceError(
+        409,
+        "study_pack_rejected",
+        "the Study Pack operation was rejected",
+    )
+
+
+def _study_pack_error_message(code: str) -> str:
+    messages = {
+        "invalid_source_body": "Study Pack input is invalid",
+        "invalid_command_id": "command_id must use the opaque Study Pack command profile",
+        "invalid_answer": "learner_answer must be non-empty text",
+        "study_pack_not_found": "the requested Study Pack does not exist",
+        "source_too_large": "Study Pack input exceeds a fixed local resource limit",
+        "answer_too_large": "learner_answer exceeds the fixed local resource limit",
+        "pdf_parse_failed": "the local PDF text parser could not read this file",
+        "pdf_encrypted_unsupported": "encrypted PDFs are not supported",
+        "pdf_text_unavailable_ocr_required": "this PDF has no usable text layer and OCR is unavailable",
+        "artifact_unsupported": "the requested Study Pack practice item does not exist",
+        "artifact_quarantined": "the requested Study Pack artifact is quarantined",
+        "artifact_not_published": "the requested Study Pack artifact is not published",
+        "citation_unresolved": "the cited frozen source span could not be verified",
+        "stale_version": "the expected Study Pack or artifact version is stale",
+        "command_conflict": "command_id was already used for a different Study Pack mutation",
+        "invalid_transition": "the requested Study Pack lifecycle transition is not allowed",
+    }
+    return messages.get(code, "the Study Pack operation was rejected")
+
+
+def _validate_study_pack_entity(value: Any, prefix: str, code: str) -> None:
+    try:
+        validate_entity_id(value, prefix)
+    except StudyPackError:
+        raise ServiceError(
+            400,
+            code,
+            "the Study Pack route identifier is invalid",
+        ) from None
+
+
+def _validate_study_pack_command(value: Any) -> None:
+    try:
+        validate_command_id(value)
+    except StudyPackError:
+        raise ServiceError(
+            400,
+            "invalid_command_id",
+            _study_pack_error_message("invalid_command_id"),
+        ) from None
+
+
+def _public_study_pack_projection(value: dict[str, Any]) -> dict[str, Any]:
+    # Copy through JSON so a caller cannot retain or mutate the store projection.
+    result = json.loads(json.dumps(value, ensure_ascii=False))
+    result["schema_version"] = "lumi.study-pack-detail.v1"
+    pack_id = result.get("pack_id")
+    if not isinstance(pack_id, str):
+        raise ServiceError(
+            500,
+            "unsafe_study_pack_projection",
+            "Study Pack projection is missing its opaque identifier",
+        )
+    artifacts = result.get("artifacts")
+    if not isinstance(artifacts, list):
+        raise ServiceError(
+            500,
+            "unsafe_study_pack_projection",
+            "Study Pack projection has an invalid artifact collection",
+        )
+    for artifact in artifacts:
+        if not isinstance(artifact, dict):
+            raise ServiceError(
+                500,
+                "unsafe_study_pack_projection",
+                "Study Pack projection contains an invalid artifact",
+            )
+        artifact.pop("answer", None)
+        artifact.pop("explanation", None)
+        artifact.pop("citations", None)
+        if artifact.get("artifact_type") == "study_pack.practice_item":
+            content = artifact.get("content")
+            if not isinstance(content, dict):
+                raise ServiceError(
+                    500,
+                    "unsafe_study_pack_projection",
+                    "Study Pack practice projection is unavailable",
+                )
+            allowed_content = {
+                "schema_version",
+                "item_kind",
+                "prompt",
+                "scorer",
+            }
+            if set(content) != allowed_content:
+                raise ServiceError(
+                    500,
+                    "unsafe_study_pack_projection",
+                    "Study Pack practice projection contains a private field",
+                )
+            artifact["content"] = {key: content[key] for key in sorted(allowed_content)}
+            artifact_id = artifact.get("artifact_id")
+            artifact["links"] = {
+                "launch": f"/v1/study-pack-items/{artifact_id}/launch",
+            }
+    result["links"] = {
+        "self": f"/v1/study-packs/{pack_id}",
+        "commands": f"/v1/study-packs/{pack_id}/commands",
+        "replay": f"/v1/study-packs/{pack_id}/replay",
+    }
+    return result
+
+
+def _contains_private_study_pack_key(value: Any) -> bool:
+    forbidden = {
+        "answer",
+        "explanation",
+        "citations",
+        "cited_source_context",
+        "content_json",
+        "learner_answer_text",
+        "normalized_text",
+        "original_blob",
+        "segments_json",
+    }
+    if isinstance(value, dict):
+        return bool(forbidden.intersection(value)) or any(
+            _contains_private_study_pack_key(item) for item in value.values()
+        )
+    if isinstance(value, (list, tuple)):
+        return any(_contains_private_study_pack_key(item) for item in value)
+    return False
+
+
+def _contains_private_attempt_key(value: Any) -> bool:
+    if isinstance(value, dict):
+        if "learner_answer_text" in value or "raw_learner_answer" in value:
+            return True
+        return any(_contains_private_attempt_key(item) for item in value.values())
+    if isinstance(value, (list, tuple)):
+        return any(_contains_private_attempt_key(item) for item in value)
+    return False
 
 
 def _trace_evidence_ref(

@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lumi.local/contracts/source-document.schema.json",
+  "title": "Lumi immutable Study Pack source document",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "document_id",
+    "pack_id",
+    "source_version",
+    "input_kind",
+    "media_type",
+    "original_sha256",
+    "normalized_sha256",
+    "byte_count",
+    "locator_count",
+    "codepoint_count",
+    "parser_name",
+    "parser_version",
+    "normalization_name",
+    "normalization_version",
+    "extraction_state",
+    "warning_codes"
+  ],
+  "properties": {
+    "schema_version": {"const": "lumi.source-document.v1"},
+    "document_id": {"type": "string", "pattern": "^d_[A-P]{40}$"},
+    "pack_id": {"type": "string", "pattern": "^p_[A-P]{40}$"},
+    "source_version": {"type": "integer", "minimum": 1},
+    "input_kind": {"enum": ["pasted_text", "text_pdf"]},
+    "media_type": {
+      "enum": ["text/plain;charset=utf-8", "application/pdf"]
+    },
+    "original_sha256": {"$ref": "#/$defs/sha256"},
+    "normalized_sha256": {"$ref": "#/$defs/sha256"},
+    "byte_count": {"type": "integer", "minimum": 1, "maximum": 8388608},
+    "locator_count": {"type": "integer", "minimum": 1, "maximum": 120},
+    "codepoint_count": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 250000
+    },
+    "parser_name": {"type": "string", "minLength": 1, "maxLength": 80},
+    "parser_version": {"type": "string", "minLength": 1, "maxLength": 40},
+    "normalization_name": {"const": "unicode-nfc-canonical-newline"},
+    "normalization_version": {"const": "1.0.0"},
+    "extraction_state": {"enum": ["accepted", "accepted_with_warnings"]},
+    "warning_codes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "empty_text_page",
+          "partial_text_extraction",
+          "pdf_metadata_ignored"
+        ]
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"input_kind": {"const": "pasted_text"}},
+        "required": ["input_kind"]
+      },
+      "then": {
+        "properties": {
+          "media_type": {"const": "text/plain;charset=utf-8"},
+          "parser_name": {"const": "lumi-pasted-section-parser"},
+          "parser_version": {"const": "1.0.0"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"input_kind": {"const": "text_pdf"}},
+        "required": ["input_kind"]
+      },
+      "then": {
+        "properties": {"media_type": {"const": "application/pdf"}}
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

@@ -13,7 +13,7 @@ class Handler(BaseHTTPRequestHandler):
             self._json(200, {
                 "status": "ok",
                 "service": "hermes-local-sidecar",
-                "version": "0.2.0",
+                "version": "0.3.0",
                 "local_only": True,
             })
             return

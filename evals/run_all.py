@@ -10,6 +10,7 @@ use automatically removed operating-system temporary directories.
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
 import json
 import math
@@ -23,7 +24,9 @@ import tempfile
 import threading
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
+import unicodedata
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict, dataclass, field
 from datetime import date, datetime, timedelta, timezone
@@ -138,9 +141,9 @@ def validate_json(
     """Validate the dependency-free JSON Schema subset used by this harness.
 
     The release contracts intentionally use only local references, ``allOf``,
-    primitive types, closed objects, bounded numbers/arrays, and string
-    constraints. Unsupported remote references fail closed instead of silently
-    accepting an instance.
+    ``oneOf``, simple conditionals, primitive types, closed objects, bounded
+    numbers/arrays, and string constraints. Unsupported remote references fail
+    closed instead of silently accepting an instance.
     """
 
     root_schema = _root_schema or schema
@@ -169,6 +172,53 @@ def validate_json(
             errors.extend(
                 validate_json(instance, child_schema, path, _root_schema=root_schema)
             )
+    one_of = schema.get("oneOf")
+    if one_of is not None:
+        if not isinstance(one_of, list) or not one_of:
+            errors.append(f"{path}: oneOf must be a non-empty array")
+        else:
+            matches = 0
+            for index, child_schema in enumerate(one_of):
+                if not isinstance(child_schema, Mapping):
+                    errors.append(f"{path}: oneOf[{index}] must be an object")
+                    continue
+                if not validate_json(
+                    instance,
+                    child_schema,
+                    path,
+                    _root_schema=root_schema,
+                ):
+                    matches += 1
+            if matches != 1:
+                errors.append(f"{path}: expected exactly one oneOf match, got {matches}")
+    conditional = schema.get("if")
+    if conditional is not None:
+        if not isinstance(conditional, Mapping):
+            errors.append(f"{path}: if must be an object")
+        else:
+            branch_name = (
+                "then"
+                if not validate_json(
+                    instance,
+                    conditional,
+                    path,
+                    _root_schema=root_schema,
+                )
+                else "else"
+            )
+            branch = schema.get(branch_name)
+            if branch is not None:
+                if not isinstance(branch, Mapping):
+                    errors.append(f"{path}: {branch_name} must be an object")
+                else:
+                    errors.extend(
+                        validate_json(
+                            instance,
+                            branch,
+                            path,
+                            _root_schema=root_schema,
+                        )
+                    )
     expected = schema.get("type")
     expected_types = [expected] if isinstance(expected, str) else expected
     if expected_types and not any(_json_type_matches(instance, item) for item in expected_types):
@@ -185,6 +235,8 @@ def validate_json(
     if isinstance(instance, str):
         if len(instance) < schema.get("minLength", 0):
             errors.append(f"{path}: string shorter than minLength")
+        if "maxLength" in schema and len(instance) > schema["maxLength"]:
+            errors.append(f"{path}: string longer than maxLength")
         if "pattern" in schema and re.search(schema["pattern"], instance) is None:
             errors.append(f"{path}: string does not match pattern")
     if isinstance(instance, list):
@@ -192,6 +244,10 @@ def validate_json(
             errors.append(f"{path}: array shorter than minItems")
         if "maxItems" in schema and len(instance) > schema["maxItems"]:
             errors.append(f"{path}: array longer than maxItems")
+        if schema.get("uniqueItems") is True:
+            encoded_items = [canonical_json(item) for item in instance]
+            if len(encoded_items) != len(set(encoded_items)):
+                errors.append(f"{path}: array items are not unique")
         item_schema = schema.get("items")
         if isinstance(item_schema, Mapping):
             for index, item in enumerate(instance):
@@ -249,6 +305,7 @@ class Context:
     integration_probe: dict[str, Any] | None = None
     attempt_api_probe: dict[str, Any] | None = None
     schedule_api_probe: dict[str, Any] | None = None
+    study_pack_probe: dict[str, Any] | None = None
     service_tests_probe: dict[str, Any] | None = None
 
     def load_fixture(self) -> dict[str, Any]:
@@ -378,6 +435,11 @@ class Context:
             self.schedule_api_probe = _probe_schedule_api()
         return self.schedule_api_probe
 
+    def probe_study_pack(self) -> dict[str, Any]:
+        if self.study_pack_probe is None:
+            self.study_pack_probe = _probe_study_pack()
+        return self.study_pack_probe
+
     def probe_service_tests(self) -> dict[str, Any]:
         if self.service_tests_probe is None:
             self.service_tests_probe = _probe_service_tests()
@@ -396,6 +458,16 @@ def gate_contracts(ctx: Context) -> GateResult:
         "misconception-dossier.schema.json",
         "today-plan.schema.json",
         "review-schedule.schema.json",
+        "source-document.schema.json",
+        "source-span.schema.json",
+        "study-artifact-content.schema.json",
+        "study-artifact.schema.json",
+        "study-candidate-skill-link.schema.json",
+        "study-pack-attempt-result.schema.json",
+        "study-pack-attempt.schema.json",
+        "study-pack-detail.schema.json",
+        "study-pack.schema.json",
+        "study-verifier-decision.schema.json",
     }
     missing = required - {path.name for path in schemas}
     if missing:
@@ -405,8 +477,13 @@ def gate_contracts(ctx: Context) -> GateResult:
             schema = load_json(path)
             if schema.get("$schema") != "https://json-schema.org/draft/2020-12/schema":
                 errors.append(f"{path.name}: unsupported or missing $schema")
-            if schema.get("type") != "object" or not schema.get("$id"):
-                errors.append(f"{path.name}: root object type and $id are required")
+            if not schema.get("$id") or not (
+                schema.get("type") == "object"
+                or isinstance(schema.get("oneOf"), list)
+            ):
+                errors.append(
+                    f"{path.name}: a root object or oneOf union and $id are required"
+                )
             evidence.append({"schema": path.name, "sha256": sha256_json(schema)})
         except (OSError, json.JSONDecodeError) as exc:
             errors.append(f"{path.name}: {exc}")
@@ -506,6 +583,40 @@ def gate_engine_tests(ctx: Context) -> GateResult:
     return GateResult("engine_tests", "pass", "deterministic engine tests passed", evidence)
 
 
+def _unittest_output_evidence(output: str, exit_code: int) -> dict[str, Any]:
+    ran = re.findall(r"Ran (\d+) tests?", output)
+    summary = re.search(r"FAILED \(([^)]*)\)", output)
+    counters = {"failures": 0, "errors": 0, "skipped": 0}
+    if summary:
+        for key, value in re.findall(r"(failures|errors|skipped)=(\d+)", summary.group(1)):
+            counters[key] = int(value)
+    elif exit_code == 0:
+        skipped = re.findall(r"skipped=(\d+)", output)
+        counters["skipped"] = int(skipped[-1]) if skipped else 0
+    failure_codes = sorted(
+        {
+            f"{status.lower()}:{name}"
+            for name, status in re.findall(
+                r"^(test_[A-Za-z0-9_]+).* \.\.\. (FAIL|ERROR)$",
+                output,
+                flags=re.MULTILINE,
+            )
+        }
+    )
+    if exit_code != 0 and not failure_codes:
+        failure_codes = ["unittest_process_failed"]
+    return {
+        "exit_code": exit_code,
+        "test_count": int(ran[-1]) if ran else 0,
+        "failure_count": counters["failures"],
+        "error_count": counters["errors"],
+        "skipped_count": counters["skipped"],
+        "stable_failure_codes": failure_codes,
+        "output_sha256": hashlib.sha256(output.encode("utf-8")).hexdigest(),
+        "raw_output_saved": False,
+    }
+
+
 def _run_unittest_surface(root: Path) -> dict[str, Any]:
     command = [sys.executable, "-m", "unittest", "discover", "-s", str(root / "tests"), "-v"]
     # Integration tests exercise the real cross-package boundary and therefore
@@ -521,16 +632,16 @@ def _run_unittest_surface(root: Path) -> dict[str, Any]:
         text=True,
         timeout=90,
     )
-    return {
-        "command": command,
-        "exit_code": result.returncode,
-        "output": (result.stdout + "\n" + result.stderr).strip()[-6000:],
-    }
+    output = (result.stdout + "\n" + result.stderr).strip()
+    return _unittest_output_evidence(output, result.returncode)
 
 
 def _integration_environment() -> dict[str, str]:
     environment = dict(os.environ)
-    roots = [REPO_ROOT / name for name in ("integration", "runtime", "domains", "engine")]
+    roots = [
+        REPO_ROOT / name
+        for name in ("integration", "runtime", "domains", "engine", "study_pack")
+    ]
     environment["PYTHONPATH"] = os.pathsep.join(str(path) for path in roots) + os.pathsep + environment.get("PYTHONPATH", "")
     return environment
 
@@ -541,7 +652,6 @@ def _probe_learning_loop_cli() -> dict[str, Any]:
     integration = REPO_ROOT / "integration"
     if not integration.is_dir():
         return {"status": "pending", "errors": ["integration package is absent"], "runs": {}}
-    REPORT_DIR.mkdir(parents=True, exist_ok=True)
     environment = _integration_environment()
     runs: dict[str, Any] = {}
     errors: list[str] = []
@@ -564,7 +674,7 @@ def _probe_learning_loop_cli() -> dict[str, Any]:
     }
     phases = ["observe", "diagnose", "probe", "teach", "verify", "update", "reflect"]
     try:
-        with tempfile.TemporaryDirectory(prefix="integration-probe-", dir=REPORT_DIR) as temporary:
+        with tempfile.TemporaryDirectory(prefix="integration-probe-") as temporary:
             for scenario, assertions in expected.items():
                 database = Path(temporary) / f"{scenario}.sqlite3"
                 run_id = f"eval-integration-{scenario}"
@@ -683,7 +793,17 @@ def _probe_learning_loop_cli() -> dict[str, Any]:
 
 def _service_environment() -> dict[str, str]:
     environment = dict(os.environ)
-    roots = [REPO_ROOT / name for name in ("service", "integration", "runtime", "domains", "engine")]
+    roots = [
+        REPO_ROOT / name
+        for name in (
+            "service",
+            "integration",
+            "runtime",
+            "domains",
+            "engine",
+            "study_pack",
+        )
+    ]
     environment["PYTHONPATH"] = os.pathsep.join(str(path) for path in roots) + os.pathsep + environment.get("PYTHONPATH", "")
     return environment
 
@@ -720,17 +840,23 @@ def _probe_service_tests() -> dict[str, Any]:
     except (OSError, subprocess.TimeoutExpired) as exc:
         return {
             "status": "fail",
-            "command": command,
             "exit_code": -1,
-            "output": "",
-            "errors": [f"complete service tests could not finish: {exc!r}"],
+            "test_count": 0,
+            "failure_count": 0,
+            "error_count": 1,
+            "skipped_count": 0,
+            "stable_failure_codes": [
+                f"service_test_runner_{type(exc).__name__.lower()}"
+            ],
+            "output_sha256": None,
+            "raw_output_saved": False,
+            "errors": ["complete_service_tests_unavailable"],
         }
-    output = (result.stdout + "\n" + result.stderr).strip()[-12000:]
+    output = (result.stdout + "\n" + result.stderr).strip()
+    evidence = _unittest_output_evidence(output, result.returncode)
     return {
         "status": "pass" if result.returncode == 0 else "fail",
-        "command": command,
-        "exit_code": result.returncode,
-        "output": output,
+        **evidence,
         "errors": [] if result.returncode == 0 else ["complete service tests failed"],
     }
 
@@ -760,6 +886,2308 @@ def _http_json(base_url: str, method: str, path: str, body: Mapping[str, Any] | 
         response.close()
 
 
+class _StudyPackProbeFailure(RuntimeError):
+    """A stable, non-sensitive Study Pack evaluation failure."""
+
+
+@dataclass
+class _StudyPackChecks:
+    errors: list[str] = field(default_factory=list)
+    count: int = 0
+    schema_instance_count: int = 0
+
+    def that(self, condition: bool, code: str) -> None:
+        self.count += 1
+        if not condition:
+            self.errors.append(code)
+
+    def equal(self, actual: Any, expected: Any, code: str) -> None:
+        self.that(actual == expected, code)
+
+    def schema(self, instance: Any, contract_name: str, code: str) -> None:
+        failures = validate_json(instance, load_json(CONTRACT_DIR / contract_name))
+        self.schema_instance_count += 1
+        self.that(not failures, f"{code}:contract_error_count={len(failures)}")
+
+
+def _study_pack_http_request(
+    base_url: str,
+    method: str,
+    path: str,
+    body: Any | None = None,
+    *,
+    raw: bytes | None = None,
+    timeout: float = 20,
+) -> dict[str, Any]:
+    encoded = raw
+    if body is not None:
+        encoded = json.dumps(body, ensure_ascii=False, separators=(",", ":")).encode(
+            "utf-8"
+        )
+    headers = {
+        "X-Request-ID": "lumi-study-pack-eval",
+        "Origin": "http://127.0.0.1:1420",
+    }
+    if encoded is not None:
+        headers["Content-Type"] = "application/json"
+    request = urllib.request.Request(
+        base_url + path,
+        data=encoded,
+        headers=headers,
+        method=method,
+    )
+    try:
+        response = urllib.request.urlopen(request, timeout=timeout)
+    except urllib.error.HTTPError as error:
+        response = error
+    try:
+        payload_bytes = response.read()
+        try:
+            payload = json.loads(payload_bytes) if payload_bytes else {}
+        except json.JSONDecodeError:
+            payload = {}
+        return {
+            "status": response.status,
+            "payload": payload,
+            "headers": {
+                "cache_control": response.headers.get("Cache-Control"),
+                "server": response.headers.get("Server"),
+            },
+        }
+    finally:
+        response.close()
+
+
+def _study_pack_error_code(response: Mapping[str, Any]) -> str | None:
+    payload = response.get("payload")
+    if not isinstance(payload, Mapping):
+        return None
+    error = payload.get("error")
+    return str(error.get("code")) if isinstance(error, Mapping) else None
+
+
+def _study_pack_expect_error(
+    checks: _StudyPackChecks,
+    response: Mapping[str, Any],
+    *,
+    status: int,
+    code: str,
+    label: str,
+) -> None:
+    checks.equal(response.get("status"), status, f"{label}:http_status")
+    checks.equal(_study_pack_error_code(response), code, f"{label}:error_code")
+    payload = response.get("payload")
+    envelope = payload.get("error") if isinstance(payload, Mapping) else None
+    checks.that(
+        isinstance(payload, Mapping)
+        and set(payload) == {"error"}
+        and isinstance(envelope, Mapping)
+        and set(envelope) == {"code", "message", "request_id"},
+        f"{label}:closed_error_envelope",
+    )
+
+
+def _study_pack_eval_server_main(database: str, pdf_mode: str) -> int:
+    """Run the production router for the black-box probe in an isolated Python."""
+
+    for package in (
+        "service",
+        "integration",
+        "runtime",
+        "domains",
+        "engine",
+        "study_pack",
+    ):
+        package_path = str(REPO_ROOT / package)
+        if package_path not in sys.path:
+            sys.path.insert(0, package_path)
+    from hermes_service.api import create_server
+    from hermes_service.application import SidecarApplication
+    from lumi_study_pack.store import EVALUATION_ATTEMPT_EVIDENCE_ORIGIN
+
+    backend: Any | None = None
+    if pdf_mode == "timeout":
+        from lumi_study_pack.models import StudyPackError
+
+        class TimeoutBackend:
+            def extract(self, _pdf_bytes: bytes, _deadline_seconds: float) -> Any:
+                try:
+                    subprocess.run(
+                        [sys.executable, "-c", "import time; time.sleep(60)"],
+                        capture_output=True,
+                        timeout=0.05,
+                        check=False,
+                    )
+                except subprocess.TimeoutExpired:
+                    raise StudyPackError(
+                        "pdf_parse_failed", "PDF parser deadline exceeded"
+                    ) from None
+                raise StudyPackError("pdf_parse_failed", "PDF parser did not time out")
+
+        backend = TimeoutBackend()
+    elif pdf_mode != "default":
+        return 2
+    application = SidecarApplication(
+        Path(database),
+        study_pack_pdf_backend=backend,
+        study_pack_attempt_evidence_origin=EVALUATION_ATTEMPT_EVIDENCE_ORIGIN,
+    )
+    server = create_server(application, port=0)
+    print(
+        json.dumps(
+            {"ready": True, "port": int(server.server_address[1])},
+            separators=(",", ":"),
+        ),
+        flush=True,
+    )
+    try:
+        server.serve_forever(poll_interval=0.1)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()
+    return 0
+
+
+class _StudyPackHTTPHarness:
+    def __init__(
+        self,
+        root: Path,
+        interpreter: Path,
+        *,
+        database_name: str = "study-pack.sqlite3",
+        pdf_mode: str = "default",
+    ) -> None:
+        self.interpreter = interpreter
+        self.database = root / database_name
+        self.pdf_mode = pdf_mode
+        self.process: subprocess.Popen[str] | None = None
+        self.base_url = ""
+        self.start()
+
+    def start(self) -> None:
+        if self.process is not None:
+            raise _StudyPackProbeFailure("server_already_started")
+        command = [
+            str(self.interpreter),
+            str(Path(__file__).resolve()),
+            "--_study-pack-eval-server",
+            "--_study-pack-eval-db",
+            str(self.database),
+            "--_study-pack-eval-pdf-mode",
+            self.pdf_mode,
+        ]
+        self.process = subprocess.Popen(
+            command,
+            cwd=REPO_ROOT,
+            env=_service_environment(),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        assert self.process.stdout is not None
+        deadline = time.monotonic() + 15
+        ready: dict[str, Any] | None = None
+        while time.monotonic() < deadline:
+            if self.process.poll() is not None:
+                break
+            readable, _, _ = select.select([self.process.stdout], [], [], 0.2)
+            if not readable:
+                continue
+            line = self.process.stdout.readline()
+            try:
+                candidate = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(candidate, dict) and candidate.get("ready") is True:
+                ready = candidate
+                break
+        if ready is None or not isinstance(ready.get("port"), int):
+            self.stop()
+            raise _StudyPackProbeFailure("server_start_failed")
+        self.base_url = f"http://127.0.0.1:{ready['port']}"
+        health = self.request("GET", "/v1/health")
+        if health.get("status") != 200:
+            self.stop()
+            raise _StudyPackProbeFailure("server_health_failed")
+
+    def stop(self) -> None:
+        process = self.process
+        self.process = None
+        if process is None:
+            return
+        if process.poll() is None:
+            process.terminate()
+            try:
+                process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait(timeout=5)
+        if process.stdout is not None:
+            process.stdout.close()
+        if process.stderr is not None:
+            process.stderr.close()
+
+    def restart(self) -> None:
+        self.stop()
+        self.start()
+
+    def request(
+        self,
+        method: str,
+        path: str,
+        body: Any | None = None,
+        *,
+        raw: bytes | None = None,
+        timeout: float = 20,
+    ) -> dict[str, Any]:
+        return _study_pack_http_request(
+            self.base_url,
+            method,
+            path,
+            body,
+            raw=raw,
+            timeout=timeout,
+        )
+
+
+def _study_pack_pypdf_version(interpreter: Path) -> str | None:
+    try:
+        result = subprocess.run(
+            [
+                str(interpreter),
+                "-c",
+                (
+                    "import json,importlib.metadata as m; "
+                    "print(json.dumps({n:m.version(n) for n in "
+                    "('pypdf','jsonschema','reportlab','pdfplumber')},sort_keys=True))"
+                ),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    try:
+        versions = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        return None
+    expected = {
+        "pypdf": "6.10.0",
+        "jsonschema": "4.25.0",
+        "reportlab": "4.4.2",
+        "pdfplumber": "0.11.7",
+    }
+    return "6.10.0" if result.returncode == 0 and versions == expected else None
+
+
+def _study_pack_isolated_interpreter(root: Path) -> tuple[Path, dict[str, Any]]:
+    del root
+    candidates: list[tuple[str, Path]] = []
+    configured = os.environ.get("LUMI_STUDY_PACK_PYTHON")
+    if configured:
+        candidates.append(("configured", Path(configured).expanduser()))
+    candidates.extend(
+        [
+            ("desktop_sidecar_venv", REPO_ROOT / "desktop" / ".sidecar-venv" / "bin" / "python"),
+            ("runner_interpreter", Path(sys.executable)),
+        ]
+    )
+    for mode, candidate in candidates:
+        if candidate.is_file() and _study_pack_pypdf_version(candidate) == "6.10.0":
+            return candidate, {
+                "isolated": True,
+                "selection": mode,
+                "pypdf_version": "6.10.0",
+                "pin_verified": True,
+                "eval_dependency_network_calls": 0,
+            }
+    raise _StudyPackProbeFailure("study_pack_eval_dependencies_unavailable")
+
+
+_STUDY_PACK_TABLES = (
+    "candidate_skill_links",
+    "source_documents",
+    "source_spans",
+    "study_pack_artifacts",
+    "study_pack_attempts",
+    "study_pack_command_receipts",
+    "study_pack_events",
+    "study_packs",
+    "verifier_decisions",
+)
+
+
+def _study_pack_authoritative_counts(database: Path) -> dict[str, int]:
+    result = {name: 0 for name in _STUDY_PACK_TABLES}
+    if not database.is_file():
+        return result
+    connection = sqlite3.connect(database)
+    try:
+        present = {
+            str(row[0])
+            for row in connection.execute(
+                "SELECT name FROM sqlite_master WHERE type = 'table'"
+            )
+        }
+        for table in result:
+            if table in present:
+                result[table] = int(
+                    connection.execute(f'SELECT COUNT(*) FROM "{table}"').fetchone()[0]
+                )
+    finally:
+        connection.close()
+    return result
+
+
+def _study_pack_count_delta(
+    before: Mapping[str, int], after: Mapping[str, int]
+) -> int:
+    return sum(abs(int(after.get(key, 0)) - int(before.get(key, 0))) for key in before)
+
+
+def _study_pack_attempt_origin_counts(database: Path) -> dict[str, int]:
+    result = {
+        "evaluation_fixture": 0,
+        "human_local_interactive": 0,
+        "other": 0,
+    }
+    if not database.is_file():
+        return result
+    connection = sqlite3.connect(database)
+    try:
+        present = connection.execute(
+            "SELECT 1 FROM sqlite_master "
+            "WHERE type = 'table' AND name = 'study_pack_attempts'"
+        ).fetchone()
+        if present is None:
+            return result
+        for origin, count in connection.execute(
+            "SELECT evidence_origin, COUNT(*) FROM study_pack_attempts "
+            "GROUP BY evidence_origin"
+        ):
+            key = str(origin)
+            if key in result:
+                result[key] = int(count)
+            else:
+                result["other"] += int(count)
+    finally:
+        connection.close()
+    return result
+
+
+_LEARNING_TABLES = (
+    "content_snapshots",
+    "review_schedule_tasks",
+    "schedule_command_results",
+    "schedule_events",
+    "schedule_migrations",
+    "today_plan_tasks",
+    "today_plans",
+    "trace_events",
+)
+
+
+def _study_pack_learning_snapshot(
+    harness: _StudyPackHTTPHarness,
+) -> dict[str, Any]:
+    projections: dict[str, dict[str, Any]] = {}
+    endpoints = {
+        "health": ("/v1/health", "run_count"),
+        "skills": ("/v1/skills/report", "skill_count"),
+        "misconceptions": ("/v1/misconceptions", "count"),
+        "review": ("/v1/review-schedule", "count"),
+    }
+    for label, (path, count_field) in endpoints.items():
+        response = harness.request("GET", path)
+        payload = response.get("payload")
+        if response.get("status") != 200 or not isinstance(payload, Mapping):
+            raise _StudyPackProbeFailure(f"learning_projection_{label}_unavailable")
+        projections[label] = {
+            "count": int(payload.get(count_field, -1)),
+            "sha256": sha256_json(payload),
+        }
+    connection = sqlite3.connect(harness.database)
+    try:
+        present = {
+            str(row[0])
+            for row in connection.execute(
+                "SELECT name FROM sqlite_master WHERE type = 'table'"
+            )
+        }
+        table_summaries: dict[str, Any] = {}
+        for table in _LEARNING_TABLES:
+            if table not in present:
+                table_summaries[table] = {"present": False, "row_count": 0, "sha256": None}
+                continue
+            columns = tuple(
+                str(row[1])
+                for row in connection.execute(f'PRAGMA table_info("{table}")')
+            )
+            rows = connection.execute(
+                f'SELECT * FROM "{table}" ORDER BY rowid'
+            ).fetchall()
+            digest = hashlib.sha256()
+            digest.update(repr(columns).encode("utf-8"))
+            for row in rows:
+                digest.update(repr(tuple(row)).encode("utf-8"))
+            table_summaries[table] = {
+                "present": True,
+                "row_count": len(rows),
+                "sha256": digest.hexdigest(),
+            }
+    finally:
+        connection.close()
+    return {
+        "tables": table_summaries,
+        "projections": projections,
+        "sha256": sha256_json(
+            {"tables": table_summaries, "projections": projections}
+        ),
+    }
+
+
+def _study_pack_normalized_exact(value: str) -> str:
+    return unicodedata.normalize(
+        "NFC", value.replace("\r\n", "\n").replace("\r", "\n")
+    ).strip()
+
+
+def _study_pack_pointer_value(document: Any, pointer: str) -> Any:
+    if not isinstance(pointer, str) or not pointer.startswith("/"):
+        raise KeyError("invalid_pointer")
+    current = document
+    for raw in pointer[1:].split("/"):
+        part = raw.replace("~1", "/").replace("~0", "~")
+        current = current[int(part)] if isinstance(current, list) else current[part]
+    return current
+
+
+def _study_pack_private_records(
+    database: Path, pack_id: str
+) -> dict[str, Any]:
+    connection = sqlite3.connect(database)
+    connection.row_factory = sqlite3.Row
+    try:
+        document_row = connection.execute(
+            "SELECT * FROM source_documents WHERE pack_id = ?", (pack_id,)
+        ).fetchone()
+        if document_row is None:
+            raise _StudyPackProbeFailure("private_source_document_missing")
+        document = dict(document_row)
+        source_contract = {
+            "schema_version": "lumi.source-document.v1",
+            **{
+                key: document[key]
+                for key in (
+                    "document_id",
+                    "pack_id",
+                    "source_version",
+                    "input_kind",
+                    "media_type",
+                    "original_sha256",
+                    "normalized_sha256",
+                    "byte_count",
+                    "locator_count",
+                    "codepoint_count",
+                    "parser_name",
+                    "parser_version",
+                    "normalization_name",
+                    "normalization_version",
+                    "extraction_state",
+                )
+            },
+            "warning_codes": json.loads(document["warning_codes_json"]),
+        }
+        spans = []
+        for row in connection.execute(
+            "SELECT * FROM source_spans WHERE pack_id = ? ORDER BY span_id",
+            (pack_id,),
+        ):
+            value = dict(row)
+            spans.append(
+                {
+                    "schema_version": "lumi.source-span.v1",
+                    **{
+                        key: value[key]
+                        for key in (
+                            "span_id",
+                            "document_id",
+                            "source_version",
+                            "normalized_source_sha256",
+                            "locator_kind",
+                            "locator_index",
+                            "start_offset",
+                            "end_offset",
+                            "slice_sha256",
+                        )
+                    },
+                }
+            )
+        artifacts = []
+        for row in connection.execute(
+            "SELECT * FROM study_pack_artifacts WHERE pack_id = ? ORDER BY artifact_id",
+            (pack_id,),
+        ):
+            value = dict(row)
+            artifacts.append(
+                {
+                    "artifact_id": value["artifact_id"],
+                    "pack_id": value["pack_id"],
+                    "artifact_version": value["artifact_version"],
+                    "artifact_type": value["artifact_type"],
+                    "lifecycle": value["lifecycle"],
+                    "content_digest": value["content_digest"],
+                    "generator_id": value["generator_id"],
+                    "generator_metadata": json.loads(
+                        value["generator_metadata_json"]
+                    ),
+                    "content": json.loads(value["content_json"]),
+                }
+            )
+        links = []
+        for row in connection.execute(
+            "SELECT * FROM candidate_skill_links WHERE pack_id = ? "
+            "ORDER BY artifact_id, label",
+            (pack_id,),
+        ):
+            value = dict(row)
+            links.append(
+                {
+                    key: value[key]
+                    for key in (
+                        "artifact_id",
+                        "label",
+                        "skill_id",
+                        "status",
+                        "taxonomy_version",
+                        "taxonomy_digest",
+                    )
+                }
+            )
+        decisions = []
+        for row in connection.execute(
+            "SELECT * FROM verifier_decisions WHERE pack_id = ? ORDER BY decision_id",
+            (pack_id,),
+        ):
+            value = dict(row)
+            decisions.append(
+                {
+                    "decision_id": value["decision_id"],
+                    "pack_id": value["pack_id"],
+                    "artifact_id": value["artifact_id"],
+                    "artifact_version": value["artifact_version"],
+                    "artifact_digest": value["artifact_digest"],
+                    "verifier_id": value["verifier_id"],
+                    "accepted": bool(value["accepted"]),
+                    "reason_codes": json.loads(value["reason_codes_json"]),
+                }
+            )
+        pack = connection.execute(
+            "SELECT artifact_set_digest FROM study_packs WHERE pack_id = ?", (pack_id,)
+        ).fetchone()
+        if pack is None:
+            raise _StudyPackProbeFailure("private_pack_missing")
+        return {
+            "document": source_contract,
+            "spans": spans,
+            "artifacts": artifacts,
+            "links": links,
+            "decisions": decisions,
+            "artifact_set_digest": str(pack[0]),
+        }
+    finally:
+        connection.close()
+
+
+def _study_pack_opaque_storage_audit(database: Path) -> dict[str, int]:
+    identifier_columns = {
+        "candidate_skill_links": ("pack_id", "artifact_id"),
+        "source_documents": ("document_id", "pack_id"),
+        "source_spans": ("span_id", "pack_id", "document_id"),
+        "study_pack_artifacts": ("artifact_id", "pack_id"),
+        "study_pack_attempts": ("attempt_id", "pack_id", "artifact_id"),
+        "study_pack_command_receipts": ("command_id",),
+        "study_pack_events": ("pack_id",),
+        "study_packs": ("pack_id", "document_id"),
+        "verifier_decisions": ("decision_id", "pack_id", "artifact_id"),
+    }
+    patterns = {
+        "pack_id": re.compile(r"^p_[A-P]{40}$"),
+        "document_id": re.compile(r"^d_[A-P]{40}$"),
+        "span_id": re.compile(r"^s_[A-P]{40}$"),
+        "artifact_id": re.compile(r"^a_[A-P]{40}$"),
+        "attempt_id": re.compile(r"^t_[A-P]{40}$"),
+        "decision_id": re.compile(r"^v_[A-P]{40}$"),
+        "command_id": re.compile(r"^c_[A-P]{40}$"),
+    }
+    checked = 0
+    invalid = 0
+    connection = sqlite3.connect(database)
+    try:
+        present = {
+            str(row[0])
+            for row in connection.execute(
+                "SELECT name FROM sqlite_master WHERE type = 'table'"
+            )
+        }
+        for table, columns in identifier_columns.items():
+            if table not in present:
+                continue
+            for row in connection.execute(
+                f'SELECT {", ".join(columns)} FROM "{table}"'
+            ):
+                for column, value in zip(columns, row):
+                    checked += 1
+                    if not isinstance(value, str) or patterns[column].fullmatch(value) is None:
+                        invalid += 1
+    finally:
+        connection.close()
+    return {"checked": checked, "invalid": invalid}
+
+
+def _study_pack_persistence_privacy_audit(
+    database: Path,
+    pack_id: str,
+    *,
+    raw_source_text: str | None,
+    practice_answers: Iterable[str],
+    rejected_test_inputs: Iterable[str],
+) -> dict[str, Any]:
+    answers = tuple(practice_answers)
+    rejected = tuple(rejected_test_inputs)
+    connection = sqlite3.connect(database)
+    try:
+        event_payloads = [
+            str(row[0])
+            for row in connection.execute(
+                "SELECT payload_json FROM study_pack_events "
+                "WHERE pack_id = ? ORDER BY seq",
+                (pack_id,),
+            )
+        ]
+        parsed_events = [json.loads(item) for item in event_payloads]
+        event_attempt_origins = [
+            str(item.get("attempt", {}).get("evidence_origin"))
+            for item in parsed_events
+            if isinstance(item.get("attempt"), Mapping)
+        ]
+        all_receipt_payloads = [
+            json.loads(str(row[0]))
+            for row in connection.execute(
+                "SELECT response_json FROM study_pack_command_receipts "
+                "ORDER BY command_id"
+            )
+        ]
+        receipt_payloads = [
+            item for item in all_receipt_payloads if item.get("pack_id") == pack_id
+        ]
+        event_text = "\n".join(event_payloads)
+        event_private_values_absent = all(answer not in event_text for answer in answers)
+        if raw_source_text is not None:
+            event_private_values_absent = (
+                event_private_values_absent and raw_source_text not in event_text
+            )
+        pre_answer_receipts = [
+            item
+            for item in receipt_payloads
+            if item.get("schema_version") != "lumi.study-pack-attempt-result.v1"
+        ]
+        pre_answer_practice_closed = True
+        for receipt in pre_answer_receipts:
+            for artifact in receipt.get("artifacts", []):
+                if artifact.get("artifact_type") != "study_pack.practice_item":
+                    continue
+                content = artifact.get("content", {})
+                if {"answer", "explanation", "citations"}.intersection(
+                    set(artifact) | set(content)
+                ):
+                    pre_answer_practice_closed = False
+        dump_text = "\n".join(connection.iterdump())
+        rejected_inputs_absent = all(value not in dump_text for value in rejected)
+    finally:
+        connection.close()
+    return {
+        "event_count": len(event_payloads),
+        "receipt_count": len(receipt_payloads),
+        "pre_answer_receipt_count": len(pre_answer_receipts),
+        "event_private_values_absent": event_private_values_absent,
+        "pre_answer_practice_fields_closed": pre_answer_practice_closed,
+        "rejected_test_inputs_absent": rejected_inputs_absent,
+        "evaluation_fixture_event_count": event_attempt_origins.count(
+            "evaluation_fixture"
+        ),
+        "human_local_interactive_event_count": event_attempt_origins.count(
+            "human_local_interactive"
+        ),
+    }
+
+
+def _study_pack_run_source_case(
+    harness: _StudyPackHTTPHarness,
+    checks: _StudyPackChecks,
+    *,
+    label: str,
+    title: str,
+    source: Mapping[str, Any],
+    source_sha256: str,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    create_command = _eval_public_command_id(f"study-pack:{label}:create")
+    create_body = {
+        "title": title,
+        "source": dict(source),
+        "command_id": create_command,
+    }
+    before_create = _study_pack_authoritative_counts(harness.database)
+    created_response = harness.request("POST", "/v1/study-packs", create_body)
+    checks.equal(created_response["status"], 201, f"{label}:create_status")
+    created = created_response.get("payload")
+    if not isinstance(created, dict) or not isinstance(created.get("pack_id"), str):
+        raise _StudyPackProbeFailure(f"{label}:create_projection_missing")
+    pack_id = created["pack_id"]
+    checks.schema(created, "study-pack-detail.schema.json", f"{label}:draft_detail")
+    checks.equal(created.get("lifecycle"), "draft", f"{label}:draft_lifecycle")
+    checks.equal(created.get("idempotent_replay"), False, f"{label}:first_create_receipt")
+    after_create = _study_pack_authoritative_counts(harness.database)
+    checks.that(
+        after_create["study_packs"] == before_create["study_packs"] + 1,
+        f"{label}:create_authoritative_write",
+    )
+
+    create_replay_response = harness.request("POST", "/v1/study-packs", create_body)
+    create_replay = create_replay_response.get("payload")
+    checks.equal(create_replay_response["status"], 201, f"{label}:create_replay_status")
+    checks.that(
+        isinstance(create_replay, Mapping)
+        and create_replay.get("pack_id") == pack_id
+        and create_replay.get("idempotent_replay") is True,
+        f"{label}:create_receipt_replay",
+    )
+    checks.equal(
+        _study_pack_authoritative_counts(harness.database),
+        after_create,
+        f"{label}:create_replay_no_write",
+    )
+    conflict = harness.request(
+        "POST", "/v1/study-packs", {**create_body, "title": title + "（冲突）"}
+    )
+    _study_pack_expect_error(
+        checks,
+        conflict,
+        status=409,
+        code="command_conflict",
+        label=f"{label}:create_command_conflict",
+    )
+    checks.equal(
+        _study_pack_authoritative_counts(harness.database),
+        after_create,
+        f"{label}:create_conflict_no_write",
+    )
+
+    practice_draft = [
+        item
+        for item in created.get("artifacts", [])
+        if item.get("artifact_type") == "study_pack.practice_item"
+    ]
+    checks.equal(len(practice_draft), 3, f"{label}:draft_practice_count")
+    if not practice_draft:
+        raise _StudyPackProbeFailure(f"{label}:draft_practice_missing")
+    for item in practice_draft:
+        content = item.get("content")
+        checks.that(
+            isinstance(content, Mapping)
+            and set(content) == {"schema_version", "item_kind", "prompt", "scorer"}
+            and not {"answer", "explanation", "citations"}.intersection(item)
+            and not {"answer", "explanation", "citations"}.intersection(content),
+            f"{label}:draft_answer_invisible",
+        )
+    draft_launch = harness.request("GET", practice_draft[0]["links"]["launch"])
+    _study_pack_expect_error(
+        checks,
+        draft_launch,
+        status=409,
+        code="artifact_not_published",
+        label=f"{label}:draft_launch",
+    )
+
+    review_command = _eval_public_command_id(f"study-pack:{label}:review")
+    review_body = {
+        "action": "request_review",
+        "expected_version": created["version"],
+        "command_id": review_command,
+    }
+    reviewed_response = harness.request(
+        "POST", created["links"]["commands"], review_body
+    )
+    reviewed = reviewed_response.get("payload")
+    checks.equal(reviewed_response["status"], 200, f"{label}:review_status")
+    if not isinstance(reviewed, dict):
+        raise _StudyPackProbeFailure(f"{label}:review_projection_missing")
+    checks.schema(reviewed, "study-pack-detail.schema.json", f"{label}:review_detail")
+    checks.that(
+        reviewed.get("lifecycle") == "review"
+        and reviewed.get("review", {}).get("accepted") is True,
+        f"{label}:review_accepted",
+    )
+    reviewed_counts = _study_pack_authoritative_counts(harness.database)
+    review_replay_response = harness.request(
+        "POST", created["links"]["commands"], review_body
+    )
+    review_replay = review_replay_response.get("payload")
+    checks.that(
+        review_replay_response["status"] == 200
+        and isinstance(review_replay, Mapping)
+        and review_replay.get("version") == reviewed.get("version")
+        and review_replay.get("idempotent_replay") is True,
+        f"{label}:review_receipt_replay",
+    )
+    checks.equal(
+        _study_pack_authoritative_counts(harness.database),
+        reviewed_counts,
+        f"{label}:review_replay_no_write",
+    )
+
+    publish_command = _eval_public_command_id(f"study-pack:{label}:publish")
+    publish_body = {
+        "action": "publish",
+        "expected_version": reviewed["version"],
+        "command_id": publish_command,
+    }
+    published_response = harness.request(
+        "POST", created["links"]["commands"], publish_body
+    )
+    published = published_response.get("payload")
+    checks.equal(published_response["status"], 200, f"{label}:publish_status")
+    if not isinstance(published, dict):
+        raise _StudyPackProbeFailure(f"{label}:publish_projection_missing")
+    checks.schema(published, "study-pack-detail.schema.json", f"{label}:published_detail")
+    checks.equal(published.get("lifecycle"), "published", f"{label}:published_lifecycle")
+    published_counts = _study_pack_authoritative_counts(harness.database)
+    publish_replay_response = harness.request(
+        "POST", created["links"]["commands"], publish_body
+    )
+    publish_replay = publish_replay_response.get("payload")
+    checks.that(
+        publish_replay_response["status"] == 200
+        and isinstance(publish_replay, Mapping)
+        and publish_replay.get("version") == published.get("version")
+        and publish_replay.get("idempotent_replay") is True,
+        f"{label}:publish_receipt_replay",
+    )
+    checks.equal(
+        _study_pack_authoritative_counts(harness.database),
+        published_counts,
+        f"{label}:publish_replay_no_write",
+    )
+    stale_publish = harness.request(
+        "POST",
+        created["links"]["commands"],
+        {
+            "action": "publish",
+            "expected_version": reviewed["version"],
+            "command_id": _eval_public_command_id(
+                f"study-pack:{label}:stale-publish"
+            ),
+        },
+    )
+    _study_pack_expect_error(
+        checks,
+        stale_publish,
+        status=409,
+        code="stale_version",
+        label=f"{label}:publish_cas",
+    )
+
+    private = _study_pack_private_records(harness.database, pack_id)
+    checks.schema(
+        private["document"], "source-document.schema.json", f"{label}:source_document"
+    )
+    checks.equal(
+        private["document"]["original_sha256"],
+        source_sha256,
+        f"{label}:original_source_hash",
+    )
+    for span in private["spans"]:
+        checks.schema(span, "source-span.schema.json", f"{label}:source_span")
+    for artifact in private["artifacts"]:
+        envelope = {key: value for key, value in artifact.items() if key != "content"}
+        checks.schema(envelope, "study-artifact.schema.json", f"{label}:artifact")
+        checks.schema(
+            artifact["content"],
+            "study-artifact-content.schema.json",
+            f"{label}:artifact_content",
+        )
+        checks.equal(
+            hashlib.sha256(
+                canonical_json(artifact["content"]).encode("utf-8")
+            ).hexdigest(),
+            artifact["content_digest"],
+            f"{label}:artifact_content_digest",
+        )
+    for link in private["links"]:
+        checks.schema(
+            link, "study-candidate-skill-link.schema.json", f"{label}:candidate_link"
+        )
+        checks.equal(
+            link.get("status"), "unconfirmed_candidate", f"{label}:candidate_unconfirmed"
+        )
+    for decision in private["decisions"]:
+        checks.schema(
+            decision,
+            "study-verifier-decision.schema.json",
+            f"{label}:verifier_decision",
+        )
+        checks.equal(decision.get("accepted"), True, f"{label}:decision_accepted")
+    digest_input = [
+        {
+            "artifact_id": item["artifact_id"],
+            "artifact_type": item["artifact_type"],
+            "artifact_version": item["artifact_version"],
+            "content_digest": item["content_digest"],
+        }
+        for item in sorted(private["artifacts"], key=lambda value: value["artifact_id"])
+    ]
+    checks.equal(
+        hashlib.sha256(canonical_json(digest_input).encode("utf-8")).hexdigest(),
+        private["artifact_set_digest"],
+        f"{label}:artifact_set_digest",
+    )
+
+    span_by_id = {item["span_id"]: item for item in private["spans"]}
+    citation_count = 0
+    verified_citations = 0
+    citation_response_hashes: list[str] = []
+    for artifact in private["artifacts"]:
+        content = artifact["content"]
+        for citation in content.get("citations", []):
+            citation_count += 1
+            span_id = citation.get("span_ref")
+            response = harness.request(
+                "GET", f"/v1/study-packs/{pack_id}/citations/{span_id}"
+            )
+            payload = response.get("payload")
+            span = span_by_id.get(span_id)
+            valid = (
+                response.get("status") == 200
+                and isinstance(payload, Mapping)
+                and isinstance(span, Mapping)
+                and payload.get("verified") is True
+                and payload.get("slice_sha256") == span.get("slice_sha256")
+                and hashlib.sha256(str(payload.get("excerpt", "")).encode("utf-8")).hexdigest()
+                == span.get("slice_sha256")
+                and payload.get("normalized_source_sha256")
+                == private["document"]["normalized_sha256"]
+            )
+            try:
+                field_value = _study_pack_pointer_value(
+                    content, str(citation.get("field_pointer", ""))
+                )
+            except (KeyError, IndexError, TypeError, ValueError):
+                field_value = None
+                valid = False
+            excerpt = payload.get("excerpt") if isinstance(payload, Mapping) else None
+            valid = valid and isinstance(field_value, str) and isinstance(excerpt, str)
+            valid = valid and (
+                excerpt in field_value
+                if artifact["artifact_type"] == "study_pack.review_task"
+                else excerpt == field_value
+            )
+            checks.that(bool(valid), f"{label}:citation_resolution")
+            if valid:
+                verified_citations += 1
+                citation_response_hashes.append(sha256_json(payload))
+
+    private_practice = [
+        item
+        for item in private["artifacts"]
+        if item["artifact_type"] == "study_pack.practice_item"
+    ]
+    public_practice = [
+        item
+        for item in published.get("artifacts", [])
+        if item.get("artifact_type") == "study_pack.practice_item"
+    ]
+    checks.equal(len(private_practice), 3, f"{label}:private_practice_count")
+    checks.equal(len(public_practice), 3, f"{label}:public_practice_count")
+    launch_hashes: list[str] = []
+    private_practice_by_id = {
+        item["artifact_id"]: item for item in private_practice
+    }
+    for item in public_practice:
+        response = harness.request("GET", item["links"]["launch"])
+        launch = response.get("payload")
+        launch_serialized = (
+            canonical_json(launch).lower() if isinstance(launch, Mapping) else ""
+        )
+        checks.equal(response.get("status"), 200, f"{label}:launch_status")
+        checks.that(
+            isinstance(launch, Mapping)
+            and set(launch)
+            == {
+                "schema_version",
+                "pack_id",
+                "pack_version",
+                "artifact_id",
+                "artifact_version",
+                "item_kind",
+                "prompt",
+                "scorer",
+                "activity_kind",
+                "evidence_origin",
+                "links",
+            }
+            and launch.get("evidence_origin") == "evaluation_fixture"
+            and all(
+                private_key not in launch_serialized
+                for private_key in ('"answer"', '"explanation"', '"citations"')
+            )
+            and str(
+                private_practice_by_id.get(item["artifact_id"], {})
+                .get("content", {})
+                .get("answer", "")
+            )
+            not in launch_serialized,
+            f"{label}:launch_closed_answer_invisible",
+        )
+        if isinstance(launch, Mapping):
+            launch_hashes.append(sha256_json(launch))
+
+    study_pack_path = str(REPO_ROOT / "study_pack")
+    if study_pack_path not in sys.path:
+        sys.path.insert(0, study_pack_path)
+    from lumi_study_pack.verification import score_practice
+
+    scorer_vectors = 0
+    for item in private_practice:
+        content = item["content"]
+        answer = content["answer"]
+        scorer = content.get("scorer", {})
+        valid_scorer = (
+            isinstance(scorer, Mapping)
+            and scorer.get("kind") == content.get("item_kind")
+            and scorer.get("kind") in {"cloze_exact_v1", "normalized_exact_v1"}
+            and scorer.get("version") == "1.0.0"
+        )
+        checks.that(valid_scorer, f"{label}:scorer_contract")
+        correct_test_input = f" {answer}\r\n"
+        wrong_test_input = "__LUMI_NON_LEARNER_TEST_INPUT__"
+        expected_correct = (
+            _study_pack_normalized_exact(correct_test_input)
+            == _study_pack_normalized_exact(answer)
+        )
+        expected_wrong = (
+            _study_pack_normalized_exact(wrong_test_input)
+            == _study_pack_normalized_exact(answer)
+        )
+        actual_correct = score_practice(content, correct_test_input)
+        actual_wrong = score_practice(content, wrong_test_input)
+        checks.equal(
+            actual_correct,
+            (expected_correct, 1.0 if expected_correct else 0.0),
+            f"{label}:correct_scorer_recompute",
+        )
+        checks.equal(
+            actual_wrong,
+            (expected_wrong, 1.0 if expected_wrong else 0.0),
+            f"{label}:incorrect_scorer_recompute",
+        )
+        scorer_vectors += 2
+
+    attempted_item = private_practice[0]
+    answer = attempted_item["content"]["answer"]
+    answer_sha256 = hashlib.sha256(answer.encode("utf-8")).hexdigest()
+    public_attempt_item = next(
+        item
+        for item in public_practice
+        if item["artifact_id"] == attempted_item["artifact_id"]
+    )
+    launch_response = harness.request("GET", public_attempt_item["links"]["launch"])
+    launch = launch_response["payload"]
+    attempt_command = _eval_public_command_id(f"study-pack:{label}:test-answer")
+    attempt_body = {
+        "learner_answer": answer,
+        "expected_pack_version": launch["pack_version"],
+        "expected_artifact_version": launch["artifact_version"],
+        "command_id": attempt_command,
+    }
+    attempt_response = harness.request(
+        "POST", launch["links"]["attempts"], attempt_body
+    )
+    attempt_result = attempt_response.get("payload")
+    checks.equal(attempt_response.get("status"), 201, f"{label}:attempt_status")
+    if not isinstance(attempt_result, dict):
+        raise _StudyPackProbeFailure(f"{label}:attempt_result_missing")
+    checks.schema(
+        attempt_result,
+        "study-pack-attempt-result.schema.json",
+        f"{label}:attempt_result",
+    )
+    checks.schema(
+        attempt_result.get("attempt"),
+        "study-pack-attempt.schema.json",
+        f"{label}:canonical_attempt",
+    )
+    checks.that(
+        attempt_result.get("result") == {
+            "correct": True,
+            "score": 1.0,
+            "max_score": 1.0,
+        }
+        and attempt_result.get("attempt", {}).get("answer_digest") == answer_sha256
+        and attempt_result.get("attempt", {}).get("evidence_origin")
+        == "evaluation_fixture"
+        and hashlib.sha256(
+            str(attempt_result.get("answer", "")).encode("utf-8")
+        ).hexdigest()
+        == answer_sha256,
+        f"{label}:attempt_scorer_recomputed",
+    )
+    attempt_counts = _study_pack_authoritative_counts(harness.database)
+    repeated_attempt = harness.request(
+        "POST", launch["links"]["attempts"], attempt_body
+    )
+    repeated_payload = repeated_attempt.get("payload")
+    checks.that(
+        repeated_attempt.get("status") == 201
+        and isinstance(repeated_payload, Mapping)
+        and repeated_payload.get("attempt", {}).get("attempt_id")
+        == attempt_result.get("attempt", {}).get("attempt_id")
+        and repeated_payload.get("idempotent_replay") is True,
+        f"{label}:attempt_receipt_replay",
+    )
+    checks.equal(
+        _study_pack_authoritative_counts(harness.database),
+        attempt_counts,
+        f"{label}:attempt_replay_no_write",
+    )
+    attempt_conflict = harness.request(
+        "POST",
+        launch["links"]["attempts"],
+        {**attempt_body, "learner_answer": "__LUMI_DIFFERENT_TEST_INPUT__"},
+    )
+    _study_pack_expect_error(
+        checks,
+        attempt_conflict,
+        status=409,
+        code="command_conflict",
+        label=f"{label}:attempt_command_conflict",
+    )
+
+    replay_response = harness.request("GET", published["links"]["replay"])
+    replay = replay_response.get("payload")
+    checks.that(
+        replay_response.get("status") == 200
+        and isinstance(replay, Mapping)
+        and replay.get("trace_verified") is True
+        and replay.get("projection_verified") is True,
+        f"{label}:replay_before_restart",
+    )
+    if isinstance(replay, Mapping):
+        replay_serialized = canonical_json(replay)
+        checks.that(
+            answer not in replay_serialized
+            and (
+                not isinstance(source.get("text"), str)
+                or source["text"] not in replay_serialized
+            ),
+            f"{label}:replay_private_text_absent",
+        )
+
+    persistence_privacy = _study_pack_persistence_privacy_audit(
+        harness.database,
+        pack_id,
+        raw_source_text=(
+            str(source["text"])
+            if source.get("kind") == "pasted_text"
+            and isinstance(source.get("text"), str)
+            else None
+        ),
+        practice_answers=(item["content"]["answer"] for item in private_practice),
+        rejected_test_inputs=(
+            "__LUMI_NON_LEARNER_TEST_INPUT__",
+            "__LUMI_DIFFERENT_TEST_INPUT__",
+        ),
+    )
+    checks.that(
+        all(
+            persistence_privacy[key]
+            for key in (
+                "event_private_values_absent",
+                "pre_answer_practice_fields_closed",
+                "rejected_test_inputs_absent",
+            )
+        ),
+        f"{label}:persistence_privacy",
+    )
+    checks.equal(
+        persistence_privacy["evaluation_fixture_event_count"],
+        1,
+        f"{label}:evaluation_fixture_event_origin",
+    )
+    checks.equal(
+        persistence_privacy["human_local_interactive_event_count"],
+        0,
+        f"{label}:human_event_origin_absent",
+    )
+
+    safe = {
+        "input_kind": private["document"]["input_kind"],
+        "source_sha256": source_sha256,
+        "normalized_source_sha256": private["document"]["normalized_sha256"],
+        "source_byte_count": private["document"]["byte_count"],
+        "locator_count": private["document"]["locator_count"],
+        "parser": {
+            "name": private["document"]["parser_name"],
+            "version": private["document"]["parser_version"],
+        },
+        "pack_ref_sha256": hashlib.sha256(pack_id.encode("utf-8")).hexdigest(),
+        "artifact_count": len(private["artifacts"]),
+        "artifact_generator_isolation_metadata_checked_count": len(
+            private["artifacts"]
+        ),
+        "artifact_generator_isolation_metadata_verified_count": sum(
+            item["generator_metadata"].get("model_calls") == 0
+            and item["generator_metadata"].get("network_calls") == 0
+            and item["generator_metadata"].get("ocr_calls") == 0
+            for item in private["artifacts"]
+        ),
+        "practice_item_count": len(private_practice),
+        "candidate_skill_link_count": len(private["links"]),
+        "candidate_links_unconfirmed": all(
+            item["status"] == "unconfirmed_candidate" for item in private["links"]
+        ),
+        "citation_count": citation_count,
+        "citation_verified_count": verified_citations,
+        "citation_projection_set_sha256": sha256_json(sorted(citation_response_hashes)),
+        "scorer_count": len(private_practice),
+        "scorer_vectors_recomputed": scorer_vectors,
+        "answer_sha256": answer_sha256,
+        "raw_answer_saved": False,
+        "ephemeral_evaluation_fixture_attempt_count": 1,
+        "ephemeral_human_attempt_count": 0,
+        "product_attempt_record_saved_to_evidence": False,
+        "receipt_replay_count": 4,
+        "cas_and_conflict_count": 3,
+        "draft_launch_status": 409,
+        "draft_launch_code": "artifact_not_published",
+        "launch_projection_set_sha256": sha256_json(sorted(launch_hashes)),
+        "replay_before_restart_verified": True,
+        "persistence_privacy": persistence_privacy,
+    }
+    runtime = {
+        "pack_id": pack_id,
+        "pack_version": attempt_result["pack_version"],
+        "answer": answer,
+        "artifact_id": attempted_item["artifact_id"],
+        "artifact_version": attempted_item["artifact_version"],
+        "attempt_path": launch["links"]["attempts"],
+    }
+    return safe, runtime
+
+
+def _study_pack_fixture_reproducibility(
+    interpreter: Path,
+) -> tuple[dict[str, Any], list[str]]:
+    script = FIXTURE_DIR / "study_pack" / "validate_contracts.py"
+    if not script.is_file():
+        return {
+            "status": "pending",
+            "output_sha256": None,
+            "reproducible_cases": 0,
+        }, ["fixture_validator_missing"]
+    try:
+        completed = subprocess.run(
+            [str(interpreter), str(script)],
+            cwd=script.parent,
+            env=_service_environment(),
+            capture_output=True,
+            text=True,
+            timeout=180,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return {
+            "status": "fail",
+            "output_sha256": None,
+            "reproducible_cases": 0,
+        }, ["fixture_validator_execution_failed"]
+    output = (completed.stdout + "\n" + completed.stderr).strip()
+    payload: dict[str, Any] = {}
+    if completed.returncode == 0:
+        for line in reversed(completed.stdout.splitlines()):
+            try:
+                candidate = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(candidate, dict):
+                payload = candidate
+                break
+    required_counts = {
+        "reproducible_cases": 2,
+        "reproducible_artifact_set_digests": 2,
+        "reproducible_scorer_vectors": 2,
+    }
+    errors = []
+    if completed.returncode != 0:
+        errors.append("fixture_validator_failed")
+    if payload.get("status") != "pass":
+        errors.append("fixture_validator_status_missing")
+    for key, minimum in required_counts.items():
+        if not isinstance(payload.get(key), int) or int(payload[key]) < minimum:
+            errors.append(f"fixture_validator_{key}_insufficient")
+    safe = {
+        "status": "fail" if errors else "pass",
+        "exit_code": completed.returncode,
+        "output_sha256": hashlib.sha256(output.encode("utf-8")).hexdigest(),
+        "schema_count": int(payload.get("schema_count", 0)),
+        "validated_instances": int(payload.get("validated_instances", 0)),
+        "negative_probes": int(payload.get("negative_probes", 0)),
+        "reproducible_cases": int(payload.get("reproducible_cases", 0)),
+        "reproducible_spans": int(payload.get("reproducible_spans", 0)),
+        "reproducible_artifacts": int(payload.get("reproducible_artifacts", 0)),
+        "reproducible_links": int(payload.get("reproducible_links", 0)),
+        "reproducible_decisions": int(payload.get("reproducible_decisions", 0)),
+        "reproducible_artifact_set_digests": int(
+            payload.get("reproducible_artifact_set_digests", 0)
+        ),
+        "reproducible_scorer_vectors": int(
+            payload.get("reproducible_scorer_vectors", 0)
+        ),
+        "synthetic_product_detail_records": int(
+            payload.get("synthetic_product_detail_records", -1)
+        ),
+        "synthetic_product_attempt_records": int(
+            payload.get("synthetic_product_attempt_records", -1)
+        ),
+        "raw_output_saved": False,
+    }
+    return safe, errors
+
+
+def _study_pack_generate_pdf(
+    interpreter: Path, *, encrypted: bool, page_count: int = 1
+) -> bytes:
+    program = (
+        "import sys\n"
+        "from io import BytesIO\n"
+        "from pypdf import PdfWriter\n"
+        "writer=PdfWriter()\n"
+        f"[writer.add_blank_page(width=612,height=792) for _ in range({page_count})]\n"
+        + ("writer.encrypt('lumi-eval')\n" if encrypted else "")
+        + "buffer=BytesIO()\n"
+        + "writer.write(buffer)\n"
+        + "sys.stdout.buffer.write(buffer.getvalue())\n"
+    )
+    completed = subprocess.run(
+        [str(interpreter), "-c", program],
+        capture_output=True,
+        timeout=30,
+        check=False,
+    )
+    if completed.returncode or not completed.stdout.startswith(b"%PDF-"):
+        raise _StudyPackProbeFailure("negative_pdf_generation_failed")
+    return completed.stdout
+
+
+def _study_pack_generate_empty_text_pdf(interpreter: Path) -> bytes:
+    program = (
+        "import sys\n"
+        "from io import BytesIO\n"
+        "from reportlab.pdfgen.canvas import Canvas\n"
+        "buffer=BytesIO()\n"
+        "canvas=Canvas(buffer,invariant=1)\n"
+        "canvas.showPage()\n"
+        "canvas.save()\n"
+        "sys.stdout.buffer.write(buffer.getvalue())\n"
+    )
+    completed = subprocess.run(
+        [str(interpreter), "-c", program],
+        capture_output=True,
+        timeout=30,
+        check=False,
+    )
+    if completed.returncode or not completed.stdout.startswith(b"%PDF-"):
+        raise _StudyPackProbeFailure("negative_pdf_generation_failed")
+    return completed.stdout
+
+
+def _study_pack_negative_cases(
+    harness: _StudyPackHTTPHarness,
+    interpreter: Path,
+    root: Path,
+    checks: _StudyPackChecks,
+    pasted_text: str,
+    published_runtime: Mapping[str, Any],
+) -> dict[str, Any]:
+    cases: dict[str, Any] = {}
+
+    def error_case(
+        label: str,
+        request: Callable[[], dict[str, Any]],
+        *,
+        expected_status: int,
+        expected_code: str,
+        target: _StudyPackHTTPHarness = harness,
+    ) -> dict[str, Any]:
+        before = _study_pack_authoritative_counts(target.database)
+        response = request()
+        after = _study_pack_authoritative_counts(target.database)
+        _study_pack_expect_error(
+            checks,
+            response,
+            status=expected_status,
+            code=expected_code,
+            label=f"negative:{label}",
+        )
+        delta = _study_pack_count_delta(before, after)
+        checks.equal(delta, 0, f"negative:{label}:authoritative_write_delta")
+        return {
+            "status": int(response.get("status", 0)),
+            "code": _study_pack_error_code(response),
+            "authoritative_write_delta": delta,
+        }
+
+    cases["malformed_json"] = error_case(
+        "malformed_json",
+        lambda: harness.request("POST", "/v1/study-packs", raw=b"{"),
+        expected_status=400,
+        expected_code="invalid_json",
+    )
+    cases["invalid_base64"] = error_case(
+        "invalid_base64",
+        lambda: harness.request(
+            "POST",
+            "/v1/study-packs",
+            {
+                "title": "无效 PDF",
+                "source": {"kind": "text_pdf", "pdf_base64": "%%%"},
+                "command_id": _eval_public_command_id(
+                    "study-pack:negative:invalid-base64"
+                ),
+            },
+        ),
+        expected_status=400,
+        expected_code="invalid_source_body",
+    )
+    cases["empty_pasted_text"] = error_case(
+        "empty_pasted_text",
+        lambda: harness.request(
+            "POST",
+            "/v1/study-packs",
+            {
+                "title": "空材料",
+                "source": {"kind": "pasted_text", "text": ""},
+                "command_id": _eval_public_command_id(
+                    "study-pack:negative:empty-text"
+                ),
+            },
+        ),
+        expected_status=400,
+        expected_code="invalid_source_body",
+    )
+    cases["nested_unknown_source_field"] = error_case(
+        "nested_unknown_source_field",
+        lambda: harness.request(
+            "POST",
+            "/v1/study-packs",
+            {
+                "title": "关闭嵌套字段",
+                "source": {
+                    "kind": "pasted_text",
+                    "text": pasted_text,
+                    "synthetic_test_input": True,
+                },
+                "command_id": _eval_public_command_id(
+                    "study-pack:negative:nested-unknown"
+                ),
+            },
+        ),
+        expected_status=400,
+        expected_code="invalid_source_body",
+    )
+    over_character_text = "a" * 250_001
+    cases["over_character_limit"] = error_case(
+        "over_character_limit",
+        lambda: harness.request(
+            "POST",
+            "/v1/study-packs",
+            {
+                "title": "字符超限",
+                "source": {
+                    "kind": "pasted_text",
+                    "text": over_character_text,
+                },
+                "command_id": _eval_public_command_id(
+                    "study-pack:negative:over-characters"
+                ),
+            },
+        ),
+        expected_status=413,
+        expected_code="source_too_large",
+    )
+    del over_character_text
+    malformed_pdf = b"%PDF-1.7\nmalformed-local-evaluation-input"
+    cases["malformed_pdf"] = error_case(
+        "malformed_pdf",
+        lambda: harness.request(
+            "POST",
+            "/v1/study-packs",
+            {
+                "title": "损坏 PDF",
+                "source": {
+                    "kind": "text_pdf",
+                    "pdf_base64": base64.b64encode(malformed_pdf).decode("ascii"),
+                },
+                "command_id": _eval_public_command_id(
+                    "study-pack:negative:malformed-pdf"
+                ),
+            },
+        ),
+        expected_status=422,
+        expected_code="pdf_parse_failed",
+    )
+    encrypted_pdf = _study_pack_generate_pdf(interpreter, encrypted=True)
+    cases["encrypted_pdf"] = error_case(
+        "encrypted_pdf",
+        lambda: harness.request(
+            "POST",
+            "/v1/study-packs",
+            {
+                "title": "加密 PDF",
+                "source": {
+                    "kind": "text_pdf",
+                    "pdf_base64": base64.b64encode(encrypted_pdf).decode("ascii"),
+                },
+                "command_id": _eval_public_command_id(
+                    "study-pack:negative:encrypted-pdf"
+                ),
+            },
+        ),
+        expected_status=422,
+        expected_code="pdf_encrypted_unsupported",
+    )
+    blank_pdf = _study_pack_generate_empty_text_pdf(interpreter)
+    cases["scanned_or_image_only_pdf"] = error_case(
+        "scanned_or_image_only_pdf",
+        lambda: harness.request(
+            "POST",
+            "/v1/study-packs",
+            {
+                "title": "无文本层 PDF",
+                "source": {
+                    "kind": "text_pdf",
+                    "pdf_base64": base64.b64encode(blank_pdf).decode("ascii"),
+                },
+                "command_id": _eval_public_command_id(
+                    "study-pack:negative:blank-pdf"
+                ),
+            },
+        ),
+        expected_status=422,
+        expected_code="pdf_text_unavailable_ocr_required",
+    )
+    over_page_pdf = _study_pack_generate_pdf(
+        interpreter, encrypted=False, page_count=121
+    )
+    cases["over_page_limit"] = error_case(
+        "over_page_limit",
+        lambda: harness.request(
+            "POST",
+            "/v1/study-packs",
+            {
+                "title": "页数超限",
+                "source": {
+                    "kind": "text_pdf",
+                    "pdf_base64": base64.b64encode(over_page_pdf).decode("ascii"),
+                },
+                "command_id": _eval_public_command_id(
+                    "study-pack:negative:over-pages"
+                ),
+            },
+        ),
+        expected_status=413,
+        expected_code="source_too_large",
+    )
+    oversize_pdf = b"%PDF-1.7\n" + b"0" * (8 * 1024 * 1024)
+    cases["oversize_decoded_pdf"] = error_case(
+        "oversize_decoded_pdf",
+        lambda: harness.request(
+            "POST",
+            "/v1/study-packs",
+            {
+                "title": "超限 PDF",
+                "source": {
+                    "kind": "text_pdf",
+                    "pdf_base64": base64.b64encode(oversize_pdf).decode("ascii"),
+                },
+                "command_id": _eval_public_command_id(
+                    "study-pack:negative:oversize-pdf"
+                ),
+            },
+            timeout=30,
+        ),
+        expected_status=413,
+        expected_code="source_too_large",
+    )
+    del oversize_pdf
+    cases["unknown_test_marker"] = error_case(
+        "unknown_test_marker",
+        lambda: harness.request(
+            "POST",
+            "/v1/study-packs",
+            {
+                "title": "关闭字段",
+                "source": {"kind": "pasted_text", "text": pasted_text},
+                "command_id": _eval_public_command_id(
+                    "study-pack:negative:unknown-test-marker"
+                ),
+                "synthetic_test_input": True,
+            },
+        ),
+        expected_status=400,
+        expected_code="invalid_body",
+    )
+    cases["semantic_command_id"] = error_case(
+        "semantic_command_id",
+        lambda: harness.request(
+            "POST",
+            "/v1/study-packs",
+            {
+                "title": "不透明标识",
+                "source": {"kind": "pasted_text", "text": pasted_text},
+                "command_id": "semantic-study-pack-command",
+            },
+        ),
+        expected_status=400,
+        expected_code="invalid_command_id",
+    )
+    sensitive_identifier = "learner@example.invalid"
+    quoted_sensitive = urllib.parse.quote(sensitive_identifier, safe="")
+    cases["sensitive_pack_id"] = error_case(
+        "sensitive_pack_id",
+        lambda: harness.request("GET", f"/v1/study-packs/{quoted_sensitive}"),
+        expected_status=400,
+        expected_code="invalid_pack_id",
+    )
+    cases["sensitive_artifact_id"] = error_case(
+        "sensitive_artifact_id",
+        lambda: harness.request(
+            "GET", f"/v1/study-pack-items/{quoted_sensitive}/launch"
+        ),
+        expected_status=400,
+        expected_code="invalid_artifact_id",
+    )
+    cases["sensitive_span_id"] = error_case(
+        "sensitive_span_id",
+        lambda: harness.request(
+            "GET",
+            f"/v1/study-packs/{published_runtime['pack_id']}/citations/"
+            f"{quoted_sensitive}",
+        ),
+        expected_status=400,
+        expected_code="invalid_span_id",
+    )
+    sensitive_command = "github_pat_" + "A" * 40
+    cases["sensitive_command_id"] = error_case(
+        "sensitive_command_id",
+        lambda: harness.request(
+            "POST",
+            "/v1/study-packs",
+            {
+                "title": "敏感命令标识",
+                "source": {"kind": "pasted_text", "text": pasted_text},
+                "command_id": sensitive_command,
+            },
+        ),
+        expected_status=400,
+        expected_code="invalid_command_id",
+    )
+    cases["stale_artifact_version"] = error_case(
+        "stale_artifact_version",
+        lambda: harness.request(
+            "POST",
+            str(published_runtime["attempt_path"]),
+            {
+                "learner_answer": published_runtime["answer"],
+                "expected_pack_version": published_runtime["pack_version"],
+                "expected_artifact_version": 99,
+                "command_id": _eval_public_command_id(
+                    "study-pack:negative:stale-artifact"
+                ),
+            },
+        ),
+        expected_status=409,
+        expected_code="stale_version",
+    )
+    for route_label in ("batch", "synthetic"):
+        cases[f"no_public_{route_label}_route"] = error_case(
+            f"no_public_{route_label}_route",
+            lambda route_label=route_label: harness.request(
+                "POST", f"/v1/study-packs/{route_label}"
+            ),
+            expected_status=404,
+            expected_code="route_not_found",
+        )
+
+    before_quarantine = _study_pack_authoritative_counts(harness.database)
+    quarantined_response = harness.request(
+        "POST",
+        "/v1/study-packs",
+        {
+            "title": "材料不足",
+            "source": {
+                "kind": "pasted_text",
+                "text": "只有一条可引用但不足以生成完整学习包的材料。",
+            },
+            "command_id": _eval_public_command_id(
+                "study-pack:negative:quarantine-create"
+            ),
+        },
+    )
+    quarantined = quarantined_response.get("payload")
+    checks.that(
+        quarantined_response.get("status") == 201
+        and isinstance(quarantined, Mapping)
+        and quarantined.get("lifecycle") == "quarantined"
+        and quarantined.get("quarantine_reason") == "source_insufficient_for_pack"
+        and quarantined.get("artifacts") == [],
+        "negative:quarantine_projection",
+    )
+    if not isinstance(quarantined, Mapping):
+        raise _StudyPackProbeFailure("negative_quarantine_projection_missing")
+    transition = harness.request(
+        "POST",
+        quarantined["links"]["commands"],
+        {
+            "action": "request_review",
+            "expected_version": quarantined["version"],
+            "command_id": _eval_public_command_id(
+                "study-pack:negative:quarantine-transition"
+            ),
+        },
+    )
+    _study_pack_expect_error(
+        checks,
+        transition,
+        status=409,
+        code="invalid_transition",
+        label="negative:quarantine_transition",
+    )
+    after_quarantine = _study_pack_authoritative_counts(harness.database)
+    cases["insufficient_source_quarantine"] = {
+        "status": 201,
+        "code": "source_insufficient_for_pack",
+        "artifact_count": 0,
+        "transition_status": int(transition.get("status", 0)),
+        "transition_code": _study_pack_error_code(transition),
+        "pack_write_delta": after_quarantine["study_packs"]
+        - before_quarantine["study_packs"],
+    }
+
+    concurrent_create = harness.request(
+        "POST",
+        "/v1/study-packs",
+        {
+            "title": "并发发布验证",
+            "source": {"kind": "pasted_text", "text": pasted_text},
+            "command_id": _eval_public_command_id(
+                "study-pack:negative:concurrent-create"
+            ),
+        },
+    )
+    concurrent_pack = concurrent_create.get("payload")
+    if concurrent_create.get("status") != 201 or not isinstance(
+        concurrent_pack, Mapping
+    ):
+        raise _StudyPackProbeFailure("concurrent_publish_create_failed")
+    concurrent_review = harness.request(
+        "POST",
+        concurrent_pack["links"]["commands"],
+        {
+            "action": "request_review",
+            "expected_version": concurrent_pack["version"],
+            "command_id": _eval_public_command_id(
+                "study-pack:negative:concurrent-review"
+            ),
+        },
+    )
+    reviewed_concurrent = concurrent_review.get("payload")
+    if concurrent_review.get("status") != 200 or not isinstance(
+        reviewed_concurrent, Mapping
+    ):
+        raise _StudyPackProbeFailure("concurrent_publish_review_failed")
+    before_concurrent = _study_pack_authoritative_counts(harness.database)
+
+    def publish_concurrently(ordinal: int) -> dict[str, Any]:
+        return harness.request(
+            "POST",
+            reviewed_concurrent["links"]["commands"],
+            {
+                "action": "publish",
+                "expected_version": reviewed_concurrent["version"],
+                "command_id": _eval_public_command_id(
+                    f"study-pack:negative:concurrent-publish:{ordinal}"
+                ),
+            },
+        )
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        concurrent_results = list(executor.map(publish_concurrently, (1, 2)))
+    statuses = sorted(int(item.get("status", 0)) for item in concurrent_results)
+    codes = sorted(
+        code
+        for item in concurrent_results
+        if (code := _study_pack_error_code(item)) is not None
+    )
+    checks.equal(statuses, [200, 409], "negative:concurrent_publish_statuses")
+    checks.equal(codes, ["stale_version"], "negative:concurrent_publish_code")
+    after_concurrent = _study_pack_authoritative_counts(harness.database)
+    checks.equal(
+        after_concurrent["study_pack_events"]
+        - before_concurrent["study_pack_events"],
+        1,
+        "negative:concurrent_publish_single_transition",
+    )
+    checks.equal(
+        after_concurrent["study_pack_command_receipts"]
+        - before_concurrent["study_pack_command_receipts"],
+        1,
+        "negative:concurrent_publish_single_receipt",
+    )
+    cases["concurrent_publish_cas"] = {
+        "statuses": statuses,
+        "loser_code": codes[0] if codes else None,
+        "successful_transition_count": after_concurrent["study_pack_events"]
+        - before_concurrent["study_pack_events"],
+        "successful_receipt_count": after_concurrent[
+            "study_pack_command_receipts"
+        ]
+        - before_concurrent["study_pack_command_receipts"],
+    }
+
+    timeout_harness = _StudyPackHTTPHarness(
+        root,
+        interpreter,
+        database_name="study-pack-timeout.sqlite3",
+        pdf_mode="timeout",
+    )
+    try:
+        cases["parser_timeout"] = error_case(
+            "parser_timeout",
+            lambda: timeout_harness.request(
+                "POST",
+                "/v1/study-packs",
+                {
+                    "title": "解析超时",
+                    "source": {
+                        "kind": "text_pdf",
+                        "pdf_base64": base64.b64encode(
+                            b"%PDF-1.7\nlocal-timeout-fixture"
+                        ).decode("ascii"),
+                    },
+                    "command_id": _eval_public_command_id(
+                        "study-pack:negative:timeout"
+                    ),
+                },
+            ),
+            expected_status=422,
+            expected_code="pdf_parse_failed",
+            target=timeout_harness,
+        )
+    finally:
+        timeout_harness.stop()
+    return cases
+
+
+def _probe_study_pack() -> dict[str, Any]:
+    """Exercise the P0.3 Study Pack contract over the production loopback router.
+
+    The request named ``learner_answer`` is explicitly non-learner TEST INPUT.
+    Its ephemeral database is deleted before this compact evidence object is
+    returned.  Only hashes, counts, booleans, and stable error codes survive.
+    """
+
+    base: dict[str, Any] = {
+        "schema_version": "lumi.study-pack-eval-evidence.v1",
+        "status": "pending",
+        "test_input_non_learner": True,
+        "learner_projection_eligible": False,
+        "claim_as_human_learner_evidence": False,
+        "saved_product_attempt_record_count": 0,
+        "saved_raw_source_count": 0,
+        "saved_raw_answer_count": 0,
+        "ephemeral_database_retained": False,
+        "loopback_http": True,
+        "eval_dependency_network_calls": 0,
+        "public_batch_or_synthetic_route_advertised": False,
+        "product_isolation_evidence": {
+            "method": "capability_and_generator_metadata_not_access_audit",
+            "external_network_endpoint_advertised": None,
+            "ocr_feature_advertised": None,
+            "web_feature_advertised": None,
+            "pdf_worker_subprocess_isolated": None,
+        },
+        "protected_repository_boundary": {
+            "product_reference_count": None,
+            "readonly_gate_result": "delegated_to_readonly_boundary_gate",
+        },
+        "source_cases": {},
+        "negative_cases": {},
+        "errors": [],
+    }
+    required_paths = (
+        REPO_ROOT / "service" / "hermes_service" / "api.py",
+        REPO_ROOT / "service" / "hermes_service" / "application.py",
+        REPO_ROOT / "study_pack" / "lumi_study_pack" / "store.py",
+        FIXTURE_DIR / "study_pack" / "pasted_text.txt",
+        FIXTURE_DIR / "study_pack" / "text_bearing_chinese.pdf",
+    )
+    missing = [path.name for path in required_paths if not path.is_file()]
+    if missing:
+        base["errors"] = ["study_pack_surface_missing"]
+        base["missing_component_count"] = len(missing)
+        return base
+
+    checks = _StudyPackChecks()
+    harness: _StudyPackHTTPHarness | None = None
+    safe_cases: dict[str, Any] = {}
+    runtime_cases: list[dict[str, Any]] = []
+    fixture_evidence: dict[str, Any] = {
+        "status": "pending",
+        "reproducible_cases": 0,
+    }
+    isolation: dict[str, Any] = {
+        "isolated": False,
+        "pypdf_version": None,
+        "pin_verified": False,
+    }
+    negative_cases: dict[str, Any] = {}
+    learning_before: dict[str, Any] | None = None
+    learning_after: dict[str, Any] | None = None
+    opaque_audit = {"checked": 0, "invalid": 0}
+    capabilities_hash: str | None = None
+    attempt_origin_counts = {
+        "evaluation_fixture": 0,
+        "human_local_interactive": 0,
+        "other": 0,
+    }
+    fixture_errors: list[str] = []
+    try:
+        with tempfile.TemporaryDirectory(prefix="lumi-study-pack-release-") as temporary:
+            temporary_root = Path(temporary)
+            interpreter, isolation = _study_pack_isolated_interpreter(
+                temporary_root
+            )
+            pin_text = (REPO_ROOT / "study_pack" / "pyproject.toml").read_text(
+                encoding="utf-8"
+            )
+            checks.that(
+                'dependencies = ["pypdf==6.10.0"]' in pin_text,
+                "study_pack_dependency_pin_drifted",
+            )
+            fixture_evidence, fixture_errors = _study_pack_fixture_reproducibility(
+                interpreter
+            )
+            checks.equal(
+                fixture_evidence.get("status"),
+                "pass",
+                "fixture_reproducibility_failed",
+            )
+            for case_name in (
+                "pasted_text.case.json",
+                "text_bearing_chinese.case.json",
+            ):
+                canonical_case = load_json(FIXTURE_DIR / "study_pack" / case_name)
+                checks.schema(
+                    canonical_case.get("pack"),
+                    "study-pack.schema.json",
+                    f"fixture:{case_name}:canonical_pack",
+                )
+
+            harness = _StudyPackHTTPHarness(temporary_root, interpreter)
+            capabilities_response = harness.request("GET", "/v1/capabilities")
+            capabilities = capabilities_response.get("payload")
+            checks.that(
+                capabilities_response.get("status") == 200
+                and isinstance(capabilities, Mapping),
+                "capabilities_unavailable",
+            )
+            if not isinstance(capabilities, Mapping):
+                raise _StudyPackProbeFailure("capabilities_projection_missing")
+            capabilities_hash = sha256_json(capabilities)
+            advertised = canonical_json(
+                {
+                    "features": capabilities.get("features", []),
+                    "endpoints": capabilities.get("endpoints", {}),
+                }
+            ).lower()
+            feature_values = {
+                str(item).lower() for item in capabilities.get("features", [])
+            }
+            endpoint_values = " ".join(
+                str(item).lower()
+                for item in capabilities.get("endpoints", {}).values()
+            )
+            base["product_isolation_evidence"] = {
+                "method": "capability_and_generator_metadata_not_access_audit",
+                "external_network_endpoint_advertised": any(
+                    token in endpoint_values
+                    for token in ("http://", "https://", "web", "crawl")
+                ),
+                "ocr_feature_advertised": "ocr" in feature_values,
+                "web_feature_advertised": bool(
+                    {"web", "web-crawl"}.intersection(feature_values)
+                ),
+                "pdf_worker_subprocess_isolated": True,
+            }
+            checks.that(
+                base["product_isolation_evidence"][
+                    "external_network_endpoint_advertised"
+                ]
+                is False
+                and base["product_isolation_evidence"][
+                    "ocr_feature_advertised"
+                ]
+                is False
+                and base["product_isolation_evidence"][
+                    "web_feature_advertised"
+                ]
+                is False,
+                "study_pack_capability_isolation_surface",
+            )
+            checks.that(
+                "batch" not in advertised and "synthetic" not in advertised,
+                "public_batch_or_synthetic_route_advertised",
+            )
+            required_endpoints = {
+                "study_pack_create",
+                "study_packs",
+                "study_pack",
+                "study_pack_command",
+                "study_pack_citation",
+                "study_pack_replay",
+                "study_pack_item_launch",
+                "study_pack_item_attempt",
+            }
+            checks.that(
+                required_endpoints.issubset(
+                    set(capabilities.get("endpoints", {}))
+                ),
+                "closed_study_pack_surface_incomplete",
+            )
+
+            learning_before = _study_pack_learning_snapshot(harness)
+            pasted_text = (FIXTURE_DIR / "study_pack" / "pasted_text.txt").read_text(
+                encoding="utf-8"
+            )
+            pasted_safe, pasted_runtime = _study_pack_run_source_case(
+                harness,
+                checks,
+                label="pasted_text",
+                title="资料分析基本规则",
+                source={"kind": "pasted_text", "text": pasted_text},
+                source_sha256=hashlib.sha256(
+                    pasted_text.encode("utf-8")
+                ).hexdigest(),
+            )
+            safe_cases["pasted_text"] = pasted_safe
+            runtime_cases.append(pasted_runtime)
+
+            pdf_bytes = (
+                FIXTURE_DIR / "study_pack" / "text_bearing_chinese.pdf"
+            ).read_bytes()
+            pdf_safe, pdf_runtime = _study_pack_run_source_case(
+                harness,
+                checks,
+                label="text_bearing_pdf",
+                title="证据式学习规则",
+                source={
+                    "kind": "text_pdf",
+                    "pdf_base64": base64.b64encode(pdf_bytes).decode("ascii"),
+                },
+                source_sha256=hashlib.sha256(pdf_bytes).hexdigest(),
+            )
+            safe_cases["text_bearing_pdf"] = pdf_safe
+            runtime_cases.append(pdf_runtime)
+            del pdf_bytes
+            checks.that(
+                all(
+                    case[
+                        "artifact_generator_isolation_metadata_checked_count"
+                    ]
+                    == case[
+                        "artifact_generator_isolation_metadata_verified_count"
+                    ]
+                    for case in safe_cases.values()
+                ),
+                "study_pack_generator_isolation_metadata",
+            )
+
+            harness.restart()
+            for runtime in runtime_cases:
+                pack_id = runtime["pack_id"]
+                detail_response = harness.request(
+                    "GET", f"/v1/study-packs/{pack_id}"
+                )
+                replay_response = harness.request(
+                    "GET", f"/v1/study-packs/{pack_id}/replay"
+                )
+                detail = detail_response.get("payload")
+                replay = replay_response.get("payload")
+                checks.that(
+                    detail_response.get("status") == 200
+                    and isinstance(detail, Mapping)
+                    and detail.get("lifecycle") == "published"
+                    and detail.get("version") == runtime["pack_version"],
+                    "restart_detail_projection",
+                )
+                checks.that(
+                    replay_response.get("status") == 200
+                    and isinstance(replay, Mapping)
+                    and replay.get("trace_verified") is True
+                    and replay.get("projection_verified") is True
+                    and runtime["answer"] not in canonical_json(replay),
+                    "restart_replay_verification",
+                )
+            for value in safe_cases.values():
+                value["restart_detail_verified"] = True
+                value["restart_replay_verified"] = True
+
+            negative_cases = _study_pack_negative_cases(
+                harness,
+                interpreter,
+                temporary_root,
+                checks,
+                pasted_text,
+                runtime_cases[0],
+            )
+            learning_after = _study_pack_learning_snapshot(harness)
+            checks.equal(
+                learning_after,
+                learning_before,
+                "study_pack_mutated_learning_or_schedule_storage",
+            )
+            opaque_audit = _study_pack_opaque_storage_audit(harness.database)
+            checks.equal(opaque_audit["invalid"], 0, "opaque_identifier_audit")
+            final_counts = _study_pack_authoritative_counts(harness.database)
+            attempt_origin_counts = _study_pack_attempt_origin_counts(
+                harness.database
+            )
+            checks.equal(
+                attempt_origin_counts["evaluation_fixture"],
+                len(runtime_cases),
+                "ephemeral_evaluation_fixture_attempt_count",
+            )
+            checks.equal(
+                attempt_origin_counts["human_local_interactive"],
+                0,
+                "ephemeral_human_attempt_count",
+            )
+            checks.equal(
+                attempt_origin_counts["other"],
+                0,
+                "ephemeral_unknown_origin_attempt_count",
+            )
+            checks.equal(
+                final_counts["study_pack_attempts"],
+                sum(attempt_origin_counts.values()),
+                "ephemeral_attempt_origin_total",
+            )
+            harness.stop()
+            harness = None
+
+        product_files = [
+            *(REPO_ROOT / "study_pack").rglob("*.py"),
+            REPO_ROOT / "service" / "hermes_service" / "api.py",
+            REPO_ROOT / "service" / "hermes_service" / "application.py",
+            REPO_ROOT / "service" / "hermes_service" / "cli.py",
+        ]
+        protected_reference_count = sum(
+            str(FORBIDDEN_REPO)
+            in path.read_text(encoding="utf-8", errors="ignore")
+            for path in product_files
+            if path.is_file()
+        )
+        checks.equal(
+            protected_reference_count,
+            0,
+            "protected_repository_product_reference",
+        )
+        base["protected_repository_boundary"] = {
+            "product_reference_count": protected_reference_count,
+            "readonly_gate_result": "delegated_to_readonly_boundary_gate",
+        }
+    except _StudyPackProbeFailure as exc:
+        checks.errors.append(str(exc))
+    except Exception as exc:
+        checks.errors.append(f"study_pack_probe_exception:{type(exc).__name__}")
+    finally:
+        if harness is not None:
+            harness.stop()
+
+    errors = list(dict.fromkeys([*fixture_errors, *checks.errors]))
+    base.update(
+        {
+            "status": "fail" if errors else "pass",
+            "interpreter": isolation,
+            "fixture_reproducibility": fixture_evidence,
+            "source_cases": safe_cases,
+            "negative_cases": negative_cases,
+            "learning_storage_isolation": {
+                "before_sha256": (
+                    learning_before.get("sha256") if learning_before else None
+                ),
+                "after_sha256": (
+                    learning_after.get("sha256") if learning_after else None
+                ),
+                "unchanged": learning_before is not None
+                and learning_before == learning_after,
+                "table_summaries_before": (
+                    learning_before.get("tables", {}) if learning_before else {}
+                ),
+                "table_summaries_after": (
+                    learning_after.get("tables", {}) if learning_after else {}
+                ),
+                "projection_summaries_before": (
+                    learning_before.get("projections", {})
+                    if learning_before
+                    else {}
+                ),
+                "projection_summaries_after": (
+                    learning_after.get("projections", {})
+                    if learning_after
+                    else {}
+                ),
+            },
+            "opaque_identifier_audit": opaque_audit,
+            "capabilities_sha256": capabilities_hash,
+            "public_batch_or_synthetic_route_advertised": False
+            if capabilities_hash is not None
+            and not any(
+                "public_batch_or_synthetic_route_advertised" == item
+                for item in errors
+            )
+            else None,
+            "ephemeral_evaluation_fixture_attempt_count": attempt_origin_counts[
+                "evaluation_fixture"
+            ],
+            "ephemeral_human_attempt_count": attempt_origin_counts[
+                "human_local_interactive"
+            ],
+            "ephemeral_test_input_database_destroyed": True,
+            "saved_product_attempt_record_count": 0,
+            "closed_schema_instance_count": checks.schema_instance_count,
+            "assertion_count": checks.count,
+            "source_case_count": len(safe_cases),
+            "negative_case_count": len(negative_cases),
+            "errors": errors,
+        }
+    )
+    return base
+
+
 class _ScheduleEvalClock:
     def __init__(self, value: date) -> None:
         self.value = value
@@ -776,7 +3204,7 @@ class _ScheduleHTTPHarness:
     historical-plan protections without waiting several wall-clock days.
     """
 
-    def __init__(self, root: Path, *, start: date = date(2026, 7, 11)) -> None:
+    def __init__(self, root: Path, *, start: date | None = None) -> None:
         for package in ("service", "integration", "runtime", "domains", "engine"):
             path = str(REPO_ROOT / package)
             if path not in sys.path:
@@ -787,7 +3215,9 @@ class _ScheduleHTTPHarness:
         self._create_server = create_server
         self._application_type = SidecarApplication
         self.database = root / "schedule-eval.sqlite3"
-        self.clock = _ScheduleEvalClock(start)
+        self.clock = _ScheduleEvalClock(
+            start if start is not None else datetime.now(timezone.utc).date()
+        )
         self._servers: list[Any] = []
         self._threads: list[threading.Thread] = []
         self.base_url = self.start_server()
@@ -796,6 +3226,7 @@ class _ScheduleHTTPHarness:
         application = self._application_type(
             self.database,
             today_provider=clock or self.clock,
+            planning_timezone=timezone.utc,
         )
         server = self._create_server(application, port=0)
         thread = threading.Thread(target=server.serve_forever, daemon=True)
@@ -2877,7 +5308,6 @@ def _probe_attempt_api() -> dict[str, Any]:
     service = REPO_ROOT / "service"
     if not service.is_dir():
         return {"status": "pending", "errors": ["service package is absent"], "cases": {}}
-    REPORT_DIR.mkdir(parents=True, exist_ok=True)
     errors: list[str] = []
     continuation_errors: list[str] = []
     assistance_errors: list[str] = []
@@ -2885,7 +5315,7 @@ def _probe_attempt_api() -> dict[str, Any]:
     cases: dict[str, Any] = {}
     process: subprocess.Popen[str] | None = None
     try:
-        with tempfile.TemporaryDirectory(prefix="attempt-api-probe-", dir=REPORT_DIR) as temporary:
+        with tempfile.TemporaryDirectory(prefix="attempt-api-probe-") as temporary:
             database = Path(temporary) / "attempts.sqlite3"
             command = [
                 sys.executable,
@@ -3538,7 +5968,18 @@ def gate_integration_surfaces(ctx: Context) -> GateResult:
         try:
             result = _run_unittest_surface(root)
         except (OSError, subprocess.TimeoutExpired) as exc:
-            result = {"error": repr(exc), "exit_code": -1}
+            result = {
+                "exit_code": -1,
+                "test_count": 0,
+                "failure_count": 0,
+                "error_count": 1,
+                "skipped_count": 0,
+                "stable_failure_codes": [
+                    f"unittest_surface_{type(exc).__name__.lower()}"
+                ],
+                "output_sha256": None,
+                "raw_output_saved": False,
+            }
         evidence.append({label + "_tests": result})
         if result.get("exit_code") != 0:
             failures.append(f"{label} tests failed")
@@ -3559,13 +6000,14 @@ def gate_integration_surfaces(ctx: Context) -> GateResult:
             failures.append("no domain contract fixtures discovered")
     except Exception as exc:
         failures.append("domain fixture contract validation failed")
-        evidence.append({"domain_fixture_error": repr(exc)})
+        evidence.append(
+            {"domain_fixture_error_code": f"domain_fixture_{type(exc).__name__.lower()}"}
+        )
 
-    REPORT_DIR.mkdir(parents=True, exist_ok=True)
     environment = dict(os.environ)
     environment["PYTHONPATH"] = str(runtime) + os.pathsep + environment.get("PYTHONPATH", "")
     try:
-        with tempfile.TemporaryDirectory(prefix="runtime-probe-", dir=REPORT_DIR) as temporary:
+        with tempfile.TemporaryDirectory(prefix="runtime-probe-") as temporary:
             database = Path(temporary) / "trace.sqlite3"
             demo_command = [
                 sys.executable,
@@ -3586,7 +6028,26 @@ def gate_integration_surfaces(ctx: Context) -> GateResult:
                 timeout=60,
             )
             demo_payload = json.loads(demo.stdout) if demo.returncode == 0 else None
-            evidence.append({"runtime_demo": {"command": demo_command, "exit_code": demo.returncode, "output": demo_payload or (demo.stdout + demo.stderr)[-4000:]}})
+            demo_output = (demo.stdout + demo.stderr).strip()
+            evidence.append(
+                {
+                    "runtime_demo": {
+                        "exit_code": demo.returncode,
+                        "trace_verified": (
+                            demo_payload.get("trace_verified")
+                            if isinstance(demo_payload, Mapping)
+                            else False
+                        ),
+                        "payload_sha256": (
+                            sha256_json(demo_payload) if demo_payload else None
+                        ),
+                        "output_sha256": hashlib.sha256(
+                            demo_output.encode("utf-8")
+                        ).hexdigest(),
+                        "raw_output_saved": False,
+                    }
+                }
+            )
             if demo.returncode or not demo_payload or demo_payload.get("trace_verified") is not True:
                 failures.append("runtime CLI demo did not produce a verified trace")
             else:
@@ -3616,14 +6077,28 @@ def gate_integration_surfaces(ctx: Context) -> GateResult:
                         "sha256": sha256_json(replay_payload),
                     }
                     if replay_payload
-                    else (replay.stdout + replay.stderr)[-4000:]
+                    else {
+                        "sha256": hashlib.sha256(
+                            (replay.stdout + replay.stderr).encode("utf-8")
+                        ).hexdigest(),
+                        "raw_output_saved": False,
+                    }
                 )
-                evidence.append({"runtime_replay": {"command": replay_command, "exit_code": replay.returncode, "output": replay_evidence}})
+                evidence.append(
+                    {
+                        "runtime_replay": {
+                            "exit_code": replay.returncode,
+                            "evidence": replay_evidence,
+                        }
+                    }
+                )
                 if replay.returncode or not replay_payload or replay_payload.get("verified") is not True:
                     failures.append("runtime replay was not verified")
     except (OSError, subprocess.TimeoutExpired, json.JSONDecodeError) as exc:
         failures.append("runtime CLI probe raised an exception")
-        evidence.append({"runtime_cli_error": repr(exc)})
+        evidence.append(
+            {"runtime_cli_error_code": f"runtime_cli_{type(exc).__name__.lower()}"}
+        )
 
     loop_probe = ctx.probe_learning_loop()
     evidence.append(
@@ -3856,15 +6331,300 @@ def _compact_response_evidence(evidence: Any) -> dict[str, Any] | None:
 
 
 def _compact_service_test_evidence(probe: Mapping[str, Any]) -> dict[str, Any]:
-    return _sanitize_report_value(
-        {
-            "status": probe.get("status"),
-            "exit_code": probe.get("exit_code"),
-            "command": probe.get("command", []),
-            "output": probe.get("output", ""),
-            "errors": probe.get("errors", []),
-        }
+    raw_codes = [str(item) for item in probe.get("stable_failure_codes", [])]
+    codes = [
+        item
+        if re.fullmatch(
+            r"(?:(?:fail|error):test_[A-Za-z0-9_]+|"
+            r"unittest_process_failed|service_test_runner_[a-z_]+)",
+            item,
+        )
+        else "unsafe_failure_code_redacted:"
+        + hashlib.sha256(item.encode("utf-8")).hexdigest()[:16]
+        for item in raw_codes
+    ]
+    return {
+        "status": probe.get("status"),
+        "exit_code": probe.get("exit_code"),
+        "test_count": probe.get("test_count", 0),
+        "failure_count": probe.get("failure_count", 0),
+        "error_count": probe.get("error_count", 0),
+        "skipped_count": probe.get("skipped_count", 0),
+        "stable_failure_codes": codes,
+        "output_sha256": probe.get("output_sha256"),
+        "raw_output_saved": False,
+    }
+
+
+def _compact_study_pack_evidence(probe: Mapping[str, Any]) -> dict[str, Any]:
+    """Fail closed to Study Pack hashes/counts/booleans/stable codes only."""
+
+    def select(value: Mapping[str, Any], keys: Iterable[str]) -> dict[str, Any]:
+        return {key: value.get(key) for key in keys if key in value}
+
+    stable_code = re.compile(r"^[A-Za-z0-9_.:=/@-]{1,240}$")
+    raw_errors = probe.get("errors", [])
+    closed_top_errors = {
+        "capabilities_projection_missing",
+        "capabilities_unavailable",
+        "closed_study_pack_surface_incomplete",
+        "ephemeral_attempt_origin_total",
+        "ephemeral_evaluation_fixture_attempt_count",
+        "ephemeral_human_attempt_count",
+        "ephemeral_unknown_origin_attempt_count",
+        "fixture_reproducibility_failed",
+        "fixture_validator_execution_failed",
+        "fixture_validator_failed",
+        "fixture_validator_missing",
+        "fixture_validator_status_missing",
+        "negative_pdf_generation_failed",
+        "opaque_identifier_audit",
+        "protected_repository_product_reference",
+        "server_already_started",
+        "server_health_failed",
+        "server_start_failed",
+        "study_pack_dependency_pin_drifted",
+        "study_pack_eval_dependencies_unavailable",
+        "study_pack_mutated_learning_or_schedule_storage",
+        "study_pack_surface_missing",
+    }
+    stable_error_prefixes = (
+        "fixture:",
+        "negative:",
+        "pasted_text:",
+        "restart_",
+        "study_pack_probe_exception:",
+        "text_bearing_pdf:",
     )
+    errors = [
+        str(item)
+        if stable_code.fullmatch(str(item))
+        and (
+            str(item) in closed_top_errors
+            or str(item).startswith(stable_error_prefixes)
+            or str(item).startswith("fixture_validator_reproducible_")
+            or str(item).startswith("learning_projection_")
+        )
+        else "unsafe_error_redacted:" + hashlib.sha256(
+            str(item).encode("utf-8")
+        ).hexdigest()[:16]
+        for item in raw_errors
+    ]
+    source_case_keys = (
+        "input_kind",
+        "source_sha256",
+        "normalized_source_sha256",
+        "source_byte_count",
+        "locator_count",
+        "pack_ref_sha256",
+        "artifact_count",
+        "artifact_generator_isolation_metadata_checked_count",
+        "artifact_generator_isolation_metadata_verified_count",
+        "practice_item_count",
+        "candidate_skill_link_count",
+        "candidate_links_unconfirmed",
+        "citation_count",
+        "citation_verified_count",
+        "citation_projection_set_sha256",
+        "scorer_count",
+        "scorer_vectors_recomputed",
+        "answer_sha256",
+        "raw_answer_saved",
+        "ephemeral_evaluation_fixture_attempt_count",
+        "ephemeral_human_attempt_count",
+        "product_attempt_record_saved_to_evidence",
+        "receipt_replay_count",
+        "cas_and_conflict_count",
+        "draft_launch_status",
+        "draft_launch_code",
+        "launch_projection_set_sha256",
+        "replay_before_restart_verified",
+        "restart_detail_verified",
+        "restart_replay_verified",
+    )
+    source_cases: dict[str, Any] = {}
+    for label, raw_case in probe.get("source_cases", {}).items():
+        if not re.fullmatch(r"[a-z0-9_]{1,80}", str(label)) or not isinstance(
+            raw_case, Mapping
+        ):
+            continue
+        case = select(raw_case, source_case_keys)
+        parser = raw_case.get("parser")
+        if isinstance(parser, Mapping):
+            case["parser"] = select(parser, ("name", "version"))
+        privacy = raw_case.get("persistence_privacy")
+        if isinstance(privacy, Mapping):
+            case["persistence_privacy"] = select(
+                privacy,
+                (
+                    "event_count",
+                    "receipt_count",
+                    "pre_answer_receipt_count",
+                    "event_private_values_absent",
+                    "pre_answer_practice_fields_closed",
+                    "rejected_test_inputs_absent",
+                    "evaluation_fixture_event_count",
+                    "human_local_interactive_event_count",
+                ),
+            )
+        source_cases[str(label)] = case
+
+    negative_keys = (
+        "status",
+        "code",
+        "authoritative_write_delta",
+        "artifact_count",
+        "transition_status",
+        "transition_code",
+        "pack_write_delta",
+        "statuses",
+        "loser_code",
+        "successful_transition_count",
+        "successful_receipt_count",
+    )
+    negative_cases = {
+        str(label): select(case, negative_keys)
+        for label, case in probe.get("negative_cases", {}).items()
+        if re.fullmatch(r"[a-z0-9_]{1,80}", str(label))
+        and isinstance(case, Mapping)
+    }
+    closed_error_codes = {
+        "artifact_not_published",
+        "command_conflict",
+        "invalid_artifact_id",
+        "invalid_body",
+        "invalid_command_id",
+        "invalid_json",
+        "invalid_pack_id",
+        "invalid_source_body",
+        "invalid_span_id",
+        "invalid_transition",
+        "pdf_encrypted_unsupported",
+        "pdf_parse_failed",
+        "pdf_text_unavailable_ocr_required",
+        "route_not_found",
+        "source_insufficient_for_pack",
+        "source_too_large",
+        "stale_version",
+    }
+    for case in negative_cases.values():
+        for field_name in ("code", "transition_code", "loser_code"):
+            value = case.get(field_name)
+            if value is not None and value not in closed_error_codes:
+                case[field_name] = "unsafe_code_redacted:" + hashlib.sha256(
+                    str(value).encode("utf-8")
+                ).hexdigest()[:16]
+
+    learning = probe.get("learning_storage_isolation", {})
+    compact_learning: dict[str, Any] = {}
+    if isinstance(learning, Mapping):
+        compact_learning = select(
+            learning, ("before_sha256", "after_sha256", "unchanged")
+        )
+        for side in (
+            "table_summaries_before",
+            "table_summaries_after",
+            "projection_summaries_before",
+            "projection_summaries_after",
+        ):
+            summaries = learning.get(side, {})
+            if isinstance(summaries, Mapping):
+                compact_learning[side] = {
+                    str(label): select(
+                        summary,
+                        ("present", "row_count", "count", "sha256"),
+                    )
+                    for label, summary in summaries.items()
+                    if re.fullmatch(r"[a-z0-9_]{1,80}", str(label))
+                    and isinstance(summary, Mapping)
+                }
+
+    top = select(
+        probe,
+        (
+            "schema_version",
+            "status",
+            "test_input_non_learner",
+            "learner_projection_eligible",
+            "claim_as_human_learner_evidence",
+            "saved_product_attempt_record_count",
+            "saved_raw_source_count",
+            "saved_raw_answer_count",
+            "ephemeral_database_retained",
+            "loopback_http",
+            "eval_dependency_network_calls",
+            "public_batch_or_synthetic_route_advertised",
+            "capabilities_sha256",
+            "ephemeral_evaluation_fixture_attempt_count",
+            "ephemeral_human_attempt_count",
+            "ephemeral_test_input_database_destroyed",
+            "closed_schema_instance_count",
+            "assertion_count",
+            "source_case_count",
+            "negative_case_count",
+        ),
+    )
+    interpreter = probe.get("interpreter")
+    if isinstance(interpreter, Mapping):
+        top["interpreter"] = select(
+            interpreter,
+            (
+                "isolated",
+                "selection",
+                "pypdf_version",
+                "pin_verified",
+                "eval_dependency_network_calls",
+            ),
+        )
+    fixture = probe.get("fixture_reproducibility")
+    if isinstance(fixture, Mapping):
+        top["fixture_reproducibility"] = select(
+            fixture,
+            (
+                "status",
+                "exit_code",
+                "output_sha256",
+                "schema_count",
+                "validated_instances",
+                "negative_probes",
+                "reproducible_cases",
+                "reproducible_spans",
+                "reproducible_artifacts",
+                "reproducible_links",
+                "reproducible_decisions",
+                "reproducible_artifact_set_digests",
+                "reproducible_scorer_vectors",
+                "synthetic_product_detail_records",
+                "synthetic_product_attempt_records",
+                "raw_output_saved",
+            ),
+        )
+    opaque = probe.get("opaque_identifier_audit")
+    if isinstance(opaque, Mapping):
+        top["opaque_identifier_audit"] = select(opaque, ("checked", "invalid"))
+    isolation = probe.get("product_isolation_evidence")
+    if isinstance(isolation, Mapping):
+        top["product_isolation_evidence"] = select(
+            isolation,
+            (
+                "method",
+                "external_network_endpoint_advertised",
+                "ocr_feature_advertised",
+                "web_feature_advertised",
+                "pdf_worker_subprocess_isolated",
+            ),
+        )
+    protected = probe.get("protected_repository_boundary")
+    if isinstance(protected, Mapping):
+        top["protected_repository_boundary"] = select(
+            protected,
+            ("product_reference_count", "readonly_gate_result"),
+        )
+    top["source_cases"] = source_cases
+    top["negative_cases"] = negative_cases
+    top["learning_storage_isolation"] = compact_learning
+    top["errors"] = errors
+    return top
 
 
 def _compact_attempt_api_evidence(probe: Mapping[str, Any]) -> dict[str, Any]:
@@ -4156,6 +6916,34 @@ def gate_today_plan_schedule(ctx: Context) -> GateResult:
         "today_plan_schedule",
         "pass",
         "23 real HTTP/storage cases prove empty and three human-attempt branches, canonical trace provenance, same-fixture disclosure, fixed-unvalidated and overdue timing, accepted-budget fail-closed/retry plus fair commitment carry, restart migration, command receipts/CAS with no partial writes, clock-skew historical safety, verified replay, synthetic-origin exclusion, and user-marked completion with no KT write",
+        evidence,
+    )
+
+
+def gate_study_pack(ctx: Context) -> GateResult:
+    probe = ctx.probe_study_pack()
+    status = str(probe.get("status", "fail"))
+    if status not in STATUSES:
+        status = "fail"
+    evidence = [_compact_study_pack_evidence(probe)]
+    if status == "pending":
+        return GateResult(
+            "study_pack",
+            "pending",
+            "the local cited Study Pack surface or deterministic fixture proof is absent",
+            evidence,
+        )
+    if status == "fail":
+        return GateResult(
+            "study_pack",
+            "fail",
+            "Study Pack loopback lifecycle, isolation, or adversarial evidence failed",
+            evidence,
+        )
+    return GateResult(
+        "study_pack",
+        "pass",
+        "pasted text and text-bearing PDF passed cited lifecycle, TEST INPUT scoring, restart, isolation, and adversarial checks",
         evidence,
     )
 
@@ -4550,6 +7338,7 @@ GATES: dict[str, Callable[[Context], GateResult]] = {
     "cohort_prior_guardrail": gate_cohort_prior_guardrail,
     "attempt_continuation": gate_attempt_continuation,
     "today_plan_schedule": gate_today_plan_schedule,
+    "study_pack": gate_study_pack,
     "progressive_assistance": gate_progressive_assistance,
     "misconception_dossier": gate_misconception_dossier,
     "trace": gate_trace,
@@ -4602,7 +7391,9 @@ def run_gates(selected: list[str] | None = None) -> tuple[dict[str, Any], Contex
     return report, ctx
 
 
-def render_markdown(report: Mapping[str, Any]) -> str:
+def render_markdown(
+    report: Mapping[str, Any], *, persisted: bool = True
+) -> str:
     lines = [
         "# Lumi release evidence",
         "",
@@ -4617,13 +7408,16 @@ def render_markdown(report: Mapping[str, Any]) -> str:
     for gate in report["gates"]:
         summary = gate["summary"].replace("|", "\\|")
         lines.append(f"| `{gate['name']}` | **{gate['status'].upper()}** | {summary} |")
-    lines.extend(
-        [
-            "",
-            "The JSON report beside this file is authoritative and contains hashes, command output, missing matrix entries, and computed evidence.",
-            "",
-        ]
-    )
+    lines.extend([""])
+    if persisted:
+        lines.append(
+            "The JSON report beside this file is authoritative and contains hashes, command output, missing matrix entries, and computed evidence."
+        )
+    else:
+        lines.append(
+            "This run used --no-write; evidence remained in memory and no report or evidence file was created."
+        )
+    lines.append("")
     return "\n".join(lines)
 
 
@@ -4665,6 +7459,19 @@ def write_outputs(report: Mapping[str, Any], ctx: Context) -> None:
             + "\n",
             encoding="utf-8",
         )
+    if ctx.study_pack_probe is not None:
+        path = REPORT_DIR / "study-pack-evidence-latest.json"
+        path.write_text(
+            json.dumps(
+                _sanitize_report_value(
+                    _compact_study_pack_evidence(ctx.study_pack_probe)
+                ),
+                ensure_ascii=False,
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -4673,18 +7480,37 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--list", action="store_true", help="list gates and exit")
     parser.add_argument("--no-write", action="store_true", help="do not write reports")
     parser.add_argument("--allow-pending", action="store_true", help="return zero for pending (report remains pending)")
+    parser.add_argument(
+        "--_study-pack-eval-server",
+        action="store_true",
+        help=argparse.SUPPRESS,
+    )
+    parser.add_argument("--_study-pack-eval-db", help=argparse.SUPPRESS)
+    parser.add_argument(
+        "--_study-pack-eval-pdf-mode",
+        choices=("default", "timeout"),
+        default="default",
+        help=argparse.SUPPRESS,
+    )
     return parser.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
+    if args._study_pack_eval_server:
+        if not args._study_pack_eval_db:
+            return 2
+        return _study_pack_eval_server_main(
+            args._study_pack_eval_db,
+            args._study_pack_eval_pdf_mode,
+        )
     if args.list:
         print("\n".join(GATES))
         return 0
     report, ctx = run_gates(args.gate)
     if not args.no_write:
         write_outputs(report, ctx)
-    print(render_markdown(report))
+    print(render_markdown(report, persisted=not args.no_write))
     if report["overall_status"] == "fail":
         return 1
     if report["overall_status"] == "pending" and not args.allow_pending:

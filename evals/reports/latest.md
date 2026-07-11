@@ -1,13 +1,13 @@
 # Lumi release evidence
 
-- Run: `run-20260711T132028Z`
-- Generated: `2026-07-11T13:20:28.677769+00:00`
+- Run: `run-20260711T175303Z`
+- Generated: `2026-07-11T17:53:03.961898+00:00`
 - Overall: **PASS**
-- Counts: 16 pass / 0 fail / 0 pending
+- Counts: 17 pass / 0 fail / 0 pending
 
 | Gate | Status | Evidence summary |
 | --- | --- | --- |
-| `contracts` | **PASS** | 7 schemas and canonical fixture validated |
+| `contracts` | **PASS** | 17 schemas and canonical fixture validated |
 | `fixtures` | **PASS** | 42/42 domain fixtures resolve and cover every required path/mode exactly once |
 | `engine_tests` | **PASS** | deterministic engine tests passed |
 | `integration_surfaces` | **PASS** | domain contracts and offline runtime demo/replay surfaces passed their real probes |
@@ -15,6 +15,7 @@
 | `cohort_prior_guardrail` | **PASS** | privacy/size guardrails pass and the real attempt trace uses sample_size=0 synthetic engineering priors without cohort claims |
 | `attempt_continuation` | **PASS** | real HTTP session advances awaiting_probe → awaiting_verification → completed; illegal/stale writes fail closed and KT appears only after independent verification |
 | `today_plan_schedule` | **PASS** | 23 real HTTP/storage cases prove empty and three human-attempt branches, canonical trace provenance, same-fixture disclosure, fixed-unvalidated and overdue timing, accepted-budget fail-closed/retry plus fair commitment carry, restart migration, command receipts/CAS with no partial writes, clock-skew historical safety, verified replay, synthetic-origin exclusion, and user-marked completion with no KT write |
+| `study_pack` | **PASS** | pasted text and text-bearing PDF passed cited lifecycle, TEST INPUT scoring, restart, isolation, and adversarial checks |
 | `progressive_assistance` | **PASS** | real HTTP assistance advances six server-authored levels, records uncalibrated evidence discounts, fails closed after exhaustion, and preserves a verified trace |
 | `misconception_dossier` | **PASS** | real HTTP dossier separates observations, authored probe support/refutation, unconfirmed cause semantics, learning resolution, and unavailable cohort evidence with trace references |
 | `trace` | **PASS** | computed engine trajectory is contract-valid and replay evidence is locatable |

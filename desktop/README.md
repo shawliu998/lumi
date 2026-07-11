@@ -24,7 +24,9 @@ npm_config_cache="$PWD/.npm-cache" npm install
 
 ## Commands
 
-Build the arm64 Python sidecar in an isolated desktop-only virtual environment:
+Build the arm64 Python sidecar in a freshly recreated, desktop-only virtual
+environment. The build pins PyInstaller 6.21.0 and pypdf 6.10.0, then packages
+the Study Pack domain and its isolated PDF worker into the onedir runtime:
 
 ```sh
 npm run build:sidecar
@@ -62,10 +64,10 @@ npm run build:debug-app
 ```
 
 Artifacts are emitted under `src-tauri/target/<profile>/bundle/`. The debug-app
-command rebuilds and checks the staged sidecar, builds the Tauri bundle, runs a
-bundle-resident check that proves the app tree is unchanged, then signs every
-nested Mach-O and the final bundle with an ad-hoc identity and requires strict
-deep verification to pass. The signing script reports a stable file count by
+command rebuilds and checks the staged sidecar, builds the Tauri bundle, signs
+every nested Mach-O and the final bundle with an ad-hoc identity, requires
+strict/deep verification, and finally runs the bundle-resident check without
+mutating the signed app. The signing script reports a stable file count by
 default; pass `--verbose` directly to it only for per-file diagnostics. This is
 a local integrity gate, not Developer ID signing or notarization. Recheck an
 existing debug artifact with:
@@ -76,11 +78,22 @@ npm run check:bundled-sidecar
 ```
 
 `check:bundled-sidecar` starts the exact bundle-resident launcher/runtime and
-rechecks its version, bounded catalog capability, termination, closed opaque
-run/command identifier profiles, and PII/secret identifier rejection. It also
-isolates HOME/cache/temp/pycache and fails if the `.app` content tree or root
-mtime changes. Public batch/demo runs and evaluation learning modes are not
-advertised by the product sidecar.
+rechecks version 0.3.0, the closed `local-cited-study-pack-v1` capability, and
+the pasted-text plus real text-bearing PDF lifecycle through create, review,
+publish, citation, redacted launch, explicit non-learner test input, receipt
+replay, and process restart. It hashes all existing learning/scheduling tables
+before and after the flow, verifies they are unchanged, isolates
+HOME/cache/temp/pycache, proves the frozen pypdf 6.10.0 path, and fails if the
+signed `.app` content tree or root mtime changes. Its evidence contains only
+counts, hashes, stable flags, and versions—never source or answer text. Public
+batch/demo runs and evaluation learning modes are not advertised by the product
+sidecar.
+
+The staged/bundled harness sets the private
+`LUMI_INTERNAL_STUDY_PACK_ATTEMPT_ORIGIN=evaluation_fixture` process variable;
+HTTP cannot set or override it. The check requires every saved Study Pack test
+attempt to use `evaluation_fixture` and verifies the isolated SQLite database
+contains exactly zero `human_local_interactive` Study Pack attempts.
 
 After a debug app build, verify that Tauri itself starts the packaged sidecar,
 waits for its health handshake, and terminates it when Lumi quits:
@@ -89,9 +102,13 @@ waits for its health handshake, and terminates it when Lumi quits:
 npm run check:managed-app
 ```
 
-That verification uses ephemeral debug-only port and self-exit hooks, so it
-does not interfere with an existing local process. Release builds always use
-port 8765 and do not include either hook.
+That verification uses an ephemeral database plus debug-only port, self-exit,
+and frozen-worker timeout hooks. It proves graceful and abrupt exit,
+occupied-port failure, and startup timeout all reap the sidecar/PDF worker.
+It explicitly removes the private evaluation-origin variable and proves the
+managed product sidecar's launch contract defaults to `human_local_interactive`
+without submitting an answer. Release builds always use port 8765 and do not
+include those hooks.
 
 ## Security posture
 

@@ -1,0 +1,801 @@
+{
+  "artifacts": [
+    {
+      "artifact_id": "a_IOPCLLMCFHNMPFDLCIDFPCBLGHLEEEGIFDPBFFPL",
+      "artifact_type": "study_pack.one_page_notes",
+      "artifact_version": 1,
+      "content_digest": "85e488d91e02d4580e86be66fdd3ea540d102aa76822d2b9d27d20b49c992028",
+      "generator_id": "extractive-local@1",
+      "generator_metadata": {
+        "generator_id": "extractive-local@1",
+        "mode": "deterministic_extractive",
+        "model_calls": 0,
+        "network_calls": 0,
+        "ocr_calls": 0,
+        "source_normalized_sha256": "b4b476e3fbff1f59f01caaf636367f508a541193db2ad2b5380bb1de0d1d54cb"
+      },
+      "lifecycle": "published",
+      "pack_id": "p_OJIPMPCANHNACOEIFBHKLLIHPKINBDGICMMHIBMI"
+    },
+    {
+      "artifact_id": "a_NCBFLOFKLBIEAMOJCNNLGDKIIGAJEGGMJIBGDKFE",
+      "artifact_type": "study_pack.knowledge_card",
+      "artifact_version": 1,
+      "content_digest": "1009161542436bf235d876b9e82691e4370bcc42d3419287d1bcc3511d255bf7",
+      "generator_id": "extractive-local@1",
+      "generator_metadata": {
+        "generator_id": "extractive-local@1",
+        "mode": "deterministic_extractive",
+        "model_calls": 0,
+        "network_calls": 0,
+        "ocr_calls": 0,
+        "source_normalized_sha256": "b4b476e3fbff1f59f01caaf636367f508a541193db2ad2b5380bb1de0d1d54cb"
+      },
+      "lifecycle": "published",
+      "pack_id": "p_OJIPMPCANHNACOEIFBHKLLIHPKINBDGICMMHIBMI"
+    },
+    {
+      "artifact_id": "a_FBJOCDBFEOELJEJKBLDFOJPCKOHEICFPMAPCDGJP",
+      "artifact_type": "study_pack.knowledge_card",
+      "artifact_version": 1,
+      "content_digest": "a025faf6648942cc6b36facf27ae1a43d979db66b7168eabddb5e0f47126c1fa",
+      "generator_id": "extractive-local@1",
+      "generator_metadata": {
+        "generator_id": "extractive-local@1",
+        "mode": "deterministic_extractive",
+        "model_calls": 0,
+        "network_calls": 0,
+        "ocr_calls": 0,
+        "source_normalized_sha256": "b4b476e3fbff1f59f01caaf636367f508a541193db2ad2b5380bb1de0d1d54cb"
+      },
+      "lifecycle": "published",
+      "pack_id": "p_OJIPMPCANHNACOEIFBHKLLIHPKINBDGICMMHIBMI"
+    },
+    {
+      "artifact_id": "a_NJDMIHFJCIINAGGEPOLMDBGLFDPOCLJLCCFPGACN",
+      "artifact_type": "study_pack.knowledge_card",
+      "artifact_version": 1,
+      "content_digest": "c92829160a151d2bb68c035d0aeb3d0db33bf3d2a1b71f62ae623182008d593c",
+      "generator_id": "extractive-local@1",
+      "generator_metadata": {
+        "generator_id": "extractive-local@1",
+        "mode": "deterministic_extractive",
+        "model_calls": 0,
+        "network_calls": 0,
+        "ocr_calls": 0,
+        "source_normalized_sha256": "b4b476e3fbff1f59f01caaf636367f508a541193db2ad2b5380bb1de0d1d54cb"
+      },
+      "lifecycle": "published",
+      "pack_id": "p_OJIPMPCANHNACOEIFBHKLLIHPKINBDGICMMHIBMI"
+    },
+    {
+      "artifact_id": "a_NJMGJGMHGFDJHNPNHJGCNFBMDNIDDHJMCKBKLNLM",
+      "artifact_type": "study_pack.knowledge_card",
+      "artifact_version": 1,
+      "content_digest": "1f2c1c96cd33a6d6e33cd96310e0d1f1b62be9790ce237226f4c478f175405a9",
+      "generator_id": "extractive-local@1",
+      "generator_metadata": {
+        "generator_id": "extractive-local@1",
+        "mode": "deterministic_extractive",
+        "model_calls": 0,
+        "network_calls": 0,
+        "ocr_calls": 0,
+        "source_normalized_sha256": "b4b476e3fbff1f59f01caaf636367f508a541193db2ad2b5380bb1de0d1d54cb"
+      },
+      "lifecycle": "published",
+      "pack_id": "p_OJIPMPCANHNACOEIFBHKLLIHPKINBDGICMMHIBMI"
+    },
+    {
+      "artifact_id": "a_DCGIDMFEHHDHAKJPLLICDMFCJAAJPACFLNGLFKPD",
+      "artifact_type": "study_pack.knowledge_card",
+      "artifact_version": 1,
+      "content_digest": "dbaed00e568c1ecba3d0ed8f44298ab4152328bf6b3eef71fcd97f7c1ac758dd",
+      "generator_id": "extractive-local@1",
+      "generator_metadata": {
+        "generator_id": "extractive-local@1",
+        "mode": "deterministic_extractive",
+        "model_calls": 0,
+        "network_calls": 0,
+        "ocr_calls": 0,
+        "source_normalized_sha256": "b4b476e3fbff1f59f01caaf636367f508a541193db2ad2b5380bb1de0d1d54cb"
+      },
+      "lifecycle": "published",
+      "pack_id": "p_OJIPMPCANHNACOEIFBHKLLIHPKINBDGICMMHIBMI"
+    },
+    {
+      "artifact_id": "a_FFBIDMAAFGKOCHIDBNEAFNBJJHHJHKIEKDPPEPDA",
+      "artifact_type": "study_pack.practice_item",
+      "artifact_version": 1,
+      "content_digest": "23d4ca549e43e94fb99bc80363791e11d47b34e0f61ea001282ddcc79404563f",
+      "generator_id": "extractive-local@1",
+      "generator_metadata": {
+        "generator_id": "extractive-local@1",
+        "mode": "deterministic_extractive",
+        "model_calls": 0,
+        "network_calls": 0,
+        "ocr_calls": 0,
+        "source_normalized_sha256": "b4b476e3fbff1f59f01caaf636367f508a541193db2ad2b5380bb1de0d1d54cb"
+      },
+      "lifecycle": "published",
+      "pack_id": "p_OJIPMPCANHNACOEIFBHKLLIHPKINBDGICMMHIBMI"
+    },
+    {
+      "artifact_id": "a_KDLCAKGEHAKKOKPOKBNODBKHOLAJFDNOMCAFNAIO",
+      "artifact_type": "study_pack.practice_item",
+      "artifact_version": 1,
+      "content_digest": "acc088570f5aa0b8b20556bbfd9ef60a106f15ce1d8fb6cd25ecb2172dbeed5e",
+      "generator_id": "extractive-local@1",
+      "generator_metadata": {
+        "generator_id": "extractive-local@1",
+        "mode": "deterministic_extractive",
+        "model_calls": 0,
+        "network_calls": 0,
+        "ocr_calls": 0,
+        "source_normalized_sha256": "b4b476e3fbff1f59f01caaf636367f508a541193db2ad2b5380bb1de0d1d54cb"
+      },
+      "lifecycle": "published",
+      "pack_id": "p_OJIPMPCANHNACOEIFBHKLLIHPKINBDGICMMHIBMI"
+    },
+    {
+      "artifact_id": "a_FAFLPEGEACMLNOEPJBMHNAOBNIJHCEHOOPPCHDHK",
+      "artifact_type": "study_pack.practice_item",
+      "artifact_version": 1,
+      "content_digest": "2bfcacb5b4c84b81bdfd8dc8c620ca439f7fc6e0364112220234c754af2e023e",
+      "generator_id": "extractive-local@1",
+      "generator_metadata": {
+        "generator_id": "extractive-local@1",
+        "mode": "deterministic_extractive",
+        "model_calls": 0,
+        "network_calls": 0,
+        "ocr_calls": 0,
+        "source_normalized_sha256": "b4b476e3fbff1f59f01caaf636367f508a541193db2ad2b5380bb1de0d1d54cb"
+      },
+      "lifecycle": "published",
+      "pack_id": "p_OJIPMPCANHNACOEIFBHKLLIHPKINBDGICMMHIBMI"
+    },
+    {
+      "artifact_id": "a_NAOLLJHAMAPBBFDPDIELOLGGHELMPEBACGOFAFLA",
+      "artifact_type": "study_pack.review_task",
+      "artifact_version": 1,
+      "content_digest": "416938d03b2aa3df22e75f1e3b75d774456145fa0f5878e4718376b0b2eaa062",
+      "generator_id": "extractive-local@1",
+      "generator_metadata": {
+        "generator_id": "extractive-local@1",
+        "mode": "deterministic_extractive",
+        "model_calls": 0,
+        "network_calls": 0,
+        "ocr_calls": 0,
+        "source_normalized_sha256": "b4b476e3fbff1f59f01caaf636367f508a541193db2ad2b5380bb1de0d1d54cb"
+      },
+      "lifecycle": "published",
+      "pack_id": "p_OJIPMPCANHNACOEIFBHKLLIHPKINBDGICMMHIBMI"
+    }
+  ],
+  "candidate_skill_links": [
+    {
+      "artifact_id": "a_IOPCLLMCFHNMPFDLCIDFPCBLGHLEEEGIFDPBFFPL",
+      "label": "材料要点复述",
+      "skill_id": "study.source-recall",
+      "status": "unconfirmed_candidate",
+      "taxonomy_digest": "2f94434fde218644f66d52c49c22849db6e6ab35d6ade150fd57e7678c287ea1",
+      "taxonomy_version": "lumi-taxonomy-seed.v1"
+    },
+    {
+      "artifact_id": "a_NCBFLOFKLBIEAMOJCNNLGDKIIGAJEGGMJIBGDKFE",
+      "label": "材料要点复述",
+      "skill_id": "study.source-recall",
+      "status": "unconfirmed_candidate",
+      "taxonomy_digest": "2f94434fde218644f66d52c49c22849db6e6ab35d6ade150fd57e7678c287ea1",
+      "taxonomy_version": "lumi-taxonomy-seed.v1"
+    },
+    {
+      "artifact_id": "a_FBJOCDBFEOELJEJKBLDFOJPCKOHEICFPMAPCDGJP",
+      "label": "材料要点复述",
+      "skill_id": "study.source-recall",
+      "status": "unconfirmed_candidate",
+      "taxonomy_digest": "2f94434fde218644f66d52c49c22849db6e6ab35d6ade150fd57e7678c287ea1",
+      "taxonomy_version": "lumi-taxonomy-seed.v1"
+    },
+    {
+      "artifact_id": "a_NJDMIHFJCIINAGGEPOLMDBGLFDPOCLJLCCFPGACN",
+      "label": "材料要点复述",
+      "skill_id": "study.source-recall",
+      "status": "unconfirmed_candidate",
+      "taxonomy_digest": "2f94434fde218644f66d52c49c22849db6e6ab35d6ade150fd57e7678c287ea1",
+      "taxonomy_version": "lumi-taxonomy-seed.v1"
+    },
+    {
+      "artifact_id": "a_NJMGJGMHGFDJHNPNHJGCNFBMDNIDDHJMCKBKLNLM",
+      "label": "材料要点复述",
+      "skill_id": "study.source-recall",
+      "status": "unconfirmed_candidate",
+      "taxonomy_digest": "2f94434fde218644f66d52c49c22849db6e6ab35d6ade150fd57e7678c287ea1",
+      "taxonomy_version": "lumi-taxonomy-seed.v1"
+    },
+    {
+      "artifact_id": "a_DCGIDMFEHHDHAKJPLLICDMFCJAAJPACFLNGLFKPD",
+      "label": "材料要点复述",
+      "skill_id": "study.source-recall",
+      "status": "unconfirmed_candidate",
+      "taxonomy_digest": "2f94434fde218644f66d52c49c22849db6e6ab35d6ade150fd57e7678c287ea1",
+      "taxonomy_version": "lumi-taxonomy-seed.v1"
+    },
+    {
+      "artifact_id": "a_FFBIDMAAFGKOCHIDBNEAFNBJJHHJHKIEKDPPEPDA",
+      "label": "材料要点复述",
+      "skill_id": "study.source-recall",
+      "status": "unconfirmed_candidate",
+      "taxonomy_digest": "2f94434fde218644f66d52c49c22849db6e6ab35d6ade150fd57e7678c287ea1",
+      "taxonomy_version": "lumi-taxonomy-seed.v1"
+    },
+    {
+      "artifact_id": "a_KDLCAKGEHAKKOKPOKBNODBKHOLAJFDNOMCAFNAIO",
+      "label": "材料要点复述",
+      "skill_id": "study.source-recall",
+      "status": "unconfirmed_candidate",
+      "taxonomy_digest": "2f94434fde218644f66d52c49c22849db6e6ab35d6ade150fd57e7678c287ea1",
+      "taxonomy_version": "lumi-taxonomy-seed.v1"
+    },
+    {
+      "artifact_id": "a_FAFLPEGEACMLNOEPJBMHNAOBNIJHCEHOOPPCHDHK",
+      "label": "材料要点复述",
+      "skill_id": "study.source-recall",
+      "status": "unconfirmed_candidate",
+      "taxonomy_digest": "2f94434fde218644f66d52c49c22849db6e6ab35d6ade150fd57e7678c287ea1",
+      "taxonomy_version": "lumi-taxonomy-seed.v1"
+    },
+    {
+      "artifact_id": "a_NAOLLJHAMAPBBFDPDIELOLGGHELMPEBACGOFAFLA",
+      "label": "材料要点复述",
+      "skill_id": "study.source-recall",
+      "status": "unconfirmed_candidate",
+      "taxonomy_digest": "2f94434fde218644f66d52c49c22849db6e6ab35d6ade150fd57e7678c287ea1",
+      "taxonomy_version": "lumi-taxonomy-seed.v1"
+    }
+  ],
+  "case_id": "pasted-text-chinese-v1",
+  "fixture_semantics": {
+    "attempt_evidence_origin": "evaluation_fixture",
+    "calibration_eligible": false,
+    "causal_claim_eligible": false,
+    "cohort_denominator_eligible": false,
+    "fairness_claim_eligible": false,
+    "human_learner_projection_eligible": false,
+    "learning_effect_claim_eligible": false,
+    "synthetic": true,
+    "synthetic_scope": "engineering_fixture_only"
+  },
+  "pack": {
+    "artifact_counts": {
+      "knowledge_card": 5,
+      "one_page_notes": 1,
+      "practice_item": 3,
+      "review_task": 1,
+      "total": 10
+    },
+    "artifact_refs": [
+      {
+        "artifact_id": "a_IOPCLLMCFHNMPFDLCIDFPCBLGHLEEEGIFDPBFFPL",
+        "artifact_type": "study_pack.one_page_notes",
+        "artifact_version": 1,
+        "content_digest": "85e488d91e02d4580e86be66fdd3ea540d102aa76822d2b9d27d20b49c992028",
+        "lifecycle": "published",
+        "verification_decision": "accepted"
+      },
+      {
+        "artifact_id": "a_NCBFLOFKLBIEAMOJCNNLGDKIIGAJEGGMJIBGDKFE",
+        "artifact_type": "study_pack.knowledge_card",
+        "artifact_version": 1,
+        "content_digest": "1009161542436bf235d876b9e82691e4370bcc42d3419287d1bcc3511d255bf7",
+        "lifecycle": "published",
+        "verification_decision": "accepted"
+      },
+      {
+        "artifact_id": "a_FBJOCDBFEOELJEJKBLDFOJPCKOHEICFPMAPCDGJP",
+        "artifact_type": "study_pack.knowledge_card",
+        "artifact_version": 1,
+        "content_digest": "a025faf6648942cc6b36facf27ae1a43d979db66b7168eabddb5e0f47126c1fa",
+        "lifecycle": "published",
+        "verification_decision": "accepted"
+      },
+      {
+        "artifact_id": "a_NJDMIHFJCIINAGGEPOLMDBGLFDPOCLJLCCFPGACN",
+        "artifact_type": "study_pack.knowledge_card",
+        "artifact_version": 1,
+        "content_digest": "c92829160a151d2bb68c035d0aeb3d0db33bf3d2a1b71f62ae623182008d593c",
+        "lifecycle": "published",
+        "verification_decision": "accepted"
+      },
+      {
+        "artifact_id": "a_NJMGJGMHGFDJHNPNHJGCNFBMDNIDDHJMCKBKLNLM",
+        "artifact_type": "study_pack.knowledge_card",
+        "artifact_version": 1,
+        "content_digest": "1f2c1c96cd33a6d6e33cd96310e0d1f1b62be9790ce237226f4c478f175405a9",
+        "lifecycle": "published",
+        "verification_decision": "accepted"
+      },
+      {
+        "artifact_id": "a_DCGIDMFEHHDHAKJPLLICDMFCJAAJPACFLNGLFKPD",
+        "artifact_type": "study_pack.knowledge_card",
+        "artifact_version": 1,
+        "content_digest": "dbaed00e568c1ecba3d0ed8f44298ab4152328bf6b3eef71fcd97f7c1ac758dd",
+        "lifecycle": "published",
+        "verification_decision": "accepted"
+      },
+      {
+        "artifact_id": "a_FFBIDMAAFGKOCHIDBNEAFNBJJHHJHKIEKDPPEPDA",
+        "artifact_type": "study_pack.practice_item",
+        "artifact_version": 1,
+        "content_digest": "23d4ca549e43e94fb99bc80363791e11d47b34e0f61ea001282ddcc79404563f",
+        "lifecycle": "published",
+        "verification_decision": "accepted"
+      },
+      {
+        "artifact_id": "a_KDLCAKGEHAKKOKPOKBNODBKHOLAJFDNOMCAFNAIO",
+        "artifact_type": "study_pack.practice_item",
+        "artifact_version": 1,
+        "content_digest": "acc088570f5aa0b8b20556bbfd9ef60a106f15ce1d8fb6cd25ecb2172dbeed5e",
+        "lifecycle": "published",
+        "verification_decision": "accepted"
+      },
+      {
+        "artifact_id": "a_FAFLPEGEACMLNOEPJBMHNAOBNIJHCEHOOPPCHDHK",
+        "artifact_type": "study_pack.practice_item",
+        "artifact_version": 1,
+        "content_digest": "2bfcacb5b4c84b81bdfd8dc8c620ca439f7fc6e0364112220234c754af2e023e",
+        "lifecycle": "published",
+        "verification_decision": "accepted"
+      },
+      {
+        "artifact_id": "a_NAOLLJHAMAPBBFDPDIELOLGGHELMPEBACGOFAFLA",
+        "artifact_type": "study_pack.review_task",
+        "artifact_version": 1,
+        "content_digest": "416938d03b2aa3df22e75f1e3b75d774456145fa0f5878e4718376b0b2eaa062",
+        "lifecycle": "published",
+        "verification_decision": "accepted"
+      }
+    ],
+    "authority": "independent_study_pack_store",
+    "created_at": "2026-07-11T00:00:00Z",
+    "event_stream": {
+      "projection_verified": true,
+      "stream_id": "p_OJIPMPCANHNACOEIFBHKLLIHPKINBDGICMMHIBMI",
+      "stream_type": "study_pack",
+      "trace_verified": true,
+      "version": 3
+    },
+    "generator_ref": {
+      "generator_id": "extractive-local@1",
+      "mode": "deterministic_extractive",
+      "model_calls": 0,
+      "network_calls": 0,
+      "ocr_calls": 0
+    },
+    "learning_effect_evidence": "unavailable",
+    "lifecycle": "published",
+    "links": {
+      "citation_template": "/v1/study-packs/p_OJIPMPCANHNACOEIFBHKLLIHPKINBDGICMMHIBMI/citations/{span_id}",
+      "replay": "/v1/study-packs/p_OJIPMPCANHNACOEIFBHKLLIHPKINBDGICMMHIBMI/replay",
+      "self": "/v1/study-packs/p_OJIPMPCANHNACOEIFBHKLLIHPKINBDGICMMHIBMI"
+    },
+    "pack_id": "p_OJIPMPCANHNACOEIFBHKLLIHPKINBDGICMMHIBMI",
+    "population_evidence": "unavailable",
+    "schema_version": "lumi.study-pack.v1",
+    "source_ref": {
+      "document_id": "d_ONIHDBBFDKONBMEBAKGIHAOGDJAFBHOOJEPCNHBH",
+      "input_kind": "pasted_text",
+      "normalized_sha256": "b4b476e3fbff1f59f01caaf636367f508a541193db2ad2b5380bb1de0d1d54cb",
+      "original_sha256": "b4b476e3fbff1f59f01caaf636367f508a541193db2ad2b5380bb1de0d1d54cb",
+      "source_version": 1
+    },
+    "title": "资料分析基本规则",
+    "updated_at": "2026-07-11T00:00:00Z",
+    "verifier_summary": {
+      "accepted_count": 10,
+      "artifact_count": 10,
+      "quarantined_count": 0,
+      "reviewed_at": "2026-07-11T00:00:00Z",
+      "reviewed_content_digest": "7cb1c93a991a20477cf20697a951f73935196c4dfccfb3b276be566b27c21696",
+      "status": "accepted",
+      "verifier_id": "study-pack-deterministic-verifier@1"
+    },
+    "version": 3,
+    "write_capabilities": {
+      "kt": false,
+      "misconception_dossier": false,
+      "review_schedule": false,
+      "today_plan": false
+    }
+  },
+  "private_artifact_contents": [
+    {
+      "artifact_id": "a_IOPCLLMCFHNMPFDLCIDFPCBLGHLEEEGIFDPBFFPL",
+      "content": {
+        "citations": [
+          {
+            "field_pointer": "/claims/0",
+            "span_ref": "s_PJPJCPFNDJKMHOOGHBBALKBHAAPMJPODNCBPKLBF"
+          },
+          {
+            "field_pointer": "/claims/1",
+            "span_ref": "s_LJDALOHLKAHIOGJBMAHMLKHDHAPMMCDDENMLLBHN"
+          },
+          {
+            "field_pointer": "/claims/2",
+            "span_ref": "s_ODPPGHOANHLIDJFJGOHJJEKOKLFNPCINCFLLBBFM"
+          },
+          {
+            "field_pointer": "/claims/3",
+            "span_ref": "s_HPEEMNGFKMGNJADGHDLCPNDKKKADFKLALIFGKPGL"
+          },
+          {
+            "field_pointer": "/claims/4",
+            "span_ref": "s_MJJNHBMLMDPAJIOHKDOLNLMMNLMEOHNLICOLPJLE"
+          }
+        ],
+        "claims": [
+          "增长率表示现期量相对基期量的变化比例，计算时分母使用基期量。",
+          "定位基期和现期后，先计算增长量，再用增长量除以基期量。",
+          "单位不一致时必须先统一单位，避免把万元和亿元直接代入同一算式。",
+          "完成提示练习后，应使用另一道未显示答案的题独立作答；",
+          "同一道题重做不能证明迁移。"
+        ],
+        "schema_version": "study_pack.one_page_notes.v1",
+        "title": "一页笔记"
+      }
+    },
+    {
+      "artifact_id": "a_NCBFLOFKLBIEAMOJCNNLGDKIIGAJEGGMJIBGDKFE",
+      "content": {
+        "answer": "增长率表示现期量相对基期量的变化比例，计算时分母使用基期量。",
+        "citations": [
+          {
+            "field_pointer": "/answer",
+            "span_ref": "s_PJPJCPFNDJKMHOOGHBBALKBHAAPMJPODNCBPKLBF"
+          }
+        ],
+        "question": "材料中的第 1 条核心表述是什么？",
+        "schema_version": "study_pack.knowledge_card.v1"
+      }
+    },
+    {
+      "artifact_id": "a_FBJOCDBFEOELJEJKBLDFOJPCKOHEICFPMAPCDGJP",
+      "content": {
+        "answer": "定位基期和现期后，先计算增长量，再用增长量除以基期量。",
+        "citations": [
+          {
+            "field_pointer": "/answer",
+            "span_ref": "s_LJDALOHLKAHIOGJBMAHMLKHDHAPMMCDDENMLLBHN"
+          }
+        ],
+        "question": "材料中的第 2 条核心表述是什么？",
+        "schema_version": "study_pack.knowledge_card.v1"
+      }
+    },
+    {
+      "artifact_id": "a_NJDMIHFJCIINAGGEPOLMDBGLFDPOCLJLCCFPGACN",
+      "content": {
+        "answer": "单位不一致时必须先统一单位，避免把万元和亿元直接代入同一算式。",
+        "citations": [
+          {
+            "field_pointer": "/answer",
+            "span_ref": "s_ODPPGHOANHLIDJFJGOHJJEKOKLFNPCINCFLLBBFM"
+          }
+        ],
+        "question": "材料中的第 3 条核心表述是什么？",
+        "schema_version": "study_pack.knowledge_card.v1"
+      }
+    },
+    {
+      "artifact_id": "a_NJMGJGMHGFDJHNPNHJGCNFBMDNIDDHJMCKBKLNLM",
+      "content": {
+        "answer": "完成提示练习后，应使用另一道未显示答案的题独立作答；",
+        "citations": [
+          {
+            "field_pointer": "/answer",
+            "span_ref": "s_HPEEMNGFKMGNJADGHDLCPNDKKKADFKLALIFGKPGL"
+          }
+        ],
+        "question": "材料中的第 4 条核心表述是什么？",
+        "schema_version": "study_pack.knowledge_card.v1"
+      }
+    },
+    {
+      "artifact_id": "a_DCGIDMFEHHDHAKJPLLICDMFCJAAJPACFLNGLFKPD",
+      "content": {
+        "answer": "同一道题重做不能证明迁移。",
+        "citations": [
+          {
+            "field_pointer": "/answer",
+            "span_ref": "s_MJJNHBMLMDPAJIOHKDOLNLMMNLMEOHNLICOLPJLE"
+          }
+        ],
+        "question": "材料中的第 5 条核心表述是什么？",
+        "schema_version": "study_pack.knowledge_card.v1"
+      }
+    },
+    {
+      "artifact_id": "a_FFBIDMAAFGKOCHIDBNEAFNBJJHHJHKIEKDPPEPDA",
+      "content": {
+        "answer": "增长率表示现期量相对基期量的变化比例，计算时分母使用基期量。",
+        "citations": [
+          {
+            "field_pointer": "/answer",
+            "span_ref": "s_PJPJCPFNDJKMHOOGHBBALKBHAAPMJPODNCBPKLBF"
+          },
+          {
+            "field_pointer": "/explanation",
+            "span_ref": "s_PJPJCPFNDJKMHOOGHBBALKBHAAPMJPODNCBPKLBF"
+          }
+        ],
+        "explanation": "增长率表示现期量相对基期量的变化比例，计算时分母使用基期量。",
+        "item_kind": "normalized_exact_v1",
+        "prompt": "根据本地材料，完整输入第 1 条核心表述。",
+        "schema_version": "study_pack.practice_item.v1",
+        "scorer": {
+          "kind": "normalized_exact_v1",
+          "version": "1.0.0"
+        }
+      }
+    },
+    {
+      "artifact_id": "a_KDLCAKGEHAKKOKPOKBNODBKHOLAJFDNOMCAFNAIO",
+      "content": {
+        "answer": "定位基期和现期后，先计算增长量，再用增长量除以基期量。",
+        "citations": [
+          {
+            "field_pointer": "/answer",
+            "span_ref": "s_LJDALOHLKAHIOGJBMAHMLKHDHAPMMCDDENMLLBHN"
+          },
+          {
+            "field_pointer": "/explanation",
+            "span_ref": "s_LJDALOHLKAHIOGJBMAHMLKHDHAPMMCDDENMLLBHN"
+          }
+        ],
+        "explanation": "定位基期和现期后，先计算增长量，再用增长量除以基期量。",
+        "item_kind": "normalized_exact_v1",
+        "prompt": "根据本地材料，完整输入第 2 条核心表述。",
+        "schema_version": "study_pack.practice_item.v1",
+        "scorer": {
+          "kind": "normalized_exact_v1",
+          "version": "1.0.0"
+        }
+      }
+    },
+    {
+      "artifact_id": "a_FAFLPEGEACMLNOEPJBMHNAOBNIJHCEHOOPPCHDHK",
+      "content": {
+        "answer": "单位不一致时必须先统一单位，避免把万元和亿元直接代入同一算式。",
+        "citations": [
+          {
+            "field_pointer": "/answer",
+            "span_ref": "s_ODPPGHOANHLIDJFJGOHJJEKOKLFNPCINCFLLBBFM"
+          },
+          {
+            "field_pointer": "/explanation",
+            "span_ref": "s_ODPPGHOANHLIDJFJGOHJJEKOKLFNPCINCFLLBBFM"
+          }
+        ],
+        "explanation": "单位不一致时必须先统一单位，避免把万元和亿元直接代入同一算式。",
+        "item_kind": "normalized_exact_v1",
+        "prompt": "根据本地材料，完整输入第 3 条核心表述。",
+        "schema_version": "study_pack.practice_item.v1",
+        "scorer": {
+          "kind": "normalized_exact_v1",
+          "version": "1.0.0"
+        }
+      }
+    },
+    {
+      "artifact_id": "a_NAOLLJHAMAPBBFDPDIELOLGGHELMPEBACGOFAFLA",
+      "content": {
+        "citations": [
+          {
+            "field_pointer": "/instruction",
+            "span_ref": "s_PJPJCPFNDJKMHOOGHBBALKBHAAPMJPODNCBPKLBF"
+          }
+        ],
+        "instruction": "复习并独立复述这一材料要点：增长率表示现期量相对基期量的变化比例，计算时分母使用基期量。",
+        "schedule_write_capability": false,
+        "schema_version": "study_pack.review_task.v1",
+        "scope": "pack_local_only"
+      }
+    }
+  ],
+  "schema_version": "lumi.study-pack-contract-fixture.v1",
+  "scorer_vector": {
+    "artifact_id": "a_FFBIDMAAFGKOCHIDBNEAFNBJJHHJHKIEKDPPEPDA",
+    "artifact_version": 1,
+    "candidate_answer_digest": "aa45572522f9ac82c808ab20a635c8255a620cf314324d1dbc624cea9e88c9e8",
+    "evidence_origin": "evaluation_fixture",
+    "expected_correct": true,
+    "expected_score": 1.0,
+    "human_learner_projection_eligible": false,
+    "product_attempt_record": false,
+    "scorer_id": "normalized_exact_v1@1.0.0",
+    "synthetic_test_input": true
+  },
+  "source_document": {
+    "byte_count": 468,
+    "codepoint_count": 162,
+    "document_id": "d_ONIHDBBFDKONBMEBAKGIHAOGDJAFBHOOJEPCNHBH",
+    "extraction_state": "accepted",
+    "input_kind": "pasted_text",
+    "locator_count": 5,
+    "media_type": "text/plain;charset=utf-8",
+    "normalization_name": "unicode-nfc-canonical-newline",
+    "normalization_version": "1.0.0",
+    "normalized_sha256": "b4b476e3fbff1f59f01caaf636367f508a541193db2ad2b5380bb1de0d1d54cb",
+    "original_sha256": "b4b476e3fbff1f59f01caaf636367f508a541193db2ad2b5380bb1de0d1d54cb",
+    "pack_id": "p_OJIPMPCANHNACOEIFBHKLLIHPKINBDGICMMHIBMI",
+    "parser_name": "lumi-pasted-section-parser",
+    "parser_version": "1.0.0",
+    "schema_version": "lumi.source-document.v1",
+    "source_version": 1,
+    "warning_codes": []
+  },
+  "source_spans": [
+    {
+      "document_id": "d_ONIHDBBFDKONBMEBAKGIHAOGDJAFBHOOJEPCNHBH",
+      "end_offset": 30,
+      "locator_index": 1,
+      "locator_kind": "section",
+      "normalized_source_sha256": "b4b476e3fbff1f59f01caaf636367f508a541193db2ad2b5380bb1de0d1d54cb",
+      "schema_version": "lumi.source-span.v1",
+      "slice_sha256": "aa45572522f9ac82c808ab20a635c8255a620cf314324d1dbc624cea9e88c9e8",
+      "source_version": 1,
+      "span_id": "s_PJPJCPFNDJKMHOOGHBBALKBHAAPMJPODNCBPKLBF",
+      "start_offset": 0
+    },
+    {
+      "document_id": "d_ONIHDBBFDKONBMEBAKGIHAOGDJAFBHOOJEPCNHBH",
+      "end_offset": 27,
+      "locator_index": 2,
+      "locator_kind": "section",
+      "normalized_source_sha256": "b4b476e3fbff1f59f01caaf636367f508a541193db2ad2b5380bb1de0d1d54cb",
+      "schema_version": "lumi.source-span.v1",
+      "slice_sha256": "d130bec49541f10da7f1511213eb634e3ad147fc140ab71473718a1b5b210785",
+      "source_version": 1,
+      "span_id": "s_LJDALOHLKAHIOGJBMAHMLKHDHAPMMCDDENMLLBHN",
+      "start_offset": 0
+    },
+    {
+      "document_id": "d_ONIHDBBFDKONBMEBAKGIHAOGDJAFBHOOJEPCNHBH",
+      "end_offset": 31,
+      "locator_index": 3,
+      "locator_kind": "section",
+      "normalized_source_sha256": "b4b476e3fbff1f59f01caaf636367f508a541193db2ad2b5380bb1de0d1d54cb",
+      "schema_version": "lumi.source-span.v1",
+      "slice_sha256": "2df72915c53a8ffbc037762d229101839d4b1fbf71f3ee0c8c5b8e6961ad8110",
+      "source_version": 1,
+      "span_id": "s_ODPPGHOANHLIDJFJGOHJJEKOKLFNPCINCFLLBBFM",
+      "start_offset": 0
+    },
+    {
+      "document_id": "d_ONIHDBBFDKONBMEBAKGIHAOGDJAFBHOOJEPCNHBH",
+      "end_offset": 26,
+      "locator_index": 4,
+      "locator_kind": "section",
+      "normalized_source_sha256": "b4b476e3fbff1f59f01caaf636367f508a541193db2ad2b5380bb1de0d1d54cb",
+      "schema_version": "lumi.source-span.v1",
+      "slice_sha256": "1ca7c1b61707f41c682e7f20d38380e593c0bceb49d5ecfebe4d6bd76250759a",
+      "source_version": 1,
+      "span_id": "s_HPEEMNGFKMGNJADGHDLCPNDKKKADFKLALIFGKPGL",
+      "start_offset": 0
+    },
+    {
+      "document_id": "d_ONIHDBBFDKONBMEBAKGIHAOGDJAFBHOOJEPCNHBH",
+      "end_offset": 39,
+      "locator_index": 4,
+      "locator_kind": "section",
+      "normalized_source_sha256": "b4b476e3fbff1f59f01caaf636367f508a541193db2ad2b5380bb1de0d1d54cb",
+      "schema_version": "lumi.source-span.v1",
+      "slice_sha256": "d686eb0b9b55c7092642533cd4dc14f4b6d22f959d8f24bd5b5ee5599a69efe1",
+      "source_version": 1,
+      "span_id": "s_MJJNHBMLMDPAJIOHKDOLNLMMNLMEOHNLICOLPJLE",
+      "start_offset": 26
+    }
+  ],
+  "verifier_decisions": [
+    {
+      "accepted": true,
+      "artifact_digest": "85e488d91e02d4580e86be66fdd3ea540d102aa76822d2b9d27d20b49c992028",
+      "artifact_id": "a_IOPCLLMCFHNMPFDLCIDFPCBLGHLEEEGIFDPBFFPL",
+      "artifact_version": 1,
+      "decision_id": "v_ACJALCDPPGOBGEDKEMLHAAMOJCNCIFJKLKEJFKAK",
+      "pack_id": "p_OJIPMPCANHNACOEIFBHKLLIHPKINBDGICMMHIBMI",
+      "reason_codes": [],
+      "verifier_id": "study-pack-deterministic-verifier@1"
+    },
+    {
+      "accepted": true,
+      "artifact_digest": "1009161542436bf235d876b9e82691e4370bcc42d3419287d1bcc3511d255bf7",
+      "artifact_id": "a_NCBFLOFKLBIEAMOJCNNLGDKIIGAJEGGMJIBGDKFE",
+      "artifact_version": 1,
+      "decision_id": "v_MEKGCLONNLMHOICCFHLPAMBMIFAHIOJEEGEIHNOE",
+      "pack_id": "p_OJIPMPCANHNACOEIFBHKLLIHPKINBDGICMMHIBMI",
+      "reason_codes": [],
+      "verifier_id": "study-pack-deterministic-verifier@1"
+    },
+    {
+      "accepted": true,
+      "artifact_digest": "a025faf6648942cc6b36facf27ae1a43d979db66b7168eabddb5e0f47126c1fa",
+      "artifact_id": "a_FBJOCDBFEOELJEJKBLDFOJPCKOHEICFPMAPCDGJP",
+      "artifact_version": 1,
+      "decision_id": "v_IILNEIDLEEKKFMMECEPJBOGMHKNIFEGBJDJAIJME",
+      "pack_id": "p_OJIPMPCANHNACOEIFBHKLLIHPKINBDGICMMHIBMI",
+      "reason_codes": [],
+      "verifier_id": "study-pack-deterministic-verifier@1"
+    },
+    {
+      "accepted": true,
+      "artifact_digest": "c92829160a151d2bb68c035d0aeb3d0db33bf3d2a1b71f62ae623182008d593c",
+      "artifact_id": "a_NJDMIHFJCIINAGGEPOLMDBGLFDPOCLJLCCFPGACN",
+      "artifact_version": 1,
+      "decision_id": "v_GPBMCIJFFAKGCDCGFPGGDPPAFOEIMOIBNGCOBDHL",
+      "pack_id": "p_OJIPMPCANHNACOEIFBHKLLIHPKINBDGICMMHIBMI",
+      "reason_codes": [],
+      "verifier_id": "study-pack-deterministic-verifier@1"
+    },
+    {
+      "accepted": true,
+      "artifact_digest": "1f2c1c96cd33a6d6e33cd96310e0d1f1b62be9790ce237226f4c478f175405a9",
+      "artifact_id": "a_NJMGJGMHGFDJHNPNHJGCNFBMDNIDDHJMCKBKLNLM",
+      "artifact_version": 1,
+      "decision_id": "v_CPENCDMOPNHMJHAIBCHIEDCKDIPLBDABOLIMEFDN",
+      "pack_id": "p_OJIPMPCANHNACOEIFBHKLLIHPKINBDGICMMHIBMI",
+      "reason_codes": [],
+      "verifier_id": "study-pack-deterministic-verifier@1"
+    },
+    {
+      "accepted": true,
+      "artifact_digest": "dbaed00e568c1ecba3d0ed8f44298ab4152328bf6b3eef71fcd97f7c1ac758dd",
+      "artifact_id": "a_DCGIDMFEHHDHAKJPLLICDMFCJAAJPACFLNGLFKPD",
+      "artifact_version": 1,
+      "decision_id": "v_GPHHMLBHJEOCGMHEECOAHMKGHNAKIPIIDLJNBHOL",
+      "pack_id": "p_OJIPMPCANHNACOEIFBHKLLIHPKINBDGICMMHIBMI",
+      "reason_codes": [],
+      "verifier_id": "study-pack-deterministic-verifier@1"
+    },
+    {
+      "accepted": true,
+      "artifact_digest": "23d4ca549e43e94fb99bc80363791e11d47b34e0f61ea001282ddcc79404563f",
+      "artifact_id": "a_FFBIDMAAFGKOCHIDBNEAFNBJJHHJHKIEKDPPEPDA",
+      "artifact_version": 1,
+      "decision_id": "v_IJPEHNGJOFCCMMHCHJDLHGIJADDNCEJEDKHANFAL",
+      "pack_id": "p_OJIPMPCANHNACOEIFBHKLLIHPKINBDGICMMHIBMI",
+      "reason_codes": [],
+      "verifier_id": "study-pack-deterministic-verifier@1"
+    },
+    {
+      "accepted": true,
+      "artifact_digest": "acc088570f5aa0b8b20556bbfd9ef60a106f15ce1d8fb6cd25ecb2172dbeed5e",
+      "artifact_id": "a_KDLCAKGEHAKKOKPOKBNODBKHOLAJFDNOMCAFNAIO",
+      "artifact_version": 1,
+      "decision_id": "v_IPBEBLDENGNFNBNAIALDAOLJKIBNDAAHINBAGCJD",
+      "pack_id": "p_OJIPMPCANHNACOEIFBHKLLIHPKINBDGICMMHIBMI",
+      "reason_codes": [],
+      "verifier_id": "study-pack-deterministic-verifier@1"
+    },
+    {
+      "accepted": true,
+      "artifact_digest": "2bfcacb5b4c84b81bdfd8dc8c620ca439f7fc6e0364112220234c754af2e023e",
+      "artifact_id": "a_FAFLPEGEACMLNOEPJBMHNAOBNIJHCEHOOPPCHDHK",
+      "artifact_version": 1,
+      "decision_id": "v_GEAEDHOJKKLOJPBKHHLKNBJANHHBGMELLKIKBNHA",
+      "pack_id": "p_OJIPMPCANHNACOEIFBHKLLIHPKINBDGICMMHIBMI",
+      "reason_codes": [],
+      "verifier_id": "study-pack-deterministic-verifier@1"
+    },
+    {
+      "accepted": true,
+      "artifact_digest": "416938d03b2aa3df22e75f1e3b75d774456145fa0f5878e4718376b0b2eaa062",
+      "artifact_id": "a_NAOLLJHAMAPBBFDPDIELOLGGHELMPEBACGOFAFLA",
+      "artifact_version": 1,
+      "decision_id": "v_MHFOFJLPNLEKNMIOIGBDDANNABJNONNPIONFNNIB",
+      "pack_id": "p_OJIPMPCANHNACOEIFBHKLLIHPKINBDGICMMHIBMI",
+      "reason_codes": [],
+      "verifier_id": "study-pack-deterministic-verifier@1"
+    }
+  ]
+}

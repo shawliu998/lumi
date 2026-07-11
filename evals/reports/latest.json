@@ -1,20 +1,20 @@
 {
   "schema_version": "release-report-v1",
-  "run_id": "run-20260711T132028Z",
-  "generated_at": "2026-07-11T13:20:28.677769+00:00",
+  "run_id": "run-20260711T175303Z",
+  "generated_at": "2026-07-11T17:53:03.961898+00:00",
   "repository": "[REPO_ROOT]",
   "overall_status": "pass",
   "summary": {
-    "pass": 16,
+    "pass": 17,
     "fail": 0,
     "pending": 0,
-    "total": 16
+    "total": 17
   },
   "gates": [
     {
       "name": "contracts",
       "status": "pass",
-      "summary": "7 schemas and canonical fixture validated",
+      "summary": "17 schemas and canonical fixture validated",
       "evidence": [
         {
           "schema": "assistance-result.schema.json",
@@ -37,6 +37,46 @@
           "sha256": "55add0f30765a6978a0fc6d45a88106eeecfc9247fb21b8a4b2fa5a21f84ce14"
         },
         {
+          "schema": "source-document.schema.json",
+          "sha256": "9186688125c0231ba84afef2d38359101fb260bf6cba16803b1b9f7ed17b895c"
+        },
+        {
+          "schema": "source-span.schema.json",
+          "sha256": "8c7a8228d28a958f3cf38e21bd910865bbec6e2bb9af3f53b921f23ad3eb201a"
+        },
+        {
+          "schema": "study-artifact-content.schema.json",
+          "sha256": "5a02c854feae2af0707291496b197a68fd88807612e1f59bdeb6027e3b82b8b7"
+        },
+        {
+          "schema": "study-artifact.schema.json",
+          "sha256": "995ddc79f3470bb25d74c0f68f7e08dc6f6f98c8acbea12bf80183045dc88fcf"
+        },
+        {
+          "schema": "study-candidate-skill-link.schema.json",
+          "sha256": "ef27481829c2e06bd340d70728f43c15d967184f4e326e0583dc337701c7b39f"
+        },
+        {
+          "schema": "study-pack-attempt-result.schema.json",
+          "sha256": "e7ce725aa4b6a2e4a2294cc652162373029e0af5609a761ae2a0126de544c325"
+        },
+        {
+          "schema": "study-pack-attempt.schema.json",
+          "sha256": "692364ff695deb953b14cfe87268f9d217468ec0fca6f758105517f86068fc89"
+        },
+        {
+          "schema": "study-pack-detail.schema.json",
+          "sha256": "c178f312619ff0d7ec8bde228fb043e8845db0f9e00814d55778ea6962065a64"
+        },
+        {
+          "schema": "study-pack.schema.json",
+          "sha256": "12d895749c5b4dba84a58cdbddaed451c3353176be094db51969f0b8fd03162c"
+        },
+        {
+          "schema": "study-verifier-decision.schema.json",
+          "sha256": "eceafa2c86ee0eeddd30f97e1383b94690344600ccdb4a3a8e537659ce236c5d"
+        },
+        {
           "schema": "today-plan.schema.json",
           "sha256": "d8794de9b545847a55a2ea7afc659ef5ee8adbd4e66608cad5bd87174100f1f4"
         },
@@ -46,7 +86,7 @@
         }
       ],
       "blocking": true,
-      "duration_ms": 3
+      "duration_ms": 5
     },
     {
       "name": "fixtures",
@@ -513,11 +553,11 @@
             "-v"
           ],
           "exit_code": 0,
-          "output": "test_policy_is_explicitly_uncalibrated_engineering_policy (test_assistance.AssistancePolicyTests.test_policy_is_explicitly_uncalibrated_engineering_policy) ... ok\ntest_server_side_next_level_fails_closed_after_six (test_assistance.AssistancePolicyTests.test_server_side_next_level_fails_closed_after_six) ... ok\ntest_six_levels_are_ordered_and_full_explanation_has_zero_credit (test_assistance.AssistancePolicyTests.test_six_levels_are_ordered_and_full_explanation_has_zero_credit) ... ok\ntest_counts_cannot_exceed_attempts (test_cohort.CohortPriorTests.test_counts_cannot_exceed_attempts) ... ok\ntest_eligible_aggregate_is_shrunk_and_provenance_carries_sample_size (test_cohort.CohortPriorTests.test_eligible_aggregate_is_shrunk_and_provenance_carries_sample_size) ... ok\ntest_small_cohort_fails_closed_without_exposing_counts (test_cohort.CohortPriorTests.test_small_cohort_fails_closed_without_exposing_counts) ... ok\ntest_unknown_taxonomy_cause_is_rejected (test_cohort.CohortPriorTests.test_unknown_taxonomy_cause_is_rejected) ... ok\ntest_unreviewed_aggregate_never_influences_prior (test_cohort.CohortPriorTests.test_unreviewed_aggregate_never_influences_prior) ... ok\ntest_distractor_and_history_raise_specific_cause (test_diagnosis.DiagnosisTests.test_distractor_and_history_raise_specific_cause) ... ok\ntest_invalid_empty_prior_is_rejected (test_diagnosis.DiagnosisTests.test_invalid_empty_prior_is_rejected) ... ok\ntest_tool_boundary_is_json_friendly (test_diagnosis.DiagnosisTests.test_tool_boundary_is_json_friendly) ... ok\ntest_complex_diagnosis_routes_to_strong_model (test_guardrails.RoutingAndGuardrailTests.test_complex_diagnosis_routes_to_strong_model) ... ok\ntest_low_cost_output_requires_independent_probe (test_guardrails.RoutingAndGuardrailTests.test_low_cost_output_requires_independent_probe) ... ok\ntest_routine_generation_routes_to_balanced_model (test_guardrails.RoutingAndGuardrailTests.test_routine_generation_routes_to_balanced_model) ... ok\ntest_schema_guard_rejects_unnormalized_or_unproven_claims (test_guardrails.RoutingAndGuardrailTests.test_schema_guard_rejects_unnormalized_or_unproven_claims) ... ok\ntest_correct_attempt_increases_mastery_and_records_components (test_mastery.MasteryTests.test_correct_attempt_increases_mastery_and_records_components) ... ok\ntest_hinted_verification_is_inconclusive (test_mastery.MasteryTests.test_hinted_verification_is_inconclusive) ... ok\ntest_incorrect_attempt_reduces_mastery (test_mastery.MasteryTests.test_incorrect_attempt_reduces_mastery) ... ok\ntest_independent_verification_can_mark_teaching_effective (test_mastery.MasteryTests.test_independent_verification_can_mark_teaching_effective) ... ok\ntest_non_independent_or_hinted_verification_never_mutates_mastery (test_mastery.MasteryTests.test_non_independent_or_hinted_verification_never_mutates_mastery) ... ok\ntest_tool_update_is_serializable (test_mastery.MasteryTests.test_tool_update_is_serializable) ... ok\ntest_zero_weight_observation_leaves_authoritative_state_unchanged (test_mastery.MasteryTests.test_zero_weight_observation_leaves_authoritative_state_unchanged) ... ok\n\n----------------------------------------------------------------------\nRan 22 tests in 0.002s\n\nOK"
+          "output": "test_policy_is_explicitly_uncalibrated_engineering_policy (test_assistance.AssistancePolicyTests.test_policy_is_explicitly_uncalibrated_engineering_policy) ... ok\ntest_server_side_next_level_fails_closed_after_six (test_assistance.AssistancePolicyTests.test_server_side_next_level_fails_closed_after_six) ... ok\ntest_six_levels_are_ordered_and_full_explanation_has_zero_credit (test_assistance.AssistancePolicyTests.test_six_levels_are_ordered_and_full_explanation_has_zero_credit) ... ok\ntest_counts_cannot_exceed_attempts (test_cohort.CohortPriorTests.test_counts_cannot_exceed_attempts) ... ok\ntest_eligible_aggregate_is_shrunk_and_provenance_carries_sample_size (test_cohort.CohortPriorTests.test_eligible_aggregate_is_shrunk_and_provenance_carries_sample_size) ... ok\ntest_small_cohort_fails_closed_without_exposing_counts (test_cohort.CohortPriorTests.test_small_cohort_fails_closed_without_exposing_counts) ... ok\ntest_unknown_taxonomy_cause_is_rejected (test_cohort.CohortPriorTests.test_unknown_taxonomy_cause_is_rejected) ... ok\ntest_unreviewed_aggregate_never_influences_prior (test_cohort.CohortPriorTests.test_unreviewed_aggregate_never_influences_prior) ... ok\ntest_distractor_and_history_raise_specific_cause (test_diagnosis.DiagnosisTests.test_distractor_and_history_raise_specific_cause) ... ok\ntest_invalid_empty_prior_is_rejected (test_diagnosis.DiagnosisTests.test_invalid_empty_prior_is_rejected) ... ok\ntest_tool_boundary_is_json_friendly (test_diagnosis.DiagnosisTests.test_tool_boundary_is_json_friendly) ... ok\ntest_complex_diagnosis_routes_to_strong_model (test_guardrails.RoutingAndGuardrailTests.test_complex_diagnosis_routes_to_strong_model) ... ok\ntest_low_cost_output_requires_independent_probe (test_guardrails.RoutingAndGuardrailTests.test_low_cost_output_requires_independent_probe) ... ok\ntest_routine_generation_routes_to_balanced_model (test_guardrails.RoutingAndGuardrailTests.test_routine_generation_routes_to_balanced_model) ... ok\ntest_schema_guard_rejects_unnormalized_or_unproven_claims (test_guardrails.RoutingAndGuardrailTests.test_schema_guard_rejects_unnormalized_or_unproven_claims) ... ok\ntest_correct_attempt_increases_mastery_and_records_components (test_mastery.MasteryTests.test_correct_attempt_increases_mastery_and_records_components) ... ok\ntest_hinted_verification_is_inconclusive (test_mastery.MasteryTests.test_hinted_verification_is_inconclusive) ... ok\ntest_incorrect_attempt_reduces_mastery (test_mastery.MasteryTests.test_incorrect_attempt_reduces_mastery) ... ok\ntest_independent_verification_can_mark_teaching_effective (test_mastery.MasteryTests.test_independent_verification_can_mark_teaching_effective) ... ok\ntest_non_independent_or_hinted_verification_never_mutates_mastery (test_mastery.MasteryTests.test_non_independent_or_hinted_verification_never_mutates_mastery) ... ok\ntest_tool_update_is_serializable (test_mastery.MasteryTests.test_tool_update_is_serializable) ... ok\ntest_zero_weight_observation_leaves_authoritative_state_unchanged (test_mastery.MasteryTests.test_zero_weight_observation_leaves_authoritative_state_unchanged) ... ok\n\n----------------------------------------------------------------------\nRan 22 tests in 0.001s\n\nOK"
         }
       ],
       "blocking": true,
-      "duration_ms": 89
+      "duration_ms": 74
     },
     {
       "name": "integration_surfaces",
@@ -526,47 +566,38 @@
       "evidence": [
         {
           "runtime_tests": {
-            "command": [
-              "[ABSOLUTE_PATH]",
-              "-m",
-              "unittest",
-              "discover",
-              "-s",
-              "[REPO_ROOT]/runtime/tests",
-              "-v"
-            ],
             "exit_code": 0,
-            "output": "mmutable_and_hash_addressed) ... ok\ntest_guardrail_blocks_protected_path (test_runtime.RuntimeTests.test_guardrail_blocks_protected_path) ... ok\ntest_interrupt_resume_reconstructs_from_database (test_runtime.RuntimeTests.test_interrupt_resume_reconstructs_from_database) ... ok\ntest_model_calls_are_recorded (test_runtime.RuntimeTests.test_model_calls_are_recorded) ... ok\ntest_model_routing_quality_first (test_runtime.RuntimeTests.test_model_routing_quality_first) ... ok\ntest_replay_does_not_invoke_tools (test_runtime.RuntimeTests.test_replay_does_not_invoke_tools) ... ok\ntest_tool_schema_rejects_invalid_output (test_runtime.RuntimeTests.test_tool_schema_rejects_invalid_output) ... ok\ntest_trace_is_append_only_and_redacts_secrets (test_runtime.RuntimeTests.test_trace_is_append_only_and_redacts_secrets) ... ok\ntest_two_cycle_demo_completes_with_typed_artifacts (test_runtime.RuntimeTests.test_two_cycle_demo_completes_with_typed_artifacts) ... ok\ntest_accepted_commitment_remains_actionable_in_the_next_day_plan (test_schedule.ScheduleTests.test_accepted_commitment_remains_actionable_in_the_next_day_plan) ... ok\ntest_aging_prevents_old_skipped_task_starvation_under_daily_arrivals (test_schedule.ScheduleTests.test_aging_prevents_old_skipped_task_starvation_under_daily_arrivals) ... ok\ntest_all_accepted_commitments_survive_recovery_mode_task_cap (test_schedule.ScheduleTests.test_all_accepted_commitments_survive_recovery_mode_task_cap) ... ok\ntest_budget_never_selects_an_over_budget_task (test_schedule.ScheduleTests.test_budget_never_selects_an_over_budget_task) ... ok\ntest_command_results_are_exactly_idempotent_and_conflicts_fail_closed (test_schedule.ScheduleTests.test_command_results_are_exactly_idempotent_and_conflicts_fail_closed) ... ok\ntest_completed_overdue_task_is_not_recounted_on_the_next_day (test_schedule.ScheduleTests.test_completed_overdue_task_is_not_recounted_on_the_next_day) ... ok\ntest_evidence_older_than_fourteen_days_is_persisted_not_starved (test_schedule.ScheduleTests.test_evidence_older_than_fourteen_days_is_persisted_not_starved) ... ok\ntest_forged_provenance_is_rejected_before_any_schedule_write (test_schedule.ScheduleTests.test_forged_provenance_is_rejected_before_any_schedule_write) ... ok\ntest_fresh_schedule_store_initialization_is_concurrency_safe (test_schedule.ScheduleTests.test_fresh_schedule_store_initialization_is_concurrency_safe) ... ok\ntest_legacy_workload_limit_basis_migrates_even_for_empty_plan_receipt (test_schedule.ScheduleTests.test_legacy_workload_limit_basis_migrates_even_for_empty_plan_receipt) ... ok\ntest_low_budget_cannot_persist_a_plan_that_hides_an_accepted_task (test_schedule.ScheduleTests.test_low_budget_cannot_persist_a_plan_that_hides_an_accepted_task) ... ok\ntest_missed_existing_on_policy_task_does_not_turn_into_catch_up (test_schedule.ScheduleTests.test_missed_existing_on_policy_task_does_not_turn_into_catch_up) ... ok\ntest_no_evidence_creates_honest_empty_replayable_plan (test_schedule.ScheduleTests.test_no_evidence_creates_honest_empty_replayable_plan) ... ok\ntest_overdue_retention_exposes_missed_plus_three_without_false_claim (test_schedule.ScheduleTests.test_overdue_retention_exposes_missed_plus_three_without_false_claim) ... ok\ntest_overdue_retry_exposes_policy_window_and_actual_catch_up_date (test_schedule.ScheduleTests.test_overdue_retry_exposes_policy_window_and_actual_catch_up_date) ... ok\ntest_partial_schedule_migration_restart_repairs_all_nullable_fields (test_schedule.ScheduleTests.test_partial_schedule_migration_restart_repairs_all_nullable_fields) ... ok\ntest_persistence_rejects_every_nonopaque_command_id_without_writes (test_schedule.ScheduleTests.test_persistence_rejects_every_nonopaque_command_id_without_writes) ... ok\ntest_pre_novelty_contract_migrates_with_audit_events_and_supersedes_receipts (test_schedule.ScheduleTests.test_pre_novelty_contract_migrates_with_audit_events_and_supersedes_receipts) ... ok\ntest_recorded_local_date_prevents_utc_midnight_off_by_one (test_schedule.ScheduleTests.test_recorded_local_date_prevents_utc_midnight_off_by_one) ... ok\ntest_recovery_load_persists_all_candidates_and_surfaces_each_one (test_schedule.ScheduleTests.test_recovery_load_persists_all_candidates_and_surfaces_each_one) ... ok\ntest_repeated_skip_rotates_due_recovery_tasks_without_starvation (test_schedule.ScheduleTests.test_repeated_skip_rotates_due_recovery_tasks_without_starvation) ... ok\ntest_review_after_exam_is_withheld_instead_of_silently_clamped (test_schedule.ScheduleTests.test_review_after_exam_is_withheld_instead_of_silently_clamped) ... ok\ntest_skipped_and_postponed_tasks_necessarily_resurface_when_due (test_schedule.ScheduleTests.test_skipped_and_postponed_tasks_necessarily_resurface_when_due) ... ok\ntest_stale_update_and_latest_refuted_cause_are_rejected (test_schedule.ScheduleTests.test_stale_update_and_latest_refuted_cause_are_rejected) ... ok\ntest_successful_transfer_creates_fixed_unvalidated_delayed_review (test_schedule.ScheduleTests.test_successful_transfer_creates_fixed_unvalidated_delayed_review) ... ok\ntest_synthetic_origin_cannot_enter_the_human_review_schedule (test_schedule.ScheduleTests.test_synthetic_origin_cannot_enter_the_human_review_schedule) ... ok\ntest_task_copy_and_activity_disclose_same_fixture_retest_limit (test_schedule.ScheduleTests.test_task_copy_and_activity_disclose_same_fixture_retest_limit) ... ok\ntest_two_connections_with_same_version_accept_exactly_one_write (test_schedule.ScheduleTests.test_two_connections_with_same_version_accept_exactly_one_write) ... ok\ntest_unlaunchable_activity_is_withheld_and_sensitive_command_ids_fail (test_schedule.ScheduleTests.test_unlaunchable_activity_is_withheld_and_sensitive_command_ids_fail) ... ok\ntest_user_marked_completion_does_not_touch_trace_or_kt_evidence (test_schedule.ScheduleTests.test_user_marked_completion_does_not_touch_trace_or_kt_evidence) ... ok\n\n----------------------------------------------------------------------\nRan 40 tests in 0.720s\n\nOK"
+            "test_count": 40,
+            "failure_count": 0,
+            "error_count": 0,
+            "skipped_count": 0,
+            "stable_failure_codes": [],
+            "output_sha256": "526260bb041d3a9d15041068b5c4eb477cd2905d0e731014ddb30f9134c8c2e6",
+            "raw_output_saved": false
           }
         },
         {
           "domains_tests": {
-            "command": [
-              "[ABSOLUTE_PATH]",
-              "-m",
-              "unittest",
-              "discover",
-              "-s",
-              "[REPO_ROOT]/domains/tests",
-              "-v"
-            ],
             "exit_code": 0,
-            "output": "test_all_candidates_remain_unconfirmed (test_domain_contract.DeterministicAdapterTests.test_all_candidates_remain_unconfirmed) ... ok\ntest_ambiguous_scenarios_request_probe_and_keep_multiple_hypotheses (test_domain_contract.DeterministicAdapterTests.test_ambiguous_scenarios_request_probe_and_keep_multiple_hypotheses) ... ok\ntest_chinese_negation_is_local_and_double_negation_is_not_lost (test_domain_contract.DeterministicAdapterTests.test_chinese_negation_is_local_and_double_negation_is_not_lost) ... ok\ntest_every_resolved_fixture_has_full_probe_and_teaching_coverage (test_domain_contract.DeterministicAdapterTests.test_every_resolved_fixture_has_full_probe_and_teaching_coverage) ... ok\ntest_every_single_choice_verification_authors_visible_options (test_domain_contract.DeterministicAdapterTests.test_every_single_choice_verification_authors_visible_options) ... ok\ntest_every_verification_contract_has_executable_positive_and_negative_samples (test_domain_contract.DeterministicAdapterTests.test_every_verification_contract_has_executable_positive_and_negative_samples) ... ok\ntest_growth_distractors_rank_their_specific_candidate_first (test_domain_contract.DeterministicAdapterTests.test_growth_distractors_rank_their_specific_candidate_first) ... ok\ntest_offline_scenarios_use_only_local_deterministic_fallback (test_domain_contract.DeterministicAdapterTests.test_offline_scenarios_use_only_local_deterministic_fallback) ... ok\ntest_passing_sample_scores_higher_than_failing_sample (test_domain_contract.DeterministicAdapterTests.test_passing_sample_scores_higher_than_failing_sample) ... ok\ntest_replay_is_byte_stable (test_domain_contract.DeterministicAdapterTests.test_replay_is_byte_stable) ... ok\ntest_score_observations_are_not_causal_labels (test_domain_contract.DeterministicAdapterTests.test_score_observations_are_not_causal_labels) ... ok\ntest_success_scenarios_pass_with_no_asserted_cause (test_domain_contract.DeterministicAdapterTests.test_success_scenarios_pass_with_no_asserted_cause) ... ok\ntest_text_rubrics_reject_action_cancellation_attacks (test_domain_contract.DeterministicAdapterTests.test_text_rubrics_reject_action_cancellation_attacks) ... ok\ntest_text_rubrics_reject_authored_negation_attacks (test_domain_contract.DeterministicAdapterTests.test_text_rubrics_reject_authored_negation_attacks) ... ok\ntest_complete_14_by_3_scenario_matrix (test_domain_contract.DomainContractTests.test_complete_14_by_3_scenario_matrix) ... ok\ntest_every_fixture_validates (test_domain_contract.DomainContractTests.test_every_fixture_validates) ... ok\ntest_overlay_cannot_relabel_a_base_fixture_path (test_domain_contract.DomainContractTests.test_overlay_cannot_relabel_a_base_fixture_path) ... ok\ntest_overlay_rejects_unsafe_path_domain_and_provider_claims (test_domain_contract.DomainContractTests.test_overlay_rejects_unsafe_path_domain_and_provider_claims) ... ok\ntest_rejects_duplicate_probe_assessment_rules (test_domain_contract.DomainContractTests.test_rejects_duplicate_probe_assessment_rules) ... ok\ntest_rejects_ground_truth_cause_claim (test_domain_contract.DomainContractTests.test_rejects_ground_truth_cause_claim) ... ok\ntest_rejects_incomplete_verification_contract (test_domain_contract.DomainContractTests.test_rejects_incomplete_verification_contract) ... ok\ntest_rejects_missing_assessment_samples_and_teaching_variants (test_domain_contract.DomainContractTests.test_rejects_missing_assessment_samples_and_teaching_variants) ... ok\ntest_rejects_non_independent_verification (test_domain_contract.DomainContractTests.test_rejects_non_independent_verification) ... ok\ntest_rejects_unknown_and_duplicate_probe_targets (test_domain_contract.DomainContractTests.test_rejects_unknown_and_duplicate_probe_targets) ... ok\ntest_representative_coverage (test_domain_contract.DomainContractTests.test_representative_coverage) ... ok\n\n----------------------------------------------------------------------\nRan 25 tests in 0.118s\n\nOK"
+            "test_count": 25,
+            "failure_count": 0,
+            "error_count": 0,
+            "skipped_count": 0,
+            "stable_failure_codes": [],
+            "output_sha256": "3ba97933cb77c9a90d4810eaee47fc13727cfd0760631da82bb1c93637d0dd4f",
+            "raw_output_saved": false
           }
         },
         {
           "integration_tests": {
-            "command": [
-              "[ABSOLUTE_PATH]",
-              "-m",
-              "unittest",
-              "discover",
-              "-s",
-              "[REPO_ROOT]/integration/tests",
-              "-v"
-            ],
             "exit_code": 0,
-            "output": "test_all_resolved_probe_polarity_samples_are_executable (test_learning_loop.IntegrationLoopTests.test_all_resolved_probe_polarity_samples_are_executable) ... ok\ntest_ambiguous_case_selects_disambiguating_probe (test_learning_loop.IntegrationLoopTests.test_ambiguous_case_selects_disambiguating_probe) ... ok\ntest_continuation_rejects_fixture_drift_without_writing (test_learning_loop.IntegrationLoopTests.test_continuation_rejects_fixture_drift_without_writing) ... ok\ntest_continuation_rejects_out_of_order_and_stale_versions (test_learning_loop.IntegrationLoopTests.test_continuation_rejects_out_of_order_and_stale_versions) ... ok\ntest_every_mastery_delta_has_evidence_and_versions (test_learning_loop.IntegrationLoopTests.test_every_mastery_delta_has_evidence_and_versions) ... ok\ntest_growth_formula_probe_uses_authored_semantic_classifier (test_learning_loop.IntegrationLoopTests.test_growth_formula_probe_uses_authored_semantic_classifier) ... ok\ntest_growth_formula_rejections_fail_closed_or_refute_only_explicit_claim (test_learning_loop.IntegrationLoopTests.test_growth_formula_rejections_fail_closed_or_refute_only_explicit_claim) ... ok\ntest_negated_probe_evidence_never_preserves_its_original_polarity (test_learning_loop.IntegrationLoopTests.test_negated_probe_evidence_never_preserves_its_original_polarity) ... ok\ntest_offline_case_has_no_fabricated_model_calls_and_replays (test_learning_loop.IntegrationLoopTests.test_offline_case_has_no_fabricated_model_calls_and_replays) ... ok\ntest_probe_evidence_changes_authored_teaching_focus_without_confirming_cause (test_learning_loop.IntegrationLoopTests.test_probe_evidence_changes_authored_teaching_focus_without_confirming_cause) ... ok\ntest_real_response_is_scored_raw_but_only_redacted_evidence_is_traced (test_learning_loop.IntegrationLoopTests.test_real_response_is_scored_raw_but_only_redacted_evidence_is_traced) ... ok\ntest_real_responses_drive_distinct_score_and_diagnosis_paths (test_learning_loop.IntegrationLoopTests.test_real_responses_drive_distinct_score_and_diagnosis_paths) ... ok\ntest_real_session_requires_probe_then_verification_before_mastery_update (test_learning_loop.IntegrationLoopTests.test_real_session_requires_probe_then_verification_before_mastery_update) ... ok\ntest_store_is_closed_when_continuation_fails_after_response_append (test_learning_loop.IntegrationLoopTests.test_store_is_closed_when_continuation_fails_after_response_append) ... ok\ntest_store_is_closed_when_session_construction_fails (test_learning_loop.IntegrationLoopTests.test_store_is_closed_when_session_construction_fails) ... ok\ntest_success_runs_domain_engine_runtime_and_verifies_transfer (test_learning_loop.IntegrationLoopTests.test_success_runs_domain_engine_runtime_and_verifies_transfer) ... ok\ntest_supported_and_refuted_probe_statuses_route_every_authored_variant (test_learning_loop.IntegrationLoopTests.test_supported_and_refuted_probe_statuses_route_every_authored_variant) ... ok\ntest_trace_contains_all_seven_real_phase_artifacts (test_learning_loop.IntegrationLoopTests.test_trace_contains_all_seven_real_phase_artifacts) ... ok\ntest_zero_weight_probe_cannot_support_or_refute_growth_causes (test_learning_loop.IntegrationLoopTests.test_zero_weight_probe_cannot_support_or_refute_growth_causes) ... ok\n\n----------------------------------------------------------------------\nRan 19 tests in 0.316s\n\nOK"
+            "test_count": 19,
+            "failure_count": 0,
+            "error_count": 0,
+            "skipped_count": 0,
+            "stable_failure_codes": [],
+            "output_sha256": "5495de1e0e13c8a89e48591b77daf02c00f47141a471e45ed755cf3a901ee799",
+            "raw_output_saved": false
           }
         },
         {
@@ -743,49 +774,17 @@
         },
         {
           "runtime_demo": {
-            "command": [
-              "[ABSOLUTE_PATH]",
-              "-m",
-              "hermes_runtime",
-              "--db",
-              "[REPO_ROOT]/evals/reports/runtime-probe-oawu704o/trace.sqlite3",
-              "demo",
-              "--run-id",
-              "eval-runtime-probe"
-            ],
             "exit_code": 0,
-            "output": {
-              "run_id": "eval-runtime-probe",
-              "status": "completed",
-              "phase": "complete",
-              "cycle": 2,
-              "steps": 14,
-              "events": 15,
-              "trace_verified": true,
-              "model_tiers": [
-                "sol",
-                "terra",
-                "light",
-                "sol",
-                "terra",
-                "light"
-              ]
-            }
+            "trace_verified": true,
+            "payload_sha256": "5dfeb75a23bf6829757af5d4512ef067535de22ddfb4422f76ba703cfed18b5a",
+            "output_sha256": "9911a0f46bc6624dcc99ca12855f3b23a12b194f7ec99a4e04949e19e0f04d02",
+            "raw_output_saved": false
           }
         },
         {
           "runtime_replay": {
-            "command": [
-              "[ABSOLUTE_PATH]",
-              "-m",
-              "hermes_runtime",
-              "--db",
-              "[REPO_ROOT]/evals/reports/runtime-probe-oawu704o/trace.sqlite3",
-              "replay",
-              "eval-runtime-probe"
-            ],
             "exit_code": 0,
-            "output": {
+            "evidence": {
               "run_id": "eval-runtime-probe",
               "verified": true,
               "frame_count": 15,
@@ -811,7 +810,7 @@
                   "trace_verified": true,
                   "model_calls_recorded": 0
                 },
-                "replay_sha256": "73b38ed42b247c0481d33edddd6038071900c50c3625c6250b64753b902c4f78",
+                "replay_sha256": "79dc1d8859cbce8912c664b9dc14e441801385a60914872eefb754e244d9f758",
                 "assertion_errors": []
               },
               "ambiguous": {
@@ -827,7 +826,7 @@
                   "trace_verified": true,
                   "model_calls_recorded": 0
                 },
-                "replay_sha256": "801bdf0048dbdd83520941caa5910abdf6362175f79012796fd48b59a0e2500f",
+                "replay_sha256": "10fa4d031cec3fc0dc7267df700e6758bf9ac7c690e9716b05e38daa9378579c",
                 "assertion_errors": []
               },
               "offline": {
@@ -843,7 +842,7 @@
                   "trace_verified": true,
                   "model_calls_recorded": 0
                 },
-                "replay_sha256": "400d32bff695e2a8013113f663e62408b4d62c906a5e7de54567e728bbf22155",
+                "replay_sha256": "e689f2426efe47eb22c3ef777489b0cc2ac5c4983c82e2108756ab5046fe1dc0",
                 "assertion_errors": []
               }
             }
@@ -851,7 +850,7 @@
         }
       ],
       "blocking": true,
-      "duration_ms": 2177
+      "duration_ms": 2321
     },
     {
       "name": "attempt_api",
@@ -871,10 +870,10 @@
           "cases": {
             "correct": {
               "request": {
-                "unknown_fields": [],
+                "contains_pii_test_data": false,
                 "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
                 "response_sha256": "df7e70e5021544f4834bbee64a9e3789febc4be81470df629cad6ddb03320a5c",
-                "contains_pii_test_data": false,
+                "unknown_fields": [],
                 "run_id_sha256": "28bff14cae7db585f872f04d62a13ff739d7f99db47d8a9de6613b379cc8c6ee"
               },
               "http_status": 201,
@@ -892,17 +891,17 @@
               },
               "error": null,
               "trace_status": 200,
-              "trace_sha256": "faccbf2c3fcfbbb910998cc5fe30016bd48316c3866250f9af483e04c3bbaebb",
+              "trace_sha256": "c83711bfcff87541bb82f2afd61907af64f7f7f9695efc8ac63c8b464ad8a6d7",
               "replay_status": 200,
-              "replay_sha256": "084164c38c68b026ae099a4aa9cdabdf171be4be8241c033cbb6d58fdf519fad",
+              "replay_sha256": "95ce2f55ed12669b230ddc1b02dcf4872a4d965ea16b3cfd993a6b9ce7bb4b3f",
               "rejected_run_trace_status": null
             },
             "wrong": {
               "request": {
-                "unknown_fields": [],
+                "contains_pii_test_data": false,
                 "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
                 "response_sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
-                "contains_pii_test_data": false,
+                "unknown_fields": [],
                 "run_id_sha256": "88f17323e5fe195c4667715d1988a658339217c5418f479d1cd9e9abf1bd96ef"
               },
               "http_status": 201,
@@ -920,17 +919,17 @@
               },
               "error": null,
               "trace_status": 200,
-              "trace_sha256": "6ecde2d8950e966272ec4ca61d7c910c7f17576eaae80a19d27d1bb07bd28490",
+              "trace_sha256": "c38081742087b5d770340ecc1b1a916482ca3b47cb8e61f13ff09554c62f4057",
               "replay_status": 200,
-              "replay_sha256": "6d0f3bf182e9c630810740a4bcbf1de8fabd98fec1f28025f0dc787018199504",
+              "replay_sha256": "ef4fbc452d661e4a162ba52719a451c6ccf5f3aabb683e98773182d58e895fe1",
               "rejected_run_trace_status": null
             },
             "pii": {
               "request": {
-                "unknown_fields": [],
+                "contains_pii_test_data": true,
                 "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
                 "response_sha256": "fd07ca96eeaa46307b08faef121d6b337b927a4d3194960335e7c5e503d7e1a6",
-                "contains_pii_test_data": true,
+                "unknown_fields": [],
                 "run_id_sha256": "190911bcfc96aca64b883ab47161053db0f1b1d4dbe93568e257fde175b52252"
               },
               "http_status": 201,
@@ -958,19 +957,19 @@
               },
               "error": null,
               "trace_status": 200,
-              "trace_sha256": "db3c843b2aab726b7037c6a4f3702c2c7bd3c2c18a68e7589b4c9a09aca14788",
+              "trace_sha256": "b1a34a3469751cc935d9715a277a06ec3cc6459851631dac1bc70180deebc7d2",
               "replay_status": 200,
-              "replay_sha256": "0f546aeac031d9ac181b5ad4808a23486aeb7e62f1bcebaa9e00548b040b3f66",
+              "replay_sha256": "42947f13306b32199917fe3dc2a40cac6a4e61d2cb52aa2c5c557189efc5d835",
               "rejected_run_trace_status": null
             },
             "unknown_field": {
               "request": {
+                "contains_pii_test_data": false,
+                "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "response_sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
                 "unknown_fields": [
                   "cause_ground_truth"
                 ],
-                "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
-                "response_sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
-                "contains_pii_test_data": false,
                 "run_id_sha256": "85ad5d35fd040ad36cb981bb5a1b392df850428d30b3175bcaecc3e5e3470a9d"
               },
               "http_status": 400,
@@ -1029,7 +1028,7 @@
                       "attempt_id": "r_NEKPAELBPFBAAIMGFGLDIMIHFGDIGJGDLHFJIBHI:independent-verify",
                       "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
                       "item_type": "资料分析/增长率",
-                      "observed_at": "2026-07-11T13:19:34.418250+00:00",
+                      "observed_at": "2026-07-11T17:51:55.037101+00:00",
                       "selected_option": "C",
                       "response_time_seconds": 20.0,
                       "confidence": 0.9,
@@ -1069,7 +1068,7 @@
                           "attempt_id": "r_NEKPAELBPFBAAIMGFGLDIMIHFGDIGJGDLHFJIBHI:initial",
                           "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
                           "item_type": "资料分析/增长率",
-                          "observed_at": "2026-07-11T13:19:34.360222+00:00",
+                          "observed_at": "2026-07-11T17:51:54.977436+00:00",
                           "selected_option": "A",
                           "response_time_seconds": 31.0,
                           "confidence": 0.8,
@@ -1118,7 +1117,7 @@
                           "attempt_id": "r_NEKPAELBPFBAAIMGFGLDIMIHFGDIGJGDLHFJIBHI:independent-verify",
                           "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
                           "item_type": "资料分析/增长率",
-                          "observed_at": "2026-07-11T13:19:34.418250+00:00",
+                          "observed_at": "2026-07-11T17:51:55.037101+00:00",
                           "selected_option": "C",
                           "response_time_seconds": 20.0,
                           "confidence": 0.9,
@@ -1167,8 +1166,8 @@
               },
               "after_skill_count": 1,
               "duplicate_after_complete_status": 409,
-              "trace_sha256": "6275161c3f0f1a02d84592f8b0913c48af4407f88c1311ae6f2b9aa418f467f3",
-              "replay_sha256": "704cb842da23b9e6120a6c840552f68ac20e205ddd6c8522d71f2fb50e99d825"
+              "trace_sha256": "7b08944ba6c300e0a81f93f2e0b10201e29bf86518998b2f572827fe583137c8",
+              "replay_sha256": "f364b6207ce76097fa7f56fc23129b99f9ff96532f51355cc760f2c2bb13d5ed"
             },
             "progressive_assistance": {
               "initial_status": 201,
@@ -1239,7 +1238,7 @@
                 "code": "assistance_exhausted"
               },
               "trace_verified": true,
-              "trace_sha256": "00ab968117e7803ce6f1e52688b9d939ecc2411e9cbc8e7ca41812fb13cb4510",
+              "trace_sha256": "c35e5866b75f2c4e4d11680bf5e276d87184883cda81ce508e9077ba151e13ed",
               "assistance_history_count": 6,
               "cohort_evidence_status": "unavailable"
             },
@@ -1286,7 +1285,7 @@
         }
       ],
       "blocking": true,
-      "duration_ms": 365
+      "duration_ms": 377
     },
     {
       "name": "cohort_prior_guardrail",
@@ -1355,7 +1354,7 @@
         }
       ],
       "blocking": true,
-      "duration_ms": 57
+      "duration_ms": 59
     },
     {
       "name": "attempt_continuation",
@@ -1375,10 +1374,10 @@
           "cases": {
             "correct": {
               "request": {
-                "unknown_fields": [],
+                "contains_pii_test_data": false,
                 "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
                 "response_sha256": "df7e70e5021544f4834bbee64a9e3789febc4be81470df629cad6ddb03320a5c",
-                "contains_pii_test_data": false,
+                "unknown_fields": [],
                 "run_id_sha256": "28bff14cae7db585f872f04d62a13ff739d7f99db47d8a9de6613b379cc8c6ee"
               },
               "http_status": 201,
@@ -1396,17 +1395,17 @@
               },
               "error": null,
               "trace_status": 200,
-              "trace_sha256": "faccbf2c3fcfbbb910998cc5fe30016bd48316c3866250f9af483e04c3bbaebb",
+              "trace_sha256": "c83711bfcff87541bb82f2afd61907af64f7f7f9695efc8ac63c8b464ad8a6d7",
               "replay_status": 200,
-              "replay_sha256": "084164c38c68b026ae099a4aa9cdabdf171be4be8241c033cbb6d58fdf519fad",
+              "replay_sha256": "95ce2f55ed12669b230ddc1b02dcf4872a4d965ea16b3cfd993a6b9ce7bb4b3f",
               "rejected_run_trace_status": null
             },
             "wrong": {
               "request": {
-                "unknown_fields": [],
+                "contains_pii_test_data": false,
                 "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
                 "response_sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
-                "contains_pii_test_data": false,
+                "unknown_fields": [],
                 "run_id_sha256": "88f17323e5fe195c4667715d1988a658339217c5418f479d1cd9e9abf1bd96ef"
               },
               "http_status": 201,
@@ -1424,17 +1423,17 @@
               },
               "error": null,
               "trace_status": 200,
-              "trace_sha256": "6ecde2d8950e966272ec4ca61d7c910c7f17576eaae80a19d27d1bb07bd28490",
+              "trace_sha256": "c38081742087b5d770340ecc1b1a916482ca3b47cb8e61f13ff09554c62f4057",
               "replay_status": 200,
-              "replay_sha256": "6d0f3bf182e9c630810740a4bcbf1de8fabd98fec1f28025f0dc787018199504",
+              "replay_sha256": "ef4fbc452d661e4a162ba52719a451c6ccf5f3aabb683e98773182d58e895fe1",
               "rejected_run_trace_status": null
             },
             "pii": {
               "request": {
-                "unknown_fields": [],
+                "contains_pii_test_data": true,
                 "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
                 "response_sha256": "fd07ca96eeaa46307b08faef121d6b337b927a4d3194960335e7c5e503d7e1a6",
-                "contains_pii_test_data": true,
+                "unknown_fields": [],
                 "run_id_sha256": "190911bcfc96aca64b883ab47161053db0f1b1d4dbe93568e257fde175b52252"
               },
               "http_status": 201,
@@ -1462,19 +1461,19 @@
               },
               "error": null,
               "trace_status": 200,
-              "trace_sha256": "db3c843b2aab726b7037c6a4f3702c2c7bd3c2c18a68e7589b4c9a09aca14788",
+              "trace_sha256": "b1a34a3469751cc935d9715a277a06ec3cc6459851631dac1bc70180deebc7d2",
               "replay_status": 200,
-              "replay_sha256": "0f546aeac031d9ac181b5ad4808a23486aeb7e62f1bcebaa9e00548b040b3f66",
+              "replay_sha256": "42947f13306b32199917fe3dc2a40cac6a4e61d2cb52aa2c5c557189efc5d835",
               "rejected_run_trace_status": null
             },
             "unknown_field": {
               "request": {
+                "contains_pii_test_data": false,
+                "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "response_sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
                 "unknown_fields": [
                   "cause_ground_truth"
                 ],
-                "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
-                "response_sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
-                "contains_pii_test_data": false,
                 "run_id_sha256": "85ad5d35fd040ad36cb981bb5a1b392df850428d30b3175bcaecc3e5e3470a9d"
               },
               "http_status": 400,
@@ -1533,7 +1532,7 @@
                       "attempt_id": "r_NEKPAELBPFBAAIMGFGLDIMIHFGDIGJGDLHFJIBHI:independent-verify",
                       "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
                       "item_type": "资料分析/增长率",
-                      "observed_at": "2026-07-11T13:19:34.418250+00:00",
+                      "observed_at": "2026-07-11T17:51:55.037101+00:00",
                       "selected_option": "C",
                       "response_time_seconds": 20.0,
                       "confidence": 0.9,
@@ -1573,7 +1572,7 @@
                           "attempt_id": "r_NEKPAELBPFBAAIMGFGLDIMIHFGDIGJGDLHFJIBHI:initial",
                           "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
                           "item_type": "资料分析/增长率",
-                          "observed_at": "2026-07-11T13:19:34.360222+00:00",
+                          "observed_at": "2026-07-11T17:51:54.977436+00:00",
                           "selected_option": "A",
                           "response_time_seconds": 31.0,
                           "confidence": 0.8,
@@ -1622,7 +1621,7 @@
                           "attempt_id": "r_NEKPAELBPFBAAIMGFGLDIMIHFGDIGJGDLHFJIBHI:independent-verify",
                           "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
                           "item_type": "资料分析/增长率",
-                          "observed_at": "2026-07-11T13:19:34.418250+00:00",
+                          "observed_at": "2026-07-11T17:51:55.037101+00:00",
                           "selected_option": "C",
                           "response_time_seconds": 20.0,
                           "confidence": 0.9,
@@ -1671,8 +1670,8 @@
               },
               "after_skill_count": 1,
               "duplicate_after_complete_status": 409,
-              "trace_sha256": "6275161c3f0f1a02d84592f8b0913c48af4407f88c1311ae6f2b9aa418f467f3",
-              "replay_sha256": "704cb842da23b9e6120a6c840552f68ac20e205ddd6c8522d71f2fb50e99d825"
+              "trace_sha256": "7b08944ba6c300e0a81f93f2e0b10201e29bf86518998b2f572827fe583137c8",
+              "replay_sha256": "f364b6207ce76097fa7f56fc23129b99f9ff96532f51355cc760f2c2bb13d5ed"
             },
             "progressive_assistance": {
               "initial_status": 201,
@@ -1743,7 +1742,7 @@
                 "code": "assistance_exhausted"
               },
               "trace_verified": true,
-              "trace_sha256": "00ab968117e7803ce6f1e52688b9d939ecc2411e9cbc8e7ca41812fb13cb4510",
+              "trace_sha256": "c35e5866b75f2c4e4d11680bf5e276d87184883cda81ce508e9077ba151e13ed",
               "assistance_history_count": 6,
               "cohort_evidence_status": "unavailable"
             },
@@ -2056,7 +2055,417 @@
         }
       ],
       "blocking": true,
-      "duration_ms": 19518
+      "duration_ms": 19301
+    },
+    {
+      "name": "study_pack",
+      "status": "pass",
+      "summary": "pasted text and text-bearing PDF passed cited lifecycle, TEST INPUT scoring, restart, isolation, and adversarial checks",
+      "evidence": [
+        {
+          "schema_version": "lumi.study-pack-eval-evidence.v1",
+          "status": "pass",
+          "test_input_non_learner": true,
+          "learner_projection_eligible": false,
+          "claim_as_human_learner_evidence": false,
+          "saved_product_attempt_record_count": 0,
+          "saved_raw_source_count": 0,
+          "saved_raw_answer_count": 0,
+          "ephemeral_database_retained": false,
+          "loopback_http": true,
+          "eval_dependency_network_calls": 0,
+          "public_batch_or_synthetic_route_advertised": false,
+          "capabilities_sha256": "9ea02a317d700a87a38717e0b143814a8044538d19e724e4f3072a3a744e89ab",
+          "ephemeral_evaluation_fixture_attempt_count": 2,
+          "ephemeral_human_attempt_count": 0,
+          "ephemeral_test_input_database_destroyed": true,
+          "closed_schema_instance_count": 104,
+          "assertion_count": 424,
+          "source_case_count": 2,
+          "negative_case_count": 22,
+          "interpreter": {
+            "isolated": true,
+            "selection": "configured",
+            "pypdf_version": "6.10.0",
+            "pin_verified": true,
+            "eval_dependency_network_calls": 0
+          },
+          "fixture_reproducibility": {
+            "status": "pass",
+            "exit_code": 0,
+            "output_sha256": "34edb805786e0093c4c9a7053ef0779434febe2f92b44007453bce0b9213334b",
+            "schema_count": 10,
+            "validated_instances": 102,
+            "negative_probes": 108,
+            "reproducible_cases": 2,
+            "reproducible_spans": 10,
+            "reproducible_artifacts": 20,
+            "reproducible_links": 20,
+            "reproducible_decisions": 20,
+            "reproducible_artifact_set_digests": 2,
+            "reproducible_scorer_vectors": 2,
+            "synthetic_product_detail_records": 0,
+            "synthetic_product_attempt_records": 0,
+            "raw_output_saved": false
+          },
+          "opaque_identifier_audit": {
+            "checked": 301,
+            "invalid": 0
+          },
+          "product_isolation_evidence": {
+            "method": "capability_and_generator_metadata_not_access_audit",
+            "external_network_endpoint_advertised": false,
+            "ocr_feature_advertised": false,
+            "web_feature_advertised": false,
+            "pdf_worker_subprocess_isolated": true
+          },
+          "protected_repository_boundary": {
+            "product_reference_count": 0,
+            "readonly_gate_result": "delegated_to_readonly_boundary_gate"
+          },
+          "source_cases": {
+            "pasted_text": {
+              "input_kind": "pasted_text",
+              "source_sha256": "b4b476e3fbff1f59f01caaf636367f508a541193db2ad2b5380bb1de0d1d54cb",
+              "normalized_source_sha256": "b4b476e3fbff1f59f01caaf636367f508a541193db2ad2b5380bb1de0d1d54cb",
+              "source_byte_count": 468,
+              "locator_count": 5,
+              "pack_ref_sha256": "783c3231dc259a96e718c78cfa709fda7aa0dbd296f5f439ee595b3dc83c255d",
+              "artifact_count": 10,
+              "artifact_generator_isolation_metadata_checked_count": 10,
+              "artifact_generator_isolation_metadata_verified_count": 10,
+              "practice_item_count": 3,
+              "candidate_skill_link_count": 10,
+              "candidate_links_unconfirmed": true,
+              "citation_count": 17,
+              "citation_verified_count": 17,
+              "citation_projection_set_sha256": "3dcaa79c3872f5eddccf069a7bf5c5e8ffefdfe452c8c97d18f97855cedecd56",
+              "scorer_count": 3,
+              "scorer_vectors_recomputed": 6,
+              "answer_sha256": "d130bec49541f10da7f1511213eb634e3ad147fc140ab71473718a1b5b210785",
+              "raw_answer_saved": false,
+              "ephemeral_evaluation_fixture_attempt_count": 1,
+              "ephemeral_human_attempt_count": 0,
+              "product_attempt_record_saved_to_evidence": false,
+              "receipt_replay_count": 4,
+              "cas_and_conflict_count": 3,
+              "draft_launch_status": 409,
+              "draft_launch_code": "artifact_not_published",
+              "launch_projection_set_sha256": "c4b9bbfc47cef11de5f39f6978bc7b6b765b6e4f83a9d6fd5521132c55b5e833",
+              "replay_before_restart_verified": true,
+              "restart_detail_verified": true,
+              "restart_replay_verified": true,
+              "parser": {
+                "name": "lumi-pasted-section-parser",
+                "version": "1.0.0"
+              },
+              "persistence_privacy": {
+                "event_count": 4,
+                "receipt_count": 4,
+                "pre_answer_receipt_count": 3,
+                "event_private_values_absent": true,
+                "pre_answer_practice_fields_closed": true,
+                "rejected_test_inputs_absent": true,
+                "evaluation_fixture_event_count": 1,
+                "human_local_interactive_event_count": 0
+              }
+            },
+            "text_bearing_pdf": {
+              "input_kind": "text_pdf",
+              "source_sha256": "dd598f6127e24836e0a77a45aeb474802436b99aff0d4b02dc51795aceb5de4a",
+              "normalized_source_sha256": "c49c0108901ff0be26a81f749d11cfd5d1c0ca5a0cb1a065691912680ef17762",
+              "source_byte_count": 3566,
+              "locator_count": 2,
+              "pack_ref_sha256": "1f2037c8962f2707a5a47b0f51aca34ce1e8e548983bbb9d34a354b4b42fc7e7",
+              "artifact_count": 10,
+              "artifact_generator_isolation_metadata_checked_count": 10,
+              "artifact_generator_isolation_metadata_verified_count": 10,
+              "practice_item_count": 3,
+              "candidate_skill_link_count": 10,
+              "candidate_links_unconfirmed": true,
+              "citation_count": 17,
+              "citation_verified_count": 17,
+              "citation_projection_set_sha256": "79c756a821147420e964ae0b524c04e2a437411f8b25177ad732e522e5cb2965",
+              "scorer_count": 3,
+              "scorer_vectors_recomputed": 6,
+              "answer_sha256": "c6ef5c624589d2a48a0381eba7dd93bb0332431611192e1e18aeae7b4f45e23c",
+              "raw_answer_saved": false,
+              "ephemeral_evaluation_fixture_attempt_count": 1,
+              "ephemeral_human_attempt_count": 0,
+              "product_attempt_record_saved_to_evidence": false,
+              "receipt_replay_count": 4,
+              "cas_and_conflict_count": 3,
+              "draft_launch_status": 409,
+              "draft_launch_code": "artifact_not_published",
+              "launch_projection_set_sha256": "04dbe69edaab7cabd4b2a724a343763ec63b873594e848cd80bf30ea9a4e68b8",
+              "replay_before_restart_verified": true,
+              "restart_detail_verified": true,
+              "restart_replay_verified": true,
+              "parser": {
+                "name": "pypdf",
+                "version": "6.10.0"
+              },
+              "persistence_privacy": {
+                "event_count": 4,
+                "receipt_count": 4,
+                "pre_answer_receipt_count": 3,
+                "event_private_values_absent": true,
+                "pre_answer_practice_fields_closed": true,
+                "rejected_test_inputs_absent": true,
+                "evaluation_fixture_event_count": 1,
+                "human_local_interactive_event_count": 0
+              }
+            }
+          },
+          "negative_cases": {
+            "malformed_json": {
+              "status": 400,
+              "code": "invalid_json",
+              "authoritative_write_delta": 0
+            },
+            "invalid_base64": {
+              "status": 400,
+              "code": "invalid_source_body",
+              "authoritative_write_delta": 0
+            },
+            "empty_pasted_text": {
+              "status": 400,
+              "code": "invalid_source_body",
+              "authoritative_write_delta": 0
+            },
+            "nested_unknown_source_field": {
+              "status": 400,
+              "code": "invalid_source_body",
+              "authoritative_write_delta": 0
+            },
+            "over_character_limit": {
+              "status": 413,
+              "code": "source_too_large",
+              "authoritative_write_delta": 0
+            },
+            "malformed_pdf": {
+              "status": 422,
+              "code": "pdf_parse_failed",
+              "authoritative_write_delta": 0
+            },
+            "encrypted_pdf": {
+              "status": 422,
+              "code": "pdf_encrypted_unsupported",
+              "authoritative_write_delta": 0
+            },
+            "scanned_or_image_only_pdf": {
+              "status": 422,
+              "code": "pdf_text_unavailable_ocr_required",
+              "authoritative_write_delta": 0
+            },
+            "over_page_limit": {
+              "status": 413,
+              "code": "source_too_large",
+              "authoritative_write_delta": 0
+            },
+            "oversize_decoded_pdf": {
+              "status": 413,
+              "code": "source_too_large",
+              "authoritative_write_delta": 0
+            },
+            "unknown_test_marker": {
+              "status": 400,
+              "code": "invalid_body",
+              "authoritative_write_delta": 0
+            },
+            "semantic_command_id": {
+              "status": 400,
+              "code": "invalid_command_id",
+              "authoritative_write_delta": 0
+            },
+            "sensitive_pack_id": {
+              "status": 400,
+              "code": "invalid_pack_id",
+              "authoritative_write_delta": 0
+            },
+            "sensitive_artifact_id": {
+              "status": 400,
+              "code": "invalid_artifact_id",
+              "authoritative_write_delta": 0
+            },
+            "sensitive_span_id": {
+              "status": 400,
+              "code": "invalid_span_id",
+              "authoritative_write_delta": 0
+            },
+            "sensitive_command_id": {
+              "status": 400,
+              "code": "invalid_command_id",
+              "authoritative_write_delta": 0
+            },
+            "stale_artifact_version": {
+              "status": 409,
+              "code": "stale_version",
+              "authoritative_write_delta": 0
+            },
+            "no_public_batch_route": {
+              "status": 404,
+              "code": "route_not_found",
+              "authoritative_write_delta": 0
+            },
+            "no_public_synthetic_route": {
+              "status": 404,
+              "code": "route_not_found",
+              "authoritative_write_delta": 0
+            },
+            "insufficient_source_quarantine": {
+              "status": 201,
+              "code": "source_insufficient_for_pack",
+              "artifact_count": 0,
+              "transition_status": 409,
+              "transition_code": "invalid_transition",
+              "pack_write_delta": 1
+            },
+            "concurrent_publish_cas": {
+              "statuses": [
+                200,
+                409
+              ],
+              "loser_code": "stale_version",
+              "successful_transition_count": 1,
+              "successful_receipt_count": 1
+            },
+            "parser_timeout": {
+              "status": 422,
+              "code": "pdf_parse_failed",
+              "authoritative_write_delta": 0
+            }
+          },
+          "learning_storage_isolation": {
+            "before_sha256": "2f9e69ac073639f62c513c9b7d78264568cfed6f97d79a7a52e560c87768a4fb",
+            "after_sha256": "2f9e69ac073639f62c513c9b7d78264568cfed6f97d79a7a52e560c87768a4fb",
+            "unchanged": true,
+            "table_summaries_before": {
+              "content_snapshots": {
+                "present": true,
+                "row_count": 0,
+                "sha256": "abd504c29dc3124cb31de4185286bd3a4b7b78205eeda267f79387c6bae82d5f"
+              },
+              "review_schedule_tasks": {
+                "present": true,
+                "row_count": 0,
+                "sha256": "510ac0a22f8ccefdf9255a5589489eaa941a43df9e2c02702464f085f1d163c0"
+              },
+              "schedule_command_results": {
+                "present": true,
+                "row_count": 0,
+                "sha256": "968e97d7c55abecefa0d806cb6f4bae272a9f937775040aa679abd98c43f9912"
+              },
+              "schedule_events": {
+                "present": true,
+                "row_count": 0,
+                "sha256": "f74acba0bf0c89e0d43508926690533b41378a398cb2936fd6eabb6ff07c2e8f"
+              },
+              "schedule_migrations": {
+                "present": true,
+                "row_count": 0,
+                "sha256": "a805de801c4cfbf95749b1b2dbbe78e26bbc9e6f8cb861d3a1de2060fa1692b1"
+              },
+              "today_plan_tasks": {
+                "present": true,
+                "row_count": 0,
+                "sha256": "adaadc3382c29d243e560e4013a809c129467b61f22a0d5547f6c00cb93a8091"
+              },
+              "today_plans": {
+                "present": true,
+                "row_count": 0,
+                "sha256": "2ac3f71e5b4a6c680b7d74cc48e0e0d34959183d0bd7e49991c9f4c2c3000e0e"
+              },
+              "trace_events": {
+                "present": true,
+                "row_count": 0,
+                "sha256": "af6e8c7b57724a7c00f5dc6785739ffad5aa309507d0dcf335b0c9df4e8c2473"
+              }
+            },
+            "table_summaries_after": {
+              "content_snapshots": {
+                "present": true,
+                "row_count": 0,
+                "sha256": "abd504c29dc3124cb31de4185286bd3a4b7b78205eeda267f79387c6bae82d5f"
+              },
+              "review_schedule_tasks": {
+                "present": true,
+                "row_count": 0,
+                "sha256": "510ac0a22f8ccefdf9255a5589489eaa941a43df9e2c02702464f085f1d163c0"
+              },
+              "schedule_command_results": {
+                "present": true,
+                "row_count": 0,
+                "sha256": "968e97d7c55abecefa0d806cb6f4bae272a9f937775040aa679abd98c43f9912"
+              },
+              "schedule_events": {
+                "present": true,
+                "row_count": 0,
+                "sha256": "f74acba0bf0c89e0d43508926690533b41378a398cb2936fd6eabb6ff07c2e8f"
+              },
+              "schedule_migrations": {
+                "present": true,
+                "row_count": 0,
+                "sha256": "a805de801c4cfbf95749b1b2dbbe78e26bbc9e6f8cb861d3a1de2060fa1692b1"
+              },
+              "today_plan_tasks": {
+                "present": true,
+                "row_count": 0,
+                "sha256": "adaadc3382c29d243e560e4013a809c129467b61f22a0d5547f6c00cb93a8091"
+              },
+              "today_plans": {
+                "present": true,
+                "row_count": 0,
+                "sha256": "2ac3f71e5b4a6c680b7d74cc48e0e0d34959183d0bd7e49991c9f4c2c3000e0e"
+              },
+              "trace_events": {
+                "present": true,
+                "row_count": 0,
+                "sha256": "af6e8c7b57724a7c00f5dc6785739ffad5aa309507d0dcf335b0c9df4e8c2473"
+              }
+            },
+            "projection_summaries_before": {
+              "health": {
+                "count": 0,
+                "sha256": "2448ac219594cef7f55fd86d4a124e42d7f7e9fe20e2cc2b818890effe841e18"
+              },
+              "skills": {
+                "count": 0,
+                "sha256": "4669a686adc254c93648e7dadd4cc07f39de09cddf6edf23258f5efe3484ae1b"
+              },
+              "misconceptions": {
+                "count": 0,
+                "sha256": "9c0654c308c61ddff187af0a6a53e5af1de04cf3932f7e4264d887e9c5e3cc0c"
+              },
+              "review": {
+                "count": 0,
+                "sha256": "66c5170b3ad53e006d4b9b28d9c75a10d13e63093107cd6e311298ad06cc9630"
+              }
+            },
+            "projection_summaries_after": {
+              "health": {
+                "count": 0,
+                "sha256": "2448ac219594cef7f55fd86d4a124e42d7f7e9fe20e2cc2b818890effe841e18"
+              },
+              "skills": {
+                "count": 0,
+                "sha256": "4669a686adc254c93648e7dadd4cc07f39de09cddf6edf23258f5efe3484ae1b"
+              },
+              "misconceptions": {
+                "count": 0,
+                "sha256": "9c0654c308c61ddff187af0a6a53e5af1de04cf3932f7e4264d887e9c5e3cc0c"
+              },
+              "review": {
+                "count": 0,
+                "sha256": "66c5170b3ad53e006d4b9b28d9c75a10d13e63093107cd6e311298ad06cc9630"
+              }
+            }
+          },
+          "errors": []
+        }
+      ],
+      "blocking": true,
+      "duration_ms": 2256
     },
     {
       "name": "progressive_assistance",
@@ -2076,10 +2485,10 @@
           "cases": {
             "correct": {
               "request": {
-                "unknown_fields": [],
+                "contains_pii_test_data": false,
                 "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
                 "response_sha256": "df7e70e5021544f4834bbee64a9e3789febc4be81470df629cad6ddb03320a5c",
-                "contains_pii_test_data": false,
+                "unknown_fields": [],
                 "run_id_sha256": "28bff14cae7db585f872f04d62a13ff739d7f99db47d8a9de6613b379cc8c6ee"
               },
               "http_status": 201,
@@ -2097,17 +2506,17 @@
               },
               "error": null,
               "trace_status": 200,
-              "trace_sha256": "faccbf2c3fcfbbb910998cc5fe30016bd48316c3866250f9af483e04c3bbaebb",
+              "trace_sha256": "c83711bfcff87541bb82f2afd61907af64f7f7f9695efc8ac63c8b464ad8a6d7",
               "replay_status": 200,
-              "replay_sha256": "084164c38c68b026ae099a4aa9cdabdf171be4be8241c033cbb6d58fdf519fad",
+              "replay_sha256": "95ce2f55ed12669b230ddc1b02dcf4872a4d965ea16b3cfd993a6b9ce7bb4b3f",
               "rejected_run_trace_status": null
             },
             "wrong": {
               "request": {
-                "unknown_fields": [],
+                "contains_pii_test_data": false,
                 "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
                 "response_sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
-                "contains_pii_test_data": false,
+                "unknown_fields": [],
                 "run_id_sha256": "88f17323e5fe195c4667715d1988a658339217c5418f479d1cd9e9abf1bd96ef"
               },
               "http_status": 201,
@@ -2125,17 +2534,17 @@
               },
               "error": null,
               "trace_status": 200,
-              "trace_sha256": "6ecde2d8950e966272ec4ca61d7c910c7f17576eaae80a19d27d1bb07bd28490",
+              "trace_sha256": "c38081742087b5d770340ecc1b1a916482ca3b47cb8e61f13ff09554c62f4057",
               "replay_status": 200,
-              "replay_sha256": "6d0f3bf182e9c630810740a4bcbf1de8fabd98fec1f28025f0dc787018199504",
+              "replay_sha256": "ef4fbc452d661e4a162ba52719a451c6ccf5f3aabb683e98773182d58e895fe1",
               "rejected_run_trace_status": null
             },
             "pii": {
               "request": {
-                "unknown_fields": [],
+                "contains_pii_test_data": true,
                 "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
                 "response_sha256": "fd07ca96eeaa46307b08faef121d6b337b927a4d3194960335e7c5e503d7e1a6",
-                "contains_pii_test_data": true,
+                "unknown_fields": [],
                 "run_id_sha256": "190911bcfc96aca64b883ab47161053db0f1b1d4dbe93568e257fde175b52252"
               },
               "http_status": 201,
@@ -2163,19 +2572,19 @@
               },
               "error": null,
               "trace_status": 200,
-              "trace_sha256": "db3c843b2aab726b7037c6a4f3702c2c7bd3c2c18a68e7589b4c9a09aca14788",
+              "trace_sha256": "b1a34a3469751cc935d9715a277a06ec3cc6459851631dac1bc70180deebc7d2",
               "replay_status": 200,
-              "replay_sha256": "0f546aeac031d9ac181b5ad4808a23486aeb7e62f1bcebaa9e00548b040b3f66",
+              "replay_sha256": "42947f13306b32199917fe3dc2a40cac6a4e61d2cb52aa2c5c557189efc5d835",
               "rejected_run_trace_status": null
             },
             "unknown_field": {
               "request": {
+                "contains_pii_test_data": false,
+                "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "response_sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
                 "unknown_fields": [
                   "cause_ground_truth"
                 ],
-                "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
-                "response_sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
-                "contains_pii_test_data": false,
                 "run_id_sha256": "85ad5d35fd040ad36cb981bb5a1b392df850428d30b3175bcaecc3e5e3470a9d"
               },
               "http_status": 400,
@@ -2234,7 +2643,7 @@
                       "attempt_id": "r_NEKPAELBPFBAAIMGFGLDIMIHFGDIGJGDLHFJIBHI:independent-verify",
                       "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
                       "item_type": "资料分析/增长率",
-                      "observed_at": "2026-07-11T13:19:34.418250+00:00",
+                      "observed_at": "2026-07-11T17:51:55.037101+00:00",
                       "selected_option": "C",
                       "response_time_seconds": 20.0,
                       "confidence": 0.9,
@@ -2274,7 +2683,7 @@
                           "attempt_id": "r_NEKPAELBPFBAAIMGFGLDIMIHFGDIGJGDLHFJIBHI:initial",
                           "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
                           "item_type": "资料分析/增长率",
-                          "observed_at": "2026-07-11T13:19:34.360222+00:00",
+                          "observed_at": "2026-07-11T17:51:54.977436+00:00",
                           "selected_option": "A",
                           "response_time_seconds": 31.0,
                           "confidence": 0.8,
@@ -2323,7 +2732,7 @@
                           "attempt_id": "r_NEKPAELBPFBAAIMGFGLDIMIHFGDIGJGDLHFJIBHI:independent-verify",
                           "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
                           "item_type": "资料分析/增长率",
-                          "observed_at": "2026-07-11T13:19:34.418250+00:00",
+                          "observed_at": "2026-07-11T17:51:55.037101+00:00",
                           "selected_option": "C",
                           "response_time_seconds": 20.0,
                           "confidence": 0.9,
@@ -2372,8 +2781,8 @@
               },
               "after_skill_count": 1,
               "duplicate_after_complete_status": 409,
-              "trace_sha256": "6275161c3f0f1a02d84592f8b0913c48af4407f88c1311ae6f2b9aa418f467f3",
-              "replay_sha256": "704cb842da23b9e6120a6c840552f68ac20e205ddd6c8522d71f2fb50e99d825"
+              "trace_sha256": "7b08944ba6c300e0a81f93f2e0b10201e29bf86518998b2f572827fe583137c8",
+              "replay_sha256": "f364b6207ce76097fa7f56fc23129b99f9ff96532f51355cc760f2c2bb13d5ed"
             },
             "progressive_assistance": {
               "initial_status": 201,
@@ -2444,7 +2853,7 @@
                 "code": "assistance_exhausted"
               },
               "trace_verified": true,
-              "trace_sha256": "00ab968117e7803ce6f1e52688b9d939ecc2411e9cbc8e7ca41812fb13cb4510",
+              "trace_sha256": "c35e5866b75f2c4e4d11680bf5e276d87184883cda81ce508e9077ba151e13ed",
               "assistance_history_count": 6,
               "cohort_evidence_status": "unavailable"
             },
@@ -2493,22 +2902,18 @@
           "complete_service_tests": {
             "status": "pass",
             "exit_code": 0,
-            "command": [
-              "[ABSOLUTE_PATH]",
-              "-m",
-              "unittest",
-              "discover",
-              "-s",
-              "[REPO_ROOT]/service/tests",
-              "-v"
-            ],
-            "output": "test_accepted_recovery_task_carries_into_next_day_http_plan (test_schedule_api.ScheduleApiTests.test_accepted_recovery_task_carries_into_next_day_http_plan) ... ok\ntest_correct_first_failed_transfer_creates_generic_retry (test_schedule_api.ScheduleApiTests.test_correct_first_failed_transfer_creates_generic_retry) ... ok\ntest_create_plan_rejects_nonopaque_command_ids_with_zero_writes (test_schedule_api.ScheduleApiTests.test_create_plan_rejects_nonopaque_command_ids_with_zero_writes) ... ok\ntest_cross_instance_idempotency_conflict_and_cas (test_schedule_api.ScheduleApiTests.test_cross_instance_idempotency_conflict_and_cas) ... ok\ntest_fresh_sidecars_create_one_exact_plan_receipt_under_concurrency (test_schedule_api.ScheduleApiTests.test_fresh_sidecars_create_one_exact_plan_receipt_under_concurrency) ... ok\ntest_historical_plan_is_read_only_even_when_task_version_is_unchanged (test_schedule_api.ScheduleApiTests.test_historical_plan_is_read_only_even_when_task_version_is_unchanged) ... ok\ntest_incomplete_attempt_cannot_seed_a_review_task (test_schedule_api.ScheduleApiTests.test_incomplete_attempt_cannot_seed_a_review_task) ... ok\ntest_low_budget_for_accepted_task_is_retryable_without_empty_plan_write (test_schedule_api.ScheduleApiTests.test_low_budget_for_accepted_task_is_retryable_without_empty_plan_write) ... ok\ntest_new_writes_use_opaque_ids_and_legacy_32hex_trace_remains_readable (test_schedule_api.ScheduleApiTests.test_new_writes_use_opaque_ids_and_legacy_32hex_trace_remains_readable) ... ok\ntest_newer_plan_freezes_old_plan_under_sidecar_clock_skew (test_schedule_api.ScheduleApiTests.test_newer_plan_freezes_old_plan_under_sidecar_clock_skew) ... ok\ntest_newer_plan_prevents_stale_sidecar_from_creating_an_older_plan (test_schedule_api.ScheduleApiTests.test_newer_plan_prevents_stale_sidecar_from_creating_an_older_plan) ... ok\ntest_no_evidence_is_empty_and_client_cannot_forge_dates (test_schedule_api.ScheduleApiTests.test_no_evidence_is_empty_and_client_cannot_forge_dates) ... ok\ntest_overdue_count_is_after_one_task_per_run_deduplication (test_schedule_api.ScheduleApiTests.test_overdue_count_is_after_one_task_per_run_deduplication) ... ok\ntest_public_resurface_action_is_rejected_and_remains_automatic (test_schedule_api.ScheduleApiTests.test_public_resurface_action_is_rejected_and_remains_automatic) ... ok\ntest_repeated_skip_rotates_three_recovery_tasks_over_http (test_schedule_api.ScheduleApiTests.test_repeated_skip_rotates_three_recovery_tasks_over_http) ... ok\ntest_schedule_commands_reject_claim_fields_and_sensitive_ids_without_writes (test_schedule_api.ScheduleApiTests.test_schedule_commands_reject_claim_fields_and_sensitive_ids_without_writes) ... ok\ntest_skip_and_postpone_resurface_in_the_next_due_plan (test_schedule_api.ScheduleApiTests.test_skip_and_postpone_resurface_in_the_next_due_plan) ... ok\ntest_successful_transfer_prioritizes_delayed_retention_with_unconfirmed_context (test_schedule_api.ScheduleApiTests.test_successful_transfer_prioritizes_delayed_retention_with_unconfirmed_context) ... ok\ntest_task_contract_is_executable_authored_and_unconfirmed (test_schedule_api.ScheduleApiTests.test_task_contract_is_executable_authored_and_unconfirmed) ... ok\ntest_user_marked_completion_never_changes_learning_trace_or_kt (test_schedule_api.ScheduleApiTests.test_user_marked_completion_never_changes_learning_trace_or_kt) ... ok\ntest_all_three_learning_modes_complete (test_sidecar.SidecarTests.test_all_three_learning_modes_complete) ... ok\ntest_assistance_contract_rejects_client_claims_without_writing (test_sidecar.SidecarTests.test_assistance_contract_rejects_client_claims_without_writing) ... ok\ntest_assisted_verification_is_withheld_even_if_trace_contains_help (test_sidecar.SidecarTests.test_assisted_verification_is_withheld_even_if_trace_contains_help) ... ok\ntest_attempt_is_fail_closed_for_unknown_fields_fixture_and_values (test_sidecar.SidecarTests.test_attempt_is_fail_closed_for_unknown_fields_fixture_and_values) ... ok\ntest_attempt_trace_contains_redacted_response_evidence (test_sidecar.SidecarTests.test_attempt_trace_contains_redacted_response_evidence) ... ok\ntest_attempt_trace_redacts_secret_like_learner_text (test_sidecar.SidecarTests.test_attempt_trace_redacts_secret_like_learner_text) ... ok\ntest_authored_probe_assessment_supports_and_refutes_without_confirming (test_sidecar.SidecarTests.test_authored_probe_assessment_supports_and_refutes_without_confirming) ... ok\ntest_concurrent_assistance_requests_accept_exactly_one (test_sidecar.SidecarTests.test_concurrent_assistance_requests_accept_exactly_one) ... ok\ntest_concurrent_same_version_continuations_accept_exactly_one (test_sidecar.SidecarTests.test_concurrent_same_version_continuations_accept_exactly_one) ... ok\ntest_correct_initial_answer_does_not_hide_failed_transfer (test_sidecar.SidecarTests.test_correct_initial_answer_does_not_hide_failed_transfer) ... ok\ntest_cors_rejects_non_allowlisted_origin (test_sidecar.SidecarTests.test_cors_rejects_non_allowlisted_origin) ... ok\ntest_health_capabilities_and_42_safe_scenarios (test_sidecar.SidecarTests.test_health_capabilities_and_42_safe_scenarios) ... ok\ntest_json_field_types_fail_closed_without_http_500 (test_sidecar.SidecarTests.test_json_field_types_fail_closed_without_http_500) ... ok\ntest_legacy_run_without_fixture_snapshot_is_skipped_by_report (test_sidecar.SidecarTests.test_legacy_run_without_fixture_snapshot_is_skipped_by_report) ... ok\ntest_negated_keyword_stuffing_never_passes_text_scoring_or_transfer (test_sidecar.SidecarTests.test_negated_keyword_stuffing_never_passes_text_scoring_or_transfer) ... ok\ntest_non_loopback_bind_is_impossible (test_sidecar.SidecarTests.test_non_loopback_bind_is_impossible) ... ok\ntest_offline_attempt_records_zero_cloud_calls (test_sidecar.SidecarTests.test_offline_attempt_records_zero_cloud_calls) ... ok\ntest_processing_dossier_never_offers_an_unexecutable_prompt_write (test_sidecar.SidecarTests.test_processing_dossier_never_offers_an_unexecutable_prompt_write) ... ok\ntest_progressive_assistance_is_persistent_ordered_and_idempotent (test_sidecar.SidecarTests.test_progressive_assistance_is_persistent_ordered_and_idempotent) ... ok\ntest_public_identifiers_reject_pii_secrets_and_unicode (test_sidecar.SidecarTests.test_public_identifiers_reject_pii_secrets_and_unicode) ... ok\ntest_public_run_route_is_disabled_and_internal_evaluation_is_invisible (test_sidecar.SidecarTests.test_public_run_route_is_disabled_and_internal_evaluation_is_invisible) ... ok\ntest_public_safe_redacts_protected_paths (test_sidecar.SidecarTests.test_public_safe_redacts_protected_paths) ... ok\ntest_real_attempt_and_verification_use_service_utc_timestamps (test_sidecar.SidecarTests.test_real_attempt_and_verification_use_service_utc_timestamps) ... ok\ntest_real_attempt_responses_change_score_and_diagnosis (test_sidecar.SidecarTests.test_real_attempt_responses_change_score_and_diagnosis) ... ok\ntest_real_continuation_commits_authored_transfer_across_all_domains (test_sidecar.SidecarTests.test_real_continuation_commits_authored_transfer_across_all_domains) ... ok\ntest_scenario_filters_cover_domain_and_mode (test_sidecar.SidecarTests.test_scenario_filters_cover_domain_and_mode) ... ok\ntest_session_uses_immutable_fixture_snapshot_after_catalog_drift (test_sidecar.SidecarTests.test_session_uses_immutable_fixture_snapshot_after_catalog_drift) ... ok\ntest_staged_http_continuation_requires_probe_then_verification (test_sidecar.SidecarTests.test_staged_http_continuation_requires_probe_then_verification) ... ok\ntest_structured_errors_carry_request_id_without_internal_paths (test_sidecar.SidecarTests.test_structured_errors_carry_request_id_without_internal_paths) ... ok\ntest_two_sidecar_instances_share_database_level_continuation_cas (test_sidecar.SidecarTests.test_two_sidecar_instances_share_database_level_continuation_cas) ... ok\ntest_two_sidecars_replay_the_same_assistance_command_idempotently (test_sidecar.SidecarTests.test_two_sidecars_replay_the_same_assistance_command_idempotently) ... ok\n\n----------------------------------------------------------------------\nRan 51 tests in 33.440s\n\nOK",
-            "errors": []
+            "test_count": 68,
+            "failure_count": 0,
+            "error_count": 0,
+            "skipped_count": 0,
+            "stable_failure_codes": [],
+            "output_sha256": "aef467f22e88da27f8df800e87407d898e695602a123da773a6808a50e76fec4",
+            "raw_output_saved": false
           }
         }
       ],
       "blocking": true,
-      "duration_ms": 33602
+      "duration_ms": 45983
     },
     {
       "name": "misconception_dossier",
@@ -2528,10 +2933,10 @@
           "cases": {
             "correct": {
               "request": {
-                "unknown_fields": [],
+                "contains_pii_test_data": false,
                 "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
                 "response_sha256": "df7e70e5021544f4834bbee64a9e3789febc4be81470df629cad6ddb03320a5c",
-                "contains_pii_test_data": false,
+                "unknown_fields": [],
                 "run_id_sha256": "28bff14cae7db585f872f04d62a13ff739d7f99db47d8a9de6613b379cc8c6ee"
               },
               "http_status": 201,
@@ -2549,17 +2954,17 @@
               },
               "error": null,
               "trace_status": 200,
-              "trace_sha256": "faccbf2c3fcfbbb910998cc5fe30016bd48316c3866250f9af483e04c3bbaebb",
+              "trace_sha256": "c83711bfcff87541bb82f2afd61907af64f7f7f9695efc8ac63c8b464ad8a6d7",
               "replay_status": 200,
-              "replay_sha256": "084164c38c68b026ae099a4aa9cdabdf171be4be8241c033cbb6d58fdf519fad",
+              "replay_sha256": "95ce2f55ed12669b230ddc1b02dcf4872a4d965ea16b3cfd993a6b9ce7bb4b3f",
               "rejected_run_trace_status": null
             },
             "wrong": {
               "request": {
-                "unknown_fields": [],
+                "contains_pii_test_data": false,
                 "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
                 "response_sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
-                "contains_pii_test_data": false,
+                "unknown_fields": [],
                 "run_id_sha256": "88f17323e5fe195c4667715d1988a658339217c5418f479d1cd9e9abf1bd96ef"
               },
               "http_status": 201,
@@ -2577,17 +2982,17 @@
               },
               "error": null,
               "trace_status": 200,
-              "trace_sha256": "6ecde2d8950e966272ec4ca61d7c910c7f17576eaae80a19d27d1bb07bd28490",
+              "trace_sha256": "c38081742087b5d770340ecc1b1a916482ca3b47cb8e61f13ff09554c62f4057",
               "replay_status": 200,
-              "replay_sha256": "6d0f3bf182e9c630810740a4bcbf1de8fabd98fec1f28025f0dc787018199504",
+              "replay_sha256": "ef4fbc452d661e4a162ba52719a451c6ccf5f3aabb683e98773182d58e895fe1",
               "rejected_run_trace_status": null
             },
             "pii": {
               "request": {
-                "unknown_fields": [],
+                "contains_pii_test_data": true,
                 "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
                 "response_sha256": "fd07ca96eeaa46307b08faef121d6b337b927a4d3194960335e7c5e503d7e1a6",
-                "contains_pii_test_data": true,
+                "unknown_fields": [],
                 "run_id_sha256": "190911bcfc96aca64b883ab47161053db0f1b1d4dbe93568e257fde175b52252"
               },
               "http_status": 201,
@@ -2615,19 +3020,19 @@
               },
               "error": null,
               "trace_status": 200,
-              "trace_sha256": "db3c843b2aab726b7037c6a4f3702c2c7bd3c2c18a68e7589b4c9a09aca14788",
+              "trace_sha256": "b1a34a3469751cc935d9715a277a06ec3cc6459851631dac1bc70180deebc7d2",
               "replay_status": 200,
-              "replay_sha256": "0f546aeac031d9ac181b5ad4808a23486aeb7e62f1bcebaa9e00548b040b3f66",
+              "replay_sha256": "42947f13306b32199917fe3dc2a40cac6a4e61d2cb52aa2c5c557189efc5d835",
               "rejected_run_trace_status": null
             },
             "unknown_field": {
               "request": {
+                "contains_pii_test_data": false,
+                "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "response_sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
                 "unknown_fields": [
                   "cause_ground_truth"
                 ],
-                "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
-                "response_sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
-                "contains_pii_test_data": false,
                 "run_id_sha256": "85ad5d35fd040ad36cb981bb5a1b392df850428d30b3175bcaecc3e5e3470a9d"
               },
               "http_status": 400,
@@ -2686,7 +3091,7 @@
                       "attempt_id": "r_NEKPAELBPFBAAIMGFGLDIMIHFGDIGJGDLHFJIBHI:independent-verify",
                       "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
                       "item_type": "资料分析/增长率",
-                      "observed_at": "2026-07-11T13:19:34.418250+00:00",
+                      "observed_at": "2026-07-11T17:51:55.037101+00:00",
                       "selected_option": "C",
                       "response_time_seconds": 20.0,
                       "confidence": 0.9,
@@ -2726,7 +3131,7 @@
                           "attempt_id": "r_NEKPAELBPFBAAIMGFGLDIMIHFGDIGJGDLHFJIBHI:initial",
                           "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
                           "item_type": "资料分析/增长率",
-                          "observed_at": "2026-07-11T13:19:34.360222+00:00",
+                          "observed_at": "2026-07-11T17:51:54.977436+00:00",
                           "selected_option": "A",
                           "response_time_seconds": 31.0,
                           "confidence": 0.8,
@@ -2775,7 +3180,7 @@
                           "attempt_id": "r_NEKPAELBPFBAAIMGFGLDIMIHFGDIGJGDLHFJIBHI:independent-verify",
                           "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
                           "item_type": "资料分析/增长率",
-                          "observed_at": "2026-07-11T13:19:34.418250+00:00",
+                          "observed_at": "2026-07-11T17:51:55.037101+00:00",
                           "selected_option": "C",
                           "response_time_seconds": 20.0,
                           "confidence": 0.9,
@@ -2824,8 +3229,8 @@
               },
               "after_skill_count": 1,
               "duplicate_after_complete_status": 409,
-              "trace_sha256": "6275161c3f0f1a02d84592f8b0913c48af4407f88c1311ae6f2b9aa418f467f3",
-              "replay_sha256": "704cb842da23b9e6120a6c840552f68ac20e205ddd6c8522d71f2fb50e99d825"
+              "trace_sha256": "7b08944ba6c300e0a81f93f2e0b10201e29bf86518998b2f572827fe583137c8",
+              "replay_sha256": "f364b6207ce76097fa7f56fc23129b99f9ff96532f51355cc760f2c2bb13d5ed"
             },
             "progressive_assistance": {
               "initial_status": 201,
@@ -2896,7 +3301,7 @@
                 "code": "assistance_exhausted"
               },
               "trace_verified": true,
-              "trace_sha256": "00ab968117e7803ce6f1e52688b9d939ecc2411e9cbc8e7ca41812fb13cb4510",
+              "trace_sha256": "c35e5866b75f2c4e4d11680bf5e276d87184883cda81ce508e9077ba151e13ed",
               "assistance_history_count": 6,
               "cohort_evidence_status": "unavailable"
             },
@@ -2945,17 +3350,13 @@
           "complete_service_tests": {
             "status": "pass",
             "exit_code": 0,
-            "command": [
-              "[ABSOLUTE_PATH]",
-              "-m",
-              "unittest",
-              "discover",
-              "-s",
-              "[REPO_ROOT]/service/tests",
-              "-v"
-            ],
-            "output": "test_accepted_recovery_task_carries_into_next_day_http_plan (test_schedule_api.ScheduleApiTests.test_accepted_recovery_task_carries_into_next_day_http_plan) ... ok\ntest_correct_first_failed_transfer_creates_generic_retry (test_schedule_api.ScheduleApiTests.test_correct_first_failed_transfer_creates_generic_retry) ... ok\ntest_create_plan_rejects_nonopaque_command_ids_with_zero_writes (test_schedule_api.ScheduleApiTests.test_create_plan_rejects_nonopaque_command_ids_with_zero_writes) ... ok\ntest_cross_instance_idempotency_conflict_and_cas (test_schedule_api.ScheduleApiTests.test_cross_instance_idempotency_conflict_and_cas) ... ok\ntest_fresh_sidecars_create_one_exact_plan_receipt_under_concurrency (test_schedule_api.ScheduleApiTests.test_fresh_sidecars_create_one_exact_plan_receipt_under_concurrency) ... ok\ntest_historical_plan_is_read_only_even_when_task_version_is_unchanged (test_schedule_api.ScheduleApiTests.test_historical_plan_is_read_only_even_when_task_version_is_unchanged) ... ok\ntest_incomplete_attempt_cannot_seed_a_review_task (test_schedule_api.ScheduleApiTests.test_incomplete_attempt_cannot_seed_a_review_task) ... ok\ntest_low_budget_for_accepted_task_is_retryable_without_empty_plan_write (test_schedule_api.ScheduleApiTests.test_low_budget_for_accepted_task_is_retryable_without_empty_plan_write) ... ok\ntest_new_writes_use_opaque_ids_and_legacy_32hex_trace_remains_readable (test_schedule_api.ScheduleApiTests.test_new_writes_use_opaque_ids_and_legacy_32hex_trace_remains_readable) ... ok\ntest_newer_plan_freezes_old_plan_under_sidecar_clock_skew (test_schedule_api.ScheduleApiTests.test_newer_plan_freezes_old_plan_under_sidecar_clock_skew) ... ok\ntest_newer_plan_prevents_stale_sidecar_from_creating_an_older_plan (test_schedule_api.ScheduleApiTests.test_newer_plan_prevents_stale_sidecar_from_creating_an_older_plan) ... ok\ntest_no_evidence_is_empty_and_client_cannot_forge_dates (test_schedule_api.ScheduleApiTests.test_no_evidence_is_empty_and_client_cannot_forge_dates) ... ok\ntest_overdue_count_is_after_one_task_per_run_deduplication (test_schedule_api.ScheduleApiTests.test_overdue_count_is_after_one_task_per_run_deduplication) ... ok\ntest_public_resurface_action_is_rejected_and_remains_automatic (test_schedule_api.ScheduleApiTests.test_public_resurface_action_is_rejected_and_remains_automatic) ... ok\ntest_repeated_skip_rotates_three_recovery_tasks_over_http (test_schedule_api.ScheduleApiTests.test_repeated_skip_rotates_three_recovery_tasks_over_http) ... ok\ntest_schedule_commands_reject_claim_fields_and_sensitive_ids_without_writes (test_schedule_api.ScheduleApiTests.test_schedule_commands_reject_claim_fields_and_sensitive_ids_without_writes) ... ok\ntest_skip_and_postpone_resurface_in_the_next_due_plan (test_schedule_api.ScheduleApiTests.test_skip_and_postpone_resurface_in_the_next_due_plan) ... ok\ntest_successful_transfer_prioritizes_delayed_retention_with_unconfirmed_context (test_schedule_api.ScheduleApiTests.test_successful_transfer_prioritizes_delayed_retention_with_unconfirmed_context) ... ok\ntest_task_contract_is_executable_authored_and_unconfirmed (test_schedule_api.ScheduleApiTests.test_task_contract_is_executable_authored_and_unconfirmed) ... ok\ntest_user_marked_completion_never_changes_learning_trace_or_kt (test_schedule_api.ScheduleApiTests.test_user_marked_completion_never_changes_learning_trace_or_kt) ... ok\ntest_all_three_learning_modes_complete (test_sidecar.SidecarTests.test_all_three_learning_modes_complete) ... ok\ntest_assistance_contract_rejects_client_claims_without_writing (test_sidecar.SidecarTests.test_assistance_contract_rejects_client_claims_without_writing) ... ok\ntest_assisted_verification_is_withheld_even_if_trace_contains_help (test_sidecar.SidecarTests.test_assisted_verification_is_withheld_even_if_trace_contains_help) ... ok\ntest_attempt_is_fail_closed_for_unknown_fields_fixture_and_values (test_sidecar.SidecarTests.test_attempt_is_fail_closed_for_unknown_fields_fixture_and_values) ... ok\ntest_attempt_trace_contains_redacted_response_evidence (test_sidecar.SidecarTests.test_attempt_trace_contains_redacted_response_evidence) ... ok\ntest_attempt_trace_redacts_secret_like_learner_text (test_sidecar.SidecarTests.test_attempt_trace_redacts_secret_like_learner_text) ... ok\ntest_authored_probe_assessment_supports_and_refutes_without_confirming (test_sidecar.SidecarTests.test_authored_probe_assessment_supports_and_refutes_without_confirming) ... ok\ntest_concurrent_assistance_requests_accept_exactly_one (test_sidecar.SidecarTests.test_concurrent_assistance_requests_accept_exactly_one) ... ok\ntest_concurrent_same_version_continuations_accept_exactly_one (test_sidecar.SidecarTests.test_concurrent_same_version_continuations_accept_exactly_one) ... ok\ntest_correct_initial_answer_does_not_hide_failed_transfer (test_sidecar.SidecarTests.test_correct_initial_answer_does_not_hide_failed_transfer) ... ok\ntest_cors_rejects_non_allowlisted_origin (test_sidecar.SidecarTests.test_cors_rejects_non_allowlisted_origin) ... ok\ntest_health_capabilities_and_42_safe_scenarios (test_sidecar.SidecarTests.test_health_capabilities_and_42_safe_scenarios) ... ok\ntest_json_field_types_fail_closed_without_http_500 (test_sidecar.SidecarTests.test_json_field_types_fail_closed_without_http_500) ... ok\ntest_legacy_run_without_fixture_snapshot_is_skipped_by_report (test_sidecar.SidecarTests.test_legacy_run_without_fixture_snapshot_is_skipped_by_report) ... ok\ntest_negated_keyword_stuffing_never_passes_text_scoring_or_transfer (test_sidecar.SidecarTests.test_negated_keyword_stuffing_never_passes_text_scoring_or_transfer) ... ok\ntest_non_loopback_bind_is_impossible (test_sidecar.SidecarTests.test_non_loopback_bind_is_impossible) ... ok\ntest_offline_attempt_records_zero_cloud_calls (test_sidecar.SidecarTests.test_offline_attempt_records_zero_cloud_calls) ... ok\ntest_processing_dossier_never_offers_an_unexecutable_prompt_write (test_sidecar.SidecarTests.test_processing_dossier_never_offers_an_unexecutable_prompt_write) ... ok\ntest_progressive_assistance_is_persistent_ordered_and_idempotent (test_sidecar.SidecarTests.test_progressive_assistance_is_persistent_ordered_and_idempotent) ... ok\ntest_public_identifiers_reject_pii_secrets_and_unicode (test_sidecar.SidecarTests.test_public_identifiers_reject_pii_secrets_and_unicode) ... ok\ntest_public_run_route_is_disabled_and_internal_evaluation_is_invisible (test_sidecar.SidecarTests.test_public_run_route_is_disabled_and_internal_evaluation_is_invisible) ... ok\ntest_public_safe_redacts_protected_paths (test_sidecar.SidecarTests.test_public_safe_redacts_protected_paths) ... ok\ntest_real_attempt_and_verification_use_service_utc_timestamps (test_sidecar.SidecarTests.test_real_attempt_and_verification_use_service_utc_timestamps) ... ok\ntest_real_attempt_responses_change_score_and_diagnosis (test_sidecar.SidecarTests.test_real_attempt_responses_change_score_and_diagnosis) ... ok\ntest_real_continuation_commits_authored_transfer_across_all_domains (test_sidecar.SidecarTests.test_real_continuation_commits_authored_transfer_across_all_domains) ... ok\ntest_scenario_filters_cover_domain_and_mode (test_sidecar.SidecarTests.test_scenario_filters_cover_domain_and_mode) ... ok\ntest_session_uses_immutable_fixture_snapshot_after_catalog_drift (test_sidecar.SidecarTests.test_session_uses_immutable_fixture_snapshot_after_catalog_drift) ... ok\ntest_staged_http_continuation_requires_probe_then_verification (test_sidecar.SidecarTests.test_staged_http_continuation_requires_probe_then_verification) ... ok\ntest_structured_errors_carry_request_id_without_internal_paths (test_sidecar.SidecarTests.test_structured_errors_carry_request_id_without_internal_paths) ... ok\ntest_two_sidecar_instances_share_database_level_continuation_cas (test_sidecar.SidecarTests.test_two_sidecar_instances_share_database_level_continuation_cas) ... ok\ntest_two_sidecars_replay_the_same_assistance_command_idempotently (test_sidecar.SidecarTests.test_two_sidecars_replay_the_same_assistance_command_idempotently) ... ok\n\n----------------------------------------------------------------------\nRan 51 tests in 33.440s\n\nOK",
-            "errors": []
+            "test_count": 68,
+            "failure_count": 0,
+            "error_count": 0,
+            "skipped_count": 0,
+            "stable_failure_codes": [],
+            "output_sha256": "aef467f22e88da27f8df800e87407d898e695602a123da773a6808a50e76fec4",
+            "raw_output_saved": false
           }
         },
         {
@@ -2969,7 +3370,7 @@
         }
       ],
       "blocking": true,
-      "duration_ms": 10
+      "duration_ms": 11
     },
     {
       "name": "trace",
@@ -2978,7 +3379,7 @@
       "evidence": [
         {
           "trace_id": "trace-9fa80b49f5419fe7",
-          "sha256": "e48cc97ab420e13693ba5868c60a5018589bb086103456729ba55deef5a52cbc",
+          "sha256": "1494403054e00d6b602df7eeceaf472e7a13b58a5af902fdc46c0f13e12bdd32",
           "trace": {
             "trace_id": "trace-9fa80b49f5419fe7",
             "schema_version": "trajectory-v1",
@@ -3128,7 +3529,7 @@
                   "attempt:attempt-demo-probe-001"
                 ],
                 "output": {
-                  "sha256": "a42787105a97d7c9cb3531580fc87b88a3bc30a0b83444c7ea876fd816cfbbea",
+                  "sha256": "82cf796791d5bdb5afbe0f618e6da3cfc4a65bf20bc13df87708f32d0e6d6fda",
                   "result": {
                     "post_state": {
                       "learner_id": "learner-demo-redacted",
@@ -3140,7 +3541,7 @@
                       "evidence_count": 4,
                       "mastery": 0.5751921245771141,
                       "uncertainty": 0.40476676779245535,
-                      "last_updated_at": "2026-07-11T13:20:27.772845+00:00",
+                      "last_updated_at": "2026-07-11T17:53:02.820241+00:00",
                       "provenance": [
                         {
                           "attempt": {
@@ -3232,7 +3633,7 @@
                 "evidence_count": 4,
                 "mastery": 0.5751921245771141,
                 "uncertainty": 0.40476676779245535,
-                "last_updated_at": "2026-07-11T13:20:27.772845+00:00",
+                "last_updated_at": "2026-07-11T17:53:02.820241+00:00",
                 "provenance": [
                   {
                     "attempt": {
@@ -3396,7 +3797,7 @@
       "summary": "real KT update is bounded, versioned, and linked to one evidence event",
       "evidence": [
         {
-          "state_sha256": "5a34f209b37ff8edb8e8c8ac0dc4b5679b0fad6547ece7e4fdaf7033cef7e38e",
+          "state_sha256": "19fc263d94d835894cd92ec35e1d6772f8a446561fd0560a04dab48e6d3a1d0c",
           "state": {
             "learner_id": "learner-demo-redacted",
             "skill_id": "xingce.data_analysis.growth_rate.base_current",
@@ -3407,7 +3808,7 @@
             "evidence_count": 4,
             "mastery": 0.5751921245771141,
             "uncertainty": 0.40476676779245535,
-            "last_updated_at": "2026-07-11T13:20:27.772778+00:00",
+            "last_updated_at": "2026-07-11T17:53:02.820175+00:00",
             "provenance": [
               {
                 "attempt": {
@@ -3480,7 +3881,7 @@
               "model_version": "independent-transfer-check-v1"
             }
           },
-          "mechanics_sha256": "a42787105a97d7c9cb3531580fc87b88a3bc30a0b83444c7ea876fd816cfbbea"
+          "mechanics_sha256": "82cf796791d5bdb5afbe0f618e6da3cfc4a65bf20bc13df87708f32d0e6d6fda"
         },
         {
           "domain_engine_runtime_integration": {
@@ -3497,7 +3898,7 @@
                 "trace_verified": true,
                 "model_calls_recorded": 0
               },
-              "replay_sha256": "73b38ed42b247c0481d33edddd6038071900c50c3625c6250b64753b902c4f78",
+              "replay_sha256": "79dc1d8859cbce8912c664b9dc14e441801385a60914872eefb754e244d9f758",
               "assertion_errors": []
             },
             "ambiguous": {
@@ -3513,7 +3914,7 @@
                 "trace_verified": true,
                 "model_calls_recorded": 0
               },
-              "replay_sha256": "801bdf0048dbdd83520941caa5910abdf6362175f79012796fd48b59a0e2500f",
+              "replay_sha256": "10fa4d031cec3fc0dc7267df700e6758bf9ac7c690e9716b05e38daa9378579c",
               "assertion_errors": []
             },
             "offline": {
@@ -3529,7 +3930,7 @@
                 "trace_verified": true,
                 "model_calls_recorded": 0
               },
-              "replay_sha256": "400d32bff695e2a8013113f663e62408b4d62c906a5e7de54567e728bbf22155",
+              "replay_sha256": "e689f2426efe47eb22c3ef777489b0cc2ac5c4983c82e2108756ab5046fe1dc0",
               "assertion_errors": []
             }
           },
@@ -3545,7 +3946,7 @@
       "summary": "local trace privacy contract and static secret scan passed; no cloud operations detected",
       "evidence": [
         {
-          "scanned_file_count": 232,
+          "scanned_file_count": 377,
           "secret_findings": []
         },
         {
@@ -3559,14 +3960,14 @@
           }
         },
         {
-          "tracked_report_count": 7,
+          "tracked_report_count": 8,
           "tracked_report_findings": [],
-          "persisted_report_count": 37,
+          "persisted_report_count": 41,
           "persisted_report_findings": []
         }
       ],
       "blocking": true,
-      "duration_ms": 496
+      "duration_ms": 680
     },
     {
       "name": "readonly_boundary",
@@ -3591,7 +3992,7 @@
         }
       ],
       "blocking": true,
-      "duration_ms": 408
+      "duration_ms": 461
     }
   ]
 }

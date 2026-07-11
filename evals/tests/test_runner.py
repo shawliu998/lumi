@@ -3,6 +3,7 @@ from __future__ import annotations
 from copy import deepcopy
 import importlib.util
 import json
+import os
 import sys
 import tempfile
 import unittest
@@ -61,6 +62,52 @@ class JsonSchemaSubsetTests(unittest.TestCase):
         self.assertTrue(any("below minimum" in error for error in errors))
         self.assertTrue(any("longer than maxItems" in error for error in errors))
 
+    def test_one_of_conditionals_lengths_and_uniqueness_fail_closed(self) -> None:
+        schema = {
+            "oneOf": [
+                {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": ["kind", "value", "tags"],
+                    "properties": {
+                        "kind": {"const": "text"},
+                        "value": {"type": "string", "maxLength": 3},
+                        "tags": {
+                            "type": "array",
+                            "uniqueItems": True,
+                            "items": {"type": "string"},
+                        },
+                    },
+                    "if": {
+                        "properties": {"kind": {"const": "text"}},
+                        "required": ["kind"],
+                    },
+                    "then": {
+                        "properties": {"value": {"pattern": "^[a-z]+$"}}
+                    },
+                },
+                {"type": "null"},
+            ]
+        }
+        self.assertEqual(
+            runner.validate_json(
+                {"kind": "text", "value": "abc", "tags": ["a", "b"]},
+                schema,
+            ),
+            [],
+        )
+        errors = runner.validate_json(
+            {"kind": "text", "value": "ABCD", "tags": ["a", "a"]},
+            schema,
+        )
+        self.assertTrue(any("oneOf" in error for error in errors))
+        self.assertTrue(
+            runner.validate_json(
+                {"kind": "text", "value": "abc", "tags": []},
+                {"oneOf": [{"type": "object"}, {"type": "object"}]},
+            )
+        )
+
     def test_new_contracts_close_every_typed_object(self) -> None:
         def assert_closed(schema: object, path: str = "$") -> None:
             if isinstance(schema, dict):
@@ -84,6 +131,16 @@ class JsonSchemaSubsetTests(unittest.TestCase):
             "misconception-dossier.schema.json",
             "today-plan.schema.json",
             "review-schedule.schema.json",
+            "source-document.schema.json",
+            "source-span.schema.json",
+            "study-artifact-content.schema.json",
+            "study-artifact.schema.json",
+            "study-candidate-skill-link.schema.json",
+            "study-pack-attempt-result.schema.json",
+            "study-pack-attempt.schema.json",
+            "study-pack-detail.schema.json",
+            "study-pack.schema.json",
+            "study-verifier-decision.schema.json",
         ):
             assert_closed(runner.load_json(runner.CONTRACT_DIR / name))
 
@@ -497,6 +554,156 @@ class EvidenceIntegrationTests(unittest.TestCase):
         finally:
             runner.REPORT_DIR = original_report_dir
 
+    def test_study_pack_probe_is_cached_per_context(self) -> None:
+        result = {
+            "schema_version": "lumi.study-pack-eval-evidence.v1",
+            "status": "pass",
+            "test_input_non_learner": True,
+            "learner_projection_eligible": False,
+            "errors": [],
+        }
+        with patch.object(runner, "_probe_study_pack", return_value=result) as probe:
+            context = runner.Context()
+            self.assertIs(context.probe_study_pack(), result)
+            self.assertIs(context.probe_study_pack(), result)
+        probe.assert_called_once_with()
+
+    def test_study_pack_gate_no_write_does_not_create_reports(self) -> None:
+        result = {
+            "schema_version": "lumi.study-pack-eval-evidence.v1",
+            "status": "pass",
+            "test_input_non_learner": True,
+            "learner_projection_eligible": False,
+            "errors": [],
+        }
+        original_report_dir = runner.REPORT_DIR
+        try:
+            with tempfile.TemporaryDirectory() as directory:
+                absent_report_dir = Path(directory) / "reports-must-stay-absent"
+                runner.REPORT_DIR = absent_report_dir
+                with patch.object(
+                    runner, "_probe_study_pack", return_value=result
+                ), patch("builtins.print") as output:
+                    self.assertEqual(
+                        runner.main(["--gate", "study_pack", "--no-write"]),
+                        0,
+                    )
+                self.assertFalse(absent_report_dir.exists())
+                rendered = str(output.call_args.args[0])
+                self.assertIn("--no-write", rendered)
+                self.assertIn("no report or evidence file was created", rendered)
+                self.assertNotIn("beside this file", rendered)
+        finally:
+            runner.REPORT_DIR = original_report_dir
+
+    def test_study_pack_dependency_probe_never_bootstraps(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            with patch.dict(
+                os.environ,
+                {"LUMI_STUDY_PACK_PYTHON": str(root / "missing-python")},
+            ), patch.object(
+                runner, "_study_pack_pypdf_version", return_value=None
+            ):
+                with self.assertRaises(runner._StudyPackProbeFailure) as caught:
+                    runner._study_pack_isolated_interpreter(root)
+            self.assertEqual(
+                str(caught.exception),
+                "study_pack_eval_dependencies_unavailable",
+            )
+            self.assertEqual(list(root.iterdir()), [])
+
+    def test_study_pack_compaction_drops_arbitrary_source_answer_and_record(self) -> None:
+        raw_source = "这是绝不能写入评测报告的完整中文材料。"
+        raw_answer = "这是绝不能写入评测报告的学生答案。"
+        raw_ascii = "privateanswercanary"
+        probe = {
+            "schema_version": "lumi.study-pack-eval-evidence.v1",
+            "status": "pass",
+            "test_input_non_learner": True,
+            "learner_projection_eligible": False,
+            "saved_product_attempt_record_count": 0,
+            "product_external_network_calls": 0,
+            "protected_path_accesses_observed": 0,
+            "raw_source": raw_source,
+            "source_cases": {
+                "pasted_text": {
+                    "source_sha256": "a" * 64,
+                    "answer_sha256": "b" * 64,
+                    "raw_answer": raw_answer,
+                    "attempt": {
+                        "schema_version": "lumi.study-pack-attempt.v1",
+                        "answer": raw_answer,
+                    },
+                }
+            },
+            "errors": [raw_source, raw_ascii],
+        }
+        compact = runner._compact_study_pack_evidence(probe)
+        serialized = json.dumps(compact, ensure_ascii=False)
+        self.assertNotIn(raw_source, serialized)
+        self.assertNotIn(raw_answer, serialized)
+        self.assertNotIn(raw_ascii, serialized)
+        self.assertNotIn("lumi.study-pack-attempt.v1", serialized)
+        self.assertNotIn("raw_source", serialized)
+        self.assertNotIn("raw_answer", serialized)
+        self.assertNotIn("product_external_network_calls", serialized)
+        self.assertNotIn("protected_path_accesses_observed", serialized)
+        self.assertEqual(compact["test_input_non_learner"], True)
+        self.assertEqual(compact["learner_projection_eligible"], False)
+        self.assertIn("unsafe_error_redacted", serialized)
+
+    def test_written_study_pack_evidence_uses_closed_compaction(self) -> None:
+        raw_source = "持久证据不能保存这段中文原文。"
+        raw_answer = "持久证据不能保存这段中文答案。"
+        context = runner.Context()
+        context.study_pack_probe = {
+            "schema_version": "lumi.study-pack-eval-evidence.v1",
+            "status": "pass",
+            "test_input_non_learner": True,
+            "learner_projection_eligible": False,
+            "source_cases": {
+                "pasted_text": {
+                    "source_sha256": "a" * 64,
+                    "answer_sha256": "b" * 64,
+                    "raw_source": raw_source,
+                    "raw_answer": raw_answer,
+                }
+            },
+            "errors": [],
+        }
+        original_report_dir = runner.REPORT_DIR
+        try:
+            with tempfile.TemporaryDirectory() as directory:
+                runner.REPORT_DIR = Path(directory)
+                runner.write_outputs(
+                    {
+                        "run_id": "run-study-pack-compaction",
+                        "generated_at": "2026-07-11T00:00:00+00:00",
+                        "repository": "/local/repository",
+                        "overall_status": "pass",
+                        "summary": {
+                            "pass": 1,
+                            "fail": 0,
+                            "pending": 0,
+                            "total": 1,
+                        },
+                        "gates": [],
+                    },
+                    context,
+                )
+                serialized = (
+                    Path(directory) / "study-pack-evidence-latest.json"
+                ).read_text(encoding="utf-8")
+        finally:
+            runner.REPORT_DIR = original_report_dir
+        self.assertNotIn(raw_source, serialized)
+        self.assertNotIn(raw_answer, serialized)
+        self.assertNotIn("raw_source", serialized)
+        self.assertNotIn("raw_answer", serialized)
+        self.assertIn('"test_input_non_learner": true', serialized)
+        self.assertIn('"learner_projection_eligible": false', serialized)
+
     def test_written_schedule_evidence_is_sanitized(self) -> None:
         secret_canary = "gh" + "p_" + "abcdefghijklmnopqrstuvwxyz"
         context = runner.Context()
@@ -596,6 +803,140 @@ class EvidenceIntegrationTests(unittest.TestCase):
             self.assertIs(context.probe_service_tests(), result)
         probe.assert_called_once_with()
 
+    def test_service_test_evidence_never_persists_raw_failure_output(self) -> None:
+        raw_source = "服务测试失败时也不能落盘这段中文材料。"
+        raw_answer = "服务测试失败时也不能落盘这段中文答案。"
+        output = (
+            "test_closed (tests.TestCase.test_closed) ... FAIL\n"
+            "Ran 12 tests\nFAILED (failures=1)\n"
+            + raw_source
+            + raw_answer
+        )
+        summarized = runner._unittest_output_evidence(output, 1)
+        self.assertEqual(summarized["test_count"], 12)
+        self.assertEqual(summarized["failure_count"], 1)
+        self.assertEqual(
+            summarized["stable_failure_codes"], ["fail:test_closed"]
+        )
+        self.assertNotIn(raw_source, json.dumps(summarized, ensure_ascii=False))
+        compact = runner._compact_service_test_evidence(
+            {
+                "status": "fail",
+                **summarized,
+                "output": output,
+                "errors": [raw_source, raw_answer],
+                "stable_failure_codes": [
+                    *summarized["stable_failure_codes"],
+                    raw_answer,
+                ],
+            }
+        )
+        serialized = json.dumps(compact, ensure_ascii=False)
+        self.assertNotIn(raw_source, serialized)
+        self.assertNotIn(raw_answer, serialized)
+        self.assertNotIn("output", compact)
+        self.assertNotIn("errors", compact)
+        self.assertEqual(compact["raw_output_saved"], False)
+        self.assertTrue(
+            any(
+                code.startswith("unsafe_failure_code_redacted:")
+                for code in compact["stable_failure_codes"]
+            )
+        )
+
+    def test_real_study_pack_release_gate_when_strict_interpreter_is_available(
+        self,
+    ) -> None:
+        configured = os.environ.get("LUMI_STUDY_PACK_PYTHON")
+        candidates = [
+            Path(configured).expanduser() if configured else None,
+            runner.REPO_ROOT
+            / "desktop"
+            / ".sidecar-venv"
+            / "bin"
+            / "python",
+            Path(sys.executable),
+        ]
+        if not any(
+            candidate is not None
+            and candidate.is_file()
+            and runner._study_pack_pypdf_version(candidate) == "6.10.0"
+            for candidate in candidates
+        ):
+            self.skipTest("strict Study Pack evaluation interpreter unavailable")
+        context = runner.Context()
+        result = runner.gate_study_pack(context)
+        self.assertEqual(result.status, "pass", result.evidence)
+        probe = context.study_pack_probe or {}
+        self.assertEqual(probe["test_input_non_learner"], True)
+        self.assertEqual(probe["learner_projection_eligible"], False)
+        self.assertEqual(probe["saved_product_attempt_record_count"], 0)
+        self.assertEqual(
+            probe["ephemeral_evaluation_fixture_attempt_count"], 2
+        )
+        self.assertEqual(probe["ephemeral_human_attempt_count"], 0)
+        self.assertEqual(probe["eval_dependency_network_calls"], 0)
+        self.assertEqual(
+            probe["product_isolation_evidence"],
+            {
+                "method": "capability_and_generator_metadata_not_access_audit",
+                "external_network_endpoint_advertised": False,
+                "ocr_feature_advertised": False,
+                "web_feature_advertised": False,
+                "pdf_worker_subprocess_isolated": True,
+            },
+        )
+        self.assertEqual(
+            probe["protected_repository_boundary"]["readonly_gate_result"],
+            "delegated_to_readonly_boundary_gate",
+        )
+        self.assertTrue(probe["learning_storage_isolation"]["unchanged"])
+        self.assertEqual(
+            probe["fixture_reproducibility"]["reproducible_cases"], 2
+        )
+        self.assertGreaterEqual(probe["negative_case_count"], 20)
+        self.assertTrue(
+            all(
+                case["citation_count"] == case["citation_verified_count"]
+                and case[
+                    "artifact_generator_isolation_metadata_checked_count"
+                ]
+                == case[
+                    "artifact_generator_isolation_metadata_verified_count"
+                ]
+                and case["ephemeral_evaluation_fixture_attempt_count"] == 1
+                and case["ephemeral_human_attempt_count"] == 0
+                and case["persistence_privacy"][
+                    "evaluation_fixture_event_count"
+                ]
+                == 1
+                and case["persistence_privacy"][
+                    "human_local_interactive_event_count"
+                ]
+                == 0
+                for case in probe["source_cases"].values()
+            )
+        )
+        compact = runner._compact_study_pack_evidence(probe)
+        serialized = json.dumps(compact, ensure_ascii=False)
+        pasted_source = (
+            runner.FIXTURE_DIR / "study_pack" / "pasted_text.txt"
+        ).read_text(encoding="utf-8")
+        synthetic_case = runner.load_json(
+            runner.FIXTURE_DIR / "study_pack" / "pasted_text.case.json"
+        )
+        first_private_answer = next(
+            item["content"]["answer"]
+            for item in synthetic_case["private_artifact_contents"]
+            if item["content"]["schema_version"]
+            == "study_pack.practice_item.v1"
+        )
+        self.assertNotIn(pasted_source, serialized)
+        self.assertNotIn(first_private_answer, serialized)
+        self.assertNotIn(
+            '"evidence_origin": "human_local_interactive"', serialized
+        )
+
     def test_attempt_evidence_compaction_keeps_only_hash_and_redaction(self) -> None:
         compact = runner._compact_attempt_api_evidence(
             {
@@ -681,6 +1022,18 @@ class EvidenceIntegrationTests(unittest.TestCase):
         self.assertNotIn("xingcetiku", serialized)
         self.assertIn("[EMAIL]", serialized)
         self.assertIn("[REDACTED_SECRET]", serialized)
+
+    def test_attempt_probe_uses_system_temp_not_reports_directory(self) -> None:
+        original_report_dir = runner.REPORT_DIR
+        try:
+            with tempfile.TemporaryDirectory() as directory:
+                absent_report_dir = Path(directory) / "reports-must-stay-absent"
+                runner.REPORT_DIR = absent_report_dir
+                probe = runner._probe_attempt_api()
+                self.assertEqual(probe["status"], "pass", probe.get("errors"))
+                self.assertFalse(absent_report_dir.exists())
+        finally:
+            runner.REPORT_DIR = original_report_dir
 
 
 if __name__ == "__main__":

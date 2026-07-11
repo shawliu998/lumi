@@ -8,20 +8,70 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from typing import Mapping
 
 
 ROOT = Path(__file__).resolve().parents[1]
 XINGCE = Path(os.environ.get("LUMI_XINGCE_ROOT", Path.home() / "Documents" / "xingcetiku"))
+STUDY_PACK_RUNTIME_PINS = {"pypdf": "6.10.0"}
+STUDY_PACK_EVAL_PINS = {
+    "jsonschema": "4.25.0",
+    "pdfplumber": "0.11.7",
+    "pypdf": "6.10.0",
+    "reportlab": "4.4.2",
+}
 
 
-def command(name: str, argv: list[str], cwd: Path) -> dict[str, object]:
+def _python_has_exact_pins(candidate: Path, expected: Mapping[str, str]) -> bool:
+    probe_source = (
+        "import importlib.metadata as m,json; "
+        f"expected=json.loads({json.dumps(json.dumps(dict(expected), sort_keys=True))}); "
+        "actual={name:m.version(name) for name in expected}; "
+        "raise SystemExit(actual != expected)"
+    )
+    try:
+        probe = subprocess.run(
+            [str(candidate), "-c", probe_source],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+    return probe.returncode == 0
+
+
+def _study_pack_python(expected: Mapping[str, str]) -> str | None:
+    configured = os.environ.get("LUMI_STUDY_PACK_PYTHON")
+    candidates = [
+        Path(configured).expanduser() if configured else None,
+        ROOT / "desktop" / ".sidecar-venv" / "bin" / "python",
+        Path(sys.executable),
+    ]
+    for candidate in candidates:
+        if candidate is None or not candidate.is_file():
+            continue
+        if _python_has_exact_pins(candidate, expected):
+            return str(candidate.absolute())
+    return None
+
+
+def command(
+    name: str,
+    argv: list[str],
+    cwd: Path,
+    env_overrides: Mapping[str, str] | None = None,
+) -> dict[str, object]:
     env = dict(os.environ)
+    if env_overrides:
+        env.update(env_overrides)
     local_packages = [
         ROOT / "engine",
         ROOT / "runtime",
         ROOT / "domains",
         ROOT / "integration",
         ROOT / "service",
+        ROOT / "study_pack",
     ]
     inherited_pythonpath = env.get("PYTHONPATH")
     env["PYTHONPATH"] = os.pathsep.join(
@@ -41,7 +91,13 @@ def command(name: str, argv: list[str], cwd: Path) -> dict[str, object]:
 
 
 def main() -> int:
-    checks: list[tuple[str, list[str], Path]] = [
+    runtime_study_pack_python = _study_pack_python(STUDY_PACK_RUNTIME_PINS)
+    strict_eval_python = _study_pack_python(STUDY_PACK_EVAL_PINS)
+    runtime_interpreter = runtime_study_pack_python or sys.executable
+    checks: list[
+        tuple[str, list[str], Path]
+        | tuple[str, list[str], Path, Mapping[str, str]]
+    ] = [
         (
             "repository-boundaries",
             [sys.executable, "scripts/check_boundaries.py"],
@@ -58,29 +114,71 @@ def main() -> int:
             XINGCE,
         ),
     ]
+    if runtime_study_pack_python is None:
+        checks.append(
+            (
+                "study-pack-runtime-dependencies",
+                [
+                    sys.executable,
+                    "-c",
+                    (
+                        "import sys; "
+                        "sys.stderr.write('study_pack_runtime_dependencies_unavailable: "
+                        "build the desktop sidecar or set LUMI_STUDY_PACK_PYTHON to "
+                        "an interpreter with pypdf==6.10.0\\n'); "
+                        "raise SystemExit(1)"
+                    ),
+                ],
+                ROOT,
+            )
+        )
 
     optional_suites = {
-        "agent-runtime": ROOT / "runtime",
-        "domain-slices": ROOT / "domains",
-        "integrated-learning-loop": ROOT / "integration",
-        "local-sidecar": ROOT / "service",
+        "agent-runtime": (ROOT / "runtime", sys.executable),
+        "domain-slices": (ROOT / "domains", sys.executable),
+        "integrated-learning-loop": (ROOT / "integration", sys.executable),
+        "local-sidecar": (ROOT / "service", runtime_interpreter),
+        "local-study-pack": (ROOT / "study_pack", runtime_interpreter),
     }
-    for name, directory in optional_suites.items():
+    for name, (directory, interpreter) in optional_suites.items():
         if (directory / "tests").is_dir():
             checks.append(
                 (
                     name,
-                    [sys.executable, "-m", "unittest", "discover", "-s", "tests", "-v"],
+                    [interpreter, "-m", "unittest", "discover", "-s", "tests", "-v"],
                     directory,
                 )
             )
 
     if (ROOT / "evals" / "run_all.py").is_file():
+        if strict_eval_python is None:
+            checks.append(
+                (
+                    "study-pack-eval-dependencies",
+                    [
+                        sys.executable,
+                        "-c",
+                        (
+                            "import sys; "
+                            "sys.stderr.write('study_pack_eval_dependencies_unavailable: "
+                            "set LUMI_STUDY_PACK_PYTHON to an interpreter with the exact "
+                            "versions in evals/fixtures/study_pack/requirements.txt\\n'); "
+                            "raise SystemExit(1)"
+                        ),
+                    ],
+                    ROOT,
+                )
+            )
         checks.append(
             (
                 "release-evidence",
                 [sys.executable, "evals/run_all.py"],
                 ROOT,
+                (
+                    {"LUMI_STUDY_PACK_PYTHON": strict_eval_python}
+                    if strict_eval_python is not None
+                    else {}
+                ),
             )
         )
 
@@ -163,7 +261,10 @@ def main() -> int:
                 )
             )
 
-    results = [command(name, argv, cwd) for name, argv, cwd in checks]
+    # Check specifications may optionally carry scoped environment overrides.
+    # Expanding the tuple preserves the three-field default while allowing the
+    # release-evidence gate to select its pinned interpreter deterministically.
+    results = [command(*check) for check in checks]
     report = {
         "schema": "hermes.core-verification.v0",
         "status": "pass" if all(r["status"] == "pass" for r in results) else "fail",
