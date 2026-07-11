@@ -21,3 +21,7 @@ When implementing from a selected generated mock, treat that image as the source
   sparkle imagery, decorative neural graphs, excessive pills, or card nesting.
 - Prefer ordinary product UI: source lists, tabs, tables, filters, disclosure
   rows, real empty/loading/selected states, and one consistent icon family.
+- The product canvas uses a pure white background. Brand assets are the green
+  translucent orbital mark and the Lumi wordmark supplied on 2026-07-11; use
+  transparent files in-product and render the white wordmark as a dark variant
+  when it appears on white surfaces.

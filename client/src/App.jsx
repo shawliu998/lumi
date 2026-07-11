@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
-  BookOpen,
   BookmarkSimple,
   Books,
   CaretDown,
@@ -24,6 +23,8 @@ import {
   Toolbox,
   X,
 } from "@phosphor-icons/react";
+import lumiMark from "./assets/lumi-mark.png";
+import lumiWordmark from "./assets/lumi-wordmark.png";
 import {
   continueAttempt,
   fetchHealth,
@@ -207,8 +208,8 @@ function Sidebar({ page, setPage, collapsed, setCollapsed, onUtility, sidecar, o
     <aside className={collapsed ? "sidebar collapsed" : "sidebar"}>
       <div className="brand-row">
         <button className="brand-identity" onClick={() => collapsed && setCollapsed(false)} aria-label={collapsed ? "展开侧栏" : "Lumi 学习"}>
-          <span className="brand-mark"><BookOpen weight="fill" /></span>
-          {!collapsed && <strong>Lumi</strong>}
+          <span className="brand-mark"><img src={lumiMark} alt="" /></span>
+          {!collapsed && <img className="brand-wordmark" src={lumiWordmark} alt="" />}
         </button>
         {!collapsed && (
           <button className="icon-button brand-close" onClick={() => setCollapsed(true)} aria-label="收起侧栏">

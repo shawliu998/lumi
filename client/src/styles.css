@@ -1,7 +1,7 @@
 :root {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
   color: #24252c;
-  background: #ddf1ff;
+  background: #ffffff;
   font-synthesis: none;
   --accent: #5b55f5;
   --accent-strong: #4e48e8;
@@ -34,7 +34,7 @@ body,
 body {
   margin: 0;
   min-height: 100vh;
-  background: #ddf1ff;
+  background: #ffffff;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -126,7 +126,7 @@ select:disabled {
   background: transparent;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   cursor: default;
 }
 
@@ -134,29 +134,27 @@ select:disabled {
   cursor: pointer;
 }
 
-.brand-identity strong {
-  overflow: hidden;
-  font-size: 13px;
-  line-height: 16px;
-  letter-spacing: -0.01em;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .brand-mark {
-  width: 22px;
-  height: 22px;
-  flex: 0 0 22px;
-  border-radius: 5px;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
   display: grid;
   place-items: center;
-  color: #ffffff;
-  background: #25262d;
 }
 
-.brand-mark svg {
-  width: 14px;
-  height: 14px;
+.brand-mark img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+
+.brand-wordmark {
+  width: 51px;
+  height: 23px;
+  display: block;
+  object-fit: contain;
+  filter: brightness(0) saturate(100%);
 }
 
 .icon-button {
