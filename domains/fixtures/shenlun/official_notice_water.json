@@ -31,9 +31,59 @@
       {"cause_id": "reader-action-not-specified", "label": "只说明事件，未明确居民应做什么", "synthetic_prior": 0.22, "evidence_refs": ["criterion_missing:resident-actions"], "is_ground_truth": false}
     ]
   },
-  "probe": {"prompt": "不写正文，先列出时间、事项、对象、居民动作、发布主体五个槽位。", "targets": ["five-elements-incomplete", "format-awareness-weak"]},
-  "teach": {"prompt": "用通知槽位模板完成信息检查，再组织成简洁正文。", "strategy": "genre-slot-template"},
-  "independent_verify": {"prompt": "为社区7月20日14:00消防演练写通知，含集合地点、安全提醒和落款。", "response_mode": "short_text", "pass_condition": {"required_slots": ["title", "time", "event", "action", "issuer"], "minimum_slots": 5}},
-  "samples": {"passing_response": "通知：7月15日9:00—13:00因清洗水箱暂停供水，请居民提前储水并关闭水龙头。清泉社区居委会", "failing_response": "明天社区会停水，请大家注意。"},
+  "probe": {
+    "prompt": "不写正文，先列出时间、事项、对象、居民动作、标题与发布主体六个槽位。",
+    "targets": ["five-elements-incomplete", "format-awareness-weak", "reader-action-not-specified"],
+    "assessment": {
+      "schema_version": "hermes.probe-assessment.v1", "evaluator": "authored_terms_v1",
+      "rules": [
+        {"cause_id": "five-elements-incomplete", "support_if": {"all_terms": ["只写会停水", "时间对象动作可以省略"]}, "refute_if": {"all_terms": ["列明时间事项对象", "补齐居民动作主体"]}},
+        {"cause_id": "format-awareness-weak", "support_if": {"all_terms": ["不用标题落款", "正文一句即可"]}, "refute_if": {"all_terms": ["写通知标题", "署居委会落款"]}},
+        {"cause_id": "reader-action-not-specified", "support_if": {"all_terms": ["只告知停水", "不提醒居民操作"]}, "refute_if": {"all_terms": ["提醒提前储水", "关闭水龙头"]}}
+      ],
+      "cause_samples": [
+        {"cause_id": "five-elements-incomplete", "supporting_response": "只写会停水即可，时间对象动作可以省略。", "refuting_response": "列明时间事项对象，并补齐居民动作主体。", "ambiguous_response": "把材料信息整理一下。"},
+        {"cause_id": "format-awareness-weak", "supporting_response": "不用标题落款，正文一句即可。", "refuting_response": "要写通知标题，并署居委会落款。", "ambiguous_response": "语言要简洁。"},
+        {"cause_id": "reader-action-not-specified", "supporting_response": "只告知停水，不提醒居民操作。", "refuting_response": "提醒提前储水，并关闭水龙头。", "ambiguous_response": "请居民留意。"}
+      ]
+    }
+  },
+  "teach": {
+    "prompt": "用通知槽位模板完成信息检查，再组织成简洁正文。", "strategy": "genre-slot-template",
+    "variants": [
+      {"cause_id": "five-elements-incomplete", "prompt": "用时间、事项、对象、动作、主体清单逐项补齐缺失信息。", "strategy": "slot-completion"},
+      {"cause_id": "format-awareness-weak", "prompt": "把同一内容分别写成消息和通知，对比标题与落款的文种作用。", "strategy": "genre-contrast"},
+      {"cause_id": "reader-action-not-specified", "prompt": "从居民读完后要执行什么倒推正文中的动作指令。", "strategy": "reader-action-backward-design"}
+    ]
+  },
+  "independent_verify": {
+    "prompt": "以清泉社区居委会名义，为7月20日14:00在社区广场举行的消防演练写通知，含集合地点、安全提醒和落款。",
+    "response_mode": "short_text",
+    "pass_condition": {
+      "scorer": "authored_slots_v1",
+      "required_slots": [
+        {"slot_id": "title", "aliases": ["消防演练通知", "通知"]},
+        {"slot_id": "time", "aliases": ["7月20日14:00", "7月20日下午2时", "7月20日下午2点"]},
+        {"slot_id": "event", "aliases": ["消防演练"]},
+        {"slot_id": "location", "aliases": ["社区广场", "广场集合"]},
+        {"slot_id": "action", "aliases": ["注意安全", "听从指挥", "有序参加"]},
+        {"slot_id": "issuer", "aliases": ["清泉社区居委会", "社区居委会"]}
+      ],
+      "minimum_slots": 6
+    },
+    "samples": {"passing_response": "消防演练通知：7月20日14:00在社区广场举行消防演练，请居民听从指挥、注意安全。清泉社区居委会", "failing_response": "通知：7月20日有活动，请大家参加。", "adversarial_negation_response": "不应写通知；7月20日14:00不应举行消防演练，也不要在社区广场集合；不应注意安全；反对清泉社区居委会发布。"}
+  },
+  "assistance_ladder": {
+    "schema_version": "hermes.assistance-content.v1", "content_version": "notice-slots-help.v1",
+    "steps": [
+      {"action": "retry", "title": "再试一次", "content": "先不写正文，逐项核对标题、时间、事项、对象、居民动作和发布主体是否齐全。", "target_cause_ids": ["five-elements-incomplete", "format-awareness-weak", "reader-action-not-specified"]},
+      {"action": "locate_evidence", "title": "定位信息", "content": "题干里的清洗水箱是事项，停水时段是时间，提前储水和关闭水龙头是居民需要执行的动作。", "target_cause_ids": ["five-elements-incomplete", "reader-action-not-specified"]},
+      {"action": "rule_hint", "title": "文种规则", "content": "通知要让读者一眼知道谁发布、何时发生什么、自己需要做什么；信息槽位优先于修辞。", "target_cause_ids": ["format-awareness-weak", "reader-action-not-specified"]},
+      {"action": "analogous_example", "title": "同类例子", "content": "消防演练通知应写明演练时间地点、集合方式和安全提醒，并以发布单位落款。", "target_cause_ids": ["five-elements-incomplete", "format-awareness-weak"]},
+      {"action": "worked_step", "title": "演示一句", "content": "先写核心句：“7月15日9:00—13:00因清洗水箱暂停供水，请居民提前储水并关闭水龙头。”", "target_cause_ids": ["five-elements-incomplete", "reader-action-not-specified"]},
+      {"action": "full_explanation", "title": "完整说明", "content": "成文应含“通知”标题，写明7月15日9:00—13:00清洗水箱停水，提醒居民提前储水并关闭水龙头，最后署清泉社区居委会。", "target_cause_ids": ["five-elements-incomplete", "format-awareness-weak", "reader-action-not-specified"]}
+    ]
+  },
+  "samples": {"passing_response": "通知：7月15日9:00—13:00因清洗水箱暂停供水，请居民提前储水并关闭水龙头。清泉社区居委会", "failing_response": "明天社区会停水，请大家注意。", "adversarial_negation_response": "不应写通知，也没有7月15日9:00—13:00清洗水箱或暂停供水；不要提前储水、关闭水龙头，更反对清泉社区居委会发布。"},
   "provenance": {"content_origin": "synthetic_original", "authoring_note": "合成社区通知情境", "prior_source": "synthetic_engineering_prior_v1"}
 }

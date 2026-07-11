@@ -17,21 +17,32 @@ def evaluate_intervention(
     *,
     item_difficulty: float = 0.0,
     minimum_gain: float = 0.02,
+    evidence_weight: float = 1.0,
 ) -> tuple[SkillState, VerificationResult]:
     """Update state and evaluate teaching only on an independent verification.
 
-    A hinted or non-independent answer still becomes evidence, but it cannot prove
-    that the intervention worked. This prevents tutor assistance from being
-    mistaken for learner mastery.
+    A hinted or non-independent answer remains a traceable practice observation,
+    but it cannot mutate authoritative mastery or prove that the intervention
+    worked. This prevents tutor assistance from being mistaken for transfer.
     """
 
-    post_state = update_skill_state(
-        pre_state,
-        verification_attempt,
-        params,
-        item_difficulty=item_difficulty,
-    )
     independent = verification_attempt.independently_answered and verification_attempt.hints_used == 0
+    if not 0 <= evidence_weight <= 1:
+        raise ValueError("evidence_weight must be in [0, 1]")
+    # Assisted verification is useful practice evidence, but it is not allowed
+    # to mutate the authoritative mastery state. A fresh, unassisted prompt is
+    # required before the learning-state committer can accept transfer credit.
+    post_state = (
+        update_skill_state(
+            pre_state,
+            verification_attempt,
+            params,
+            item_difficulty=item_difficulty,
+            skill_weight=evidence_weight,
+        )
+        if independent
+        else pre_state
+    )
     gain = post_state.mastery - pre_state.mastery
     if not independent:
         effective = None
@@ -54,6 +65,8 @@ def evaluate_intervention(
         provenance={
             "verification_attempt": verification_attempt.provenance(),
             "minimum_gain": minimum_gain,
+            "evidence_weight": evidence_weight,
+            "commit_status": "committed" if independent else "withheld_assisted_verification",
             "model_version": "independent-transfer-check-v1",
         },
     )

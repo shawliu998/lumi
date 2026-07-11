@@ -10,6 +10,7 @@
         "artifacts": {},
         "context": {
           "execution_mode": "local",
+          "fixture_content_sha256": "d97d1f51fefb7cac2656e0c4beb44df250569e1d0c754d1814b7fd2965ad0319",
           "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
           "network_opt_in": false,
           "scenario": "success"
@@ -34,16 +35,16 @@
       "diff": [
         {
           "op": "add",
-          "path": "/artifacts/observe",
+          "path": "[ABSOLUTE_PATH]",
           "value": [
             {
               "adapter_version": "deterministic-domain-adapters-v1",
               "attempt": {
                 "attempt_id": "eval-integration-success:initial",
                 "cause_likelihoods": {
-                  "denominator-current-base-confusion": 1.1721159777914867,
-                  "increment-rate-confusion": 0.8945095619987662,
-                  "ratio-growth-confusion": 0.8945095619987661
+                  "denominator-current-base-confusion": 1.6666666666666665,
+                  "increment-rate-confusion": 0.5913978494623655,
+                  "ratio-growth-confusion": 0.5913978494623655
                 },
                 "confidence": 0.82,
                 "correct": false,
@@ -119,7 +120,7 @@
                     "is_ground_truth": false,
                     "label": "增长率分母误用现期量",
                     "prior": 0.38,
-                    "probability": 0.44540407156076495,
+                    "probability": 0.6333333333333333,
                     "status": "unconfirmed_hypothesis"
                   },
                   {
@@ -130,7 +131,7 @@
                     "is_ground_truth": false,
                     "label": "只算现期/基期而未减1",
                     "prior": 0.4,
-                    "probability": 0.35780382479950645,
+                    "probability": 0.23655913978494622,
                     "status": "unconfirmed_hypothesis"
                   },
                   {
@@ -141,7 +142,7 @@
                     "is_ground_truth": false,
                     "label": "把增长量当作增长率",
                     "prior": 0.22,
-                    "probability": 0.19679210363972857,
+                    "probability": 0.13010752688172042,
                     "status": "unconfirmed_hypothesis"
                   }
                 ],
@@ -177,13 +178,13 @@
         {
           "old": "observe",
           "op": "replace",
-          "path": "/phase",
+          "path": "[ABSOLUTE_PATH]",
           "value": "diagnose"
         },
         {
           "old": 0,
           "op": "replace",
-          "path": "/step_count",
+          "path": "[ABSOLUTE_PATH]",
           "value": 1
         }
       ],
@@ -195,9 +196,9 @@
               "attempt": {
                 "attempt_id": "eval-integration-success:initial",
                 "cause_likelihoods": {
-                  "denominator-current-base-confusion": 1.1721159777914867,
-                  "increment-rate-confusion": 0.8945095619987662,
-                  "ratio-growth-confusion": 0.8945095619987661
+                  "denominator-current-base-confusion": 1.6666666666666665,
+                  "increment-rate-confusion": 0.5913978494623655,
+                  "ratio-growth-confusion": 0.5913978494623655
                 },
                 "confidence": 0.82,
                 "correct": false,
@@ -273,7 +274,7 @@
                     "is_ground_truth": false,
                     "label": "增长率分母误用现期量",
                     "prior": 0.38,
-                    "probability": 0.44540407156076495,
+                    "probability": 0.6333333333333333,
                     "status": "unconfirmed_hypothesis"
                   },
                   {
@@ -284,7 +285,7 @@
                     "is_ground_truth": false,
                     "label": "只算现期/基期而未减1",
                     "prior": 0.4,
-                    "probability": 0.35780382479950645,
+                    "probability": 0.23655913978494622,
                     "status": "unconfirmed_hypothesis"
                   },
                   {
@@ -295,7 +296,7 @@
                     "is_ground_truth": false,
                     "label": "把增长量当作增长率",
                     "prior": 0.22,
-                    "probability": 0.19679210363972857,
+                    "probability": 0.13010752688172042,
                     "status": "unconfirmed_hypothesis"
                   }
                 ],
@@ -330,6 +331,7 @@
         },
         "context": {
           "execution_mode": "local",
+          "fixture_content_sha256": "d97d1f51fefb7cac2656e0c4beb44df250569e1d0c754d1814b7fd2965ad0319",
           "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
           "network_opt_in": false,
           "scenario": "success"
@@ -354,7 +356,7 @@
       "diff": [
         {
           "op": "add",
-          "path": "/artifacts/diagnose",
+          "path": "[ABSOLUTE_PATH]",
           "value": [
             {
               "decision": "confirm_top_hypothesis",
@@ -363,45 +365,48 @@
                 "hypotheses": [
                   {
                     "cause_id": "denominator-current-base-confusion",
-                    "cohort_component": 0.38,
                     "evidence": [
                       "engineering_prior",
                       "learner_history",
                       "attempt_feature_likelihood"
                     ],
-                    "evidence_likelihood": 1.1721159777914867,
-                    "learner_component": 0.5866666666666667,
-                    "probability": 0.677688418627472,
+                    "evidence_likelihood": 1.6666666666666665,
+                    "learner_component": 1.543859649122807,
+                    "prior_component": 0.38,
+                    "prior_kind": "engineering_prior",
+                    "probability": 0.8,
                     "status": "unconfirmed_hypothesis"
                   },
                   {
                     "cause_id": "ratio-growth-confusion",
-                    "cohort_component": 0.4,
                     "evidence": [
                       "engineering_prior",
                       "learner_history",
                       "attempt_feature_likelihood"
                     ],
-                    "evidence_likelihood": 0.8945095619987661,
-                    "learner_component": 0.26666666666666666,
-                    "probability": 0.24745610853936897,
+                    "evidence_likelihood": 0.5913978494623655,
+                    "learner_component": 0.6666666666666666,
+                    "prior_component": 0.4,
+                    "prior_kind": "engineering_prior",
+                    "probability": 0.12903225806451613,
                     "status": "unconfirmed_hypothesis"
                   },
                   {
                     "cause_id": "increment-rate-confusion",
-                    "cohort_component": 0.22,
                     "evidence": [
                       "engineering_prior",
                       "learner_history",
                       "attempt_feature_likelihood"
                     ],
-                    "evidence_likelihood": 0.8945095619987662,
-                    "learner_component": 0.14666666666666667,
-                    "probability": 0.07485547283315912,
+                    "evidence_likelihood": 0.5913978494623655,
+                    "learner_component": 0.6666666666666666,
+                    "prior_component": 0.22,
+                    "prior_kind": "engineering_prior",
+                    "probability": 0.07096774193548387,
                     "status": "unconfirmed_hypothesis"
                   }
                 ],
-                "model_version": "hierarchical-cause-baseline-v1",
+                "model_version": "hierarchical-cause-baseline-v3",
                 "provenance": {
                   "attempt": {
                     "attempt_id": "eval-integration-success:initial",
@@ -437,37 +442,40 @@
                     "response_time_seconds": 60.0,
                     "selected_option": "A"
                   },
-                  "cohort_sources": [
+                  "formula": "normalize(prior * learner_history_likelihood_ratio * evidence_likelihood)",
+                  "learner_history_exposure_count": 2,
+                  "learner_history_version": "integration-scenario-history-v1",
+                  "prior_sources": [
                     {
                       "cause_id": "denominator-current-base-confusion",
-                      "cohort_id": "synthetic-fixture-cold-start",
+                      "kind": "engineering_prior",
                       "sample_size": 0,
+                      "source_id": "synthetic-fixture-cold-start",
                       "source_version": "synthetic_engineering_prior_v1"
                     },
                     {
                       "cause_id": "increment-rate-confusion",
-                      "cohort_id": "synthetic-fixture-cold-start",
+                      "kind": "engineering_prior",
                       "sample_size": 0,
+                      "source_id": "synthetic-fixture-cold-start",
                       "source_version": "synthetic_engineering_prior_v1"
                     },
                     {
                       "cause_id": "ratio-growth-confusion",
-                      "cohort_id": "synthetic-fixture-cold-start",
+                      "kind": "engineering_prior",
                       "sample_size": 0,
+                      "source_id": "synthetic-fixture-cold-start",
                       "source_version": "synthetic_engineering_prior_v1"
                     }
-                  ],
-                  "formula": "normalize(cohort_prior * learner_dirichlet_posterior * evidence_likelihood)",
-                  "learner_history_exposure_count": 2,
-                  "learner_history_version": "integration-scenario-history-v1"
+                  ]
                 },
-                "uncertainty": 0.7311811698133465
+                "uncertainty": 0.5738881297949829
               },
               "engine_tool": {
                 "name": "hermes_explainable_learning_model",
-                "version": "0.1.0"
+                "version": "0.2.0"
               },
-              "model_version": "hierarchical-cause-baseline-v1",
+              "model_version": "hierarchical-cause-baseline-v3",
               "policy_version": "integration-learning-policy-v1"
             }
           ]
@@ -475,13 +483,13 @@
         {
           "old": "diagnose",
           "op": "replace",
-          "path": "/phase",
+          "path": "[ABSOLUTE_PATH]",
           "value": "probe"
         },
         {
           "old": 1,
           "op": "replace",
-          "path": "/step_count",
+          "path": "[ABSOLUTE_PATH]",
           "value": 2
         }
       ],
@@ -495,45 +503,48 @@
                 "hypotheses": [
                   {
                     "cause_id": "denominator-current-base-confusion",
-                    "cohort_component": 0.38,
                     "evidence": [
                       "engineering_prior",
                       "learner_history",
                       "attempt_feature_likelihood"
                     ],
-                    "evidence_likelihood": 1.1721159777914867,
-                    "learner_component": 0.5866666666666667,
-                    "probability": 0.677688418627472,
+                    "evidence_likelihood": 1.6666666666666665,
+                    "learner_component": 1.543859649122807,
+                    "prior_component": 0.38,
+                    "prior_kind": "engineering_prior",
+                    "probability": 0.8,
                     "status": "unconfirmed_hypothesis"
                   },
                   {
                     "cause_id": "ratio-growth-confusion",
-                    "cohort_component": 0.4,
                     "evidence": [
                       "engineering_prior",
                       "learner_history",
                       "attempt_feature_likelihood"
                     ],
-                    "evidence_likelihood": 0.8945095619987661,
-                    "learner_component": 0.26666666666666666,
-                    "probability": 0.24745610853936897,
+                    "evidence_likelihood": 0.5913978494623655,
+                    "learner_component": 0.6666666666666666,
+                    "prior_component": 0.4,
+                    "prior_kind": "engineering_prior",
+                    "probability": 0.12903225806451613,
                     "status": "unconfirmed_hypothesis"
                   },
                   {
                     "cause_id": "increment-rate-confusion",
-                    "cohort_component": 0.22,
                     "evidence": [
                       "engineering_prior",
                       "learner_history",
                       "attempt_feature_likelihood"
                     ],
-                    "evidence_likelihood": 0.8945095619987662,
-                    "learner_component": 0.14666666666666667,
-                    "probability": 0.07485547283315912,
+                    "evidence_likelihood": 0.5913978494623655,
+                    "learner_component": 0.6666666666666666,
+                    "prior_component": 0.22,
+                    "prior_kind": "engineering_prior",
+                    "probability": 0.07096774193548387,
                     "status": "unconfirmed_hypothesis"
                   }
                 ],
-                "model_version": "hierarchical-cause-baseline-v1",
+                "model_version": "hierarchical-cause-baseline-v3",
                 "provenance": {
                   "attempt": {
                     "attempt_id": "eval-integration-success:initial",
@@ -569,37 +580,40 @@
                     "response_time_seconds": 60.0,
                     "selected_option": "A"
                   },
-                  "cohort_sources": [
+                  "formula": "normalize(prior * learner_history_likelihood_ratio * evidence_likelihood)",
+                  "learner_history_exposure_count": 2,
+                  "learner_history_version": "integration-scenario-history-v1",
+                  "prior_sources": [
                     {
                       "cause_id": "denominator-current-base-confusion",
-                      "cohort_id": "synthetic-fixture-cold-start",
+                      "kind": "engineering_prior",
                       "sample_size": 0,
+                      "source_id": "synthetic-fixture-cold-start",
                       "source_version": "synthetic_engineering_prior_v1"
                     },
                     {
                       "cause_id": "increment-rate-confusion",
-                      "cohort_id": "synthetic-fixture-cold-start",
+                      "kind": "engineering_prior",
                       "sample_size": 0,
+                      "source_id": "synthetic-fixture-cold-start",
                       "source_version": "synthetic_engineering_prior_v1"
                     },
                     {
                       "cause_id": "ratio-growth-confusion",
-                      "cohort_id": "synthetic-fixture-cold-start",
+                      "kind": "engineering_prior",
                       "sample_size": 0,
+                      "source_id": "synthetic-fixture-cold-start",
                       "source_version": "synthetic_engineering_prior_v1"
                     }
-                  ],
-                  "formula": "normalize(cohort_prior * learner_dirichlet_posterior * evidence_likelihood)",
-                  "learner_history_exposure_count": 2,
-                  "learner_history_version": "integration-scenario-history-v1"
+                  ]
                 },
-                "uncertainty": 0.7311811698133465
+                "uncertainty": 0.5738881297949829
               },
               "engine_tool": {
                 "name": "hermes_explainable_learning_model",
-                "version": "0.1.0"
+                "version": "0.2.0"
               },
-              "model_version": "hierarchical-cause-baseline-v1",
+              "model_version": "hierarchical-cause-baseline-v3",
               "policy_version": "integration-learning-policy-v1"
             }
           ],
@@ -609,9 +623,9 @@
               "attempt": {
                 "attempt_id": "eval-integration-success:initial",
                 "cause_likelihoods": {
-                  "denominator-current-base-confusion": 1.1721159777914867,
-                  "increment-rate-confusion": 0.8945095619987662,
-                  "ratio-growth-confusion": 0.8945095619987661
+                  "denominator-current-base-confusion": 1.6666666666666665,
+                  "increment-rate-confusion": 0.5913978494623655,
+                  "ratio-growth-confusion": 0.5913978494623655
                 },
                 "confidence": 0.82,
                 "correct": false,
@@ -687,7 +701,7 @@
                     "is_ground_truth": false,
                     "label": "增长率分母误用现期量",
                     "prior": 0.38,
-                    "probability": 0.44540407156076495,
+                    "probability": 0.6333333333333333,
                     "status": "unconfirmed_hypothesis"
                   },
                   {
@@ -698,7 +712,7 @@
                     "is_ground_truth": false,
                     "label": "只算现期/基期而未减1",
                     "prior": 0.4,
-                    "probability": 0.35780382479950645,
+                    "probability": 0.23655913978494622,
                     "status": "unconfirmed_hypothesis"
                   },
                   {
@@ -709,7 +723,7 @@
                     "is_ground_truth": false,
                     "label": "把增长量当作增长率",
                     "prior": 0.22,
-                    "probability": 0.19679210363972857,
+                    "probability": 0.13010752688172042,
                     "status": "unconfirmed_hypothesis"
                   }
                 ],
@@ -744,6 +758,7 @@
         },
         "context": {
           "execution_mode": "local",
+          "fixture_content_sha256": "d97d1f51fefb7cac2656e0c4beb44df250569e1d0c754d1814b7fd2965ad0319",
           "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
           "network_opt_in": false,
           "scenario": "success"
@@ -768,16 +783,18 @@
       "diff": [
         {
           "op": "add",
-          "path": "/artifacts/probe",
+          "path": "[ABSOLUTE_PATH]",
           "value": [
             {
               "policy_version": "integration-learning-policy-v1",
               "prompt": "若只告诉你现期120、基期100，请先写出增长率公式，不计算。",
+              "prompt_instance_id": "eval-integration-success:probe:1",
               "response": "增长率的分母应是基期量。",
               "response_status": "observed",
               "selection": "confirm_top_hypothesis",
               "targets": [
                 "denominator-current-base-confusion",
+                "increment-rate-confusion",
                 "ratio-growth-confusion"
               ],
               "top_hypothesis": "denominator-current-base-confusion"
@@ -787,13 +804,13 @@
         {
           "old": "probe",
           "op": "replace",
-          "path": "/phase",
+          "path": "[ABSOLUTE_PATH]",
           "value": "teach"
         },
         {
           "old": 2,
           "op": "replace",
-          "path": "/step_count",
+          "path": "[ABSOLUTE_PATH]",
           "value": 3
         }
       ],
@@ -807,45 +824,48 @@
                 "hypotheses": [
                   {
                     "cause_id": "denominator-current-base-confusion",
-                    "cohort_component": 0.38,
                     "evidence": [
                       "engineering_prior",
                       "learner_history",
                       "attempt_feature_likelihood"
                     ],
-                    "evidence_likelihood": 1.1721159777914867,
-                    "learner_component": 0.5866666666666667,
-                    "probability": 0.677688418627472,
+                    "evidence_likelihood": 1.6666666666666665,
+                    "learner_component": 1.543859649122807,
+                    "prior_component": 0.38,
+                    "prior_kind": "engineering_prior",
+                    "probability": 0.8,
                     "status": "unconfirmed_hypothesis"
                   },
                   {
                     "cause_id": "ratio-growth-confusion",
-                    "cohort_component": 0.4,
                     "evidence": [
                       "engineering_prior",
                       "learner_history",
                       "attempt_feature_likelihood"
                     ],
-                    "evidence_likelihood": 0.8945095619987661,
-                    "learner_component": 0.26666666666666666,
-                    "probability": 0.24745610853936897,
+                    "evidence_likelihood": 0.5913978494623655,
+                    "learner_component": 0.6666666666666666,
+                    "prior_component": 0.4,
+                    "prior_kind": "engineering_prior",
+                    "probability": 0.12903225806451613,
                     "status": "unconfirmed_hypothesis"
                   },
                   {
                     "cause_id": "increment-rate-confusion",
-                    "cohort_component": 0.22,
                     "evidence": [
                       "engineering_prior",
                       "learner_history",
                       "attempt_feature_likelihood"
                     ],
-                    "evidence_likelihood": 0.8945095619987662,
-                    "learner_component": 0.14666666666666667,
-                    "probability": 0.07485547283315912,
+                    "evidence_likelihood": 0.5913978494623655,
+                    "learner_component": 0.6666666666666666,
+                    "prior_component": 0.22,
+                    "prior_kind": "engineering_prior",
+                    "probability": 0.07096774193548387,
                     "status": "unconfirmed_hypothesis"
                   }
                 ],
-                "model_version": "hierarchical-cause-baseline-v1",
+                "model_version": "hierarchical-cause-baseline-v3",
                 "provenance": {
                   "attempt": {
                     "attempt_id": "eval-integration-success:initial",
@@ -881,37 +901,40 @@
                     "response_time_seconds": 60.0,
                     "selected_option": "A"
                   },
-                  "cohort_sources": [
+                  "formula": "normalize(prior * learner_history_likelihood_ratio * evidence_likelihood)",
+                  "learner_history_exposure_count": 2,
+                  "learner_history_version": "integration-scenario-history-v1",
+                  "prior_sources": [
                     {
                       "cause_id": "denominator-current-base-confusion",
-                      "cohort_id": "synthetic-fixture-cold-start",
+                      "kind": "engineering_prior",
                       "sample_size": 0,
+                      "source_id": "synthetic-fixture-cold-start",
                       "source_version": "synthetic_engineering_prior_v1"
                     },
                     {
                       "cause_id": "increment-rate-confusion",
-                      "cohort_id": "synthetic-fixture-cold-start",
+                      "kind": "engineering_prior",
                       "sample_size": 0,
+                      "source_id": "synthetic-fixture-cold-start",
                       "source_version": "synthetic_engineering_prior_v1"
                     },
                     {
                       "cause_id": "ratio-growth-confusion",
-                      "cohort_id": "synthetic-fixture-cold-start",
+                      "kind": "engineering_prior",
                       "sample_size": 0,
+                      "source_id": "synthetic-fixture-cold-start",
                       "source_version": "synthetic_engineering_prior_v1"
                     }
-                  ],
-                  "formula": "normalize(cohort_prior * learner_dirichlet_posterior * evidence_likelihood)",
-                  "learner_history_exposure_count": 2,
-                  "learner_history_version": "integration-scenario-history-v1"
+                  ]
                 },
-                "uncertainty": 0.7311811698133465
+                "uncertainty": 0.5738881297949829
               },
               "engine_tool": {
                 "name": "hermes_explainable_learning_model",
-                "version": "0.1.0"
+                "version": "0.2.0"
               },
-              "model_version": "hierarchical-cause-baseline-v1",
+              "model_version": "hierarchical-cause-baseline-v3",
               "policy_version": "integration-learning-policy-v1"
             }
           ],
@@ -921,9 +944,9 @@
               "attempt": {
                 "attempt_id": "eval-integration-success:initial",
                 "cause_likelihoods": {
-                  "denominator-current-base-confusion": 1.1721159777914867,
-                  "increment-rate-confusion": 0.8945095619987662,
-                  "ratio-growth-confusion": 0.8945095619987661
+                  "denominator-current-base-confusion": 1.6666666666666665,
+                  "increment-rate-confusion": 0.5913978494623655,
+                  "ratio-growth-confusion": 0.5913978494623655
                 },
                 "confidence": 0.82,
                 "correct": false,
@@ -999,7 +1022,7 @@
                     "is_ground_truth": false,
                     "label": "增长率分母误用现期量",
                     "prior": 0.38,
-                    "probability": 0.44540407156076495,
+                    "probability": 0.6333333333333333,
                     "status": "unconfirmed_hypothesis"
                   },
                   {
@@ -1010,7 +1033,7 @@
                     "is_ground_truth": false,
                     "label": "只算现期/基期而未减1",
                     "prior": 0.4,
-                    "probability": 0.35780382479950645,
+                    "probability": 0.23655913978494622,
                     "status": "unconfirmed_hypothesis"
                   },
                   {
@@ -1021,7 +1044,7 @@
                     "is_ground_truth": false,
                     "label": "把增长量当作增长率",
                     "prior": 0.22,
-                    "probability": 0.19679210363972857,
+                    "probability": 0.13010752688172042,
                     "status": "unconfirmed_hypothesis"
                   }
                 ],
@@ -1057,11 +1080,13 @@
             {
               "policy_version": "integration-learning-policy-v1",
               "prompt": "若只告诉你现期120、基期100，请先写出增长率公式，不计算。",
+              "prompt_instance_id": "eval-integration-success:probe:1",
               "response": "增长率的分母应是基期量。",
               "response_status": "observed",
               "selection": "confirm_top_hypothesis",
               "targets": [
                 "denominator-current-base-confusion",
+                "increment-rate-confusion",
                 "ratio-growth-confusion"
               ],
               "top_hypothesis": "denominator-current-base-confusion"
@@ -1070,6 +1095,7 @@
         },
         "context": {
           "execution_mode": "local",
+          "fixture_content_sha256": "d97d1f51fefb7cac2656e0c4beb44df250569e1d0c754d1814b7fd2965ad0319",
           "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
           "network_opt_in": false,
           "scenario": "success"
@@ -1094,32 +1120,40 @@
       "diff": [
         {
           "op": "add",
-          "path": "/artifacts/teach",
+          "path": "[ABSOLUTE_PATH]",
           "value": [
             {
               "based_on": {
+                "focus_claim_status": "unconfirmed_hypothesis",
+                "instructional_focus": "denominator-current-base-confusion",
+                "original_top_hypothesis": "denominator-current-base-confusion",
+                "probe_assessment": null,
                 "probe_response": "增长率的分母应是基期量。",
                 "probe_selection": "confirm_top_hypothesis",
+                "refuted_hypotheses": [],
+                "selection_policy_version": "probe-evidence-teaching-selection.v1",
+                "semantics": "hypothesis_guided_instruction_not_causal_confirmation",
                 "top_hypothesis": "denominator-current-base-confusion"
               },
               "independent_verification_prompt": "某指标由80升到92，增长率是多少？",
+              "independent_verification_prompt_instance_id": "eval-integration-success:verification:1",
               "independent_verification_response_mode": "single_choice",
               "policy_version": "integration-learning-policy-v1",
-              "prompt": "用‘增长量÷基期量’的量纲解释公式，并让学习者标记基期。",
-              "strategy": "worked-example-fading"
+              "prompt": "对比30÷230与30÷200，解释为什么增长要相对变化起点衡量。",
+              "strategy": "denominator-contrast"
             }
           ]
         },
         {
           "old": "teach",
           "op": "replace",
-          "path": "/phase",
+          "path": "[ABSOLUTE_PATH]",
           "value": "verify"
         },
         {
           "old": 3,
           "op": "replace",
-          "path": "/step_count",
+          "path": "[ABSOLUTE_PATH]",
           "value": 4
         }
       ],
@@ -1133,45 +1167,48 @@
                 "hypotheses": [
                   {
                     "cause_id": "denominator-current-base-confusion",
-                    "cohort_component": 0.38,
                     "evidence": [
                       "engineering_prior",
                       "learner_history",
                       "attempt_feature_likelihood"
                     ],
-                    "evidence_likelihood": 1.1721159777914867,
-                    "learner_component": 0.5866666666666667,
-                    "probability": 0.677688418627472,
+                    "evidence_likelihood": 1.6666666666666665,
+                    "learner_component": 1.543859649122807,
+                    "prior_component": 0.38,
+                    "prior_kind": "engineering_prior",
+                    "probability": 0.8,
                     "status": "unconfirmed_hypothesis"
                   },
                   {
                     "cause_id": "ratio-growth-confusion",
-                    "cohort_component": 0.4,
                     "evidence": [
                       "engineering_prior",
                       "learner_history",
                       "attempt_feature_likelihood"
                     ],
-                    "evidence_likelihood": 0.8945095619987661,
-                    "learner_component": 0.26666666666666666,
-                    "probability": 0.24745610853936897,
+                    "evidence_likelihood": 0.5913978494623655,
+                    "learner_component": 0.6666666666666666,
+                    "prior_component": 0.4,
+                    "prior_kind": "engineering_prior",
+                    "probability": 0.12903225806451613,
                     "status": "unconfirmed_hypothesis"
                   },
                   {
                     "cause_id": "increment-rate-confusion",
-                    "cohort_component": 0.22,
                     "evidence": [
                       "engineering_prior",
                       "learner_history",
                       "attempt_feature_likelihood"
                     ],
-                    "evidence_likelihood": 0.8945095619987662,
-                    "learner_component": 0.14666666666666667,
-                    "probability": 0.07485547283315912,
+                    "evidence_likelihood": 0.5913978494623655,
+                    "learner_component": 0.6666666666666666,
+                    "prior_component": 0.22,
+                    "prior_kind": "engineering_prior",
+                    "probability": 0.07096774193548387,
                     "status": "unconfirmed_hypothesis"
                   }
                 ],
-                "model_version": "hierarchical-cause-baseline-v1",
+                "model_version": "hierarchical-cause-baseline-v3",
                 "provenance": {
                   "attempt": {
                     "attempt_id": "eval-integration-success:initial",
@@ -1207,37 +1244,40 @@
                     "response_time_seconds": 60.0,
                     "selected_option": "A"
                   },
-                  "cohort_sources": [
+                  "formula": "normalize(prior * learner_history_likelihood_ratio * evidence_likelihood)",
+                  "learner_history_exposure_count": 2,
+                  "learner_history_version": "integration-scenario-history-v1",
+                  "prior_sources": [
                     {
                       "cause_id": "denominator-current-base-confusion",
-                      "cohort_id": "synthetic-fixture-cold-start",
+                      "kind": "engineering_prior",
                       "sample_size": 0,
+                      "source_id": "synthetic-fixture-cold-start",
                       "source_version": "synthetic_engineering_prior_v1"
                     },
                     {
                       "cause_id": "increment-rate-confusion",
-                      "cohort_id": "synthetic-fixture-cold-start",
+                      "kind": "engineering_prior",
                       "sample_size": 0,
+                      "source_id": "synthetic-fixture-cold-start",
                       "source_version": "synthetic_engineering_prior_v1"
                     },
                     {
                       "cause_id": "ratio-growth-confusion",
-                      "cohort_id": "synthetic-fixture-cold-start",
+                      "kind": "engineering_prior",
                       "sample_size": 0,
+                      "source_id": "synthetic-fixture-cold-start",
                       "source_version": "synthetic_engineering_prior_v1"
                     }
-                  ],
-                  "formula": "normalize(cohort_prior * learner_dirichlet_posterior * evidence_likelihood)",
-                  "learner_history_exposure_count": 2,
-                  "learner_history_version": "integration-scenario-history-v1"
+                  ]
                 },
-                "uncertainty": 0.7311811698133465
+                "uncertainty": 0.5738881297949829
               },
               "engine_tool": {
                 "name": "hermes_explainable_learning_model",
-                "version": "0.1.0"
+                "version": "0.2.0"
               },
-              "model_version": "hierarchical-cause-baseline-v1",
+              "model_version": "hierarchical-cause-baseline-v3",
               "policy_version": "integration-learning-policy-v1"
             }
           ],
@@ -1247,9 +1287,9 @@
               "attempt": {
                 "attempt_id": "eval-integration-success:initial",
                 "cause_likelihoods": {
-                  "denominator-current-base-confusion": 1.1721159777914867,
-                  "increment-rate-confusion": 0.8945095619987662,
-                  "ratio-growth-confusion": 0.8945095619987661
+                  "denominator-current-base-confusion": 1.6666666666666665,
+                  "increment-rate-confusion": 0.5913978494623655,
+                  "ratio-growth-confusion": 0.5913978494623655
                 },
                 "confidence": 0.82,
                 "correct": false,
@@ -1325,7 +1365,7 @@
                     "is_ground_truth": false,
                     "label": "增长率分母误用现期量",
                     "prior": 0.38,
-                    "probability": 0.44540407156076495,
+                    "probability": 0.6333333333333333,
                     "status": "unconfirmed_hypothesis"
                   },
                   {
@@ -1336,7 +1376,7 @@
                     "is_ground_truth": false,
                     "label": "只算现期/基期而未减1",
                     "prior": 0.4,
-                    "probability": 0.35780382479950645,
+                    "probability": 0.23655913978494622,
                     "status": "unconfirmed_hypothesis"
                   },
                   {
@@ -1347,7 +1387,7 @@
                     "is_ground_truth": false,
                     "label": "把增长量当作增长率",
                     "prior": 0.22,
-                    "probability": 0.19679210363972857,
+                    "probability": 0.13010752688172042,
                     "status": "unconfirmed_hypothesis"
                   }
                 ],
@@ -1383,11 +1423,13 @@
             {
               "policy_version": "integration-learning-policy-v1",
               "prompt": "若只告诉你现期120、基期100，请先写出增长率公式，不计算。",
+              "prompt_instance_id": "eval-integration-success:probe:1",
               "response": "增长率的分母应是基期量。",
               "response_status": "observed",
               "selection": "confirm_top_hypothesis",
               "targets": [
                 "denominator-current-base-confusion",
+                "increment-rate-confusion",
                 "ratio-growth-confusion"
               ],
               "top_hypothesis": "denominator-current-base-confusion"
@@ -1396,20 +1438,29 @@
           "teach": [
             {
               "based_on": {
+                "focus_claim_status": "unconfirmed_hypothesis",
+                "instructional_focus": "denominator-current-base-confusion",
+                "original_top_hypothesis": "denominator-current-base-confusion",
+                "probe_assessment": null,
                 "probe_response": "增长率的分母应是基期量。",
                 "probe_selection": "confirm_top_hypothesis",
+                "refuted_hypotheses": [],
+                "selection_policy_version": "probe-evidence-teaching-selection.v1",
+                "semantics": "hypothesis_guided_instruction_not_causal_confirmation",
                 "top_hypothesis": "denominator-current-base-confusion"
               },
               "independent_verification_prompt": "某指标由80升到92，增长率是多少？",
+              "independent_verification_prompt_instance_id": "eval-integration-success:verification:1",
               "independent_verification_response_mode": "single_choice",
               "policy_version": "integration-learning-policy-v1",
-              "prompt": "用‘增长量÷基期量’的量纲解释公式，并让学习者标记基期。",
-              "strategy": "worked-example-fading"
+              "prompt": "对比30÷230与30÷200，解释为什么增长要相对变化起点衡量。",
+              "strategy": "denominator-contrast"
             }
           ]
         },
         "context": {
           "execution_mode": "local",
+          "fixture_content_sha256": "d97d1f51fefb7cac2656e0c4beb44df250569e1d0c754d1814b7fd2965ad0319",
           "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
           "network_opt_in": false,
           "scenario": "success"
@@ -1434,19 +1485,19 @@
       "diff": [
         {
           "op": "add",
-          "path": "/artifacts/verify",
+          "path": "[ABSOLUTE_PATH]",
           "value": [
             {
               "engine_tool": {
                 "name": "hermes_explainable_learning_model",
-                "version": "0.1.0"
+                "version": "0.2.0"
               },
               "initial_update_state": {
                 "bkt_mastery": 0.25266101694915255,
                 "evidence_count": 1,
                 "failures": 0.35,
                 "irt_theta": -0.04375,
-                "last_updated_at": "2026-07-11T05:11:09.254671+00:00",
+                "last_updated_at": "2026-07-11T09:50:14.502898+00:00",
                 "learner_id": "integration-learner",
                 "mastery": 0.3179550732662862,
                 "provenance": [
@@ -1509,7 +1560,7 @@
                 "evidence_count": 2,
                 "failures": 0.35,
                 "irt_theta": 0.08398393893641105,
-                "last_updated_at": "2026-07-11T05:11:09.254736+00:00",
+                "last_updated_at": "2026-07-11T09:50:14.502995+00:00",
                 "learner_id": "integration-learner",
                 "mastery": 0.5473890567792533,
                 "provenance": [
@@ -1567,8 +1618,13 @@
                       "attempt_id": "eval-integration-success:independent-verify",
                       "confidence": 0.82,
                       "features": {
+                        "assistance": {
+                          "evidence_weight": 1.0,
+                          "hints_used": 0,
+                          "policy_version": "assistance-evidence-policy.v1"
+                        },
                         "different_prompt": true,
-                        "scoring": "exact_option_comparison:v1"
+                        "scoring": "exact_option_v1"
                       },
                       "hints_used": 0,
                       "independently_answered": true,
@@ -1614,14 +1670,21 @@
                 "post_mastery": 0.5473890567792533,
                 "pre_mastery": 0.3179550732662862,
                 "provenance": {
+                  "commit_status": "committed",
+                  "evidence_weight": 1.0,
                   "minimum_gain": 0.02,
                   "model_version": "independent-transfer-check-v1",
                   "verification_attempt": {
                     "attempt_id": "eval-integration-success:independent-verify",
                     "confidence": 0.82,
                     "features": {
+                      "assistance": {
+                        "evidence_weight": 1.0,
+                        "hints_used": 0,
+                        "policy_version": "assistance-evidence-policy.v1"
+                      },
                       "different_prompt": true,
-                      "scoring": "exact_option_comparison:v1"
+                      "scoring": "exact_option_v1"
                     },
                     "hints_used": 0,
                     "independently_answered": true,
@@ -1640,8 +1703,13 @@
                 "confidence": 0.82,
                 "correct": true,
                 "evidence_features": {
+                  "assistance": {
+                    "evidence_weight": 1.0,
+                    "hints_used": 0,
+                    "policy_version": "assistance-evidence-policy.v1"
+                  },
                   "different_prompt": true,
-                  "scoring": "exact_option_comparison:v1"
+                  "scoring": "exact_option_v1"
                 },
                 "hints_used": 0,
                 "independently_answered": true,
@@ -1658,13 +1726,13 @@
         {
           "old": "verify",
           "op": "replace",
-          "path": "/phase",
+          "path": "[ABSOLUTE_PATH]",
           "value": "update"
         },
         {
           "old": 4,
           "op": "replace",
-          "path": "/step_count",
+          "path": "[ABSOLUTE_PATH]",
           "value": 5
         }
       ],
@@ -1678,45 +1746,48 @@
                 "hypotheses": [
                   {
                     "cause_id": "denominator-current-base-confusion",
-                    "cohort_component": 0.38,
                     "evidence": [
                       "engineering_prior",
                       "learner_history",
                       "attempt_feature_likelihood"
                     ],
-                    "evidence_likelihood": 1.1721159777914867,
-                    "learner_component": 0.5866666666666667,
-                    "probability": 0.677688418627472,
+                    "evidence_likelihood": 1.6666666666666665,
+                    "learner_component": 1.543859649122807,
+                    "prior_component": 0.38,
+                    "prior_kind": "engineering_prior",
+                    "probability": 0.8,
                     "status": "unconfirmed_hypothesis"
                   },
                   {
                     "cause_id": "ratio-growth-confusion",
-                    "cohort_component": 0.4,
                     "evidence": [
                       "engineering_prior",
                       "learner_history",
                       "attempt_feature_likelihood"
                     ],
-                    "evidence_likelihood": 0.8945095619987661,
-                    "learner_component": 0.26666666666666666,
-                    "probability": 0.24745610853936897,
+                    "evidence_likelihood": 0.5913978494623655,
+                    "learner_component": 0.6666666666666666,
+                    "prior_component": 0.4,
+                    "prior_kind": "engineering_prior",
+                    "probability": 0.12903225806451613,
                     "status": "unconfirmed_hypothesis"
                   },
                   {
                     "cause_id": "increment-rate-confusion",
-                    "cohort_component": 0.22,
                     "evidence": [
                       "engineering_prior",
                       "learner_history",
                       "attempt_feature_likelihood"
                     ],
-                    "evidence_likelihood": 0.8945095619987662,
-                    "learner_component": 0.14666666666666667,
-                    "probability": 0.07485547283315912,
+                    "evidence_likelihood": 0.5913978494623655,
+                    "learner_component": 0.6666666666666666,
+                    "prior_component": 0.22,
+                    "prior_kind": "engineering_prior",
+                    "probability": 0.07096774193548387,
                     "status": "unconfirmed_hypothesis"
                   }
                 ],
-                "model_version": "hierarchical-cause-baseline-v1",
+                "model_version": "hierarchical-cause-baseline-v3",
                 "provenance": {
                   "attempt": {
                     "attempt_id": "eval-integration-success:initial",
@@ -1752,37 +1823,40 @@
                     "response_time_seconds": 60.0,
                     "selected_option": "A"
                   },
-                  "cohort_sources": [
+                  "formula": "normalize(prior * learner_history_likelihood_ratio * evidence_likelihood)",
+                  "learner_history_exposure_count": 2,
+                  "learner_history_version": "integration-scenario-history-v1",
+                  "prior_sources": [
                     {
                       "cause_id": "denominator-current-base-confusion",
-                      "cohort_id": "synthetic-fixture-cold-start",
+                      "kind": "engineering_prior",
                       "sample_size": 0,
+                      "source_id": "synthetic-fixture-cold-start",
                       "source_version": "synthetic_engineering_prior_v1"
                     },
                     {
                       "cause_id": "increment-rate-confusion",
-                      "cohort_id": "synthetic-fixture-cold-start",
+                      "kind": "engineering_prior",
                       "sample_size": 0,
+                      "source_id": "synthetic-fixture-cold-start",
                       "source_version": "synthetic_engineering_prior_v1"
                     },
                     {
                       "cause_id": "ratio-growth-confusion",
-                      "cohort_id": "synthetic-fixture-cold-start",
+                      "kind": "engineering_prior",
                       "sample_size": 0,
+                      "source_id": "synthetic-fixture-cold-start",
                       "source_version": "synthetic_engineering_prior_v1"
                     }
-                  ],
-                  "formula": "normalize(cohort_prior * learner_dirichlet_posterior * evidence_likelihood)",
-                  "learner_history_exposure_count": 2,
-                  "learner_history_version": "integration-scenario-history-v1"
+                  ]
                 },
-                "uncertainty": 0.7311811698133465
+                "uncertainty": 0.5738881297949829
               },
               "engine_tool": {
                 "name": "hermes_explainable_learning_model",
-                "version": "0.1.0"
+                "version": "0.2.0"
               },
-              "model_version": "hierarchical-cause-baseline-v1",
+              "model_version": "hierarchical-cause-baseline-v3",
               "policy_version": "integration-learning-policy-v1"
             }
           ],
@@ -1792,9 +1866,9 @@
               "attempt": {
                 "attempt_id": "eval-integration-success:initial",
                 "cause_likelihoods": {
-                  "denominator-current-base-confusion": 1.1721159777914867,
-                  "increment-rate-confusion": 0.8945095619987662,
-                  "ratio-growth-confusion": 0.8945095619987661
+                  "denominator-current-base-confusion": 1.6666666666666665,
+                  "increment-rate-confusion": 0.5913978494623655,
+                  "ratio-growth-confusion": 0.5913978494623655
                 },
                 "confidence": 0.82,
                 "correct": false,
@@ -1870,7 +1944,7 @@
                     "is_ground_truth": false,
                     "label": "增长率分母误用现期量",
                     "prior": 0.38,
-                    "probability": 0.44540407156076495,
+                    "probability": 0.6333333333333333,
                     "status": "unconfirmed_hypothesis"
                   },
                   {
@@ -1881,7 +1955,7 @@
                     "is_ground_truth": false,
                     "label": "只算现期/基期而未减1",
                     "prior": 0.4,
-                    "probability": 0.35780382479950645,
+                    "probability": 0.23655913978494622,
                     "status": "unconfirmed_hypothesis"
                   },
                   {
@@ -1892,7 +1966,7 @@
                     "is_ground_truth": false,
                     "label": "把增长量当作增长率",
                     "prior": 0.22,
-                    "probability": 0.19679210363972857,
+                    "probability": 0.13010752688172042,
                     "status": "unconfirmed_hypothesis"
                   }
                 ],
@@ -1928,11 +2002,13 @@
             {
               "policy_version": "integration-learning-policy-v1",
               "prompt": "若只告诉你现期120、基期100，请先写出增长率公式，不计算。",
+              "prompt_instance_id": "eval-integration-success:probe:1",
               "response": "增长率的分母应是基期量。",
               "response_status": "observed",
               "selection": "confirm_top_hypothesis",
               "targets": [
                 "denominator-current-base-confusion",
+                "increment-rate-confusion",
                 "ratio-growth-confusion"
               ],
               "top_hypothesis": "denominator-current-base-confusion"
@@ -1941,29 +2017,37 @@
           "teach": [
             {
               "based_on": {
+                "focus_claim_status": "unconfirmed_hypothesis",
+                "instructional_focus": "denominator-current-base-confusion",
+                "original_top_hypothesis": "denominator-current-base-confusion",
+                "probe_assessment": null,
                 "probe_response": "增长率的分母应是基期量。",
                 "probe_selection": "confirm_top_hypothesis",
+                "refuted_hypotheses": [],
+                "selection_policy_version": "probe-evidence-teaching-selection.v1",
+                "semantics": "hypothesis_guided_instruction_not_causal_confirmation",
                 "top_hypothesis": "denominator-current-base-confusion"
               },
               "independent_verification_prompt": "某指标由80升到92，增长率是多少？",
+              "independent_verification_prompt_instance_id": "eval-integration-success:verification:1",
               "independent_verification_response_mode": "single_choice",
               "policy_version": "integration-learning-policy-v1",
-              "prompt": "用‘增长量÷基期量’的量纲解释公式，并让学习者标记基期。",
-              "strategy": "worked-example-fading"
+              "prompt": "对比30÷230与30÷200，解释为什么增长要相对变化起点衡量。",
+              "strategy": "denominator-contrast"
             }
           ],
           "verify": [
             {
               "engine_tool": {
                 "name": "hermes_explainable_learning_model",
-                "version": "0.1.0"
+                "version": "0.2.0"
               },
               "initial_update_state": {
                 "bkt_mastery": 0.25266101694915255,
                 "evidence_count": 1,
                 "failures": 0.35,
                 "irt_theta": -0.04375,
-                "last_updated_at": "2026-07-11T05:11:09.254671+00:00",
+                "last_updated_at": "2026-07-11T09:50:14.502898+00:00",
                 "learner_id": "integration-learner",
                 "mastery": 0.3179550732662862,
                 "provenance": [
@@ -2026,7 +2110,7 @@
                 "evidence_count": 2,
                 "failures": 0.35,
                 "irt_theta": 0.08398393893641105,
-                "last_updated_at": "2026-07-11T05:11:09.254736+00:00",
+                "last_updated_at": "2026-07-11T09:50:14.502995+00:00",
                 "learner_id": "integration-learner",
                 "mastery": 0.5473890567792533,
                 "provenance": [
@@ -2084,8 +2168,13 @@
                       "attempt_id": "eval-integration-success:independent-verify",
                       "confidence": 0.82,
                       "features": {
+                        "assistance": {
+                          "evidence_weight": 1.0,
+                          "hints_used": 0,
+                          "policy_version": "assistance-evidence-policy.v1"
+                        },
                         "different_prompt": true,
-                        "scoring": "exact_option_comparison:v1"
+                        "scoring": "exact_option_v1"
                       },
                       "hints_used": 0,
                       "independently_answered": true,
@@ -2131,14 +2220,21 @@
                 "post_mastery": 0.5473890567792533,
                 "pre_mastery": 0.3179550732662862,
                 "provenance": {
+                  "commit_status": "committed",
+                  "evidence_weight": 1.0,
                   "minimum_gain": 0.02,
                   "model_version": "independent-transfer-check-v1",
                   "verification_attempt": {
                     "attempt_id": "eval-integration-success:independent-verify",
                     "confidence": 0.82,
                     "features": {
+                      "assistance": {
+                        "evidence_weight": 1.0,
+                        "hints_used": 0,
+                        "policy_version": "assistance-evidence-policy.v1"
+                      },
                       "different_prompt": true,
-                      "scoring": "exact_option_comparison:v1"
+                      "scoring": "exact_option_v1"
                     },
                     "hints_used": 0,
                     "independently_answered": true,
@@ -2157,8 +2253,13 @@
                 "confidence": 0.82,
                 "correct": true,
                 "evidence_features": {
+                  "assistance": {
+                    "evidence_weight": 1.0,
+                    "hints_used": 0,
+                    "policy_version": "assistance-evidence-policy.v1"
+                  },
                   "different_prompt": true,
-                  "scoring": "exact_option_comparison:v1"
+                  "scoring": "exact_option_v1"
                 },
                 "hints_used": 0,
                 "independently_answered": true,
@@ -2174,6 +2275,7 @@
         },
         "context": {
           "execution_mode": "local",
+          "fixture_content_sha256": "d97d1f51fefb7cac2656e0c4beb44df250569e1d0c754d1814b7fd2965ad0319",
           "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
           "network_opt_in": false,
           "scenario": "success"
@@ -2198,9 +2300,10 @@
       "diff": [
         {
           "op": "add",
-          "path": "/artifacts/update",
+          "path": "[ABSOLUTE_PATH]",
           "value": [
             {
+              "commit_status": "committed",
               "evidence": {
                 "engine_provenance": [
                   {
@@ -2257,8 +2360,13 @@
                       "attempt_id": "eval-integration-success:independent-verify",
                       "confidence": 0.82,
                       "features": {
+                        "assistance": {
+                          "evidence_weight": 1.0,
+                          "hints_used": 0,
+                          "policy_version": "assistance-evidence-policy.v1"
+                        },
                         "different_prompt": true,
-                        "scoring": "exact_option_comparison:v1"
+                        "scoring": "exact_option_v1"
                       },
                       "hints_used": 0,
                       "independently_answered": true,
@@ -2290,7 +2398,7 @@
               },
               "mastery_delta": 0.247389056779,
               "model_version": {
-                "engine_tool": "0.1.0",
+                "engine_tool": "0.2.0",
                 "mastery": "bkt-pfa-rasch-ensemble-v1",
                 "verification": "independent-transfer-check-v1"
               },
@@ -2305,13 +2413,13 @@
         {
           "old": "update",
           "op": "replace",
-          "path": "/phase",
+          "path": "[ABSOLUTE_PATH]",
           "value": "reflect"
         },
         {
           "old": 5,
           "op": "replace",
-          "path": "/step_count",
+          "path": "[ABSOLUTE_PATH]",
           "value": 6
         }
       ],
@@ -2325,45 +2433,48 @@
                 "hypotheses": [
                   {
                     "cause_id": "denominator-current-base-confusion",
-                    "cohort_component": 0.38,
                     "evidence": [
                       "engineering_prior",
                       "learner_history",
                       "attempt_feature_likelihood"
                     ],
-                    "evidence_likelihood": 1.1721159777914867,
-                    "learner_component": 0.5866666666666667,
-                    "probability": 0.677688418627472,
+                    "evidence_likelihood": 1.6666666666666665,
+                    "learner_component": 1.543859649122807,
+                    "prior_component": 0.38,
+                    "prior_kind": "engineering_prior",
+                    "probability": 0.8,
                     "status": "unconfirmed_hypothesis"
                   },
                   {
                     "cause_id": "ratio-growth-confusion",
-                    "cohort_component": 0.4,
                     "evidence": [
                       "engineering_prior",
                       "learner_history",
                       "attempt_feature_likelihood"
                     ],
-                    "evidence_likelihood": 0.8945095619987661,
-                    "learner_component": 0.26666666666666666,
-                    "probability": 0.24745610853936897,
+                    "evidence_likelihood": 0.5913978494623655,
+                    "learner_component": 0.6666666666666666,
+                    "prior_component": 0.4,
+                    "prior_kind": "engineering_prior",
+                    "probability": 0.12903225806451613,
                     "status": "unconfirmed_hypothesis"
                   },
                   {
                     "cause_id": "increment-rate-confusion",
-                    "cohort_component": 0.22,
                     "evidence": [
                       "engineering_prior",
                       "learner_history",
                       "attempt_feature_likelihood"
                     ],
-                    "evidence_likelihood": 0.8945095619987662,
-                    "learner_component": 0.14666666666666667,
-                    "probability": 0.07485547283315912,
+                    "evidence_likelihood": 0.5913978494623655,
+                    "learner_component": 0.6666666666666666,
+                    "prior_component": 0.22,
+                    "prior_kind": "engineering_prior",
+                    "probability": 0.07096774193548387,
                     "status": "unconfirmed_hypothesis"
                   }
                 ],
-                "model_version": "hierarchical-cause-baseline-v1",
+                "model_version": "hierarchical-cause-baseline-v3",
                 "provenance": {
                   "attempt": {
                     "attempt_id": "eval-integration-success:initial",
@@ -2399,37 +2510,40 @@
                     "response_time_seconds": 60.0,
                     "selected_option": "A"
                   },
-                  "cohort_sources": [
+                  "formula": "normalize(prior * learner_history_likelihood_ratio * evidence_likelihood)",
+                  "learner_history_exposure_count": 2,
+                  "learner_history_version": "integration-scenario-history-v1",
+                  "prior_sources": [
                     {
                       "cause_id": "denominator-current-base-confusion",
-                      "cohort_id": "synthetic-fixture-cold-start",
+                      "kind": "engineering_prior",
                       "sample_size": 0,
+                      "source_id": "synthetic-fixture-cold-start",
                       "source_version": "synthetic_engineering_prior_v1"
                     },
                     {
                       "cause_id": "increment-rate-confusion",
-                      "cohort_id": "synthetic-fixture-cold-start",
+                      "kind": "engineering_prior",
                       "sample_size": 0,
+                      "source_id": "synthetic-fixture-cold-start",
                       "source_version": "synthetic_engineering_prior_v1"
                     },
                     {
                       "cause_id": "ratio-growth-confusion",
-                      "cohort_id": "synthetic-fixture-cold-start",
+                      "kind": "engineering_prior",
                       "sample_size": 0,
+                      "source_id": "synthetic-fixture-cold-start",
                       "source_version": "synthetic_engineering_prior_v1"
                     }
-                  ],
-                  "formula": "normalize(cohort_prior * learner_dirichlet_posterior * evidence_likelihood)",
-                  "learner_history_exposure_count": 2,
-                  "learner_history_version": "integration-scenario-history-v1"
+                  ]
                 },
-                "uncertainty": 0.7311811698133465
+                "uncertainty": 0.5738881297949829
               },
               "engine_tool": {
                 "name": "hermes_explainable_learning_model",
-                "version": "0.1.0"
+                "version": "0.2.0"
               },
-              "model_version": "hierarchical-cause-baseline-v1",
+              "model_version": "hierarchical-cause-baseline-v3",
               "policy_version": "integration-learning-policy-v1"
             }
           ],
@@ -2439,9 +2553,9 @@
               "attempt": {
                 "attempt_id": "eval-integration-success:initial",
                 "cause_likelihoods": {
-                  "denominator-current-base-confusion": 1.1721159777914867,
-                  "increment-rate-confusion": 0.8945095619987662,
-                  "ratio-growth-confusion": 0.8945095619987661
+                  "denominator-current-base-confusion": 1.6666666666666665,
+                  "increment-rate-confusion": 0.5913978494623655,
+                  "ratio-growth-confusion": 0.5913978494623655
                 },
                 "confidence": 0.82,
                 "correct": false,
@@ -2517,7 +2631,7 @@
                     "is_ground_truth": false,
                     "label": "增长率分母误用现期量",
                     "prior": 0.38,
-                    "probability": 0.44540407156076495,
+                    "probability": 0.6333333333333333,
                     "status": "unconfirmed_hypothesis"
                   },
                   {
@@ -2528,7 +2642,7 @@
                     "is_ground_truth": false,
                     "label": "只算现期/基期而未减1",
                     "prior": 0.4,
-                    "probability": 0.35780382479950645,
+                    "probability": 0.23655913978494622,
                     "status": "unconfirmed_hypothesis"
                   },
                   {
@@ -2539,7 +2653,7 @@
                     "is_ground_truth": false,
                     "label": "把增长量当作增长率",
                     "prior": 0.22,
-                    "probability": 0.19679210363972857,
+                    "probability": 0.13010752688172042,
                     "status": "unconfirmed_hypothesis"
                   }
                 ],
@@ -2575,11 +2689,13 @@
             {
               "policy_version": "integration-learning-policy-v1",
               "prompt": "若只告诉你现期120、基期100，请先写出增长率公式，不计算。",
+              "prompt_instance_id": "eval-integration-success:probe:1",
               "response": "增长率的分母应是基期量。",
               "response_status": "observed",
               "selection": "confirm_top_hypothesis",
               "targets": [
                 "denominator-current-base-confusion",
+                "increment-rate-confusion",
                 "ratio-growth-confusion"
               ],
               "top_hypothesis": "denominator-current-base-confusion"
@@ -2588,19 +2704,28 @@
           "teach": [
             {
               "based_on": {
+                "focus_claim_status": "unconfirmed_hypothesis",
+                "instructional_focus": "denominator-current-base-confusion",
+                "original_top_hypothesis": "denominator-current-base-confusion",
+                "probe_assessment": null,
                 "probe_response": "增长率的分母应是基期量。",
                 "probe_selection": "confirm_top_hypothesis",
+                "refuted_hypotheses": [],
+                "selection_policy_version": "probe-evidence-teaching-selection.v1",
+                "semantics": "hypothesis_guided_instruction_not_causal_confirmation",
                 "top_hypothesis": "denominator-current-base-confusion"
               },
               "independent_verification_prompt": "某指标由80升到92，增长率是多少？",
+              "independent_verification_prompt_instance_id": "eval-integration-success:verification:1",
               "independent_verification_response_mode": "single_choice",
               "policy_version": "integration-learning-policy-v1",
-              "prompt": "用‘增长量÷基期量’的量纲解释公式，并让学习者标记基期。",
-              "strategy": "worked-example-fading"
+              "prompt": "对比30÷230与30÷200，解释为什么增长要相对变化起点衡量。",
+              "strategy": "denominator-contrast"
             }
           ],
           "update": [
             {
+              "commit_status": "committed",
               "evidence": {
                 "engine_provenance": [
                   {
@@ -2657,8 +2782,13 @@
                       "attempt_id": "eval-integration-success:independent-verify",
                       "confidence": 0.82,
                       "features": {
+                        "assistance": {
+                          "evidence_weight": 1.0,
+                          "hints_used": 0,
+                          "policy_version": "assistance-evidence-policy.v1"
+                        },
                         "different_prompt": true,
-                        "scoring": "exact_option_comparison:v1"
+                        "scoring": "exact_option_v1"
                       },
                       "hints_used": 0,
                       "independently_answered": true,
@@ -2690,7 +2820,7 @@
               },
               "mastery_delta": 0.247389056779,
               "model_version": {
-                "engine_tool": "0.1.0",
+                "engine_tool": "0.2.0",
                 "mastery": "bkt-pfa-rasch-ensemble-v1",
                 "verification": "independent-transfer-check-v1"
               },
@@ -2705,14 +2835,14 @@
             {
               "engine_tool": {
                 "name": "hermes_explainable_learning_model",
-                "version": "0.1.0"
+                "version": "0.2.0"
               },
               "initial_update_state": {
                 "bkt_mastery": 0.25266101694915255,
                 "evidence_count": 1,
                 "failures": 0.35,
                 "irt_theta": -0.04375,
-                "last_updated_at": "2026-07-11T05:11:09.254671+00:00",
+                "last_updated_at": "2026-07-11T09:50:14.502898+00:00",
                 "learner_id": "integration-learner",
                 "mastery": 0.3179550732662862,
                 "provenance": [
@@ -2775,7 +2905,7 @@
                 "evidence_count": 2,
                 "failures": 0.35,
                 "irt_theta": 0.08398393893641105,
-                "last_updated_at": "2026-07-11T05:11:09.254736+00:00",
+                "last_updated_at": "2026-07-11T09:50:14.502995+00:00",
                 "learner_id": "integration-learner",
                 "mastery": 0.5473890567792533,
                 "provenance": [
@@ -2833,8 +2963,13 @@
                       "attempt_id": "eval-integration-success:independent-verify",
                       "confidence": 0.82,
                       "features": {
+                        "assistance": {
+                          "evidence_weight": 1.0,
+                          "hints_used": 0,
+                          "policy_version": "assistance-evidence-policy.v1"
+                        },
                         "different_prompt": true,
-                        "scoring": "exact_option_comparison:v1"
+                        "scoring": "exact_option_v1"
                       },
                       "hints_used": 0,
                       "independently_answered": true,
@@ -2880,14 +3015,21 @@
                 "post_mastery": 0.5473890567792533,
                 "pre_mastery": 0.3179550732662862,
                 "provenance": {
+                  "commit_status": "committed",
+                  "evidence_weight": 1.0,
                   "minimum_gain": 0.02,
                   "model_version": "independent-transfer-check-v1",
                   "verification_attempt": {
                     "attempt_id": "eval-integration-success:independent-verify",
                     "confidence": 0.82,
                     "features": {
+                      "assistance": {
+                        "evidence_weight": 1.0,
+                        "hints_used": 0,
+                        "policy_version": "assistance-evidence-policy.v1"
+                      },
                       "different_prompt": true,
-                      "scoring": "exact_option_comparison:v1"
+                      "scoring": "exact_option_v1"
                     },
                     "hints_used": 0,
                     "independently_answered": true,
@@ -2906,8 +3048,13 @@
                 "confidence": 0.82,
                 "correct": true,
                 "evidence_features": {
+                  "assistance": {
+                    "evidence_weight": 1.0,
+                    "hints_used": 0,
+                    "policy_version": "assistance-evidence-policy.v1"
+                  },
                   "different_prompt": true,
-                  "scoring": "exact_option_comparison:v1"
+                  "scoring": "exact_option_v1"
                 },
                 "hints_used": 0,
                 "independently_answered": true,
@@ -2923,6 +3070,7 @@
         },
         "context": {
           "execution_mode": "local",
+          "fixture_content_sha256": "d97d1f51fefb7cac2656e0c4beb44df250569e1d0c754d1814b7fd2965ad0319",
           "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
           "network_opt_in": false,
           "scenario": "success"
@@ -2947,7 +3095,7 @@
       "diff": [
         {
           "op": "add",
-          "path": "/artifacts/reflect",
+          "path": "[ABSOLUTE_PATH]",
           "value": [
             {
               "continue": false,
@@ -2961,19 +3109,19 @@
         {
           "old": "reflect",
           "op": "replace",
-          "path": "/phase",
+          "path": "[ABSOLUTE_PATH]",
           "value": "complete"
         },
         {
           "old": "running",
           "op": "replace",
-          "path": "/status",
+          "path": "[ABSOLUTE_PATH]",
           "value": "completed"
         },
         {
           "old": 6,
           "op": "replace",
-          "path": "/step_count",
+          "path": "[ABSOLUTE_PATH]",
           "value": 7
         }
       ],
@@ -2987,45 +3135,48 @@
                 "hypotheses": [
                   {
                     "cause_id": "denominator-current-base-confusion",
-                    "cohort_component": 0.38,
                     "evidence": [
                       "engineering_prior",
                       "learner_history",
                       "attempt_feature_likelihood"
                     ],
-                    "evidence_likelihood": 1.1721159777914867,
-                    "learner_component": 0.5866666666666667,
-                    "probability": 0.677688418627472,
+                    "evidence_likelihood": 1.6666666666666665,
+                    "learner_component": 1.543859649122807,
+                    "prior_component": 0.38,
+                    "prior_kind": "engineering_prior",
+                    "probability": 0.8,
                     "status": "unconfirmed_hypothesis"
                   },
                   {
                     "cause_id": "ratio-growth-confusion",
-                    "cohort_component": 0.4,
                     "evidence": [
                       "engineering_prior",
                       "learner_history",
                       "attempt_feature_likelihood"
                     ],
-                    "evidence_likelihood": 0.8945095619987661,
-                    "learner_component": 0.26666666666666666,
-                    "probability": 0.24745610853936897,
+                    "evidence_likelihood": 0.5913978494623655,
+                    "learner_component": 0.6666666666666666,
+                    "prior_component": 0.4,
+                    "prior_kind": "engineering_prior",
+                    "probability": 0.12903225806451613,
                     "status": "unconfirmed_hypothesis"
                   },
                   {
                     "cause_id": "increment-rate-confusion",
-                    "cohort_component": 0.22,
                     "evidence": [
                       "engineering_prior",
                       "learner_history",
                       "attempt_feature_likelihood"
                     ],
-                    "evidence_likelihood": 0.8945095619987662,
-                    "learner_component": 0.14666666666666667,
-                    "probability": 0.07485547283315912,
+                    "evidence_likelihood": 0.5913978494623655,
+                    "learner_component": 0.6666666666666666,
+                    "prior_component": 0.22,
+                    "prior_kind": "engineering_prior",
+                    "probability": 0.07096774193548387,
                     "status": "unconfirmed_hypothesis"
                   }
                 ],
-                "model_version": "hierarchical-cause-baseline-v1",
+                "model_version": "hierarchical-cause-baseline-v3",
                 "provenance": {
                   "attempt": {
                     "attempt_id": "eval-integration-success:initial",
@@ -3061,37 +3212,40 @@
                     "response_time_seconds": 60.0,
                     "selected_option": "A"
                   },
-                  "cohort_sources": [
+                  "formula": "normalize(prior * learner_history_likelihood_ratio * evidence_likelihood)",
+                  "learner_history_exposure_count": 2,
+                  "learner_history_version": "integration-scenario-history-v1",
+                  "prior_sources": [
                     {
                       "cause_id": "denominator-current-base-confusion",
-                      "cohort_id": "synthetic-fixture-cold-start",
+                      "kind": "engineering_prior",
                       "sample_size": 0,
+                      "source_id": "synthetic-fixture-cold-start",
                       "source_version": "synthetic_engineering_prior_v1"
                     },
                     {
                       "cause_id": "increment-rate-confusion",
-                      "cohort_id": "synthetic-fixture-cold-start",
+                      "kind": "engineering_prior",
                       "sample_size": 0,
+                      "source_id": "synthetic-fixture-cold-start",
                       "source_version": "synthetic_engineering_prior_v1"
                     },
                     {
                       "cause_id": "ratio-growth-confusion",
-                      "cohort_id": "synthetic-fixture-cold-start",
+                      "kind": "engineering_prior",
                       "sample_size": 0,
+                      "source_id": "synthetic-fixture-cold-start",
                       "source_version": "synthetic_engineering_prior_v1"
                     }
-                  ],
-                  "formula": "normalize(cohort_prior * learner_dirichlet_posterior * evidence_likelihood)",
-                  "learner_history_exposure_count": 2,
-                  "learner_history_version": "integration-scenario-history-v1"
+                  ]
                 },
-                "uncertainty": 0.7311811698133465
+                "uncertainty": 0.5738881297949829
               },
               "engine_tool": {
                 "name": "hermes_explainable_learning_model",
-                "version": "0.1.0"
+                "version": "0.2.0"
               },
-              "model_version": "hierarchical-cause-baseline-v1",
+              "model_version": "hierarchical-cause-baseline-v3",
               "policy_version": "integration-learning-policy-v1"
             }
           ],
@@ -3101,9 +3255,9 @@
               "attempt": {
                 "attempt_id": "eval-integration-success:initial",
                 "cause_likelihoods": {
-                  "denominator-current-base-confusion": 1.1721159777914867,
-                  "increment-rate-confusion": 0.8945095619987662,
-                  "ratio-growth-confusion": 0.8945095619987661
+                  "denominator-current-base-confusion": 1.6666666666666665,
+                  "increment-rate-confusion": 0.5913978494623655,
+                  "ratio-growth-confusion": 0.5913978494623655
                 },
                 "confidence": 0.82,
                 "correct": false,
@@ -3179,7 +3333,7 @@
                     "is_ground_truth": false,
                     "label": "增长率分母误用现期量",
                     "prior": 0.38,
-                    "probability": 0.44540407156076495,
+                    "probability": 0.6333333333333333,
                     "status": "unconfirmed_hypothesis"
                   },
                   {
@@ -3190,7 +3344,7 @@
                     "is_ground_truth": false,
                     "label": "只算现期/基期而未减1",
                     "prior": 0.4,
-                    "probability": 0.35780382479950645,
+                    "probability": 0.23655913978494622,
                     "status": "unconfirmed_hypothesis"
                   },
                   {
@@ -3201,7 +3355,7 @@
                     "is_ground_truth": false,
                     "label": "把增长量当作增长率",
                     "prior": 0.22,
-                    "probability": 0.19679210363972857,
+                    "probability": 0.13010752688172042,
                     "status": "unconfirmed_hypothesis"
                   }
                 ],
@@ -3237,11 +3391,13 @@
             {
               "policy_version": "integration-learning-policy-v1",
               "prompt": "若只告诉你现期120、基期100，请先写出增长率公式，不计算。",
+              "prompt_instance_id": "eval-integration-success:probe:1",
               "response": "增长率的分母应是基期量。",
               "response_status": "observed",
               "selection": "confirm_top_hypothesis",
               "targets": [
                 "denominator-current-base-confusion",
+                "increment-rate-confusion",
                 "ratio-growth-confusion"
               ],
               "top_hypothesis": "denominator-current-base-confusion"
@@ -3259,19 +3415,28 @@
           "teach": [
             {
               "based_on": {
+                "focus_claim_status": "unconfirmed_hypothesis",
+                "instructional_focus": "denominator-current-base-confusion",
+                "original_top_hypothesis": "denominator-current-base-confusion",
+                "probe_assessment": null,
                 "probe_response": "增长率的分母应是基期量。",
                 "probe_selection": "confirm_top_hypothesis",
+                "refuted_hypotheses": [],
+                "selection_policy_version": "probe-evidence-teaching-selection.v1",
+                "semantics": "hypothesis_guided_instruction_not_causal_confirmation",
                 "top_hypothesis": "denominator-current-base-confusion"
               },
               "independent_verification_prompt": "某指标由80升到92，增长率是多少？",
+              "independent_verification_prompt_instance_id": "eval-integration-success:verification:1",
               "independent_verification_response_mode": "single_choice",
               "policy_version": "integration-learning-policy-v1",
-              "prompt": "用‘增长量÷基期量’的量纲解释公式，并让学习者标记基期。",
-              "strategy": "worked-example-fading"
+              "prompt": "对比30÷230与30÷200，解释为什么增长要相对变化起点衡量。",
+              "strategy": "denominator-contrast"
             }
           ],
           "update": [
             {
+              "commit_status": "committed",
               "evidence": {
                 "engine_provenance": [
                   {
@@ -3328,8 +3493,13 @@
                       "attempt_id": "eval-integration-success:independent-verify",
                       "confidence": 0.82,
                       "features": {
+                        "assistance": {
+                          "evidence_weight": 1.0,
+                          "hints_used": 0,
+                          "policy_version": "assistance-evidence-policy.v1"
+                        },
                         "different_prompt": true,
-                        "scoring": "exact_option_comparison:v1"
+                        "scoring": "exact_option_v1"
                       },
                       "hints_used": 0,
                       "independently_answered": true,
@@ -3361,7 +3531,7 @@
               },
               "mastery_delta": 0.247389056779,
               "model_version": {
-                "engine_tool": "0.1.0",
+                "engine_tool": "0.2.0",
                 "mastery": "bkt-pfa-rasch-ensemble-v1",
                 "verification": "independent-transfer-check-v1"
               },
@@ -3376,14 +3546,14 @@
             {
               "engine_tool": {
                 "name": "hermes_explainable_learning_model",
-                "version": "0.1.0"
+                "version": "0.2.0"
               },
               "initial_update_state": {
                 "bkt_mastery": 0.25266101694915255,
                 "evidence_count": 1,
                 "failures": 0.35,
                 "irt_theta": -0.04375,
-                "last_updated_at": "2026-07-11T05:11:09.254671+00:00",
+                "last_updated_at": "2026-07-11T09:50:14.502898+00:00",
                 "learner_id": "integration-learner",
                 "mastery": 0.3179550732662862,
                 "provenance": [
@@ -3446,7 +3616,7 @@
                 "evidence_count": 2,
                 "failures": 0.35,
                 "irt_theta": 0.08398393893641105,
-                "last_updated_at": "2026-07-11T05:11:09.254736+00:00",
+                "last_updated_at": "2026-07-11T09:50:14.502995+00:00",
                 "learner_id": "integration-learner",
                 "mastery": 0.5473890567792533,
                 "provenance": [
@@ -3504,8 +3674,13 @@
                       "attempt_id": "eval-integration-success:independent-verify",
                       "confidence": 0.82,
                       "features": {
+                        "assistance": {
+                          "evidence_weight": 1.0,
+                          "hints_used": 0,
+                          "policy_version": "assistance-evidence-policy.v1"
+                        },
                         "different_prompt": true,
-                        "scoring": "exact_option_comparison:v1"
+                        "scoring": "exact_option_v1"
                       },
                       "hints_used": 0,
                       "independently_answered": true,
@@ -3551,14 +3726,21 @@
                 "post_mastery": 0.5473890567792533,
                 "pre_mastery": 0.3179550732662862,
                 "provenance": {
+                  "commit_status": "committed",
+                  "evidence_weight": 1.0,
                   "minimum_gain": 0.02,
                   "model_version": "independent-transfer-check-v1",
                   "verification_attempt": {
                     "attempt_id": "eval-integration-success:independent-verify",
                     "confidence": 0.82,
                     "features": {
+                      "assistance": {
+                        "evidence_weight": 1.0,
+                        "hints_used": 0,
+                        "policy_version": "assistance-evidence-policy.v1"
+                      },
                       "different_prompt": true,
-                      "scoring": "exact_option_comparison:v1"
+                      "scoring": "exact_option_v1"
                     },
                     "hints_used": 0,
                     "independently_answered": true,
@@ -3577,8 +3759,13 @@
                 "confidence": 0.82,
                 "correct": true,
                 "evidence_features": {
+                  "assistance": {
+                    "evidence_weight": 1.0,
+                    "hints_used": 0,
+                    "policy_version": "assistance-evidence-policy.v1"
+                  },
                   "different_prompt": true,
-                  "scoring": "exact_option_comparison:v1"
+                  "scoring": "exact_option_v1"
                 },
                 "hints_used": 0,
                 "independently_answered": true,
@@ -3594,6 +3781,7 @@
         },
         "context": {
           "execution_mode": "local",
+          "fixture_content_sha256": "d97d1f51fefb7cac2656e0c4beb44df250569e1d0c754d1814b7fd2965ad0319",
           "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
           "network_opt_in": false,
           "scenario": "success"

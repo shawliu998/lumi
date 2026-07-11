@@ -23,6 +23,8 @@ MAX_BODY_BYTES = 64 * 1024
 REQUEST_ID_PATTERN = re.compile(r"^[A-Za-z0-9._-]{1,64}$")
 RUN_ROUTE = re.compile(r"^/v1/runs/([^/]+)/(trace|replay)$")
 ATTEMPT_RESPONSE_ROUTE = re.compile(r"^/v1/attempts/([^/]+)/responses$")
+ATTEMPT_ASSISTANCE_ROUTE = re.compile(r"^/v1/attempts/([^/]+)/assistance$")
+MISCONCEPTION_ROUTE = re.compile(r"^/v1/misconceptions/([^/]+)$")
 
 
 class LocalThreadingHTTPServer(ThreadingHTTPServer):
@@ -47,7 +49,7 @@ def create_server(
 
 def _handler_factory(application: SidecarApplication, allowed_origins: frozenset[str]) -> type[BaseHTTPRequestHandler]:
     class Handler(BaseHTTPRequestHandler):
-        server_version = "HermesSidecar/0.1"
+        server_version = "HermesSidecar/0.2"
         sys_version = ""
 
         def do_GET(self) -> None:
@@ -124,6 +126,7 @@ def _handler_factory(application: SidecarApplication, allowed_origins: frozenset
                             "phase",
                             "expected_version",
                             "expected_state",
+                            "prompt_instance_id",
                             "response",
                             "confidence",
                             "response_time_seconds",
@@ -133,6 +136,7 @@ def _handler_factory(application: SidecarApplication, allowed_origins: frozenset
                         "phase",
                         "expected_version",
                         "expected_state",
+                        "prompt_instance_id",
                         "response",
                         "confidence",
                         "response_time_seconds",
@@ -144,9 +148,46 @@ def _handler_factory(application: SidecarApplication, allowed_origins: frozenset
                         body["phase"],
                         body["expected_version"],
                         body["expected_state"],
+                        body["prompt_instance_id"],
                         body["response"],
                         body["confidence"],
                         body["response_time_seconds"],
+                    )
+                    self._send(200, payload, request_id, origin)
+                    return
+                assistance_match = ATTEMPT_ASSISTANCE_ROUTE.fullmatch(parsed.path)
+                if method == "POST" and assistance_match:
+                    body = self._read_json(
+                        {
+                            "phase",
+                            "expected_version",
+                            "expected_state",
+                            "prompt_instance_id",
+                            "action",
+                            "elapsed_time_seconds",
+                            "command_id",
+                        }
+                    )
+                    required = {
+                        "phase",
+                        "expected_version",
+                        "expected_state",
+                        "prompt_instance_id",
+                        "action",
+                        "elapsed_time_seconds",
+                        "command_id",
+                    }
+                    if set(body) != required:
+                        raise ServiceError(400, "invalid_body", "assistance body must contain every required field")
+                    payload = application.deliver_assistance(
+                        unquote(assistance_match.group(1)),
+                        body["phase"],
+                        body["expected_version"],
+                        body["expected_state"],
+                        body["prompt_instance_id"],
+                        body["action"],
+                        body["elapsed_time_seconds"],
+                        body["command_id"],
                     )
                     self._send(200, payload, request_id, origin)
                     return
@@ -178,6 +219,15 @@ def _handler_factory(application: SidecarApplication, allowed_origins: frozenset
                 if query:
                     raise ServiceError(400, "invalid_query", "skill report does not accept query parameters")
                 return application.skill_report()
+            if path == "/v1/misconceptions":
+                if query:
+                    raise ServiceError(400, "invalid_query", "misconception report does not accept query parameters")
+                return application.misconception_report()
+            misconception_match = MISCONCEPTION_ROUTE.fullmatch(path)
+            if misconception_match:
+                if query:
+                    raise ServiceError(400, "invalid_query", "misconception dossier does not accept query parameters")
+                return application.misconception_dossier(unquote(misconception_match.group(1)))
             match = RUN_ROUTE.fullmatch(path)
             if match:
                 run_id = unquote(match.group(1))

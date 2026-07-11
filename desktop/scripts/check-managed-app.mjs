@@ -8,6 +8,7 @@ const desktopRoot = resolve(import.meta.dirname, "..");
 const appPath = resolve(desktopRoot, "src-tauri/target/debug/bundle/macos/Lumi.app");
 const executable = resolve(appPath, "Contents/MacOS/hermes-desktop");
 const bundleSidecarPattern = `${appPath}/Contents/.+hermes-sidecar`;
+const EXPECTED_SIDECAR_VERSION = "0.2.0";
 
 function reserveLoopbackPort() {
   return new Promise((resolvePort, reject) => {
@@ -98,7 +99,11 @@ try {
   app = spawnManagedApp(port, true);
   const health = await waitFor(async () => {
     const result = await requestHealth(port);
-    return result.status === 200 && result.body.local_only === true ? result.body : undefined;
+    return result.status === 200 &&
+      result.body.local_only === true &&
+      result.body.version === EXPECTED_SIDECAR_VERSION
+      ? result.body
+      : undefined;
   }, "managed app did not complete the sidecar health handshake");
 
   await waitFor(async () => {

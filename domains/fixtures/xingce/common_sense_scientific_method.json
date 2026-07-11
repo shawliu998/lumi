@@ -29,9 +29,48 @@
       {"cause_id": "evidence-strength-confusion", "label": "把经验陈述等同于因果证据", "synthetic_prior": 0.22, "evidence_refs": ["answer_incorrect", "anecdotal-evidence"], "is_ground_truth": false}
     ]
   },
-  "probe": {"prompt": "若两组幼苗起始高度不同，会怎样影响对肥料效果的判断？", "targets": ["randomization-purpose-missed", "counterfactual-control-missed"]},
-  "teach": {"prompt": "用‘只改变一个因素、保留可比较对照’检查实验设计。", "strategy": "causal-checklist"},
-  "independent_verify": {"prompt": "测试新灯光对阅读速度影响，应如何随机分组并控制文本难度？", "response_mode": "single_choice", "pass_condition": {"correct_option": "B"}},
+  "probe": {
+    "prompt": "若两组幼苗起始高度不同，会怎样影响肥料效果判断？应如何分组和设置对照？只访谈使用者能否替代该实验？",
+    "targets": ["randomization-purpose-missed", "counterfactual-control-missed", "evidence-strength-confusion"],
+    "assessment": {
+      "schema_version": "hermes.probe-assessment.v1", "evaluator": "authored_terms_v1",
+      "rules": [
+        {"cause_id": "randomization-purpose-missed", "support_if": {"all_terms": ["按高矮分组", "仍可直接比较"]}, "refute_if": {"all_terms": ["起始高度不同会干扰", "应随机分组平衡差异"]}},
+        {"cause_id": "counterfactual-control-missed", "support_if": {"all_terms": ["只看施肥组", "就能判断肥料效果"]}, "refute_if": {"all_terms": ["需要未施肥对照", "否则无法归因"]}},
+        {"cause_id": "evidence-strength-confusion", "support_if": {"all_terms": ["种植者经验", "足以证明因果"]}, "refute_if": {"all_terms": ["访谈只能提供经验", "不能替代对照实验"]}}
+      ],
+      "cause_samples": [
+        {"cause_id": "randomization-purpose-missed", "supporting_response": "按高矮分组后仍可直接比较，不必随机。", "refuting_response": "起始高度不同会干扰判断，应随机分组平衡差异。", "ambiguous_response": "两组看起来不太一样。"},
+        {"cause_id": "counterfactual-control-missed", "supporting_response": "只看施肥组一周后的变化，就能判断肥料效果。", "refuting_response": "需要未施肥对照，否则无法归因于肥料。", "ambiguous_response": "还要再观察一段时间。"},
+        {"cause_id": "evidence-strength-confusion", "supporting_response": "种植者经验足以证明因果，不必做实验。", "refuting_response": "访谈只能提供经验，不能替代对照实验。", "ambiguous_response": "可以再问问使用者。"}
+      ]
+    }
+  },
+  "teach": {
+    "prompt": "用‘只改变一个因素、保留可比较对照’检查实验设计。", "strategy": "causal-checklist",
+    "variants": [
+      {"cause_id": "randomization-purpose-missed", "prompt": "用两组起始高度分布演示随机分组如何降低选择偏差。", "strategy": "baseline-balance-demo"},
+      {"cause_id": "counterfactual-control-missed", "prompt": "比较只有处理组与同时有对照组时能回答的问题差异。", "strategy": "counterfactual-pairing"},
+      {"cause_id": "evidence-strength-confusion", "prompt": "把使用者经验与可控实验逐项比较证据强度和可归因性。", "strategy": "evidence-ladder"}
+    ]
+  },
+  "independent_verify": {
+    "prompt": "为测试新灯光是否提高阅读速度，哪种设计最能减少其他因素干扰？",
+    "response_mode": "single_choice",
+    "pass_condition": {"scorer": "exact_option_v1", "correct_option": "B", "options": {"A": "让阅读快的人用新灯、阅读慢的人用旧灯", "B": "从同一人群随机分组，两组阅读同难度文本，仅灯光不同", "C": "只记录使用新灯者一次阅读所需时间", "D": "询问体验过新灯的人是否喜欢"}},
+    "samples": {"passing_response": "B", "failing_response": "A"}
+  },
+  "assistance_ladder": {
+    "schema_version": "hermes.assistance-content.v1", "content_version": "scientific-method-help.v1",
+    "steps": [
+      {"action": "retry", "title": "再试一次", "content": "先列出实验想比较的唯一因素，再找两组起点还有哪些不一样。", "target_cause_ids": ["randomization-purpose-missed", "counterfactual-control-missed", "evidence-strength-confusion"]},
+      {"action": "locate_evidence", "title": "定位变量", "content": "肥料是处理因素，幼苗起始高度是处理前差异；后者会让结果无法只归因于肥料。", "target_cause_ids": ["counterfactual-control-missed"]},
+      {"action": "rule_hint", "title": "规则提示", "content": "随机分组用于平衡已知和未知起点差异；对照组提供“没有处理时会怎样”的比较基线。", "target_cause_ids": ["randomization-purpose-missed", "counterfactual-control-missed"]},
+      {"action": "analogous_example", "title": "同类例子", "content": "比较两种教学法时，若一组本来成绩更高，期末差异不能直接归因于教学法。", "target_cause_ids": ["counterfactual-control-missed", "evidence-strength-confusion"]},
+      {"action": "worked_step", "title": "演示一步", "content": "先让两组幼苗在起始高度上可比，再只改变是否施用该肥料，最后比较生长变化。", "target_cause_ids": ["randomization-purpose-missed", "counterfactual-control-missed"]},
+      {"action": "full_explanation", "title": "完整说明", "content": "起始高度不同构成混杂。应随机分组并设置可比对照，使两组除肥料外尽量一致；这样得到的差异才更能支持因果判断。使用者访谈只有经验陈述，不能替代可比对照。", "target_cause_ids": ["randomization-purpose-missed", "counterfactual-control-missed", "evidence-strength-confusion"]}
+    ]
+  },
   "samples": {"passing_response": "B", "failing_response": "C"},
   "provenance": {"content_origin": "synthetic_original", "authoring_note": "自有合成科学方法题", "prior_source": "synthetic_engineering_prior_v1"}
 }

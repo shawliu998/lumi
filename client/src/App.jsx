@@ -19,7 +19,6 @@ import {
   Microphone,
   NotePencil,
   Question,
-  SignOut,
   Target,
   Toolbox,
   X,
@@ -27,9 +26,19 @@ import {
 import {
   continueAttempt,
   fetchHealth,
+  fetchMisconceptionDossier,
   fetchSkillReport,
+  requestNextAssistance,
   submitAttempt,
 } from "./hermesApi";
+import {
+  ASSISTANCE_ACTIONS,
+  appendAssistance,
+  createAssistanceCommandId,
+  createAssistanceState,
+  normalizeMisconceptionDossier,
+} from "./learningSupportAdapter";
+import { reportGroupsFromSidecar } from "./reportEvidenceAdapter";
 
 const NAV_ITEMS = [
   { id: "overview", label: "今日学习", icon: House },
@@ -40,60 +49,26 @@ const NAV_ITEMS = [
 ];
 
 const TOOLS = [
-  { category: "诊断", title: "错因辨析", description: "用一组短题验证一个具体的错因假设。" },
-  { category: "练习", title: "同类变式", description: "围绕一个技能完成无提示的独立作答。" },
-  { category: "复习", title: "间隔复习", description: "复习已到期、但曾经学会的技能。" },
-  { category: "复盘", title: "要点复盘", description: "对照材料与评分点逐项核查答案。" },
-  { category: "复盘", title: "局部改写", description: "只重写一个问题句或一个答案段落。" },
-  { category: "复盘", title: "二次作答", description: "保留原题，重新计时组织并作答。" },
-  { category: "计划", title: "今日计划", description: "按到期任务与可用时间安排今天的顺序。" },
-  { category: "复盘", title: "错题复盘", description: "查看原题、作答、评分和待确认错因。" },
-  { category: "复习", title: "方法清单", description: "回看已确认的方法、公式与易混点。" },
-  { category: "诊断", title: "迁移验证", description: "更换题面，检查方法能否独立使用。" },
-  { category: "练习", title: "材料定位", description: "练习从申论材料中定位可用信息。" },
-  { category: "复盘", title: "提纲复盘", description: "检查面试回答的观点、层次与例证。" },
+  { category: "诊断", title: "错因辨析", description: "用一组短题验证一个具体的错因假设。", available: true },
+  { category: "练习", title: "同类变式", description: "围绕一个技能完成无提示的独立作答。", available: false },
+  { category: "复习", title: "间隔复习", description: "复习已到期、但曾经学会的技能。", available: false },
+  { category: "复盘", title: "要点复盘", description: "对照材料与评分点逐项核查答案。", available: false },
+  { category: "复盘", title: "局部改写", description: "只重写一个问题句或一个答案段落。", available: false },
+  { category: "复盘", title: "二次作答", description: "保留原题，重新计时组织并作答。", available: false },
+  { category: "计划", title: "今日计划", description: "按到期任务与可用时间安排今天的顺序。", available: false },
+  { category: "复盘", title: "错题复盘", description: "查看原题、作答、评分和待确认错因。", available: false },
+  { category: "复习", title: "方法清单", description: "回看已确认的方法、公式与易混点。", available: false },
+  { category: "诊断", title: "迁移验证", description: "更换题面，检查方法能否独立使用。", available: false },
+  { category: "练习", title: "材料定位", description: "练习从申论材料中定位可用信息。", available: false },
+  { category: "复盘", title: "提纲复盘", description: "检查面试回答的观点、层次与例证。", available: false },
 ];
 
-const SKILL_GROUPS = [
-  {
-    id: "verbal",
-    title: "言语理解与表达",
-    skills: [
-      { id: "main-idea", name: "主旨概括", level: 2, attempts: 18, state: "学习中", last: "7 月 9 日", due: false },
-      { id: "intent", name: "意图判断", level: 1, attempts: 9, state: "初步理解", last: "7 月 6 日", due: true },
-      { id: "cloze", name: "逻辑填空", level: 3, attempts: 27, state: "基本稳定", last: "7 月 10 日", due: false },
-    ],
-  },
-  {
-    id: "data",
-    title: "资料分析",
-    skills: [
-      { id: "base-value", name: "增长率与基期量", level: 1, attempts: 12, state: "待验证", last: "7 月 10 日", due: true },
-      { id: "proportion", name: "比重与倍数", level: 2, attempts: 16, state: "学习中", last: "7 月 8 日", due: true },
-      { id: "average", name: "平均数与增长量", level: 2, attempts: 14, state: "学习中", last: "7 月 7 日", due: false },
-    ],
-  },
-  {
-    id: "judgment",
-    title: "判断推理",
-    skills: [
-      { id: "necessary", name: "必要条件", level: 2, attempts: 11, state: "学习中", last: "7 月 5 日", due: true },
-      { id: "figures", name: "图形规律", level: 3, attempts: 22, state: "基本稳定", last: "7 月 10 日", due: false },
-    ],
-  },
-];
-
-const ACTIVITY_ROWS = [
-  ["7 月 10 日 20:14", "增长率与基期量 · 独立作答", "4 题中 2 题需复验", "已记录"],
-  ["7 月 10 日 19:42", "图形规律 · 间隔复习", "4 题独立完成", "已记录"],
-  ["7 月 9 日 21:05", "主旨概括 · 同类变式", "6 题中 4 题独立完成", "已记录"],
-];
-
-const REVIEW_ROWS = [
-  ["今天", "意图判断", "距上次验证 5 天", "待复习"],
-  ["今天", "比重与倍数", "距上次验证 3 天", "待复习"],
-  ["7 月 13 日", "平均数与增长量", "按当前间隔安排", "已安排"],
-];
+const CONNECTED_FIXTURE_ID = "xingce.data-analysis.growth-rate.synthetic-01";
+const CONNECTED_SKILL_NAME = "增长率与基期量";
+const CONNECTED_SKILL_IDS = new Set([
+  "xingce.data.growth.identify-base-current",
+  "xingce.data.growth.compute-rate",
+]);
 
 const INITIAL_SIDECAR_STATE = {
   phase: "checking",
@@ -102,69 +77,11 @@ const INITIAL_SIDECAR_STATE = {
   error: null,
 };
 
-const SKILL_NAMES = {
-  "xingce.data.growth.identify-base-current": "增长率与基期量",
-  "xingce.data.growth.compute-rate": "增长率计算",
-  "xingce.verbal.main-idea.integrate": "主旨概括",
-  "xingce.verbal.scope-control": "范围控制",
-  "xingce.judgment.logic.necessary-condition": "必要条件",
-  "xingce.judgment.logic.symbolize": "逻辑符号化",
-};
-
 function connectionCopy(sidecar) {
   if (sidecar.phase === "connected") return ["本机服务已连接", `${sidecar.health?.run_count || 0} 条运行轨迹`];
   if (sidecar.phase === "checking") return ["正在连接本机服务", "读取本机记录"];
-  if (sidecar.phase === "error") return ["本机服务响应异常", "演示数据"];
-  return ["本机服务未连接", "演示数据"];
-}
-
-function reportGroupsFromSidecar(report) {
-  if (!report?.items?.length) return [];
-  const definitions = {
-    verbal: { id: "verbal", title: "言语理解与表达", skills: [] },
-    data: { id: "data", title: "资料分析", skills: [] },
-    judgment: { id: "judgment", title: "判断推理", skills: [] },
-  };
-  report.items.forEach((item) => {
-    const groupId = item.skill_id.includes(".verbal.")
-      ? "verbal"
-      : item.skill_id.includes(".judgment.")
-        ? "judgment"
-        : "data";
-    const mastery = Number(item.latest_mastery);
-    const uncertainty = Number(item.latest_uncertainty);
-    let state = "暂不判断";
-    let level = 1;
-    if (Number.isFinite(mastery) && Number.isFinite(uncertainty) && uncertainty < 0.7) {
-      if (mastery >= 0.68) {
-        state = "基本稳定";
-        level = 3;
-      } else if (mastery >= 0.45) {
-        state = "学习中";
-        level = 2;
-      } else {
-        state = "待验证";
-      }
-    }
-    definitions[groupId].skills.push({
-      id: item.skill_id,
-      name: SKILL_NAMES[item.skill_id] || item.skill_id.split(".").slice(-2).join(" · "),
-      level,
-      attempts: Number(item.run_count) || 0,
-      state,
-      last: formatLocalDate(item.latest_at),
-      due: false,
-      live: item,
-    });
-  });
-  return Object.values(definitions).filter((group) => group.skills.length > 0);
-}
-
-function formatLocalDate(value) {
-  if (!value) return "暂无";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "暂无";
-  return `${date.getMonth() + 1} 月 ${date.getDate()} 日`;
+  if (sidecar.phase === "error") return ["本机服务响应异常", "训练不可用"];
+  return ["本机服务未连接", "训练不可用"];
 }
 
 function diagnosisDecisionCopy(value) {
@@ -172,27 +89,6 @@ function diagnosisDecisionCopy(value) {
   if (value === "confirm_top_hypothesis") return "需要继续验证首位候选";
   if (value === "retention_probe") return "未形成错因判断，转入保持性验证";
   return value || "未返回诊断决策";
-}
-
-function diagnosisCandidates(trace) {
-  const diagnose = trace?.events?.find((event) => event?.payload?.phase === "diagnose");
-  const hypotheses = diagnose?.payload?.output?.diagnosis?.hypotheses;
-  return Array.isArray(hypotheses) ? hypotheses.slice(0, 3) : [];
-}
-
-const DIAGNOSIS_CAUSE_COPY = {
-  "ratio-growth-confusion": "只算现期/基期而未减 1",
-  "denominator-current-base-confusion": "增长率分母误用现期量",
-  "increment-rate-confusion": "把增长量当作增长率",
-};
-
-function diagnosisCandidateCopy(candidate) {
-  return DIAGNOSIS_CAUSE_COPY[candidate?.cause_id] || candidate?.label || "待进一步辨析的线索";
-}
-
-function diagnosisCandidateProbability(candidate) {
-  const value = Number(candidate?.probability ?? candidate?.confidence ?? candidate?.synthetic_prior);
-  return Number.isFinite(value) ? `${Math.round(value * 100)}%` : "概率未提供";
 }
 
 function Sidebar({ page, setPage, collapsed, setCollapsed, onUtility, sidecar, onRetrySidecar }) {
@@ -250,15 +146,15 @@ function Sidebar({ page, setPage, collapsed, setCollapsed, onUtility, sidecar, o
         <button className="nav-item" onClick={() => onUtility("help")} title={collapsed ? "使用帮助" : undefined}><Question size={15} />{!collapsed && <span>使用帮助</span>}</button>
       </nav>
 
-      <button className="profile-row" onClick={() => onUtility("profile")} title={collapsed ? "林同学" : undefined}>
-        <span className="avatar">林</span>
-        {!collapsed && <><span>林同学</span><SignOut size={15} /></>}
+      <button className="profile-row" onClick={() => onUtility("profile")} title={collapsed ? "本机学习者" : undefined}>
+        <span className="avatar">本</span>
+        {!collapsed && <><span>本机学习者</span><CaretRight size={15} /></>}
       </button>
     </aside>
   );
 }
 
-function Topbar({ page, setPage, scope, setScope, onSearch, onUtility }) {
+function Topbar({ page, setPage, onSearch, onUtility }) {
   const tabs = [
     ["overview", "总览"],
     ["practice", "任务"],
@@ -274,11 +170,9 @@ function Topbar({ page, setPage, scope, setScope, onSearch, onUtility }) {
   return (
     <header className="topbar">
       <label className="scope-select">
-        <span className="sr-only">当前备考科目</span>
-        <select value={scope} onChange={(event) => setScope(event.target.value)}>
-          <option>行测备考</option>
-          <option>申论备考</option>
-          <option>面试备考</option>
+        <span className="sr-only">当前训练范围</span>
+        <select value="训练范围未设置" disabled>
+          <option>训练范围未设置</option>
         </select>
       </label>
       <nav className="top-tabs" aria-label="页面标签">
@@ -315,11 +209,223 @@ function SidePanel({ title, eyebrow, onClose, children }) {
   );
 }
 
-function Overview({ setPage, taskStatus, onOpenTask, onOpenTool, onOpenRecords }) {
+function AssistanceLadder({ state, promptAvailable, onRequest }) {
+  const current = state.items[state.items.length - 1] || null;
+  const currentOrdinal = Number(current?.ordinal) || 0;
+  const next = ASSISTANCE_ACTIONS[currentOrdinal] || null;
+  return (
+    <section className="assistance-ladder" data-testid="assistance-ladder" data-level={currentOrdinal} data-state={state.status} data-persistence={promptAvailable ? "sidecar" : "unavailable"}>
+      <div className="assistance-heading">
+        <div><Question size={14} /><strong>渐进帮助</strong></div>
+        <small>{currentOrdinal} / {ASSISTANCE_ACTIONS.length}</small>
+      </div>
+      <ol className="assistance-steps" aria-label="帮助级别">
+        {ASSISTANCE_ACTIONS.map((item) => (
+          <li key={item.action} className={item.ordinal < currentOrdinal ? "used" : item.ordinal === currentOrdinal ? "current" : "locked"} title={item.label}>
+            <span>{item.ordinal}</span><small>{item.label}</small>
+          </li>
+        ))}
+      </ol>
+      {current ? (
+        <div className="assistance-content" role="status" data-ordinal={current.ordinal} data-policy-version={current.policy_version} data-diagnostic-evidence-weight={current.diagnostic_evidence_weight} data-calibration-status={current.calibration_status}>
+          <small>第 {current.ordinal} 级 · {current.title}</small>
+          <p>{current.content}</p>
+          <span>诊断证据权重 {Number(current.diagnostic_evidence_weight).toFixed(2)} · 工程策略未校准</span>
+        </div>
+      ) : (
+        <p className="assistance-independent">尚未请求帮助；服务会从“再试一次”开始逐级推进。</p>
+      )}
+      <div className="assistance-boundary">
+        <Info size={13} />
+        <span>{promptAvailable ? "每次请求都会写入本机轨迹并推进状态版本；档位和证据权重由服务决定。" : "当前服务未返回 prompt_instance_id；帮助写入不可用。"}</span>
+      </div>
+      {state.status === "error" && <p className="assistance-error" role="alert">{state.error?.message || "帮助请求失败，未推进当前版本。"}</p>}
+      {state.status === "ready" && next ? (
+        <button className="button secondary assistance-action" type="button" onClick={onRequest}>
+          请求下一档 · {next.label}<CaretRight size={12} />
+        </button>
+      ) : state.status === "requesting" ? (
+        <button className="button secondary assistance-action" type="button" disabled>正在写入帮助事件</button>
+      ) : state.status === "error" ? (
+        <button className="button secondary assistance-action" type="button" onClick={onRequest}>重试请求下一档</button>
+      ) : state.status === "unavailable" ? (
+        <button className="button secondary assistance-action" type="button" disabled>帮助不可用 · 缺少题目实例</button>
+      ) : (
+        <p className="assistance-exhausted">六级帮助已用尽；再次请求将由服务拒绝。</p>
+      )}
+      {current && <small className="assistance-policy">策略 {current.policy_version}</small>}
+    </section>
+  );
+}
+
+function claimStatusCopy(value) {
+  if (value === "supported_hypothesis") return "有支持证据 · 尚未确认";
+  if (value === "refuted_hypothesis") return "有反驳证据 · 尚未确认";
+  if (value === "unconfirmed_hypothesis") return "尚未确认";
+  return "状态不可用";
+}
+
+function learningStatusCopy(value) {
+  if (value === "awaiting_probe") return "待定向探查";
+  if (value === "processing_probe_response") return "探查处理未完成";
+  if (value === "awaiting_independent_verification") return "待独立验证";
+  if (value === "processing_verification_response") return "验证处理未完成";
+  if (value === "remediated_by_independent_transfer") return "已完成独立迁移";
+  if (value === "needs_targeted_retry") return "需要定向重试";
+  if (value === "inconclusive_needs_fresh_independent_verification") return "需要新的独立验证";
+  if (value === "no_error_candidate") return "无需错因探查";
+  if (value === "no_misconception_observed") return "未观察到错因候选";
+  return value || "状态不可用";
+}
+
+function dossierContinuationGate(dossierState, phase, promptInstanceId) {
+  if (["idle", "loading"].includes(dossierState.phase)) {
+    return { kind: "loading", reason: "正在核对本机档案与题目实例，暂不开放写入。" };
+  }
+  if (dossierState.phase !== "connected" || !dossierState.dossier) {
+    return { kind: "blocked", reason: "无法确认服务端当前状态；为避免重复写入，原题已锁定。" };
+  }
+  const dossier = dossierState.dossier;
+  if (dossier.requiresRestart) {
+    const reason = dossier.serviceState === "processing_probe"
+      ? "上一次探查作答已被服务消费，但后续处理未完成；原探查题不能再次提交。"
+      : "上一次独立验证作答已被服务消费，但后续处理未完成；原验证题不能再次提交。";
+    return { kind: "restart", reason, serviceState: dossier.serviceState };
+  }
+  const expected = phase === "probe"
+    ? { state: "awaiting_probe", action: "answer_targeted_probe" }
+    : { state: "awaiting_verification", action: "answer_independent_verification" };
+  if (
+    dossier.serviceState === expected.state
+    && dossier.nextAction?.action === expected.action
+    && dossier.nextAction?.prompt_instance_id === promptInstanceId
+  ) return { kind: "ready", reason: "" };
+  return { kind: "blocked", reason: "服务端状态与当前题目实例不一致；原题已锁定。" };
+}
+
+function ContinuationBoundary({ gate, onRestart }) {
+  return (
+    <section className={`continuation-boundary ${gate.kind}`} data-testid="continuation-boundary" data-state={gate.kind} data-service-state={gate.serviceState || "unavailable"}>
+      <Info size={15} />
+      <div>
+        <strong>{gate.kind === "loading" ? "正在确认可写状态" : gate.kind === "restart" ? "本题需要重新开始" : "当前题目已锁定"}</strong>
+        <p>{gate.reason}</p>
+      </div>
+      {gate.kind !== "loading" && <button className="button primary" type="button" onClick={onRestart}>重新开始本题</button>}
+    </section>
+  );
+}
+
+function MisconceptionDossier({ state }) {
+  const dossier = state.dossier;
+  if (!dossier) {
+    const copy = state.phase === "loading"
+      ? "正在读取本机事件档案。"
+      : state.phase === "error"
+        ? `档案响应异常：${state.error?.message || "无法读取"}`
+        : "本机事件档案当前不可用；不会用首答候选代替。";
+    return (
+      <section className="misconception-dossier dossier-unavailable" data-testid="misconception-dossier" data-status={state.phase} data-persistence="unavailable">
+        <header className="dossier-heading"><div><strong>题型错因档案</strong><small>事件证据</small></div><span>不可用</span></header>
+        <div className={`dossier-source-state ${state.phase}`} role={state.phase === "error" ? "alert" : "status"}><Info size={13} /><span>{copy}</span></div>
+      </section>
+    );
+  }
+  return (
+    <section className="misconception-dossier" data-testid="misconception-dossier" data-status={state.phase} data-service-state={dossier.serviceState} data-learning-status={dossier.status} data-next-action={dossier.nextAction?.action} data-persistence={dossier.persistence}>
+      <header className="dossier-heading">
+        <div><strong>题型错因档案</strong><small>{dossier.skill}</small></div>
+        <span>{dossier.statusCopy}</span>
+      </header>
+      {state.phase !== "connected" && (
+        <div className={`dossier-source-state ${state.phase}`} role={state.phase === "error" ? "alert" : "status"}>
+          <Info size={13} />
+          <span>{state.phase === "loading" ? "正在刷新本机错因档案。" : state.phase === "error" ? `档案响应异常：${state.error?.message || "无法读取"}` : "本机事件档案当前不可用；保留上次已读取版本。"}</span>
+        </div>
+      )}
+      <div className="dossier-section">
+        <strong>观察</strong>
+        {dossier.observations.map((item) => (
+          <div className="dossier-observation" key={item.id}><span>{item.label}</span><p>{item.value}</p><small>{item.source}</small></div>
+        ))}
+      </div>
+      <div className="dossier-section">
+        <strong>候选原因（按当前返回排序）</strong>
+        {dossier.rankedHypotheses.length > 0 ? (
+          <ol className="dossier-candidates">
+            {dossier.rankedHypotheses.map((item) => (
+              <li key={item.id} data-claim-status={item.claimStatus} data-learning-status={item.learningStatus}>
+                <span>{item.rank}</span>
+                <div><strong>{item.label}</strong><small>{item.subtype}</small></div>
+                <em>{item.probability === null ? claimStatusCopy(item.claimStatus) : `${Math.round(item.probability * 100)}% · ${claimStatusCopy(item.claimStatus)}`}</em>
+              </li>
+            ))}
+          </ol>
+        ) : <p className="dossier-empty">首答通过，规则要求不生成错误原因。</p>}
+        {dossier.rankedHypotheses.length > 0 && <p className="dossier-rank-note">百分比只表示本轮候选的相对排序，不是群体统计。</p>}
+      </div>
+      {dossier.rankedHypotheses.length > 0 && (
+        <div className="dossier-section dossier-evidence">
+          <strong>候选证据引用</strong>
+          <div className="dossier-evidence-list">
+            {dossier.rankedHypotheses.map((item) => (
+              <dl key={item.id} data-candidate-id={item.id} data-claim-status={item.claimStatus}>
+                <div><dt>{item.rank} · {item.label}</dt><dd>{claimStatusCopy(item.claimStatus)}</dd></div>
+                <div><dt>支持</dt><dd>{item.supportingEvidence.length ? item.supportingEvidence.join("、") : "当前响应未提供"}</dd></div>
+                <div><dt>反证</dt><dd>{item.refutingEvidence.length ? item.refutingEvidence.join("、") : "当前响应未提供"}</dd></div>
+              </dl>
+            ))}
+          </div>
+          {dossier.nextProbe && <dl><div><dt>下一探查</dt><dd>{dossier.nextProbe}</dd></div></dl>}
+        </div>
+      )}
+      {dossier.cohortEvidence && (
+        <div className="dossier-section dossier-cohort">
+          <strong>群体证据</strong>
+          <p>不可用 · 样本量 0；不用于当前判断。</p>
+        </div>
+      )}
+      <footer className="dossier-confirmation">
+        <div><strong>确认状态</strong><span>{dossier.statusCopy}</span></div>
+        <div><strong>学习状态</strong><span>{learningStatusCopy(dossier.status)}</span></div>
+        <small>档案由事件证据推进；客户端不能直接确认候选。</small>
+      </footer>
+    </section>
+  );
+}
+
+function overviewDateCopy() {
+  const parts = new Intl.DateTimeFormat("zh-CN", {
+    month: "numeric",
+    day: "numeric",
+    weekday: "long",
+  }).formatToParts(new Date());
+  const value = (type) => parts.find((item) => item.type === type)?.value || "";
+  return `${value("month")} 月 ${value("day")} 日 · ${value("weekday")}`;
+}
+
+function Overview({ setPage, onOpenTool, sidecar }) {
   const [query, setQuery] = useState("");
   const [searchResult, setSearchResult] = useState("");
-  const completed = taskStatus === "complete" ? 2 : 1;
-  const taskButton = taskStatus === "ready" ? "开始今日任务" : taskStatus === "in_progress" ? "继续基期量验证" : "查看今日记录";
+  const connected = sidecar.phase === "connected";
+  const liveGroups = useMemo(
+    () => connected ? reportGroupsFromSidecar(sidecar.report) : [],
+    [connected, sidecar.report],
+  );
+  const liveSkills = useMemo(() => liveGroups.flatMap((group) => group.skills), [liveGroups]);
+  const runCount = connected ? Number(sidecar.health?.run_count) || 0 : 0;
+  const searchMatches = searchResult
+    ? liveSkills.filter((skill) => skill.name.includes(searchResult))
+    : [];
+  const sourceStateCopy = connected
+    ? runCount > 0
+      ? `${runCount} 条本机运行轨迹 · ${liveSkills.length} 个有报告技能`
+      : "本机服务已连接，尚无运行轨迹"
+    : sidecar.phase === "checking"
+      ? "正在读取本机证据"
+      : sidecar.phase === "error"
+        ? "本机服务响应异常，记录不可用"
+        : "本机服务未连接，记录不可用";
 
   const runSearch = (event) => {
     event.preventDefault();
@@ -327,21 +433,14 @@ function Overview({ setPage, taskStatus, onOpenTask, onOpenTool, onOpenRecords }
     if (normalized) setSearchResult(normalized);
   };
 
-  const taskRows = [
-    ["主旨概括 · 间隔复习", "行测", "10 分钟", "已完成", "done"],
-    ["基期量 · 公式方向验证", "行测", "12 分钟", taskStatus === "ready" ? "未开始" : taskStatus === "in_progress" ? "进行中" : "已完成", taskStatus],
-    ["概括归纳 · 要点复盘", "申论", "20 分钟", "未开始", "ready"],
-    ["综合分析 · 二次作答", "面试", "15 分钟", "未开始", "ready"],
-  ];
-
   return (
     <div className="screen overview-screen">
       <div className="page-heading row-between overview-heading">
         <div>
-          <span className="eyebrow">7 月 11 日 · 星期六</span>
+          <span className="eyebrow">{overviewDateCopy()}</span>
           <h1>今日学习</h1>
         </div>
-        <strong className="exam-label">广东省考 · 行测</strong>
+        <strong className="exam-label">考试目标未设置</strong>
       </div>
 
       <div className="overview-grid">
@@ -354,15 +453,14 @@ function Overview({ setPage, taskStatus, onOpenTask, onOpenTool, onOpenRecords }
           </form>
 
           <div className="quick-actions">
-            <button className="button primary" onClick={onOpenTask}>{taskButton}</button>
-            <button className="button secondary" onClick={() => onOpenTool("错因辨析")}>错因辨析</button>
-            <button className="button secondary" onClick={() => setPage("reports")}>查看待复验技能</button>
+            <button className="button primary" disabled={!connected} onClick={() => onOpenTool("错因辨析")}>{connected ? "开始错因辨析" : "本机服务不可用"}</button>
+            <button className="button secondary" onClick={() => setPage("reports")}>查看技能报告</button>
           </div>
 
           {searchResult && (
             <div className="search-feedback" role="status">
-              <span>找到与“{searchResult}”相关的 3 条本机记录。</span>
-              <button className="text-link" onClick={() => setPage("reports")}>查看结果 <ArrowRight size={12} /></button>
+              <span>{connected ? `本机技能报告中找到 ${searchMatches.length} 条与“${searchResult}”相关的记录。` : "本机记录当前不可用，未执行本地搜索。"}</span>
+              {connected && searchMatches.length > 0 && <button className="text-link" onClick={() => setPage("reports")}>查看结果 <ArrowRight size={12} /></button>}
               <button className="icon-button" onClick={() => setSearchResult("")} aria-label="关闭搜索结果"><X size={13} /></button>
             </div>
           )}
@@ -372,19 +470,19 @@ function Overview({ setPage, taskStatus, onOpenTask, onOpenTool, onOpenRecords }
               <h2>学习科目</h2>
               <div className="carousel-controls" aria-label="科目翻页">
                 <button disabled aria-label="上一组"><CaretLeft size={12} /></button>
-                <button aria-label="下一组"><CaretRight size={12} /></button>
+                <button disabled aria-label="下一组"><CaretRight size={12} /></button>
               </div>
             </div>
             <div className="subject-cards">
               {[
-                ["行测", "8 个有记录技能", Target, "reports"],
-                ["申论", "最近练习：概括归纳 · 7 月 9 日", NotePencil, "tools"],
-                ["面试", "下次任务：综合分析 · 15 分钟", Microphone, "tools"],
-              ].map(([name, description, Icon, target]) => (
-                <button className="subject-card" key={name} onClick={() => setPage(target)}>
+                { name: "行测", description: connected ? (liveSkills.length ? `${liveSkills.length} 个本机报告技能` : "暂无本机技能记录") : "本机记录不可用", Icon: Target, enabled: true },
+                { name: "申论", description: "P0.1 尚未接通", Icon: NotePencil, enabled: false },
+                { name: "面试", description: "P0.1 尚未接通", Icon: Microphone, enabled: false },
+              ].map(({ name, description, Icon, enabled }) => (
+                <button className={enabled ? "subject-card" : "subject-card unavailable"} key={name} disabled={!enabled} onClick={() => setPage("reports")}>
                   <span className="subject-icon"><Icon size={15} /></span>
                   <span className="subject-copy"><small>科目</small><strong>{name}</strong><em>{description}</em></span>
-                  <CaretRight size={13} />
+                  {enabled ? <CaretRight size={13} /> : <small className="phase-copy">分阶段开放</small>}
                 </button>
               ))}
             </div>
@@ -395,29 +493,24 @@ function Overview({ setPage, taskStatus, onOpenTask, onOpenTool, onOpenRecords }
             <div className="section-title row-between">
               <h2>今日安排</h2>
               <div className="section-actions">
-                <button className="button compact secondary" onClick={() => setPage("practice")}>添加任务</button>
-                <button className="text-link" onClick={() => setPage("practice")}>查看全部任务</button>
+                <button className="text-link" onClick={() => setPage("practice")}>查看任务状态</button>
               </div>
             </div>
             <div className="table-shell" role="table" aria-label="今日安排">
               <div className="table-row table-head" role="row"><span>任务</span><span>类型</span><span>预计时间</span><span>状态</span></div>
-              {taskRows.map(([title, type, duration, state, stateKey], index) => (
-                <button className="table-row" key={title} onClick={index === 1 ? onOpenTask : index === 0 ? onOpenRecords : () => setPage("tools")}>
-                  <span>{title}</span><span>{type}</span><span>{duration}</span><span className={`status ${stateKey}`}>{state}</span>
-                </button>
-              ))}
+              <div className="table-empty-row" role="row"><span>{connected ? "任务编排 API 尚未接通；不会依据技能报告生成虚构任务。" : "本机任务记录当前不可用。"}</span></div>
             </div>
           </section>
         </div>
 
         <aside className="daily-panel">
-          <div className="row-between"><strong>今日进度</strong><span>{completed} / 4</span></div>
-          <div className="simple-progress" aria-label={`今日任务已完成 ${completed} 项，共 4 项`}><span style={{ width: `${completed * 25}%` }} /></div>
-          <dl><div><dt>已完成</dt><dd>{completed} 项</dd></div><div><dt>剩余</dt><dd>{4 - completed} 项</dd></div></dl>
+          <div className="row-between"><strong>本机证据</strong><span>{connected ? "已连接" : "不可用"}</span></div>
+          <p className="daily-source-copy">{sourceStateCopy}</p>
+          <dl><div><dt>运行轨迹</dt><dd>{connected ? `${runCount} 条` : "—"}</dd></div><div><dt>报告技能</dt><dd>{connected ? `${liveSkills.length} 个` : "—"}</dd></div></dl>
           <hr />
-          <strong>优先复习</strong>
-          <p>近 3 次“基期量”作答有 2 次公式方向相反，暂列为待确认。</p>
-          <button className="text-link" onClick={onOpenRecords}>查看作答记录 <ArrowRight size={12} /></button>
+          <strong>下一步</strong>
+          <p>{connected ? (runCount > 0 ? "只在技能报告中查看已完成运行形成的证据。" : "完成一次真实错因辨析后，这里才会出现本机证据。") : "恢复本机服务后才能开始真实训练。"}</p>
+          {connected && <button className="text-link" onClick={() => onOpenTool("错因辨析")}>开始真实训练 <ArrowRight size={12} /></button>}
         </aside>
       </div>
     </div>
@@ -444,9 +537,20 @@ function ToolsScreen({
   const [phaseAnswer, setPhaseAnswer] = useState("");
   const [phaseConfidence, setPhaseConfidence] = useState("");
   const [phaseStartedAt, setPhaseStartedAt] = useState(0);
-  const [targetSkill, setTargetSkill] = useState("增长率与基期量");
   const [runEvidence, setRunEvidence] = useState(null);
   const [runError, setRunError] = useState(null);
+  const [assistance, setAssistance] = useState(createAssistanceState);
+  const [dossierState, setDossierState] = useState({ phase: "idle", dossier: null, error: null });
+  const probeGate = dossierContinuationGate(
+    dossierState,
+    "probe",
+    runEvidence?.attempt?.probe?.prompt_instance_id,
+  );
+  const verificationGate = dossierContinuationGate(
+    dossierState,
+    "verification",
+    runEvidence?.continuation?.verification?.prompt_instance_id,
+  );
 
   const visible = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase("zh-CN");
@@ -462,6 +566,7 @@ function ToolsScreen({
   };
 
   const openTool = (tool) => {
+    if (!tool.available || sidecar.phase !== "connected") return;
     setSelectedTool(tool);
     setToolStage("ready");
     setAnswer("");
@@ -470,6 +575,8 @@ function ToolsScreen({
     setPhaseConfidence("");
     setRunEvidence(null);
     setRunError(null);
+    setAssistance(createAssistanceState());
+    setDossierState({ phase: "idle", dossier: null, error: null });
   };
 
   const closeTool = () => {
@@ -481,27 +588,84 @@ function ToolsScreen({
     setPhaseConfidence("");
     setRunEvidence(null);
     setRunError(null);
+    setAssistance(createAssistanceState());
+    setDossierState({ phase: "idle", dossier: null, error: null });
   };
 
   const startConfiguredRun = () => {
+    if (sidecar.phase !== "connected") return;
     setToolStage("active");
     setAnswer("");
     setConfidence("");
     setAttemptStartedAt(Date.now());
+    setAssistance(createAssistanceState());
+    setDossierState({ phase: "idle", dossier: null, error: null });
+  };
+
+  const loadDossier = async (runId) => {
+    setDossierState((current) => ({ ...current, phase: "loading", error: null }));
+    try {
+      const payload = await fetchMisconceptionDossier(runId);
+      const dossier = normalizeMisconceptionDossier(payload);
+      setDossierState((current) => current.dossier?.sourceTraceVersion > dossier.sourceTraceVersion
+        ? current
+        : { phase: "connected", dossier, error: null });
+      return dossier;
+    } catch (error) {
+      const unavailable = error?.kind === "unavailable"
+        || error?.status === 404
+        || ["dossier_unavailable", "misconception_dossier_unavailable"].includes(error?.code);
+      setDossierState((current) => ({ phase: unavailable ? "unavailable" : "error", dossier: current.dossier, error }));
+      return null;
+    }
+  };
+
+  const requestProbeAssistance = async () => {
+    const session = runEvidence?.attempt;
+    if (probeGate.kind !== "ready" || !session?.probe?.prompt_instance_id) {
+      setAssistance({ ...assistance, status: "unavailable", error: null, pendingCommandId: null });
+      return;
+    }
+    const commandId = assistance.pendingCommandId || createAssistanceCommandId();
+    setAssistance((current) => ({ ...current, status: "requesting", error: null, pendingCommandId: commandId }));
+    try {
+      const result = await requestNextAssistance({
+        session,
+        elapsedTimeSeconds: (Date.now() - phaseStartedAt) / 1000,
+        commandId,
+      });
+      setRunEvidence((current) => ({
+        ...current,
+        attempt: { ...current.attempt, state_version: result.state_version },
+      }));
+      setAssistance((current) => appendAssistance(current, result));
+      loadDossier(session.run_id);
+    } catch (error) {
+      const refreshedDossier = await loadDossier(session.run_id);
+      if (refreshedDossier?.requiresRestart) {
+        setAssistance((current) => ({ ...current, status: "unavailable", error: null, pendingCommandId: null }));
+        return;
+      }
+      if (error?.code === "assistance_exhausted") {
+        setAssistance((current) => ({ ...current, status: "exhausted", error, pendingCommandId: null }));
+      } else if (["stale_version", "state_mismatch", "out_of_order"].includes(error?.code)) {
+        setRunError(error);
+        setToolStage("error");
+      } else {
+        setAssistance((current) => ({ ...current, status: "error", error }));
+      }
+    }
   };
 
   const submitConfiguredAttempt = async () => {
-    if (sidecar.phase !== "connected") {
-      setToolStage("done");
-      return;
-    }
+    if (sidecar.phase !== "connected") return;
     setToolStage("running");
     setRunEvidence(null);
     setRunError(null);
     const confidenceValues = { low: 0.35, medium: 0.65, high: 0.9 };
     try {
       const evidence = await submitAttempt({
-        fixtureId: "xingce.data-analysis.growth-rate.synthetic-01",
+        fixtureId: CONNECTED_FIXTURE_ID,
         response: answer,
         confidence: confidenceValues[confidence],
         responseTimeSeconds: (Date.now() - attemptStartedAt) / 1000,
@@ -510,7 +674,9 @@ function ToolsScreen({
       setPhaseAnswer("");
       setPhaseConfidence("");
       setPhaseStartedAt(Date.now());
+      setAssistance(createAssistanceState({ available: Boolean(evidence.attempt?.probe?.prompt_instance_id) }));
       setToolStage("probe");
+      loadDossier(evidence.attempt.run_id);
     } catch (error) {
       setRunError(error);
       setToolStage("error");
@@ -518,6 +684,8 @@ function ToolsScreen({
   };
 
   const submitContinuation = async (phase) => {
+    const gate = phase === "probe" ? probeGate : verificationGate;
+    if (gate.kind !== "ready") return;
     setToolStage("running");
     setRunError(null);
     const confidenceValues = { low: 0.35, medium: 0.65, high: 0.9 };
@@ -540,7 +708,14 @@ function ToolsScreen({
         setToolStage("result");
         await onRefreshSkills();
       }
+      loadDossier(next.continuation.run_id);
     } catch (error) {
+      const refreshedDossier = session?.run_id ? await loadDossier(session.run_id) : null;
+      if (refreshedDossier?.requiresRestart) {
+        setRunError(null);
+        setToolStage(phase === "probe" ? "probe" : "verification");
+        return;
+      }
       setRunError(error);
       setToolStage("error");
     }
@@ -553,17 +728,30 @@ function ToolsScreen({
     setConfidence("");
     setPhaseAnswer("");
     setPhaseConfidence("");
+    setAssistance(createAssistanceState());
+    setDossierState({ phase: "idle", dossier: null, error: null });
     setToolStage("ready");
   };
 
-  const candidates = runEvidence?.attempt?.diagnosis?.hypotheses || diagnosisCandidates(runEvidence?.trace);
+  const restartWithFreshRun = () => {
+    setRunEvidence(null);
+    setRunError(null);
+    setAnswer("");
+    setConfidence("");
+    setPhaseAnswer("");
+    setPhaseConfidence("");
+    setAssistance(createAssistanceState());
+    setDossierState({ phase: "idle", dossier: null, error: null });
+    setAttemptStartedAt(Date.now());
+    setToolStage("active");
+  };
+
   const traceVerified = Boolean(
     runEvidence?.continuation?.trace_verified
     && runEvidence?.trace?.trace_verified
     && runEvidence?.replay?.trace_verified,
   );
   const recoverableConflict = ["stale_version", "state_mismatch", "out_of_order"].includes(runError?.code);
-
   return (
     <div className="screen tools-screen">
       <div className="page-heading"><h1>训练工具</h1><p>从一个明确问题开始，完成可核查的短训练。</p></div>
@@ -581,12 +769,14 @@ function ToolsScreen({
         <div className="tool-grid">
           {visible.map((tool) => {
             const liked = favorites.includes(tool.title);
+            const operable = tool.available && sidecar.phase === "connected";
             return (
-              <article className="tool-card" key={tool.title}>
-                <button className="tool-card-main" onClick={() => openTool(tool)}>
+              <article className={operable ? "tool-card" : "tool-card unavailable"} key={tool.title} data-tool-title={tool.title} data-availability={operable ? "connected" : tool.available ? "service-unavailable" : "phased"} data-fixture-id={tool.available ? CONNECTED_FIXTURE_ID : undefined}>
+                <button className="tool-card-main" disabled={!operable} onClick={() => openTool(tool)}>
                   <small>{tool.category}</small>
                   <strong>{tool.title}</strong>
                   <span>{tool.description}</span>
+                  {!operable && <em>{tool.available ? "本机服务不可用" : "分阶段开放"}</em>}
                 </button>
                 <button className={liked ? "bookmark-button active" : "bookmark-button"} onClick={() => toggleFavorite(tool.title)} aria-label={liked ? `取消收藏${tool.title}` : `收藏${tool.title}`}>
                   <BookmarkSimple size={15} weight={liked ? "fill" : "regular"} />
@@ -609,13 +799,13 @@ function ToolsScreen({
             <>
               <p className="panel-intro">{selectedTool.description}</p>
               <div className="form-stack">
-                <label><span>科目</span><select defaultValue="行测"><option>行测</option><option>申论</option><option>面试</option></select></label>
-                <label><span>技能</span><select value={targetSkill} onChange={(event) => setTargetSkill(event.target.value)}><option>增长率与基期量</option><option>意图判断</option><option>必要条件</option></select></label>
+                <label><span>科目</span><select value="行测" disabled><option>行测</option></select></label>
+                <label><span>技能</span><select value={CONNECTED_SKILL_NAME} disabled><option>{CONNECTED_SKILL_NAME}</option></select></label>
                 <label><span>本次验证</span><input value="公式方向是否混淆" readOnly /></label>
                 <label><span>本轮步骤</span><input value="3 · 首答、探查、独立验证" readOnly /></label>
               </div>
-              <div className="evidence-note"><Info size={15} /><span>{sidecar.phase === "connected" ? "先提交作答与信心；服务只会依据这次真实输入生成轨迹。" : "本机服务未连接；下面是演示流程，不会写入真实轨迹。"}</span></div>
-              <button className="button primary panel-primary" onClick={startConfiguredRun}>{sidecar.phase === "connected" ? "开始作答" : "查看演示流程"}</button>
+              <div className="evidence-note"><Info size={15} /><span>{sidecar.phase === "connected" ? "先提交作答与信心；服务只会依据这次真实输入生成轨迹。" : "本机服务不可用；真实训练暂不能开始，也不会创建本机轨迹。"}</span></div>
+              <button className="button primary panel-primary" disabled={sidecar.phase !== "connected"} onClick={startConfiguredRun}>{sidecar.phase === "connected" ? "开始作答" : "本机服务不可用"}</button>
             </>
           )}
           {toolStage === "running" && (
@@ -627,51 +817,49 @@ function ToolsScreen({
           )}
           {toolStage === "active" && (
             <>
-              {sidecar.phase !== "connected" && <div className="demo-notice"><Info size={14} /><span>演示数据 · 不会写入本机轨迹</span></div>}
-              <div className="run-progress"><span>步骤 1 / 3</span><strong>{targetSkill}</strong></div>
+              <div className="run-progress"><span>步骤 1 / 3</span><strong>{CONNECTED_SKILL_NAME}</strong></div>
               <div className="prompt-block">
                 <small>请独立作答</small>
                 <p>某园区产值由 2024 年的 200 亿元增至 2025 年的 230 亿元，同比增长率约为多少？</p>
               </div>
+              <div className="independent-boundary"><Info size={13} /><span>初答不提供帮助；提交后如需辨析，服务会在定向探查题上开放渐进帮助。</span></div>
               <label className="answer-field"><span>你的答案</span><select value={answer} onChange={(event) => setAnswer(event.target.value)}><option value="">请选择</option><option value="A">A · 13.0%</option><option value="B">B · 15.0%</option><option value="C">C · 30.0%</option><option value="D">D · 115.0%</option></select></label>
               <label className="answer-field"><span>作答信心</span><select value={confidence} onChange={(event) => setConfidence(event.target.value)}><option value="">请选择</option><option value="low">不太确定</option><option value="medium">基本确定</option><option value="high">非常确定</option></select></label>
-              <button className="button primary panel-primary" disabled={!answer || !confidence} onClick={submitConfiguredAttempt}>{sidecar.phase === "connected" ? "提交本机验证" : "记录演示作答"}</button>
+              <button className="button primary panel-primary" disabled={!answer || !confidence} onClick={submitConfiguredAttempt}>提交本机验证</button>
             </>
           )}
           {toolStage === "probe" && runEvidence?.attempt && (
             <div className="continuation-stage" data-testid="attempt-stage" data-state="awaiting-probe" data-version={runEvidence.attempt.state_version} data-run-id={runEvidence.attempt.run_id}>
               <div className="stage-kicker"><span>步骤 2 / 3</span><strong>探查当前线索</strong></div>
               <dl className="compact-result"><div><dt>首答评分</dt><dd>{runEvidence.attempt.score?.passed ? "通过" : "未通过"} · {runEvidence.attempt.score?.score}/{runEvidence.attempt.score?.max_score}</dd></div><div><dt>诊断决策</dt><dd>{diagnosisDecisionCopy(runEvidence.attempt.diagnosis?.decision)}</dd></div></dl>
-              {candidates.length > 0 && (
-                <div className="candidate-list">
-                  <strong>候选线索（未确认）</strong>
-                  {candidates.map((candidate) => <span key={candidate.cause_id}>{diagnosisCandidateCopy(candidate)}<small>{diagnosisCandidateProbability(candidate)}</small></span>)}
-                  <p>请用下面的短题区分线索，不能据此直接确认原因。</p>
-                </div>
-              )}
-              <div className="prompt-block probe-prompt"><small>探查题</small><p>{runEvidence.attempt.probe.prompt}</p></div>
-              <label className="answer-field"><span>你的判断</span><textarea value={phaseAnswer} onChange={(event) => setPhaseAnswer(event.target.value)} placeholder="写下公式或判断依据" /></label>
-              <label className="answer-field"><span>作答信心</span><select value={phaseConfidence} onChange={(event) => setPhaseConfidence(event.target.value)}><option value="">请选择</option><option value="low">不太确定</option><option value="medium">基本确定</option><option value="high">非常确定</option></select></label>
-              <button className="button primary panel-primary" disabled={phaseAnswer.trim().length < 2 || !phaseConfidence} onClick={() => submitContinuation("probe")}>提交探查作答</button>
+              {probeGate.kind !== "ready" && <ContinuationBoundary gate={probeGate} onRestart={restartWithFreshRun} />}
+              <MisconceptionDossier state={dossierState} />
+              {probeGate.kind === "ready" ? (
+                <>
+                  <div className="prompt-block probe-prompt"><small>探查题</small><p>{runEvidence.attempt.probe.prompt}</p></div>
+                  <AssistanceLadder state={assistance} promptAvailable={Boolean(runEvidence.attempt.probe?.prompt_instance_id)} onRequest={requestProbeAssistance} />
+                  <label className="answer-field"><span>你的判断</span><textarea value={phaseAnswer} onChange={(event) => setPhaseAnswer(event.target.value)} placeholder="写下公式或判断依据" /></label>
+                  <label className="answer-field"><span>作答信心</span><select value={phaseConfidence} onChange={(event) => setPhaseConfidence(event.target.value)}><option value="">请选择</option><option value="low">不太确定</option><option value="medium">基本确定</option><option value="high">非常确定</option></select></label>
+                  <button className="button primary panel-primary" disabled={phaseAnswer.trim().length < 2 || !phaseConfidence} onClick={() => submitContinuation("probe")}>提交探查作答</button>
+                </>
+              ) : null}
             </div>
           )}
           {toolStage === "verification" && runEvidence?.continuation && (
             <div className="continuation-stage" data-testid="attempt-stage" data-state="awaiting-verification" data-version={runEvidence.continuation.state_version} data-run-id={runEvidence.continuation.run_id}>
               <div className="stage-kicker"><span>步骤 3 / 3</span><strong>独立验证</strong></div>
-              <section className="teaching-block"><small>针对性提示</small><p>{runEvidence.continuation.teaching.prompt}</p><span>{runEvidence.continuation.teaching.strategy === "worked-example-fading" ? "先标出基期，再独立完成一题。" : "请按提示完成后续验证。"}</span></section>
-              <div className="prompt-block probe-prompt"><small>独立验证题</small><p>{runEvidence.continuation.verification.prompt}</p></div>
-              <label className="answer-field"><span>你的答案</span><select value={phaseAnswer} onChange={(event) => setPhaseAnswer(event.target.value)}><option value="">请选择</option><option value="A">A · 12%</option><option value="B">B · 13%</option><option value="C">C · 15%</option><option value="D">D · 115%</option></select></label>
-              <label className="answer-field"><span>作答信心</span><select value={phaseConfidence} onChange={(event) => setPhaseConfidence(event.target.value)}><option value="">请选择</option><option value="low">不太确定</option><option value="medium">基本确定</option><option value="high">非常确定</option></select></label>
-              <button className="button primary panel-primary" disabled={!phaseAnswer || !phaseConfidence} onClick={() => submitContinuation("verification")}>提交独立验证</button>
-            </div>
-          )}
-          {toolStage === "done" && (
-            <div className="completion-state" role="status">
-              <CheckCircle size={22} weight="fill" />
-              <h3>演示作答已记录</h3>
-              <p>这条演示记录没有写入本机，也不会形成错因或掌握度判断。</p>
-              <button className="button primary" onClick={() => { setAnswer(""); setToolStage("active"); }}>继续下一题</button>
-              <button className="button text-button" onClick={closeTool}>结束本轮</button>
+              {verificationGate.kind !== "ready" && <ContinuationBoundary gate={verificationGate} onRestart={restartWithFreshRun} />}
+              <MisconceptionDossier state={dossierState} />
+              {verificationGate.kind === "ready" ? (
+                <>
+                  <section className="teaching-block"><small>针对性提示</small><p>{runEvidence.continuation.teaching.prompt}</p><span>{runEvidence.continuation.teaching.strategy === "worked-example-fading" ? "先标出基期，再独立完成一题。" : "请按提示完成后续验证。"}</span></section>
+                  <div className="independent-boundary"><Info size={13} /><span>独立验证不提供帮助；只有这一步完成后，服务才可能更新掌握状态。</span></div>
+                  <div className="prompt-block probe-prompt"><small>独立验证题</small><p>{runEvidence.continuation.verification.prompt}</p></div>
+                  <label className="answer-field"><span>你的答案</span><select value={phaseAnswer} onChange={(event) => setPhaseAnswer(event.target.value)}><option value="">请选择</option><option value="A">A · 12%</option><option value="B">B · 13%</option><option value="C">C · 15%</option><option value="D">D · 115%</option></select></label>
+                  <label className="answer-field"><span>作答信心</span><select value={phaseConfidence} onChange={(event) => setPhaseConfidence(event.target.value)}><option value="">请选择</option><option value="low">不太确定</option><option value="medium">基本确定</option><option value="high">非常确定</option></select></label>
+                  <button className="button primary panel-primary" disabled={!phaseAnswer || !phaseConfidence} onClick={() => submitContinuation("verification")}>提交独立验证</button>
+                </>
+              ) : null}
             </div>
           )}
           {toolStage === "result" && runEvidence && (
@@ -682,22 +870,11 @@ function ToolsScreen({
                 <div><dt>作答评分</dt><dd>{runEvidence.attempt.score?.passed ? "通过" : "未通过"} · {runEvidence.attempt.score?.score}/{runEvidence.attempt.score?.max_score}</dd></div>
                 <div><dt>诊断决策</dt><dd>{diagnosisDecisionCopy(runEvidence.attempt.diagnosis?.decision)}</dd></div>
                 <div><dt>独立验证</dt><dd>{runEvidence.continuation?.verification?.effective ? "通过" : "未通过"}</dd></div>
-                <div><dt>掌握变化</dt><dd>{Number(runEvidence.continuation?.mastery_update?.mastery_delta) >= 0 ? "+" : ""}{Number(runEvidence.continuation?.mastery_update?.mastery_delta || 0).toFixed(3)}</dd></div>
+                <div><dt>本轮轨迹变化</dt><dd>{Number(runEvidence.continuation?.mastery_update?.mastery_delta) >= 0 ? "+" : ""}{Number(runEvidence.continuation?.mastery_update?.mastery_delta || 0).toFixed(3)} · 非纵向掌握</dd></div>
                 <div><dt>轨迹校验</dt><dd>{traceVerified ? "已通过" : "未通过"}</dd></div>
                 <div><dt>轨迹 / 回放</dt><dd>{runEvidence.trace.event_count} 个事件 · {runEvidence.replay.frame_count} 帧</dd></div>
               </dl>
-              {candidates.length > 0 && (
-                <div className="candidate-list">
-                  <strong>候选线索（未确认）</strong>
-                  {candidates.map((candidate) => (
-                    <span key={candidate.cause_id}>
-                      {diagnosisCandidateCopy(candidate)}
-                      <small>{diagnosisCandidateProbability(candidate)}</small>
-                    </span>
-                  ))}
-                  <p>这些候选只解释当前诊断路由，不能作为已确认原因。</p>
-                </div>
-              )}
+              <MisconceptionDossier state={dossierState} />
               <button className="button primary panel-primary" onClick={() => { closeTool(); setPage("reports"); }}>查看技能报告</button>
             </div>
           )}
@@ -717,22 +894,11 @@ function ToolsScreen({
   );
 }
 
-function MasteryTrack({ level, state }) {
-  const widths = {
-    1: [8, 7, 85],
-    2: [6, 40, 54],
-    3: [4, 69, 27],
-    4: [2, 88, 10],
-  }[level] || [0, 0, 100];
-
+function EvidenceSummary({ skill }) {
   return (
-    <div className="mastery-wrap" aria-label={`当前判断：${state}`}>
-      <div className="mastery-track">
-        <span className="mastery-caution" style={{ width: `${widths[0]}%` }} />
-        <span className="mastery-confirmed" style={{ width: `${widths[1]}%` }} />
-        <span className="mastery-unseen" style={{ width: `${widths[2]}%` }} />
-      </div>
-      <div className="mastery-copy"><strong>{state}</strong><span>{level < 2 ? "需要独立复验" : level < 3 ? "仍需跨题验证" : "近期表现稳定"}</span></div>
+    <div className="evidence-summary" aria-label={`独立验证证据：${skill.evidenceTitle}`}>
+      <strong>{skill.evidenceTitle}</strong>
+      <span>{skill.verifiedTransfers} 次通过 · {skill.failedOrInconclusive} 次未通过或不确定</span>
     </div>
   );
 }
@@ -741,13 +907,13 @@ function ReportsScreen({ setPage, sidecar }) {
   const [tab, setTab] = useState("skills");
   const [subject, setSubject] = useState("xingce");
   const [module, setModule] = useState("all");
-  const [judgment, setJudgment] = useState("all");
+  const [evidenceFilter, setEvidenceFilter] = useState("all");
   const [dueOnly, setDueOnly] = useState(false);
   const [openGroups, setOpenGroups] = useState(["data"]);
   const [openSkill, setOpenSkill] = useState(null);
   const usingLiveReport = sidecar.phase === "connected";
   const sourceGroups = useMemo(
-    () => usingLiveReport ? reportGroupsFromSidecar(sidecar.report) : SKILL_GROUPS,
+    () => usingLiveReport ? reportGroupsFromSidecar(sidecar.report) : [],
     [sidecar.report, usingLiveReport],
   );
 
@@ -758,23 +924,23 @@ function ReportsScreen({ setPage, sidecar }) {
       .map((group) => ({
         ...group,
         skills: group.skills.filter((skill) => {
-          const judgmentMatch = judgment === "all" || (judgment === "verify" ? skill.level === 1 : judgment === "learning" ? skill.level === 2 : skill.level >= 3);
-          return judgmentMatch && (!dueOnly || skill.due);
+          const evidenceMatch = evidenceFilter === "all" || skill.evidenceKind === evidenceFilter;
+          return evidenceMatch && !dueOnly;
         }),
       }))
       .filter((group) => group.skills.length > 0);
-  }, [subject, module, judgment, dueOnly, sourceGroups]);
+  }, [subject, module, evidenceFilter, dueOnly, sourceGroups]);
 
   const totals = useMemo(() => groups.reduce((result, group) => ({
     modules: result.modules + 1,
     skills: result.skills + group.skills.length,
-    attempts: result.attempts + group.skills.reduce((sum, skill) => sum + skill.attempts, 0),
-  }), { modules: 0, skills: 0, attempts: 0 }), [groups]);
+    runs: result.runs + group.skills.reduce((sum, skill) => sum + skill.completedRuns, 0),
+  }), { modules: 0, skills: 0, runs: 0 }), [groups]);
 
   const clearFilters = () => {
     setSubject("xingce");
     setModule("all");
-    setJudgment("all");
+    setEvidenceFilter("all");
     setDueOnly(false);
   };
 
@@ -783,23 +949,23 @@ function ReportsScreen({ setPage, sidecar }) {
       <div className="page-heading"><h1>技能报告</h1></div>
       <div className="sub-tabs" role="tablist" aria-label="报告类型">
         <button className={tab === "activity" ? "active" : ""} onClick={() => setTab("activity")} role="tab" aria-selected={tab === "activity"}>学习活动</button>
-        <button className={tab === "skills" ? "active" : ""} onClick={() => setTab("skills")} role="tab" aria-selected={tab === "skills"}>技能掌握</button>
+        <button className={tab === "skills" ? "active" : ""} onClick={() => setTab("skills")} role="tab" aria-selected={tab === "skills"}>技能证据</button>
         <button className={tab === "reviews" ? "active" : ""} onClick={() => setTab("reviews")} role="tab" aria-selected={tab === "reviews"}>复习记录</button>
       </div>
 
       {tab === "skills" && (
         <>
-          <p className="report-note" data-testid="report-source" data-source={usingLiveReport ? "sidecar" : "demo"}>掌握判断只使用已评分作答和复验记录；证据不足时显示“暂不判断”。{usingLiveReport ? " 数据源：本机服务。" : " 当前显示演示数据。"}</p>
+          <p className="report-note" data-testid="report-source" data-source={usingLiveReport ? "sidecar" : "unavailable"}>`trace-summary-v1` 只汇总已完成本机运行和独立验证计数，不代表纵向知识追踪或掌握结论。{usingLiveReport ? " 数据源：本机服务。" : " 本机数据源当前不可用，不显示替代数据。"}</p>
           <div className="report-filters">
-            <select value={subject} onChange={(event) => setSubject(event.target.value)} aria-label="科目"><option value="xingce">行测</option><option value="shenlun">申论</option><option value="interview">面试</option></select>
+            <select value={subject} onChange={(event) => setSubject(event.target.value)} aria-label="科目" disabled><option value="xingce">行测 · P0.1</option></select>
             <select value={module} onChange={(event) => setModule(event.target.value)} aria-label="模块" disabled={subject !== "xingce"}><option value="all">全部模块</option><option value="verbal">言语理解</option><option value="data">资料分析</option><option value="judgment">判断推理</option></select>
-            <select value={judgment} onChange={(event) => setJudgment(event.target.value)} aria-label="当前判断" disabled={subject !== "xingce"}><option value="all">全部判断</option><option value="verify">待验证</option><option value="learning">学习中</option><option value="stable">基本稳定</option></select>
-            <label className="check-label"><input type="checkbox" checked={dueOnly} onChange={(event) => setDueOnly(event.target.checked)} disabled={subject !== "xingce"} /> 只看已到复习时间</label>
+            <select value={evidenceFilter} onChange={(event) => setEvidenceFilter(event.target.value)} aria-label="验证证据" disabled={subject !== "xingce"}><option value="all">全部证据</option><option value="verified">有通过记录</option><option value="not_verified">仅未通过或不确定</option><option value="insufficient">证据不足</option></select>
+            <label className="check-label unavailable"><input type="checkbox" checked={dueOnly} onChange={(event) => setDueOnly(event.target.checked)} disabled /> 到期状态尚未接通</label>
           </div>
 
           {groups.length > 0 ? (
             <>
-              <div className="report-summary"><strong>{subject === "xingce" ? "行测" : "当前科目"}</strong><span>{totals.modules} 个有记录模块 · {totals.skills} 个技能 · {totals.attempts} {usingLiveReport ? "次本机运行" : "次已评分作答"}</span></div>
+              <div className="report-summary"><strong>行测</strong><span>{totals.modules} 个有记录模块 · {totals.skills} 个技能 · {totals.runs} 次已完成本机运行</span></div>
               <div className="skills-table">
                 {groups.map((group) => {
                   const isOpen = openGroups.includes(group.id);
@@ -811,21 +977,21 @@ function ReportsScreen({ setPage, sidecar }) {
                       </button>
                       {isOpen && (
                         <>
-                          <div className="skills-head"><span>技能</span><span>当前判断</span><span>作答记录</span></div>
+                          <div className="skills-head"><span>技能</span><span>独立验证证据</span><span>本机运行</span></div>
                           {group.skills.map((skill) => {
                             const detailOpen = openSkill === skill.id;
                             return (
                               <div className="skill-entry" key={skill.id}>
                                 <button className="skill-row" onClick={() => setOpenSkill(detailOpen ? null : skill.id)} aria-expanded={detailOpen}>
                                   <span className="skill-name">{detailOpen ? <CaretDown size={12} /> : <CaretRight size={12} />}<span>{skill.name}</span></span>
-                                  <MasteryTrack level={skill.level} state={skill.state} />
-                                  <span className="evidence-count"><strong>{skill.attempts}</strong> 次<br /><small>最近 {skill.last}</small></span>
+                                  <EvidenceSummary skill={skill} />
+                                  <span className="evidence-count"><strong>{skill.completedRuns}</strong> 次<br /><small>最近 {skill.last}</small></span>
                                 </button>
                                 {detailOpen && (
                                   <div className="skill-detail">
-                                    <div><small>判断依据</small><p>{skill.live ? `来自 ${skill.live.run_count} 次本机运行；最新不确定性 ${Number(skill.live.latest_uncertainty || 0).toFixed(2)}。这里只报告轨迹结果，不确认具体错因。` : skill.id === "base-value" ? "最近 3 次中有 2 次公式方向相反；这只能说明存在混淆迹象，尚未确认原因。" : "根据最近的独立作答与间隔复验记录形成当前判断。"}</p></div>
-                                    <div><small>{skill.live ? "轨迹变化" : "下一步"}</small><p>{skill.live ? `单次轨迹值 ${Number(skill.live.latest_mastery || 0).toFixed(2)} · 平均变化 ${Number(skill.live.average_mastery_delta || 0) >= 0 ? "+" : ""}${Number(skill.live.average_mastery_delta || 0).toFixed(3)}` : skill.level === 1 ? "4 道无提示短题" : "按到期时间安排跨题复验"}</p></div>
-                                    <div className="skill-detail-actions"><button className="text-link">查看作答记录</button><button className="button compact secondary" onClick={() => setPage("tools")}>安排验证</button></div>
+                                    <div><small>验证计数</small><p>{`${skill.completedRuns} 次已完成本机运行；${skill.verifiedTransfers} 次独立验证通过，${skill.failedOrInconclusive} 次未通过或不确定。`}</p></div>
+                                    <div><small>服务轨迹字段</small><p>{skill.latestTraceValue === null ? "本机服务未返回单次轨迹值。" : `latest_mastery ${skill.latestTraceValue.toFixed(2)}，latest_uncertainty ${skill.latestTraceUncertainty?.toFixed(2) ?? "—"}；均为最近单次 run 证据，非纵向掌握。${skill.averageTraceDelta === null ? "" : ` average_mastery_delta ${skill.averageTraceDelta >= 0 ? "+" : ""}${skill.averageTraceDelta.toFixed(3)}。`}`}</p></div>
+                                    <div className="skill-detail-actions"><button className="button compact secondary" disabled={!CONNECTED_SKILL_IDS.has(skill.id)} onClick={() => setPage("tools")}>{CONNECTED_SKILL_IDS.has(skill.id) ? "前往错因辨析" : "尚未接通"}</button></div>
                                   </div>
                                 )}
                               </div>
@@ -839,31 +1005,19 @@ function ReportsScreen({ setPage, sidecar }) {
               </div>
             </>
           ) : (
-            <div className="empty-state report-empty"><strong>{usingLiveReport && subject === "xingce" && module === "all" && judgment === "all" && !dueOnly ? "本机服务还没有技能轨迹" : "当前筛选下没有技能记录"}</strong><p>{usingLiveReport && subject === "xingce" && module === "all" && judgment === "all" && !dueOnly ? "完成一次本机验证后，轨迹汇总会显示在这里。" : subject === "xingce" ? "可以清除筛选后查看全部已记录技能。" : "完成首组独立作答后，才会显示掌握判断。"}</p>{!(usingLiveReport && subject === "xingce" && module === "all" && judgment === "all" && !dueOnly) && <button className="button secondary" onClick={clearFilters}>清除筛选</button>}</div>
+            <div className="empty-state report-empty" data-testid="report-empty" data-source={usingLiveReport ? "sidecar" : "unavailable"}><strong>{!usingLiveReport ? "本机技能报告不可用" : module === "all" && evidenceFilter === "all" && !dueOnly ? "本机服务还没有技能轨迹" : "当前筛选下没有技能记录"}</strong><p>{!usingLiveReport ? "恢复本机服务后才能读取真实报告；当前不会显示演示或替代记录。" : module === "all" && evidenceFilter === "all" && !dueOnly ? "完成一次真实独立验证后，轨迹汇总才会显示在这里。" : "可以清除筛选后查看全部本机技能记录。"}</p>{usingLiveReport && !(module === "all" && evidenceFilter === "all" && !dueOnly) && <button className="button secondary" onClick={clearFilters}>清除筛选</button>}</div>
           )}
         </>
       )}
 
       {tab === "activity" && (
-        <ReportList title="最近学习活动" description="以下记录来自本机已完成并评分的任务。" headers={["时间", "活动", "结果", "状态"]} rows={ACTIVITY_ROWS} />
+        <section className="report-list-section"><div className="report-list-heading"><h2>最近学习活动</h2><p>当前 sidecar 尚未提供活动列表合同。</p></div><div className="empty-state report-empty"><strong>活动记录不可用</strong><p>技能报告不会被转换成虚构的活动时间线。</p></div></section>
       )}
 
       {tab === "reviews" && (
-        <ReportList title="复习安排" description="复习时间由最近一次独立作答和既往间隔共同决定。" headers={["时间", "技能", "安排依据", "状态"]} rows={REVIEW_ROWS} />
+        <section className="report-list-section"><div className="report-list-heading"><h2>复习安排</h2><p>当前 sidecar 尚未提供复习计划合同。</p></div><div className="empty-state report-empty"><strong>复习记录不可用</strong><p>客户端不会根据技能报告自行推算到期时间。</p></div></section>
       )}
     </div>
-  );
-}
-
-function ReportList({ title, description, headers, rows }) {
-  return (
-    <section className="report-list-section">
-      <div className="report-list-heading"><h2>{title}</h2><p>{description}</p></div>
-      <div className="report-list">
-        <div className="report-list-row head">{headers.map((header) => <span key={header}>{header}</span>)}</div>
-        {rows.map((row) => <div className="report-list-row" key={row[0] + row[1]}>{row.map((cell) => <span key={cell}>{cell}</span>)}</div>)}
-      </div>
-    </section>
   );
 }
 
@@ -871,12 +1025,8 @@ function AuxiliaryScreen({ page, setPage }) {
   if (page === "practice") {
     return (
       <div className="screen auxiliary-screen">
-        <div className="page-heading"><h1>练习任务</h1><p>按日期查看已安排、进行中和已完成的任务。</p></div>
-        <div className="aux-list">
-          <div className="aux-row head"><span>任务</span><span>科目</span><span>时间</span><span>状态</span></div>
-          <button className="aux-row" onClick={() => setPage("overview")}><span>基期量 · 公式方向验证</span><span>行测</span><span>今天 · 12 分钟</span><span>未开始</span></button>
-          <button className="aux-row" onClick={() => setPage("tools")}><span>概括归纳 · 要点复盘</span><span>申论</span><span>今天 · 20 分钟</span><span>未开始</span></button>
-        </div>
+        <div className="page-heading"><h1>练习任务</h1><p>只展示由本机任务合同返回的安排。</p></div>
+        <div className="empty-state auxiliary-empty"><ClipboardText size={23} /><strong>任务编排尚未接通</strong><p>当前版本不会根据技能报告生成日期、题量或完成状态。</p><button className="button secondary" onClick={() => setPage("tools")}>查看已接通训练</button></div>
       </div>
     );
   }
@@ -884,7 +1034,7 @@ function AuxiliaryScreen({ page, setPage }) {
   return (
     <div className="screen auxiliary-screen">
       <div className="page-heading"><h1>学习资料</h1><p>保存的方法、公式和个人笔记会显示在这里。</p></div>
-      <div className="empty-state auxiliary-empty"><ClipboardText size={23} /><strong>还没有保存的学习资料</strong><p>完成一次复盘后，可以把确认过的方法保存到这里。</p><button className="button secondary" onClick={() => setPage("tools")}>查看复盘工具</button></div>
+      <div className="empty-state auxiliary-empty"><ClipboardText size={23} /><strong>资料合同尚未接通</strong><p>当前版本不会把训练提示自动保存成学习资料。</p><button className="button secondary" onClick={() => setPage("tools")}>查看已接通训练</button></div>
     </div>
   );
 }
@@ -893,9 +1043,8 @@ function CommandPalette({ onClose, setPage, onOpenTool }) {
   const [query, setQuery] = useState("");
   const items = [
     { label: "今日学习", meta: "页面", action: () => setPage("overview") },
-    { label: "增长率与基期量", meta: "技能", action: () => setPage("reports") },
     { label: "错因辨析", meta: "训练工具", action: () => onOpenTool("错因辨析") },
-    { label: "7 月 10 日作答记录", meta: "学习记录", action: () => setPage("reports") },
+    { label: "技能报告", meta: "页面", action: () => setPage("reports") },
   ];
   const visible = items.filter((item) => !query.trim() || item.label.includes(query.trim()));
   return (
@@ -911,43 +1060,26 @@ function CommandPalette({ onClose, setPage, onOpenTool }) {
   );
 }
 
-function TaskPanel({ taskStatus, setTaskStatus, onClose }) {
-  return (
-    <SidePanel title="基期量 · 公式方向验证" eyebrow="今日任务 · 12 分钟" onClose={onClose}>
-      <p className="panel-intro">用 4 道无提示短题检查公式方向是否稳定。结果只记录事实，不提前确认错因。</p>
-      <dl className="task-facts"><div><dt>科目</dt><dd>行测 · 资料分析</dd></div><div><dt>依据</dt><dd>近 3 次中有 2 次方向相反</dd></div><div><dt>记录</dt><dd>保存在此 Mac</dd></div></dl>
-      {taskStatus === "ready" && <button className="button primary panel-primary" onClick={() => setTaskStatus("in_progress")}>开始计时</button>}
-      {taskStatus === "in_progress" && <><div className="in-progress-note"><span className="state-marker" />任务进行中 · 已记录 1 题</div><button className="button primary panel-primary" onClick={() => setTaskStatus("complete")}>完成本次验证</button></>}
-      {taskStatus === "complete" && <div className="completion-state"><CheckCircle size={22} weight="fill" /><h3>本次任务已完成</h3><p>4 道作答已写入本机记录。新的判断将在技能报告中显示。</p><button className="button primary" onClick={onClose}>返回总览</button></div>}
-    </SidePanel>
-  );
-}
-
 function UtilityPanel({ type, onClose }) {
   const content = {
     settings: ["设置", "学习记录默认保存在此 Mac。云端能力尚未启用。"],
     feedback: ["意见反馈", "可以记录遇到的问题；当前原型不会发送到外部服务。"],
-    help: ["使用帮助", "从今日任务开始练习，在技能报告中查看作答依据与复验安排。"],
-    profile: ["林同学", "本机学习档案 · 广东省考"],
-    records: ["作答记录", "最近 3 次“基期量”作答中，有 2 次公式方向相反。当前仅作为待确认迹象。"],
+    help: ["使用帮助", "从已接通的错因辨析开始训练，在技能报告中查看真实本机证据。"],
+    profile: ["本机学习者", "考试目标与地区尚未设置。"],
   }[type];
   return (
     <SidePanel title={content[0]} onClose={onClose}>
       <p className="panel-intro">{content[1]}</p>
-      {type === "settings" && <div className="setting-row"><span><strong>本机记录</strong><small>练习、评分与复验安排</small></span><span className="plain-state">已开启</span></div>}
+      {type === "settings" && <div className="setting-row"><span><strong>本机记录</strong><small>练习、评分与验证证据</small></span><span className="plain-state">已开启</span></div>}
       {type === "feedback" && <label className="answer-field"><span>反馈内容</span><textarea placeholder="请描述具体页面和问题" /></label>}
-      {type === "records" && <div className="record-list"><div><span>7 月 10 日</span><strong>108 ÷ (1 − 8%)</strong><small>公式方向相反</small></div><div><span>7 月 8 日</span><strong>104 ÷ (1 + 4%)</strong><small>方向正确</small></div><div><span>7 月 6 日</span><strong>96 × (1 + 6%)</strong><small>公式方向相反</small></div></div>}
     </SidePanel>
   );
 }
 
 export function App() {
   const [page, setPage] = useState("overview");
-  const [scope, setScope] = useState("行测备考");
   const [collapsed, setCollapsed] = useState(false);
-  const [taskStatus, setTaskStatus] = useState("ready");
-  const [taskPanelOpen, setTaskPanelOpen] = useState(false);
-  const [favorites, setFavorites] = useState(["间隔复习"]);
+  const [favorites, setFavorites] = useState([]);
   const [selectedTool, setSelectedTool] = useState(null);
   const [toolStage, setToolStage] = useState("ready");
   const [commandOpen, setCommandOpen] = useState(false);
@@ -993,7 +1125,7 @@ export function App() {
   const openToolByTitle = (title) => {
     const tool = TOOLS.find((item) => item.title === title);
     setPage("tools");
-    setSelectedTool(tool || null);
+    setSelectedTool(tool?.available && sidecar.phase === "connected" ? tool : null);
     setToolStage("ready");
   };
 
@@ -1002,14 +1134,13 @@ export function App() {
       <div className={collapsed ? "app-window sidebar-collapsed" : "app-window"}>
         <Sidebar page={page} setPage={setPage} collapsed={collapsed} setCollapsed={setCollapsed} onUtility={setUtility} sidecar={sidecar} onRetrySidecar={refreshSidecar} />
         <section className="app-main">
-          {page !== "tools" && <Topbar page={page} setPage={setPage} scope={scope} setScope={setScope} onSearch={() => setCommandOpen(true)} onUtility={setUtility} />}
-          {page === "overview" && <Overview setPage={setPage} taskStatus={taskStatus} onOpenTask={() => setTaskPanelOpen(true)} onOpenTool={openToolByTitle} onOpenRecords={() => setUtility("records")} />}
+          {page !== "tools" && <Topbar page={page} setPage={setPage} onSearch={() => setCommandOpen(true)} onUtility={setUtility} />}
+          {page === "overview" && <Overview setPage={setPage} onOpenTool={openToolByTitle} sidecar={sidecar} />}
           {page === "tools" && <ToolsScreen favorites={favorites} setFavorites={setFavorites} selectedTool={selectedTool} setSelectedTool={setSelectedTool} toolStage={toolStage} setToolStage={setToolStage} sidecar={sidecar} onRefreshSkills={refreshSkills} setPage={setPage} />}
           {page === "reports" && <ReportsScreen setPage={setPage} sidecar={sidecar} />}
           {(page === "practice" || page === "materials") && <AuxiliaryScreen page={page} setPage={setPage} />}
         </section>
 
-        {taskPanelOpen && <TaskPanel taskStatus={taskStatus} setTaskStatus={setTaskStatus} onClose={() => setTaskPanelOpen(false)} />}
         {commandOpen && <CommandPalette onClose={() => setCommandOpen(false)} setPage={setPage} onOpenTool={openToolByTitle} />}
         {utility && <UtilityPanel type={utility} onClose={() => setUtility(null)} />}
       </div>

@@ -31,9 +31,57 @@
       {"cause_id": "argument-without-landing", "label": "价值倡议没有转化为执行措施", "synthetic_prior": 0.25, "evidence_refs": ["criterion_missing:implementation"], "is_ground_truth": false}
     ]
   },
-  "probe": {"prompt": "用一句话分别写出主张、原因和可执行做法，检查三者能否用‘因为/所以’连接。", "targets": ["topic-as-thesis", "claim-evidence-gap"]},
-  "teach": {"prompt": "搭建‘论点—受影响群体—作用机制—措施—价值回扣’五节点论证链。", "strategy": "argument-map"},
-  "independent_verify": {"prompt": "围绕‘智能设备普及也应提供人工帮助’写一段新论证，包含明确论点、机制与两项措施。", "response_mode": "long_text", "pass_condition": {"required_dimensions": ["thesis", "mechanism", "implementation"], "minimum_dimensions": 3}},
-  "samples": {"passing_response": "公共服务应保留线下服务，实现线上提效与线下兜底并重。老年人可能受数字鸿沟影响，服务可达性关乎公平。因此既要推进适老化，也要保留窗口和人工热线，让技术服务所有人。", "failing_response": "技术发展很重要，线下服务也很重要，我们要高度重视并积极推进。"},
+  "probe": {
+    "prompt": "用一句话分别写出主张、原因和两项可执行做法，检查三者能否用‘因为/所以’连接。",
+    "targets": ["topic-as-thesis", "claim-evidence-gap", "argument-without-landing"],
+    "assessment": {
+      "schema_version": "hermes.probe-assessment.v1", "evaluator": "authored_terms_v1",
+      "rules": [
+        {"cause_id": "topic-as-thesis", "support_if": {"all_terms": ["技术和线下都重要", "这就是中心论点"]}, "refute_if": {"all_terms": ["线上提效线下兜底并重", "形成明确判断"]}},
+        {"cause_id": "claim-evidence-gap", "support_if": {"all_terms": ["应该保留线下", "不需要解释原因"]}, "refute_if": {"all_terms": ["数字鸿沟导致服务排斥", "因此保留人工渠道"]}},
+        {"cause_id": "argument-without-landing", "support_if": {"all_terms": ["只倡导重视公平", "不提出具体措施"]}, "refute_if": {"all_terms": ["保留窗口人工热线", "措施对应可达性风险"]}}
+      ],
+      "cause_samples": [
+        {"cause_id": "topic-as-thesis", "supporting_response": "技术和线下都重要，这就是中心论点。", "refuting_response": "应坚持线上提效线下兜底并重，形成明确判断。", "ambiguous_response": "技术发展需要讨论。"},
+        {"cause_id": "claim-evidence-gap", "supporting_response": "应该保留线下，不需要解释原因。", "refuting_response": "数字鸿沟导致服务排斥，因此保留人工渠道。", "ambiguous_response": "线下服务有一定价值。"},
+        {"cause_id": "argument-without-landing", "supporting_response": "只倡导重视公平，不提出具体措施。", "refuting_response": "保留窗口人工热线，措施对应可达性风险。", "ambiguous_response": "今后还要继续改进。"}
+      ]
+    }
+  },
+  "teach": {
+    "prompt": "搭建‘论点—受影响群体—作用机制—措施—价值回扣’五节点论证链。", "strategy": "argument-map",
+    "variants": [
+      {"cause_id": "topic-as-thesis", "prompt": "把题目主题改写成可判断、可反驳的中心论点。", "strategy": "thesis-sharpening"},
+      {"cause_id": "claim-evidence-gap", "prompt": "沿受影响群体、数字障碍、服务排斥补齐因果链。", "strategy": "causal-chain-completion"},
+      {"cause_id": "argument-without-landing", "prompt": "为每项价值主张配一项负责主体明确的线上或线下措施。", "strategy": "claim-to-action"}
+    ]
+  },
+  "independent_verify": {
+    "prompt": "围绕‘智能设备普及也应提供人工帮助’写一段新论证，包含明确论点、机制与两项措施。",
+    "response_mode": "long_text",
+    "pass_condition": {
+      "scorer": "authored_dimensions_v1",
+      "required_dimensions": [
+        {"dimension_id": "thesis", "aliases": ["保留人工帮助", "线上线下并行", "智能与人工并重"]},
+        {"dimension_id": "mechanism", "aliases": ["数字鸿沟", "老年人难以使用", "使用能力差异", "避免服务排斥"]},
+        {"dimension_id": "onsite_measure", "aliases": ["保留窗口", "人工窗口", "现场协助"]},
+        {"dimension_id": "remote_measure", "aliases": ["人工热线", "电话服务", "人工客服"]}
+      ],
+      "minimum_dimensions": 4
+    },
+    "samples": {"passing_response": "智能设备提效的同时应保留人工帮助。老年人可能受数字鸿沟影响，因此既要保留人工窗口，也要提供人工热线。", "failing_response": "智能设备和人工服务都很重要，我们要高度重视。", "adversarial_negation_response": "我反对保留人工帮助，也不认可数字鸿沟，更不应保留人工窗口或提供人工热线；以上都不要做。"}
+  },
+  "assistance_ladder": {
+    "schema_version": "hermes.assistance-content.v1", "content_version": "argument-chain-help.v1",
+    "steps": [
+      {"action": "retry", "title": "再试一次", "content": "先各写一句明确主张、为什么成立、准备怎么做，再检查三句能否用“因为—所以”连起来。", "target_cause_ids": ["topic-as-thesis", "claim-evidence-gap", "argument-without-landing"]},
+      {"action": "locate_evidence", "title": "定位论证", "content": "题目不是泛谈技术重要，而是要回答公共服务是否应保留线下兜底，以及这关系到哪些人。", "target_cause_ids": ["topic-as-thesis"]},
+      {"action": "rule_hint", "title": "论证框架", "content": "用“论点—受影响群体—作用机制—措施—价值回扣”检查论证链，任何一环缺失都会变成口号。", "target_cause_ids": ["claim-evidence-gap", "argument-without-landing"]},
+      {"action": "analogous_example", "title": "同类例子", "content": "主张保留人工售票，应说明不会使用智能设备的人会被排除，再提出窗口和热线等具体兜底。", "target_cause_ids": ["claim-evidence-gap", "argument-without-landing"]},
+      {"action": "worked_step", "title": "演示一段", "content": "先写机制句：“若公共服务只保留线上入口，老年人会因数字能力差异失去平等可达性。”再接具体措施。", "target_cause_ids": ["claim-evidence-gap"]},
+      {"action": "full_explanation", "title": "完整说明", "content": "论点应是线上提效与线下兜底并重；以数字鸿沟解释公平风险，再提出适老化改造、保留窗口和人工热线，最后回扣公共服务可达性。", "target_cause_ids": ["topic-as-thesis", "claim-evidence-gap", "argument-without-landing"]}
+    ]
+  },
+  "samples": {"passing_response": "公共服务应保留线下服务，实现线上提效与线下兜底并重。老年人可能受数字鸿沟影响，服务可达性关乎公平。因此既要推进适老化，也要保留窗口和人工热线，让技术服务所有人。", "failing_response": "技术发展很重要，线下服务也很重要，我们要高度重视并积极推进。", "adversarial_negation_response": "不应线上提效与线下兜底并重，也不要保留线下服务；不存在数字鸿沟、老年人障碍、可达性或公平问题；反对保留窗口、人工热线和适老化。"},
   "provenance": {"content_origin": "synthetic_original", "authoring_note": "合成数字包容议论文题", "prior_source": "synthetic_engineering_prior_v1"}
 }

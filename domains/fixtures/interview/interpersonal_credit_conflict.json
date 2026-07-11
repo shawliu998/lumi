@@ -33,9 +33,60 @@
       {"cause_id": "oral-structure-weak", "label": "沟通、修复、升级条件次序不清", "synthetic_prior": 0.12, "evidence_refs": ["structure_missing"], "is_ground_truth": false}
     ]
   },
-  "probe": {"prompt": "如果同事称是无意遗漏，你如何用一句事实陈述开启私下沟通？", "targets": ["conflict-immediate-escalation", "harmony-over-rights"]},
-  "teach": {"prompt": "练习‘稳情绪—核事实—私下沟通—共同修复—条件升级’路径。", "strategy": "graded-conflict-response"},
-  "independent_verify": {"prompt": "同事未按约定提供数据导致你延期，请给出事实沟通、补救协作和条件升级方案。", "response_mode": "spoken_text", "pass_condition": {"required_dimensions": ["facts", "direct_communication", "repair", "conditional_escalation"], "minimum_dimensions": 3}},
-  "samples": {"passing_response": "首先保持冷静并核对工作记录。其次私下沟通，了解原因并客观说明贡献。若是疏漏可共同补充说明，并明确今后分工；若反复发生且影响工作，必要时据实汇报。", "failing_response": "我会立刻在会上指出他的问题，并向领导投诉。"},
+  "probe": {
+    "prompt": "用三句话说明：怎样以事实开启私下沟通、怎样共同补救、什么条件下才升级，并标出先后顺序。",
+    "targets": ["conflict-immediate-escalation", "harmony-over-rights", "relationship-without-work-goal", "oral-structure-weak"],
+    "assessment": {
+      "schema_version": "hermes.probe-assessment.v1", "evaluator": "authored_terms_v1",
+      "rules": [
+        {"cause_id": "conflict-immediate-escalation", "support_if": {"all_terms": ["当场公开指责", "立即向领导投诉"]}, "refute_if": {"all_terms": ["先核对事实", "私下直接沟通"]}},
+        {"cause_id": "harmony-over-rights", "support_if": {"all_terms": ["为了和谐不再提贡献", "放弃事实澄清"]}, "refute_if": {"all_terms": ["维护协作关系", "同时说明贡献边界"]}},
+        {"cause_id": "relationship-without-work-goal", "support_if": {"all_terms": ["只表达个人委屈", "不安排后续补救"]}, "refute_if": {"all_terms": ["共同补充说明", "明确今后分工"]}},
+        {"cause_id": "oral-structure-weak", "support_if": {"all_terms": ["沟通升级没有顺序", "想到哪说到哪"]}, "refute_if": {"all_terms": ["先沟通再共同修复", "反复发生才升级"]}}
+      ],
+      "cause_samples": [
+        {"cause_id": "conflict-immediate-escalation", "supporting_response": "我会当场公开指责，并立即向领导投诉。", "refuting_response": "我会先核对事实，再私下直接沟通。", "ambiguous_response": "我会找同事谈谈。"},
+        {"cause_id": "harmony-over-rights", "supporting_response": "为了和谐不再提贡献，放弃事实澄清。", "refuting_response": "维护协作关系，同时说明贡献边界。", "ambiguous_response": "尽量别伤和气。"},
+        {"cause_id": "relationship-without-work-goal", "supporting_response": "只表达个人委屈，不安排后续补救。", "refuting_response": "共同补充说明，明确今后分工。", "ambiguous_response": "先处理彼此情绪。"},
+        {"cause_id": "oral-structure-weak", "supporting_response": "沟通升级没有顺序，想到哪说到哪。", "refuting_response": "先沟通再共同修复，反复发生才升级。", "ambiguous_response": "我会按步骤处理。"}
+      ]
+    }
+  },
+  "teach": {
+    "prompt": "练习‘稳情绪—核事实—私下沟通—共同修复—条件升级’路径。", "strategy": "graded-conflict-response",
+    "variants": [
+      {"cause_id": "conflict-immediate-escalation", "prompt": "把事实核对和私下沟通放在升级前，练习非指责式开场。", "strategy": "deescalation-sequence"},
+      {"cause_id": "harmony-over-rights", "prompt": "用事实、影响、请求三句式兼顾协作关系与贡献边界。", "strategy": "assertive-fact-request"},
+      {"cause_id": "relationship-without-work-goal", "prompt": "在情绪沟通后补上共同更正、分工确认和交付安排。", "strategy": "work-goal-repair"},
+      {"cause_id": "oral-structure-weak", "prompt": "用核实、沟通、修复、条件升级四个口头阶段重组回答。", "strategy": "conflict-response-signposting"}
+    ]
+  },
+  "independent_verify": {
+    "prompt": "同事未按约定提供数据导致你延期，请给出事实沟通、补救协作和条件升级方案。",
+    "response_mode": "spoken_text",
+    "pass_condition": {
+      "scorer": "authored_dimensions_v1",
+      "required_dimensions": [
+        {"dimension_id": "facts", "aliases": ["核对分工", "核对事实", "工作记录", "约定未提供"]},
+        {"dimension_id": "direct_communication", "aliases": ["私下沟通", "直接沟通", "客观说明"]},
+        {"dimension_id": "repair", "aliases": ["共同补救", "补充数据", "调整进度", "明确分工"]},
+        {"dimension_id": "conditional_escalation", "aliases": ["反复发生", "仍不配合", "影响任务", "据实汇报"]}
+      ],
+      "minimum_dimensions": 4
+    },
+    "samples": {"passing_response": "我会先核对工作记录，再与同事私下沟通、客观说明延期影响，共同补充数据并调整进度；若仍不配合并持续影响任务，再据实汇报。", "failing_response": "我会立即向领导投诉，让同事承担责任。", "adversarial_negation_response": "不应核对事实或私下沟通，也不要共同补救、补充数据、调整进度、明确分工；反对在影响任务时据实汇报。"}
+  },
+  "assistance_ladder": {
+    "schema_version": "hermes.assistance-content.v1", "content_version": "conflict-response-help.v1",
+    "steps": [
+      {"action": "retry", "title": "再试一次", "content": "先分开事实、感受和工作影响，再安排私下沟通、共同补救以及什么条件下才升级。", "target_cause_ids": ["conflict-immediate-escalation", "harmony-over-rights", "relationship-without-work-goal", "oral-structure-weak"]},
+      {"action": "locate_evidence", "title": "定位事实", "content": "能确认的是汇报中的贡献归属与既有分工记录不一致，尚不能确认同事的主观动机；开场应先陈述可核对事实。", "target_cause_ids": ["conflict-immediate-escalation"]},
+      {"action": "rule_hint", "title": "沟通路径", "content": "按“稳情绪—核事实—私下沟通—共同修复—条件升级”处理，既维护协作也不放弃工作权益。", "target_cause_ids": ["conflict-immediate-escalation", "harmony-over-rights", "relationship-without-work-goal"]},
+      {"action": "analogous_example", "title": "同类例子", "content": "项目材料漏列贡献时，可先私下核对版本并补充说明；只有反复发生且影响工作时才据实向负责人报告。", "target_cause_ids": ["conflict-immediate-escalation", "harmony-over-rights"]},
+      {"action": "worked_step", "title": "演示开场", "content": "可以说：“刚才汇报中的贡献归属与我们原先的分工记录不一致，我们一起核对，并商量怎样补充说明，可以吗？”", "target_cause_ids": ["conflict-immediate-escalation", "oral-structure-weak"]},
+      {"action": "full_explanation", "title": "完整说明", "content": "先冷静核对记录，私下客观说明事实和影响；若是疏漏就共同补充并明确分工，若反复发生且影响任务，再保留证据按程序汇报。", "target_cause_ids": ["conflict-immediate-escalation", "harmony-over-rights", "relationship-without-work-goal", "oral-structure-weak"]}
+    ]
+  },
+  "samples": {"passing_response": "首先保持冷静并核对工作记录。其次私下沟通，了解原因并客观说明贡献。若是疏漏可共同补充说明，并明确今后分工；若反复发生且影响工作，必要时据实汇报。", "failing_response": "我会立刻在会上指出他的问题，并向领导投诉。", "adversarial_negation_response": "不应保持冷静、核对事实或工作记录；不要私下沟通、了解原因、说明贡献；反对共同补充、明确分工、必要时汇报或避免影响工作。"},
   "provenance": {"content_origin": "synthetic_original", "authoring_note": "合成协作冲突面试题", "prior_source": "synthetic_engineering_prior_v1"}
 }

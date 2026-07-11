@@ -32,9 +32,56 @@
       {"cause_id": "oral-structure-weak", "label": "观点、分析、对策层次没有口头标记", "synthetic_prior": 0.25, "evidence_refs": ["structure_missing"], "is_ground_truth": false}
     ]
   },
-  "probe": {"prompt": "分别列出AI最适合和最不适合处理的一类事项，并说明转人工条件。", "targets": ["binary-technology-stance", "boundary-not-operationalized"]},
-  "teach": {"prompt": "按‘表态—价值—边界—机制’四段，用首先、其次、最后组织90秒回答。", "strategy": "oral-four-part-frame"},
-  "independent_verify": {"prompt": "对于‘线上政务应彻底取代线下大厅’发表90秒观点，须包含价值、边界和协同方案。", "response_mode": "spoken_text", "pass_condition": {"required_dimensions": ["benefit", "risk", "hybrid-solution"], "minimum_dimensions": 3}},
-  "samples": {"passing_response": "首先，AI客服能全天候分流咨询、提高效率。其次，老年人和复杂事项仍可能遇到数字鸿沟或误判。最后，应保留人工并设置一键转人工，形成人机协同。", "failing_response": "AI代表未来，应该全面使用，这样办事就方便了。"},
+  "probe": {
+    "prompt": "按‘适合事项—不适合事项—转人工条件’三个层次作答，并各举一例。",
+    "targets": ["binary-technology-stance", "boundary-not-operationalized", "oral-structure-weak"],
+    "assessment": {
+      "schema_version": "hermes.probe-assessment.v1", "evaluator": "authored_terms_v1",
+      "rules": [
+        {"cause_id": "binary-technology-stance", "support_if": {"all_terms": ["AI适合所有事项", "人工窗口都应取消"]}, "refute_if": {"all_terms": ["标准咨询适合AI", "复杂事项保留人工"]}},
+        {"cause_id": "boundary-not-operationalized", "support_if": {"all_terms": ["遇到异常继续由AI", "不需要转人工条件"]}, "refute_if": {"all_terms": ["连续识别失败转人工", "用户可主动要求人工"]}},
+        {"cause_id": "oral-structure-weak", "support_if": {"all_terms": ["想到什么说什么", "不需要层次标记"]}, "refute_if": {"all_terms": ["先表态再分析边界", "最后提出协同机制"]}}
+      ],
+      "cause_samples": [
+        {"cause_id": "binary-technology-stance", "supporting_response": "AI适合所有事项，人工窗口都应取消。", "refuting_response": "标准咨询适合AI，复杂事项保留人工。", "ambiguous_response": "AI有优势也有不足。"},
+        {"cause_id": "boundary-not-operationalized", "supporting_response": "遇到异常继续由AI，不需要转人工条件。", "refuting_response": "连续识别失败转人工，用户可主动要求人工。", "ambiguous_response": "必要时可以人工处理。"},
+        {"cause_id": "oral-structure-weak", "supporting_response": "想到什么说什么，不需要层次标记。", "refuting_response": "先表态再分析边界，最后提出协同机制。", "ambiguous_response": "我会有条理地回答。"}
+      ]
+    }
+  },
+  "teach": {
+    "prompt": "按‘表态—价值—边界—机制’四段，用首先、其次、最后组织90秒回答。", "strategy": "oral-four-part-frame",
+    "variants": [
+      {"cause_id": "binary-technology-stance", "prompt": "把事项分成标准咨询与复杂裁量两类，分别说明技术与人工角色。", "strategy": "scenario-boundary-matrix"},
+      {"cause_id": "boundary-not-operationalized", "prompt": "把政策例外、连续识别失败和用户主动要求写成三条转人工触发器。", "strategy": "handoff-trigger-design"},
+      {"cause_id": "oral-structure-weak", "prompt": "用表态、价值、边界、机制四个口头路标完成90秒表达。", "strategy": "oral-signposting"}
+    ]
+  },
+  "independent_verify": {
+    "prompt": "对于‘线上政务应彻底取代线下大厅’发表90秒观点，须包含价值、边界和协同方案。",
+    "response_mode": "spoken_text",
+    "pass_condition": {
+      "scorer": "authored_dimensions_v1",
+      "required_dimensions": [
+        {"dimension_id": "benefit", "aliases": ["提高效率", "全天候", "便捷", "分流"]},
+        {"dimension_id": "risk", "aliases": ["复杂事项", "老年人", "数字鸿沟", "误判", "异常申诉"]},
+        {"dimension_id": "hybrid_solution", "aliases": ["保留线下", "保留人工", "人机协同", "转人工"]}
+      ],
+      "minimum_dimensions": 3
+    },
+    "samples": {"passing_response": "首先，线上政务能提高效率；其次，老年人和复杂事项仍可能遇到数字鸿沟；最后，应保留线下大厅并形成人机协同。", "failing_response": "线上办理更便捷，所以应彻底关闭线下大厅。", "adversarial_negation_response": "线上办理并不提高效率，也不存在复杂事项风险；我反对保留线下、保留人工、人机协同或转人工，以上都不应做。"}
+  },
+  "assistance_ladder": {
+    "schema_version": "hermes.assistance-content.v1", "content_version": "technology-governance-help.v1",
+    "steps": [
+      {"action": "retry", "title": "再试一次", "content": "分别写出 AI 适合处理什么、不适合处理什么、何时必须转人工，再组织成观点。", "target_cause_ids": ["binary-technology-stance", "boundary-not-operationalized", "oral-structure-weak"]},
+      {"action": "locate_evidence", "title": "定位边界", "content": "题干的绝对表述是“全面使用”和“不再需要”。先按标准咨询、复杂裁量、异常申诉和弱势群体服务四类检查能否由同一种渠道覆盖。", "target_cause_ids": ["binary-technology-stance", "boundary-not-operationalized"]},
+      {"action": "rule_hint", "title": "表达框架", "content": "按“表态—价值—边界—机制”展开：既说效率价值，也给出可执行的转人工和责任机制。", "target_cause_ids": ["binary-technology-stance", "boundary-not-operationalized", "oral-structure-weak"]},
+      {"action": "analogous_example", "title": "同类例子", "content": "智能客服可回答办理材料，但遇到政策例外、连续识别失败或用户主动要求时，应一键转人工并保留上下文。", "target_cause_ids": ["boundary-not-operationalized"]},
+      {"action": "worked_step", "title": "演示一段", "content": "先答：“我支持用 AI 分流标准咨询，但不能把所有事项交给算法，复杂裁量和困难群体服务必须保留人工。”", "target_cause_ids": ["binary-technology-stance", "oral-structure-weak"]},
+      {"action": "full_explanation", "title": "完整说明", "content": "AI 能全天候分流、提高效率，但存在误判和数字鸿沟。应限定适用事项；连续识别失败、遇到政策例外或用户主动要求时一键转人工，同时保留线下渠道并明确复核责任。", "target_cause_ids": ["binary-technology-stance", "boundary-not-operationalized", "oral-structure-weak"]}
+    ]
+  },
+  "samples": {"passing_response": "首先，AI客服能全天候分流咨询、提高效率。其次，老年人和复杂事项仍可能遇到数字鸿沟或误判。最后，应保留人工并设置一键转人工，形成人机协同。", "failing_response": "AI代表未来，应该全面使用，这样办事就方便了。", "adversarial_negation_response": "AI没有提高效率，也不能全天候分流；不存在老年人、复杂事项、误判或数字鸿沟风险；反对保留人工、人机协同和转人工。"},
   "provenance": {"content_origin": "synthetic_original", "authoring_note": "合成技术治理面试题", "prior_source": "synthetic_engineering_prior_v1"}
 }

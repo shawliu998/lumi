@@ -1,8 +1,15 @@
+import {
+  ASSISTANCE_ACTIONS,
+  buildAssistanceCommand,
+  isSupportedDossierClaimStatus,
+  isSupportedDossierContinuation,
+} from "./learningSupportAdapter.js";
+
 const DEFAULT_BASE_URL = "http://127.0.0.1:8765";
 const REQUEST_TIMEOUT_MS = 5000;
 
 export const HERMES_API_BASE = normalizeBaseUrl(
-  import.meta.env.VITE_HERMES_API_BASE || DEFAULT_BASE_URL,
+  import.meta.env?.VITE_HERMES_API_BASE || DEFAULT_BASE_URL,
 );
 
 export class HermesApiError extends Error {
@@ -21,6 +28,7 @@ export async function fetchHealth() {
   if (
     health?.status !== "ok"
     || health?.service !== "hermes-local-sidecar"
+    || health?.version !== "0.2.0"
     || health?.local_only !== true
   ) {
     throw new HermesApiError("本机服务返回了不受支持的健康状态。", {
@@ -66,7 +74,10 @@ export async function submitAttempt({ fixtureId, response, confidence, responseT
     || !Number.isInteger(attempt?.state_version)
     || attempt?.diagnosis?.semantics !== "ranked_unconfirmed_hypotheses"
     || !attempt?.probe?.prompt
+    || !attempt?.probe?.prompt_instance_id
     || !attempt?.links?.respond
+    || !attempt?.links?.assist
+    || !attempt?.links?.misconception
   ) {
     throw new HermesApiError("本次首答未返回可继续的探查状态。", {
       kind: "contract",
@@ -78,10 +89,14 @@ export async function submitAttempt({ fixtureId, response, confidence, responseT
 
 export async function continueAttempt({ session, phase, response, confidence, responseTimeSeconds } = {}) {
   const expectedState = phase === "probe" ? "awaiting_probe" : "awaiting_verification";
+  const promptInstanceId = phase === "probe"
+    ? session?.probe?.prompt_instance_id
+    : session?.verification?.prompt_instance_id;
   if (
     !session?.run_id
     || session?.state !== expectedState
     || !Number.isInteger(session?.state_version)
+    || !promptInstanceId
     || !String(response).trim()
     || !Number.isFinite(confidence)
   ) {
@@ -96,6 +111,7 @@ export async function continueAttempt({ session, phase, response, confidence, re
       phase,
       expected_version: session.state_version,
       expected_state: expectedState,
+      prompt_instance_id: promptInstanceId,
       response: String(response).trim(),
       confidence,
       response_time_seconds: Math.max(0, Math.min(Number(responseTimeSeconds) || 0, 7200)),
@@ -116,7 +132,7 @@ export async function continueAttempt({ session, phase, response, confidence, re
     });
   }
   if (phase === "probe") {
-    if (!continuation?.teaching?.prompt || !continuation?.verification?.prompt) {
+    if (!continuation?.teaching?.prompt || !continuation?.verification?.prompt || !continuation?.verification?.prompt_instance_id) {
       throw new HermesApiError("探查结果缺少教学或独立验证题。", {
         kind: "contract",
         code: "incomplete_probe_result",
@@ -135,6 +151,105 @@ export async function continueAttempt({ session, phase, response, confidence, re
     requestLink(continuation.links?.replay),
   ]);
   return { continuation, trace, replay };
+}
+
+export async function requestNextAssistance({ session, elapsedTimeSeconds, commandId } = {}) {
+  const promptInstanceId = session?.probe?.prompt_instance_id;
+  if (
+    !session?.run_id
+    || session?.state !== "awaiting_probe"
+    || !Number.isInteger(session?.state_version)
+    || !promptInstanceId
+    || !session?.links?.assist
+  ) {
+    throw new HermesApiError("当前探查题没有可写入的帮助状态。", {
+      kind: "client",
+      code: "assistance_unavailable",
+    });
+  }
+  const result = await requestLink(session.links?.assist, {
+    method: "POST",
+    body: buildAssistanceCommand({
+      session,
+      elapsedTimeSeconds,
+      commandId: commandId || createCommandId(),
+    }),
+  });
+  const assistance = result?.assistance;
+  const expectedAssistance = ASSISTANCE_ACTIONS[Number(assistance?.ordinal) - 1];
+  if (
+    result?.schema_version !== "hermes.assistance-result.v1"
+    || result?.run_id !== session.run_id
+    || result?.state !== "awaiting_probe"
+    || !Number.isInteger(result?.state_version)
+    || result.state_version <= session.state_version
+    || result?.prompt_instance_id !== promptInstanceId
+    || !Number.isInteger(assistance?.ordinal)
+    || assistance.ordinal < 1
+    || assistance.ordinal > 6
+    || !assistance?.title
+    || !assistance?.content
+    || !assistance?.policy_version
+    || assistance?.action !== expectedAssistance?.action
+    || !Number.isFinite(Number(assistance?.diagnostic_evidence_weight))
+    || assistance?.calibration_status !== "engineering_policy_unvalidated"
+    || assistance?.independence_effect !== "discounts_probe_evidence"
+    || result?.remaining_levels !== 6 - assistance.ordinal
+    || result?.trace_verified !== true
+  ) {
+    throw new HermesApiError("本机服务返回了不一致的帮助事件。", {
+      kind: "contract",
+      code: "invalid_assistance_contract",
+    });
+  }
+  return { ...result, assistance };
+}
+
+export async function fetchMisconceptionDossier(runId) {
+  if (!runId) {
+    throw new HermesApiError("缺少错因档案运行编号。", {
+      kind: "client",
+      code: "invalid_dossier_input",
+    });
+  }
+  const dossier = await requestLink(`/v1/misconceptions/${encodeURIComponent(runId)}`);
+  if (!isValidMisconceptionDossierContract(dossier, runId)) {
+    throw new HermesApiError("本机服务返回了不一致的错因档案。", {
+      kind: "contract",
+      code: "invalid_dossier_contract",
+    });
+  }
+  return dossier;
+}
+
+export function isValidMisconceptionDossierContract(dossier, runId) {
+  return !(
+    dossier?.schema_version !== "hermes.misconception-dossier.v1"
+    || dossier?.run_id !== runId
+    || !dossier?.observations
+    || !Array.isArray(dossier?.observations?.items)
+    || !Array.isArray(dossier?.hypotheses)
+    || !dossier?.learning_status
+    || dossier?.hypothesis_semantics !== "ranked_candidates_never_causal_ground_truth"
+    || dossier?.cohort_evidence?.status !== "unavailable"
+    || dossier?.cohort_evidence?.sample_size !== 0
+    || dossier?.provenance?.trace_verified !== true
+    || !isSupportedDossierContinuation(dossier)
+    || dossier.hypotheses.some((item) => {
+      const supporting = item?.supporting_evidence;
+      const refuting = item?.refuting_evidence;
+      const rankingFactors = item?.ranking_factors;
+      const prior = item?.prior;
+      return !isSupportedDossierClaimStatus(item?.claim_status)
+        || !Array.isArray(supporting)
+        || !Array.isArray(refuting)
+        || !Array.isArray(rankingFactors)
+        || rankingFactors.includes("cohort_prior")
+        || prior?.kind !== "engineering_prior"
+        || prior?.sample_size !== 0
+        || prior?.population_calibrated !== false;
+    })
+  );
 }
 
 function normalizeBaseUrl(value) {
@@ -220,4 +335,8 @@ function createRunId() {
 function createRequestId() {
   if (globalThis.crypto?.randomUUID) return `client-${globalThis.crypto.randomUUID()}`;
   return `client-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function createCommandId() {
+  return `assist-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }

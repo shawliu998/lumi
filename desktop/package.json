@@ -7,11 +7,14 @@
     "check:config": "node scripts/check-config.mjs",
     "build:sidecar": "sh scripts/build-sidecar.sh",
     "check:sidecar": "npm run check:config && node scripts/check-sidecar.mjs",
+    "check:bundled-sidecar": "node scripts/check-sidecar.mjs --bundle",
+    "sign:debug-app": "node scripts/sign-debug-app.mjs",
+    "check:signature": "node scripts/sign-debug-app.mjs --verify-only",
     "check:managed-app": "node scripts/check-managed-app.mjs",
     "dev": "sh scripts/tauri.sh dev",
     "dev:frontend": "npm --prefix ../client run dev -- --host 127.0.0.1 --port 1420 --strictPort",
     "build": "npm run build:sidecar && npm run check:sidecar && sh scripts/tauri.sh build",
-    "build:debug-app": "npm run build:sidecar && npm run check:sidecar && sh scripts/tauri.sh build --debug --bundles app"
+    "build:debug-app": "npm run build:sidecar && npm run check:sidecar && sh scripts/tauri.sh build --debug --bundles app && npm run sign:debug-app && npm run check:bundled-sidecar"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.11.4"

@@ -55,13 +55,25 @@ cd $HOME/Documents/peikao/client && npm run build
 cd $HOME/Documents/peikao/desktop && npm run build
 ```
 
-For a quick locally unsigned macOS `.app` verification build:
+For a local debug macOS `.app` verification build:
 
 ```sh
 npm run build:debug-app
 ```
 
-Artifacts are emitted under `src-tauri/target/<profile>/bundle/`.
+Artifacts are emitted under `src-tauri/target/<profile>/bundle/`. The debug-app
+command signs every nested Mach-O and the final bundle with an ad-hoc identity,
+then requires strict deep verification to pass. This is a local integrity gate,
+not Developer ID signing or notarization. Recheck an existing debug artifact with:
+
+```sh
+npm run check:signature
+npm run check:bundled-sidecar
+```
+
+`check:bundled-sidecar` starts the exact bundle-resident launcher/runtime and
+rechecks its version, 42-scenario capability, termination, and PII/secret
+identifier rejection.
 
 After a debug app build, verify that Tauri itself starts the packaged sidecar,
 waits for its health handshake, and terminates it when Lumi quits:
@@ -77,6 +89,9 @@ port 8765 and do not include either hook.
 ## Security posture
 
 - Product name: `Lumi`; bundle identifier: `com.lumi.learning`.
+- Debug bundles are reproducibly ad-hoc signed and strict/deep verified after
+  the sidecar and UI resources are final. They are not notarized distribution
+  artifacts.
 - Tauri uses a single `main` window and the base `core:default` capability only.
   The frontend has no Shell capability. Rust uses the shell plugin solely to
   launch the fixed, bundled `hermes-sidecar` executable and kill that child on

@@ -20,7 +20,7 @@ class HermesKTTool:
     """Stateless, JSON-friendly adapter suitable for registration as an Agent tool."""
 
     name = "hermes_explainable_learning_model"
-    version = "0.1.0"
+    version = "0.2.0"
 
     def route_diagnosis(self, payload: Mapping[str, Any]) -> dict[str, Any]:
         context_payload = dict(payload)
@@ -69,5 +69,6 @@ class HermesKTTool:
             params,
             item_difficulty=payload.get("item_difficulty", 0.0),
             minimum_gain=payload.get("minimum_gain", 0.02),
+            evidence_weight=payload.get("evidence_weight", 1.0),
         )
         return {"post_state": post_state.to_dict(), "verification": asdict(result)}

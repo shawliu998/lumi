@@ -19,7 +19,7 @@
       "properties": {
         "connectivity": {"enum": ["local", "offline"]},
         "cloud_calls_expected": {"const": 0},
-        "provider_invoked": {"type": "boolean"},
+        "provider_invoked": {"const": false},
         "fallback": {"enum": ["not_needed", "deterministic_local"]},
         "scorer": {"const": "deterministic_local"}
       }

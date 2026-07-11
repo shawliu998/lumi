@@ -81,7 +81,8 @@ class AttemptEvidence:
 class CauseHypothesis:
     cause_id: str
     probability: float
-    cohort_component: float
+    prior_component: float
+    prior_kind: str
     learner_component: float
     evidence_likelihood: float
     evidence: tuple[str, ...]
@@ -93,7 +94,7 @@ class DiagnosisResult:
     hypotheses: tuple[CauseHypothesis, ...]
     uncertainty: float
     provenance: Mapping[str, Any]
-    model_version: str = "hierarchical-cause-baseline-v1"
+    model_version: str = "hierarchical-cause-baseline-v3"
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)

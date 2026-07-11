@@ -33,9 +33,61 @@
       {"cause_id": "oral-structure-weak", "label": "紧急、并行、善后动作顺序不清", "synthetic_prior": 0.12, "evidence_refs": ["structure_missing"], "is_ground_truth": false}
     ]
   },
-  "probe": {"prompt": "停电后的前两分钟，你先做哪两件事？为什么不能先等维修结果？", "targets": ["repair-before-safety", "single-thread-response"]},
-  "teach": {"prompt": "按‘保安全—控现场—查原因—保连续—持续告知—善后复盘’构造并行处置。", "strategy": "incident-command-sequence"},
-  "independent_verify": {"prompt": "办事大厅网络中断且排队增长，请给出安全、恢复、替代办理、沟通和善后安排。", "response_mode": "spoken_text", "pass_condition": {"required_dimensions": ["safety", "restore", "continuity", "communication", "followup"], "minimum_dimensions": 4}},
-  "samples": {"passing_response": "首先开启应急照明、疏导人流，防止拥挤并保障安全。其次联系电力并启动备用电源，同时设置人工受理和分流办理。最后持续说明情况和预计时间，对未办群众登记回访，事后复盘。", "failing_response": "我会马上联系维修人员，等恢复供电后继续办理。"},
+  "probe": {
+    "prompt": "按时间顺序说明停电后前两分钟的安全与并行动作，并补充恢复后的告知、登记和复盘。",
+    "targets": ["repair-before-safety", "single-thread-response", "event-only-no-closure", "oral-structure-weak"],
+    "assessment": {
+      "schema_version": "hermes.probe-assessment.v1", "evaluator": "authored_terms_v1",
+      "rules": [
+        {"cause_id": "repair-before-safety", "support_if": {"all_terms": ["先等待维修结果", "之后再疏导群众"]}, "refute_if": {"all_terms": ["先保障现场安全", "同步联系维修"]}},
+        {"cause_id": "single-thread-response", "support_if": {"all_terms": ["只联系维修人员", "其他工作暂停"]}, "refute_if": {"all_terms": ["维修和人工分流并行", "持续告知进展"]}},
+        {"cause_id": "event-only-no-closure", "support_if": {"all_terms": ["恢复供电就结束", "无需登记回访"]}, "refute_if": {"all_terms": ["登记未办群众", "事后回访复盘"]}},
+        {"cause_id": "oral-structure-weak", "support_if": {"all_terms": ["动作没有先后并行", "想到哪说到哪"]}, "refute_if": {"all_terms": ["先安全再并行恢复", "最后善后复盘"]}}
+      ],
+      "cause_samples": [
+        {"cause_id": "repair-before-safety", "supporting_response": "先等待维修结果，之后再疏导群众。", "refuting_response": "先保障现场安全，同时同步联系维修。", "ambiguous_response": "先看看停电原因。"},
+        {"cause_id": "single-thread-response", "supporting_response": "只联系维修人员，其他工作暂停。", "refuting_response": "维修和人工分流并行，并持续告知进展。", "ambiguous_response": "安排工作人员处理。"},
+        {"cause_id": "event-only-no-closure", "supporting_response": "恢复供电就结束，无需登记回访。", "refuting_response": "登记未办群众，事后回访复盘。", "ambiguous_response": "恢复后继续办理。"},
+        {"cause_id": "oral-structure-weak", "supporting_response": "动作没有先后并行，想到哪说到哪。", "refuting_response": "先安全再并行恢复，最后善后复盘。", "ambiguous_response": "我会分步骤处理。"}
+      ]
+    }
+  },
+  "teach": {
+    "prompt": "按‘保安全—控现场—查原因—保连续—持续告知—善后复盘’构造并行处置。", "strategy": "incident-command-sequence",
+    "variants": [
+      {"cause_id": "repair-before-safety", "prompt": "用前两分钟时间轴先放入照明、人流与安全动作，再安排维修。", "strategy": "safety-first-timeline"},
+      {"cause_id": "single-thread-response", "prompt": "把现场处置、故障恢复、替代办理分成三条并行工作线。", "strategy": "parallel-incident-lanes"},
+      {"cause_id": "event-only-no-closure", "prompt": "为未办群众补上登记、回访、复盘三个关闭动作。", "strategy": "incident-closure-loop"},
+      {"cause_id": "oral-structure-weak", "prompt": "用先、同步、随后、最后四个时间路标重组回答。", "strategy": "temporal-signposting"}
+    ]
+  },
+  "independent_verify": {
+    "prompt": "办事大厅网络中断且排队增长，请给出安全、恢复、替代办理、沟通和善后安排。",
+    "response_mode": "spoken_text",
+    "pass_condition": {
+      "scorer": "authored_dimensions_v1",
+      "required_dimensions": [
+        {"dimension_id": "safety", "aliases": ["保障安全", "疏导人流", "维护秩序", "防止拥挤"]},
+        {"dimension_id": "restore", "aliases": ["排查网络", "联系技术", "恢复网络", "维修"]},
+        {"dimension_id": "continuity", "aliases": ["人工登记", "替代办理", "分流办理", "备用渠道"]},
+        {"dimension_id": "communication", "aliases": ["说明情况", "告知进展", "预计时间"]},
+        {"dimension_id": "followup", "aliases": ["登记回访", "复盘", "善后"]}
+      ],
+      "minimum_dimensions": 4
+    },
+    "samples": {"passing_response": "首先疏导人流、保障安全；同步联系技术排查网络并启用人工登记；持续说明情况，事后登记回访并复盘。", "failing_response": "我会联系技术人员，等待网络恢复。", "adversarial_negation_response": "不应保障安全或疏导人流，也不要联系技术恢复网络、人工登记、说明情况、登记回访或复盘；以上都不应做。"}
+  },
+  "assistance_ladder": {
+    "schema_version": "hermes.assistance-content.v1", "content_version": "incident-response-help.v1",
+    "steps": [
+      {"action": "retry", "title": "再试一次", "content": "按时间顺序先说前两分钟，再说恢复期间和事后；检查是否同时安排安全、业务和信息沟通。", "target_cause_ids": ["repair-before-safety", "single-thread-response", "event-only-no-closure", "oral-structure-weak"]},
+      {"action": "locate_evidence", "title": "定位首要任务", "content": "停电时大厅人群和秩序风险已经发生，维修尚需时间，因此不能把联系维修当作唯一的第一步。", "target_cause_ids": ["repair-before-safety", "single-thread-response"]},
+      {"action": "rule_hint", "title": "处置框架", "content": "按“保安全—控现场—查原因—保连续—持续告知—善后复盘”并行展开，不要等一项结束才启动下一项。", "target_cause_ids": ["single-thread-response", "event-only-no-closure", "oral-structure-weak"]},
+      {"action": "analogous_example", "title": "同类例子", "content": "网络故障时，一组人排查恢复，另一组启用人工登记并分流，同时向群众说明预计时间。", "target_cause_ids": ["single-thread-response"]},
+      {"action": "worked_step", "title": "演示开头", "content": "可先答：“我会立即开启应急照明、疏导人流保障安全，同时联系电力部门并启动备用方案。”", "target_cause_ids": ["repair-before-safety", "oral-structure-weak"]},
+      {"action": "full_explanation", "title": "完整说明", "content": "先照明疏导、控住现场；同步联系维修和启用备用电源，设置人工受理保障连续服务；持续告知进展，登记未办群众并回访，最后复盘。", "target_cause_ids": ["repair-before-safety", "single-thread-response", "event-only-no-closure", "oral-structure-weak"]}
+    ]
+  },
+  "samples": {"passing_response": "首先开启应急照明、疏导人流，防止拥挤并保障安全。其次联系电力并启动备用电源，同时设置人工受理和分流办理。最后持续说明情况和预计时间，对未办群众登记回访，事后复盘。", "failing_response": "我会马上联系维修人员，等恢复供电后继续办理。", "adversarial_negation_response": "不应疏导人流、开启应急照明、防止拥挤或保障安全；不要联系电力、启动备用电源、人工受理或分流办理；反对说明情况、登记回访和复盘。"},
   "provenance": {"content_origin": "synthetic_original", "authoring_note": "合成大厅应急面试题", "prior_source": "synthetic_engineering_prior_v1"}
 }

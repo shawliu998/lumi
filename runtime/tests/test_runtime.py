@@ -9,7 +9,7 @@ from hermes_runtime.guardrails import BoundaryGuardrail
 from hermes_runtime.machine import AgentRuntime
 from hermes_runtime.models import DeterministicProvider, ModelRequest, ModelRouter, ModelTier
 from hermes_runtime.state import AgentState, Phase, RunStatus
-from hermes_runtime.store import EventStore
+from hermes_runtime.store import EventStore, TraceVersionConflict
 from hermes_runtime.synthetic import synthetic_registry
 from hermes_runtime.tools import ToolContext, ToolError, ToolRegistry, ToolSpec
 
@@ -95,6 +95,40 @@ class RuntimeTests(unittest.TestCase):
         self.assertNotIn("do-not-store", encoded)
         with self.assertRaises(sqlite3.IntegrityError):
             self.store._connection.execute("DELETE FROM trace_events")  # type: ignore[attr-defined]
+
+    def test_append_if_version_is_database_level_compare_and_swap(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "cas.sqlite3"
+            first = EventStore(path)
+            second = EventStore(path)
+            first.append("cas-run", "started", {"value": 1})
+            accepted = first.append_if_version("cas-run", 1, "accepted", {"value": 2})
+            self.assertEqual(accepted.seq, 2)
+            with self.assertRaises(TraceVersionConflict) as conflict:
+                second.append_if_version("cas-run", 1, "rejected", {"value": 3})
+            self.assertEqual(conflict.exception.actual_version, 2)
+            self.assertEqual([event.kind for event in second.events("cas-run")], ["started", "accepted"])
+            self.assertTrue(second.verify("cas-run"))
+            first.close()
+            second.close()
+
+    def test_content_snapshot_is_private_immutable_and_hash_addressed(self) -> None:
+        content_hash = self.store.put_content_snapshot(
+            "domain_fixture", {"fixture_id": "fixture-1", "value": 2}
+        )
+        loaded = self.store.load_content_snapshot(content_hash, kind="domain_fixture")
+        self.assertEqual(loaded["content"], {"fixture_id": "fixture-1", "value": 2})
+        self.assertEqual(
+            self.store.put_content_snapshot(
+                "domain_fixture", {"fixture_id": "fixture-1", "value": 2}
+            ),
+            content_hash,
+        )
+        self.assertEqual(self.store.events("fixture-1"), [])
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.store._connection.execute(  # type: ignore[attr-defined]
+                "DELETE FROM content_snapshots WHERE content_hash = ?", (content_hash,)
+            )
 
     def test_tool_schema_rejects_invalid_output(self) -> None:
         registry = ToolRegistry()

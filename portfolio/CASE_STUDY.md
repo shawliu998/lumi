@@ -18,14 +18,14 @@ initial POST alone still must not be described as a completed tutoring session.
 
 Owner: `<NAME>`
 Version/date: `<VERSION>`
-Reproducible release report: `run-20260711T051110Z` in `evals/reports/latest.json`
+Reproducible release report: current `run_id` in `evals/reports/latest.json`
 
 ## One-sentence thesis
 
 Lumi turns an answer into an evidence-linked cycle of uncertain diagnosis,
 targeted probing, cause-specific teaching, independent transfer verification,
-knowledge-state update, and scheduled review—while keeping learner data local by
-default.
+and an evidence-linked per-run knowledge-state update—while keeping the P0.1
+path local by default. Review scheduling is the next independent P0.2 slice.
 
 ## Problem and user
 
@@ -50,7 +50,7 @@ Document the closed loop using exact runtime artifacts:
 | Plan | selects probe/intervention from state | `<POLICY_DECISION>` |
 | Act | invokes domain/tool/model capability | `<TOOL_CALL>` |
 | Verify | checks correctness and independent transfer | `<VERIFIER_RESULT>` |
-| Learn | updates structured state and schedule | `<STATE_DIFF>` |
+| Learn | applies an evidence-linked per-run KT update after independent verification | `<STATE_DIFF>` |
 | Reflect | evaluates trajectory and policy result | `<EVAL_RESULT>` |
 
 State explicitly what remains deterministic, model-assisted, expert-authored,
@@ -78,7 +78,8 @@ Evidence: `<ARCHITECTURE_COMMIT_OR_ARTIFACT>`
 
 Explain the hierarchical posterior in plain language and math. Report:
 
-- expert/cohort prior source, cohort definition, sample size, interval/version;
+- engineering-prior source, or for future eligible cohort input the consent,
+  privacy-review, cohort definition, sample size, interval/version;
 - personal-history contribution;
 - answer/process likelihood features;
 - ranked alternatives and abstention rule;

@@ -24,11 +24,15 @@ def load_fixture_document(path: Path, *, fixture_root: Path | None = None) -> di
         return raw
     validate_overlay(raw)
     base_path = (path.parent / raw["extends"]).resolve()
+    if base_path.parent != path.parent.resolve():
+        raise ContractError("overlay base must be in the same domain directory")
     if root != base_path and root not in base_path.parents:
         raise ContractError("overlay base escapes fixture root")
     base = json.loads(base_path.read_text(encoding="utf-8"))
     if base.get("schema_version") != "hermes.domain-fixture.v1":
         raise ContractError("overlay must extend a full non-overlay fixture")
+    if raw["domain"] != base.get("domain") or raw["path"] != base.get("path"):
+        raise ContractError("overlay domain and path must match its base fixture")
     resolved = copy.deepcopy(base)
     for key in (
         "fixture_id", "domain", "path", "mode", "scenario_response",

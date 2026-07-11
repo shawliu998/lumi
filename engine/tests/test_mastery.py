@@ -57,7 +57,7 @@ class MasteryTests(unittest.TestCase):
         self.assertTrue(result.effective)
 
     def test_hinted_verification_is_inconclusive(self):
-        _, result = evaluate_intervention(
+        post, result = evaluate_intervention(
             "lesson-2",
             self.state,
             attempt("4", True, independent=False, hints=1),
@@ -65,6 +65,33 @@ class MasteryTests(unittest.TestCase):
         )
         self.assertFalse(result.independently_verified)
         self.assertIsNone(result.effective)
+        self.assertEqual(post, self.state)
+        self.assertEqual(result.mastery_gain, 0.0)
+        self.assertEqual(
+            result.provenance["commit_status"], "withheld_assisted_verification"
+        )
+
+    def test_non_independent_or_hinted_verification_never_mutates_mastery(self):
+        for evidence in (
+            attempt("non-independent", True, independent=False, hints=0),
+            attempt("hinted", True, independent=True, hints=1),
+        ):
+            with self.subTest(evidence=evidence.attempt_id):
+                post, result = evaluate_intervention(
+                    "lesson-assisted", self.state, evidence, self.params, evidence_weight=0.3
+                )
+                self.assertEqual(post, self.state)
+                self.assertFalse(result.independently_verified)
+                self.assertIsNone(result.effective)
+
+    def test_zero_weight_observation_leaves_authoritative_state_unchanged(self):
+        updated = update_skill_state(
+            self.state,
+            attempt("full-explanation", True),
+            self.params,
+            skill_weight=0,
+        )
+        self.assertEqual(updated, self.state)
 
     def test_tool_update_is_serializable(self):
         payload = {

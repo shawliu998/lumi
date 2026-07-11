@@ -36,6 +36,20 @@ FORBIDDEN_REPO = Path(
     os.environ.get("LUMI_SHENLUN_REPO", Path.home() / "Desktop" / "shenlun-agent-platform")
 )
 STATUSES = {"pass", "fail", "pending"}
+REPORT_PII_PATTERNS = (
+    (re.compile(r"(?i)\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b"), "[EMAIL]"),
+    (re.compile(r"(?<!\d)1[3-9]\d{9}(?!\d)"), "[PHONE]"),
+    (re.compile(r"(?<!\d)\d{17}[0-9Xx](?!\d)"), "[ID]"),
+)
+REPORT_SECRET_PATTERNS = (
+    re.compile(r"sk-[A-Za-z0-9_-]{20,}"),
+    re.compile(r"gh[pousr]_[A-Za-z0-9]{20,}"),
+    re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"),
+)
+LOCAL_ABSOLUTE_PATH_PATTERN = re.compile(
+    r"(?<![A-Za-z0-9:])/(?:Users|var|private|tmp|Volumes|Library|Applications|opt|usr)/[^\s\"'<>|]+",
+    re.I,
+)
 
 
 def utc_now() -> str:
@@ -67,10 +81,63 @@ def _json_type_matches(value: Any, expected: str) -> bool:
     }.get(expected, True)
 
 
-def validate_json(instance: Any, schema: Mapping[str, Any], path: str = "$") -> list[str]:
-    """Validate the JSON Schema subset used by this harness."""
+def _resolve_local_schema_ref(root_schema: Mapping[str, Any], reference: str) -> Mapping[str, Any]:
+    if reference == "#":
+        return root_schema
+    if not reference.startswith("#/"):
+        raise ValueError(f"only local JSON Schema references are supported: {reference!r}")
+    target: Any = root_schema
+    for raw_part in reference[2:].split("/"):
+        part = raw_part.replace("~1", "/").replace("~0", "~")
+        if not isinstance(target, Mapping) or part not in target:
+            raise ValueError(f"unresolved local JSON Schema reference: {reference!r}")
+        target = target[part]
+    if not isinstance(target, Mapping):
+        raise ValueError(f"local JSON Schema reference is not an object: {reference!r}")
+    return target
 
+
+def validate_json(
+    instance: Any,
+    schema: Mapping[str, Any],
+    path: str = "$",
+    *,
+    _root_schema: Mapping[str, Any] | None = None,
+) -> list[str]:
+    """Validate the dependency-free JSON Schema subset used by this harness.
+
+    The release contracts intentionally use only local references, ``allOf``,
+    primitive types, closed objects, bounded numbers/arrays, and string
+    constraints. Unsupported remote references fail closed instead of silently
+    accepting an instance.
+    """
+
+    root_schema = _root_schema or schema
     errors: list[str] = []
+    reference = schema.get("$ref")
+    if reference is not None:
+        if not isinstance(reference, str):
+            errors.append(f"{path}: $ref must be a string")
+        else:
+            try:
+                referenced = _resolve_local_schema_ref(root_schema, reference)
+            except ValueError as exc:
+                errors.append(f"{path}: {exc}")
+            else:
+                errors.extend(
+                    validate_json(instance, referenced, path, _root_schema=root_schema)
+                )
+    all_of = schema.get("allOf", [])
+    if not isinstance(all_of, list):
+        errors.append(f"{path}: allOf must be an array")
+    else:
+        for index, child_schema in enumerate(all_of):
+            if not isinstance(child_schema, Mapping):
+                errors.append(f"{path}: allOf[{index}] must be an object")
+                continue
+            errors.extend(
+                validate_json(instance, child_schema, path, _root_schema=root_schema)
+            )
     expected = schema.get("type")
     expected_types = [expected] if isinstance(expected, str) else expected
     if expected_types and not any(_json_type_matches(instance, item) for item in expected_types):
@@ -79,6 +146,11 @@ def validate_json(instance: Any, schema: Mapping[str, Any], path: str = "$") -> 
         errors.append(f"{path}: expected constant {schema['const']!r}")
     if "enum" in schema and instance not in schema["enum"]:
         errors.append(f"{path}: value {instance!r} is not in enum")
+    if isinstance(instance, (int, float)) and not isinstance(instance, bool):
+        if "minimum" in schema and instance < schema["minimum"]:
+            errors.append(f"{path}: number is below minimum {schema['minimum']!r}")
+        if "maximum" in schema and instance > schema["maximum"]:
+            errors.append(f"{path}: number is above maximum {schema['maximum']!r}")
     if isinstance(instance, str):
         if len(instance) < schema.get("minLength", 0):
             errors.append(f"{path}: string shorter than minLength")
@@ -87,10 +159,19 @@ def validate_json(instance: Any, schema: Mapping[str, Any], path: str = "$") -> 
     if isinstance(instance, list):
         if len(instance) < schema.get("minItems", 0):
             errors.append(f"{path}: array shorter than minItems")
+        if "maxItems" in schema and len(instance) > schema["maxItems"]:
+            errors.append(f"{path}: array longer than maxItems")
         item_schema = schema.get("items")
         if isinstance(item_schema, Mapping):
             for index, item in enumerate(instance):
-                errors.extend(validate_json(item, item_schema, f"{path}[{index}]"))
+                errors.extend(
+                    validate_json(
+                        item,
+                        item_schema,
+                        f"{path}[{index}]",
+                        _root_schema=root_schema,
+                    )
+                )
     if isinstance(instance, dict):
         required = schema.get("required", [])
         for key in required:
@@ -102,7 +183,14 @@ def validate_json(instance: Any, schema: Mapping[str, Any], path: str = "$") -> 
                 errors.append(f"{path}: unexpected property {key!r}")
         for key, child_schema in properties.items():
             if key in instance:
-                errors.extend(validate_json(instance[key], child_schema, f"{path}.{key}"))
+                errors.extend(
+                    validate_json(
+                        instance[key],
+                        child_schema,
+                        f"{path}.{key}",
+                        _root_schema=root_schema,
+                    )
+                )
     return errors
 
 
@@ -129,6 +217,7 @@ class Context:
     trace: dict[str, Any] | None = None
     integration_probe: dict[str, Any] | None = None
     attempt_api_probe: dict[str, Any] | None = None
+    service_tests_probe: dict[str, Any] | None = None
 
     def load_fixture(self) -> dict[str, Any]:
         if self.fixture is None:
@@ -208,14 +297,14 @@ class Context:
                 {
                     "call_id": "call-diagnosis-001",
                     "tool": "hermes_explainable_learning_model.diagnose",
-                    "version": "0.1.0",
+                    "version": "0.2.0",
                     "input_evidence_ids": ["attempt:" + inputs["attempt"]["attempt_id"]],
                     "output": {"sha256": diagnosis_hash, "result": self.diagnosis},
                 },
                 {
                     "call_id": "call-verification-001",
                     "tool": "hermes_explainable_learning_model.verify_intervention",
-                    "version": "0.1.0",
+                    "version": "0.2.0",
                     "input_evidence_ids": ["attempt:" + inputs["verification_attempt"]["attempt_id"]],
                     "output": {"sha256": verification_hash, "result": self.verification},
                 },
@@ -252,12 +341,23 @@ class Context:
             self.attempt_api_probe = _probe_attempt_api()
         return self.attempt_api_probe
 
+    def probe_service_tests(self) -> dict[str, Any]:
+        if self.service_tests_probe is None:
+            self.service_tests_probe = _probe_service_tests()
+        return self.service_tests_probe
+
 
 def gate_contracts(ctx: Context) -> GateResult:
     schemas = sorted(CONTRACT_DIR.glob("*.schema.json"))
     evidence: list[dict[str, Any]] = []
     errors: list[str] = []
-    required = {"representative_case.schema.json", "trajectory.schema.json", "release_report.schema.json"}
+    required = {
+        "representative_case.schema.json",
+        "trajectory.schema.json",
+        "release_report.schema.json",
+        "assistance-result.schema.json",
+        "misconception-dossier.schema.json",
+    }
     missing = required - {path.name for path in schemas}
     if missing:
         return GateResult("contracts", "pending", "required contract schemas are missing", [{"missing": sorted(missing)}])
@@ -369,8 +469,11 @@ def gate_engine_tests(ctx: Context) -> GateResult:
 
 def _run_unittest_surface(root: Path) -> dict[str, Any]:
     command = [sys.executable, "-m", "unittest", "discover", "-s", str(root / "tests"), "-v"]
-    environment = dict(os.environ)
-    environment["PYTHONPATH"] = str(root) + os.pathsep + environment.get("PYTHONPATH", "")
+    # Integration tests exercise the real cross-package boundary and therefore
+    # need the same repository package roots as the CLI probe below.  Giving
+    # every surface the shared environment also prevents a test from passing
+    # only because the caller happened to export a local PYTHONPATH.
+    environment = _integration_environment()
     result = subprocess.run(
         command,
         cwd=root,
@@ -546,6 +649,53 @@ def _service_environment() -> dict[str, str]:
     return environment
 
 
+def _probe_service_tests() -> dict[str, Any]:
+    """Run the complete sidecar test surface once per release Context."""
+
+    service = REPO_ROOT / "service"
+    test_dir = service / "tests"
+    if not test_dir.is_dir():
+        return {
+            "status": "pending",
+            "exit_code": None,
+            "errors": ["service test directory is absent"],
+        }
+    command = [
+        sys.executable,
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        str(test_dir),
+        "-v",
+    ]
+    try:
+        result = subprocess.run(
+            command,
+            cwd=service,
+            env=_service_environment(),
+            capture_output=True,
+            text=True,
+            timeout=180,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        return {
+            "status": "fail",
+            "command": command,
+            "exit_code": -1,
+            "output": "",
+            "errors": [f"complete service tests could not finish: {exc!r}"],
+        }
+    output = (result.stdout + "\n" + result.stderr).strip()[-12000:]
+    return {
+        "status": "pass" if result.returncode == 0 else "fail",
+        "command": command,
+        "exit_code": result.returncode,
+        "output": output,
+        "errors": [] if result.returncode == 0 else ["complete service tests failed"],
+    }
+
+
 def _http_json(base_url: str, method: str, path: str, body: Mapping[str, Any] | None = None) -> dict[str, Any]:
     encoded = None if body is None else json.dumps(body, ensure_ascii=False).encode("utf-8")
     headers = {"X-Request-ID": "eval-attempt-api", "Origin": "http://127.0.0.1:1420"}
@@ -579,6 +729,53 @@ def _diagnosis_from_trace(trace: Mapping[str, Any]) -> dict[str, Any] | None:
     return None
 
 
+FORBIDDEN_CAUSAL_FIELDS = {
+    "causal_ground_truth",
+    "cause_ground_truth",
+    "confirmed_cause",
+    "is_ground_truth",
+    "peer_error_rate",
+    "population_error_rate",
+}
+
+
+def _contains_forbidden_causal_field(value: Any) -> bool:
+    if isinstance(value, Mapping):
+        return bool(FORBIDDEN_CAUSAL_FIELDS.intersection(map(str, value))) or any(
+            _contains_forbidden_causal_field(item) for item in value.values()
+        )
+    if isinstance(value, (list, tuple)):
+        return any(_contains_forbidden_causal_field(item) for item in value)
+    return False
+
+
+def _trace_tail(trace: Mapping[str, Any]) -> tuple[int | None, str | None]:
+    events = trace.get("events", [])
+    if not isinstance(events, list) or not events:
+        return None, None
+    tail = events[-1]
+    if not isinstance(tail, Mapping):
+        return None, None
+    seq = tail.get("seq")
+    event_hash = tail.get("event_hash")
+    return (seq if isinstance(seq, int) else None, event_hash if isinstance(event_hash, str) else None)
+
+
+def _dossier_provenance_matches_trace(
+    dossier: Mapping[str, Any], trace: Mapping[str, Any]
+) -> bool:
+    if trace.get("trace_verified") is not True:
+        return False
+    seq, event_hash = _trace_tail(trace)
+    provenance = dossier.get("provenance", {})
+    return (
+        isinstance(provenance, Mapping)
+        and provenance.get("trace_verified") is True
+        and provenance.get("source_trace_version") == seq
+        and provenance.get("source_event_hash") == event_hash
+    )
+
+
 def _probe_attempt_api() -> dict[str, Any]:
     """Black-box POST /v1/attempts and replay audit against a real sidecar."""
 
@@ -588,6 +785,8 @@ def _probe_attempt_api() -> dict[str, Any]:
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
     errors: list[str] = []
     continuation_errors: list[str] = []
+    assistance_errors: list[str] = []
+    dossier_errors: list[str] = []
     cases: dict[str, Any] = {}
     process: subprocess.Popen[str] | None = None
     try:
@@ -621,6 +820,7 @@ def _probe_attempt_api() -> dict[str, Any]:
                 raise RuntimeError(f"unexpected sidecar startup banner: {banner!r}")
             base_url = f"http://127.0.0.1:{match.group(1)}"
             fixture_id = "xingce.data-analysis.growth-rate.synthetic-01"
+            pii_secret = "sk-" + "evalcanaryabcdefghijklmnopqrstuvwxyz"
             requests = {
                 "correct": {
                     "fixture_id": fixture_id,
@@ -638,7 +838,10 @@ def _probe_attempt_api() -> dict[str, Any]:
                 },
                 "pii": {
                     "fixture_id": fixture_id,
-                    "response": "A eval.learner@example.invalid 13800138000 11010519491231002X",
+                    "response": (
+                        "A eval.learner@example.invalid 13800138000 "
+                        f"11010519491231002X {pii_secret}"
+                    ),
                     "confidence": 0.40,
                     "response_time_seconds": 50,
                     "run_id": "eval-api-pii",
@@ -722,11 +925,16 @@ def _probe_attempt_api() -> dict[str, Any]:
                 trace_payload = cases["pii"].get("trace", {}).get("payload", {})
                 replay_payload = cases["pii"].get("replay", {}).get("payload", {})
                 persisted = canonical_json({"trace": trace_payload, "replay": replay_payload})
-                for secret in ("eval.learner@example.invalid", "13800138000", "11010519491231002X"):
+                for secret in (
+                    "eval.learner@example.invalid",
+                    "13800138000",
+                    "11010519491231002X",
+                    pii_secret,
+                ):
                     if secret in serialized_response or secret in persisted:
                         errors.append(f"pii: raw {secret!r} escaped redaction")
                 evidence = payload.get("response_evidence", {})
-                if evidence.get("redacted_text") != "A [EMAIL] [PHONE] [ID]":
+                if evidence.get("redacted_text") != "A [EMAIL] [PHONE] [ID] [SECRET]":
                     errors.append("pii: redacted projection is incorrect")
                 if not evidence.get("sha256") or evidence.get("original_length") != len(str(raw_pii)):
                     errors.append("pii: digest/length evidence is incomplete")
@@ -742,9 +950,11 @@ def _probe_attempt_api() -> dict[str, Any]:
                 if not diagnosis:
                     errors.append("wrong: diagnosis provenance is absent from trace")
                 else:
-                    sources = diagnosis.get("provenance", {}).get("cohort_sources", [])
+                    sources = diagnosis.get("provenance", {}).get("prior_sources", [])
                     if not sources or any(source.get("sample_size") != 0 for source in sources):
                         errors.append("cohort: no-data cold start is not marked sample_size=0")
+                    if any(source.get("kind") != "engineering_prior" for source in sources):
+                        errors.append("cohort: no-data cold start is not labelled engineering_prior")
                     if any("synthetic" not in str(source.get("source_version", "")) for source in sources):
                         errors.append("cohort: engineering sources are not explicitly synthetic")
                     for hypothesis in diagnosis.get("hypotheses", []):
@@ -770,6 +980,7 @@ def _probe_attempt_api() -> dict[str, Any]:
                             "phase": "verification",
                             "expected_version": initial["state_version"],
                             "expected_state": "awaiting_probe",
+                            "prompt_instance_id": f"{initial.get('run_id')}:verification:1",
                             "response": "C",
                             "confidence": 0.9,
                             "response_time_seconds": 20,
@@ -787,6 +998,7 @@ def _probe_attempt_api() -> dict[str, Any]:
                             "phase": "probe",
                             "expected_version": initial["state_version"],
                             "expected_state": "awaiting_probe",
+                            "prompt_instance_id": initial.get("probe", {}).get("prompt_instance_id"),
                             "response": probe_response_text,
                             "confidence": 0.75,
                             "response_time_seconds": 24,
@@ -800,6 +1012,7 @@ def _probe_attempt_api() -> dict[str, Any]:
                             "phase": "probe",
                             "expected_version": initial["state_version"],
                             "expected_state": "awaiting_probe",
+                            "prompt_instance_id": initial.get("probe", {}).get("prompt_instance_id"),
                             "response": "重复回答",
                             "confidence": 0.7,
                             "response_time_seconds": 10,
@@ -829,6 +1042,7 @@ def _probe_attempt_api() -> dict[str, Any]:
                                 "phase": "verification",
                                 "expected_version": probe_payload.get("state_version"),
                                 "expected_state": "awaiting_verification",
+                                "prompt_instance_id": probe_payload.get("verification", {}).get("prompt_instance_id"),
                                 "response": "C",
                                 "confidence": 0.9,
                                 "response_time_seconds": 20,
@@ -876,6 +1090,7 @@ def _probe_attempt_api() -> dict[str, Any]:
                                 "phase": "verification",
                                 "expected_version": complete_payload.get("state_version"),
                                 "expected_state": "awaiting_verification",
+                                "prompt_instance_id": f"{initial.get('run_id')}:verification:1",
                                 "response": "C",
                                 "confidence": 0.9,
                                 "response_time_seconds": 20,
@@ -901,6 +1116,277 @@ def _probe_attempt_api() -> dict[str, Any]:
                     }
             else:
                 continuation_errors.append("initial wrong-attempt session is unavailable")
+
+            assistance_initial = _http_json(
+                base_url,
+                "POST",
+                "/v1/attempts",
+                {
+                    "fixture_id": fixture_id,
+                    "response": "A",
+                    "confidence": 0.8,
+                    "response_time_seconds": 28,
+                    "run_id": "eval-api-assistance",
+                },
+            )
+            assistance_deliveries: list[dict[str, Any]] = []
+            assistance_exhausted: dict[str, Any] = {"status": 0, "payload": {}}
+            assistance_trace: dict[str, Any] = {"status": 0, "payload": {}}
+            assistance_dossier: dict[str, Any] = {"status": 0, "payload": {}}
+            if assistance_initial["status"] != 201:
+                assistance_errors.append(
+                    f"assistance fixture attempt returned {assistance_initial['status']}"
+                )
+            else:
+                initial_payload = assistance_initial["payload"]
+                version = initial_payload.get("state_version")
+                actions = [
+                    "retry",
+                    "locate_evidence",
+                    "rule_hint",
+                    "analogous_example",
+                    "worked_step",
+                    "full_explanation",
+                ]
+                weights = [1.0, 0.8, 0.65, 0.5, 0.3, 0.0]
+                for ordinal, (expected_action, expected_weight) in enumerate(
+                    zip(actions, weights), start=1
+                ):
+                    previous_version = version
+                    expected_next_version = (
+                        previous_version + 1 if isinstance(previous_version, int) else None
+                    )
+                    delivered = _http_json(
+                        base_url,
+                        "POST",
+                        initial_payload["links"]["assist"],
+                        {
+                            "phase": "probe",
+                            "expected_version": version,
+                            "expected_state": "awaiting_probe",
+                            "prompt_instance_id": initial_payload["probe"]["prompt_instance_id"],
+                            "action": "next",
+                            "elapsed_time_seconds": ordinal * 2,
+                            "command_id": f"eval-assistance-{ordinal}",
+                        },
+                    )
+                    assistance_deliveries.append(delivered)
+                    payload = delivered.get("payload", {})
+                    assistance = payload.get("assistance", {})
+                    contract_errors = validate_json(
+                        payload, load_json(CONTRACT_DIR / "assistance-result.schema.json")
+                    )
+                    if (
+                        delivered.get("status") != 200
+                        or contract_errors
+                        or assistance.get("ordinal") != ordinal
+                        or assistance.get("action") != expected_action
+                        or assistance.get("diagnostic_evidence_weight") != expected_weight
+                        or assistance.get("calibration_status")
+                        != "engineering_policy_unvalidated"
+                        or payload.get("state") != "awaiting_probe"
+                        or payload.get("state_version") != expected_next_version
+                        or payload.get("remaining_levels") != 6 - ordinal
+                        or payload.get("idempotent_replay") is not False
+                        or payload.get("trace_verified") is not True
+                    ):
+                        assistance_errors.append(
+                            f"assistance level {ordinal} violated contract, order, weight, state, or provenance: {contract_errors}"
+                        )
+                        break
+                    version = payload.get("state_version")
+                if len(assistance_deliveries) == 6 and version is not None:
+                    assistance_exhausted = _http_json(
+                        base_url,
+                        "POST",
+                        initial_payload["links"]["assist"],
+                        {
+                            "phase": "probe",
+                            "expected_version": version,
+                            "expected_state": "awaiting_probe",
+                            "prompt_instance_id": initial_payload["probe"]["prompt_instance_id"],
+                            "action": "next",
+                            "elapsed_time_seconds": 20,
+                            "command_id": "eval-assistance-7",
+                        },
+                    )
+                    if (
+                        assistance_exhausted.get("status") != 409
+                        or assistance_exhausted.get("payload", {})
+                        .get("error", {})
+                        .get("code")
+                        != "assistance_exhausted"
+                    ):
+                        assistance_errors.append("seventh assistance level did not fail closed")
+                assistance_trace = _http_json(
+                    base_url, "GET", initial_payload["links"]["trace"]
+                )
+                assistance_dossier = _http_json(
+                    base_url, "GET", initial_payload["links"]["misconception"]
+                )
+                if assistance_trace.get("payload", {}).get("trace_verified") is not True:
+                    assistance_errors.append("assistance trace hash verification failed")
+                if len(assistance_dossier.get("payload", {}).get("assistance_history", [])) != 6:
+                    assistance_errors.append("dossier did not persist six assistance events")
+            cases["progressive_assistance"] = {
+                "initial": assistance_initial,
+                "deliveries": assistance_deliveries,
+                "exhausted": assistance_exhausted,
+                "trace": assistance_trace,
+                "dossier": assistance_dossier,
+            }
+
+            dossier_initial = _http_json(
+                base_url,
+                "POST",
+                "/v1/attempts",
+                {
+                    "fixture_id": fixture_id,
+                    "response": "A",
+                    "confidence": 0.8,
+                    "response_time_seconds": 25,
+                    "run_id": "eval-api-dossier",
+                },
+            )
+            dossier_after_probe: dict[str, Any] = {"status": 0, "payload": {}}
+            dossier_result: dict[str, Any] = {"status": 0, "payload": {}}
+            dossier_trace: dict[str, Any] = {"status": 0, "payload": {}}
+            if dossier_initial["status"] != 201:
+                dossier_errors.append(f"dossier fixture attempt returned {dossier_initial['status']}")
+            else:
+                dossier_initial_payload = dossier_initial["payload"]
+                dossier_probe_response = (
+                    "120÷100 dossier.learner@example.invalid "
+                    "13800138000 11010519491231002X"
+                )
+                dossier_after_probe = _http_json(
+                    base_url,
+                    "POST",
+                    dossier_initial_payload["links"]["respond"],
+                    {
+                        "phase": "probe",
+                        "expected_version": dossier_initial_payload["state_version"],
+                        "expected_state": "awaiting_probe",
+                        "prompt_instance_id": dossier_initial_payload["probe"]["prompt_instance_id"],
+                        "response": dossier_probe_response,
+                        "confidence": 0.6,
+                        "response_time_seconds": 12,
+                    },
+                )
+                dossier_result = _http_json(
+                    base_url, "GET", dossier_initial_payload["links"]["misconception"]
+                )
+                dossier_trace = _http_json(
+                    base_url, "GET", dossier_initial_payload["links"]["trace"]
+                )
+                dossier_payload = dossier_result.get("payload", {})
+                dossier_trace_payload = dossier_trace.get("payload", {})
+                dossier_contract_errors = validate_json(
+                    dossier_payload,
+                    load_json(CONTRACT_DIR / "misconception-dossier.schema.json"),
+                )
+                by_cause = {
+                    item.get("cause_id"): item
+                    for item in dossier_payload.get("hypotheses", [])
+                }
+                persisted_dossier_evidence = canonical_json(
+                    {
+                        "continuation": dossier_after_probe.get("payload", {}),
+                        "dossier": dossier_payload,
+                        "trace": dossier_trace_payload,
+                    }
+                )
+                raw_dossier_canaries = (
+                    "dossier.learner@example.invalid",
+                    "13800138000",
+                    "11010519491231002X",
+                )
+                if (
+                    dossier_after_probe.get("status") != 200
+                    or dossier_result.get("status") != 200
+                    or dossier_trace.get("status") != 200
+                    or dossier_contract_errors
+                ):
+                    dossier_errors.append("event-sourced dossier is unavailable after probe")
+                elif (
+                    by_cause.get("denominator-current-base-confusion", {}).get("claim_status")
+                    != "refuted_hypothesis"
+                    or by_cause.get("ratio-growth-confusion", {}).get("claim_status")
+                    != "supported_hypothesis"
+                    or not by_cause.get("denominator-current-base-confusion", {}).get(
+                        "refuting_evidence"
+                    )
+                    or not by_cause.get("ratio-growth-confusion", {}).get(
+                        "supporting_evidence"
+                    )
+                    or dossier_payload.get("cohort_evidence", {}).get("status") != "unavailable"
+                    or not _dossier_provenance_matches_trace(
+                        dossier_payload, dossier_trace_payload
+                    )
+                ):
+                    dossier_errors.append(
+                        "dossier lost authored probe evidence, unavailable cohort semantics, or trace provenance"
+                    )
+                if _contains_forbidden_causal_field(dossier_payload):
+                    dossier_errors.append("dossier emitted a causal confirmation label")
+                if any(secret in persisted_dossier_evidence for secret in raw_dossier_canaries):
+                    dossier_errors.append("dossier or trace persisted raw probe-response PII")
+            correct_dossier = (
+                _http_json(base_url, "GET", correct["payload"]["links"]["misconception"])
+                if correct.get("status") == 201
+                else {"status": 0, "payload": {}}
+            )
+            correct_dossier_payload = correct_dossier.get("payload", {})
+            correct_trace = (
+                cases.get("correct", {}).get("trace", {})
+                if correct.get("status") == 201
+                else {"status": 0, "payload": {}}
+            )
+            correct_contract_errors = validate_json(
+                correct_dossier_payload,
+                load_json(CONTRACT_DIR / "misconception-dossier.schema.json"),
+            )
+            if (
+                correct_dossier.get("status") != 200
+                or correct_trace.get("status") != 200
+                or correct_contract_errors
+                or correct_dossier_payload.get("hypotheses") != []
+                or correct_dossier_payload.get("assistance_history") != []
+                or correct_dossier_payload.get("uncertainty") != 0
+                or correct_dossier_payload.get("learning_status") != "no_misconception_observed"
+                or correct_dossier_payload.get("resolution", {}).get("status")
+                != "no_misconception_observed"
+                or correct_dossier_payload.get("cohort_evidence", {}).get("status")
+                != "unavailable"
+                or correct_dossier_payload.get("cohort_evidence", {}).get("sample_size") != 0
+                or _contains_forbidden_causal_field(correct_dossier_payload)
+                or not _dossier_provenance_matches_trace(
+                    correct_dossier_payload, correct_trace.get("payload", {})
+                )
+            ):
+                dossier_errors.append("correct attempt did not project an empty misconception dossier")
+            cases["misconception_dossier"] = {
+                "request": {
+                    "probe_response_sha256": hashlib.sha256(
+                        dossier_probe_response.encode("utf-8")
+                    ).hexdigest()
+                    if dossier_initial["status"] == 201
+                    else None,
+                    "raw_probe_response_retained": False,
+                },
+                "initial": dossier_initial,
+                "after_probe": dossier_after_probe,
+                "dossier": dossier_result,
+                "trace": dossier_trace,
+                "correct_dossier": correct_dossier,
+                "correct_trace": correct_trace,
+                "correct_contract_errors": correct_contract_errors,
+                "pii_redacted": (
+                    not any(secret in persisted_dossier_evidence for secret in raw_dossier_canaries)
+                    if dossier_initial["status"] == 201
+                    else False
+                ),
+            }
     except Exception as exc:
         errors.append(f"attempt API probe raised {exc!r}")
     finally:
@@ -916,11 +1402,15 @@ def _probe_attempt_api() -> dict[str, Any]:
             if process.stderr is not None:
                 process.stderr.close()
     return {
-        "status": "fail" if errors or continuation_errors else "pass",
+        "status": "fail" if errors or continuation_errors or assistance_errors or dossier_errors else "pass",
         "attempt_status": "fail" if errors else "pass",
         "continuation_status": "fail" if continuation_errors else "pass",
+        "assistance_status": "fail" if errors or assistance_errors else "pass",
+        "dossier_status": "fail" if errors or dossier_errors else "pass",
         "errors": errors,
         "continuation_errors": continuation_errors,
+        "assistance_errors": assistance_errors,
+        "dossier_errors": dossier_errors,
         "cases": cases,
     }
 
@@ -1080,8 +1570,14 @@ def gate_diagnosis(ctx: Context) -> GateResult:
     if len(hypotheses) < 2:
         errors.append("ambiguous fixture must preserve competing hypotheses")
     provenance = ctx.diagnosis.get("provenance", {})
-    if not provenance.get("cohort_sources"):
-        errors.append("cohort provenance is absent")
+    prior_sources = provenance.get("prior_sources", [])
+    if not prior_sources:
+        errors.append("prior provenance is absent")
+    elif any(source.get("kind") != "engineering_prior" or source.get("sample_size") != 0 for source in prior_sources):
+        errors.append("synthetic golden diagnosis does not use sample-zero engineering priors")
+    serialized_diagnosis = canonical_json(ctx.diagnosis)
+    if "cohort_component" in serialized_diagnosis or "cohort_sources" in serialized_diagnosis:
+        errors.append("synthetic golden diagnosis exposes obsolete cohort-labelled fields")
     if not ctx.diagnosis.get("model_version"):
         errors.append("diagnosis model version is absent")
     if not 0 <= ctx.diagnosis.get("uncertainty", -1) <= 1:
@@ -1177,6 +1673,97 @@ def gate_teaching_transfer(ctx: Context) -> GateResult:
     )
 
 
+def _sanitize_report_string(value: str) -> str:
+    text = value
+    replacements = (
+        (str(FORBIDDEN_REPO), "[READ_ONLY_REFERENCE]"),
+        (str(REPO_ROOT), "[REPO_ROOT]"),
+        (str(Path.home()), "[HOME]"),
+    )
+    for raw, replacement in replacements:
+        if raw:
+            text = text.replace(raw, replacement)
+    text = text.replace(FORBIDDEN_REPO.name, "[READ_ONLY_REFERENCE]")
+    text = text.replace("xingcetiku", "[QUESTION_BANK_REFERENCE]")
+    for pattern, replacement in REPORT_PII_PATTERNS:
+        text = pattern.sub(replacement, text)
+    for pattern in REPORT_SECRET_PATTERNS:
+        text = pattern.sub("[REDACTED_SECRET]", text)
+    text = LOCAL_ABSOLUTE_PATH_PATTERN.sub("[ABSOLUTE_PATH]", text)
+    if text.startswith("/") and not text.startswith("/v1/"):
+        return "[ABSOLUTE_PATH]"
+    return text
+
+
+def _sanitize_report_value(value: Any, key: str = "") -> Any:
+    sensitive_keys = {
+        "api_key",
+        "authorization",
+        "password",
+        "private_key",
+        "secret",
+        "token",
+        "access_token",
+    }
+    if key.casefold() in sensitive_keys:
+        return "[REDACTED_SECRET]"
+    if isinstance(value, str):
+        return _sanitize_report_string(value)
+    if isinstance(value, Mapping):
+        return {
+            str(child_key): _sanitize_report_value(child_value, str(child_key))
+            for child_key, child_value in value.items()
+        }
+    if isinstance(value, (list, tuple)):
+        return [_sanitize_report_value(item, key) for item in value]
+    return value
+
+
+def _compact_request_evidence(request: Any) -> dict[str, Any]:
+    if not isinstance(request, Mapping):
+        return {}
+    allowed = {
+        "fixture_id",
+        "response_sha256",
+        "contains_pii_test_data",
+        "unknown_fields",
+        "probe_response_sha256",
+        "raw_probe_response_retained",
+    }
+    result = {str(key): request[key] for key in allowed if key in request}
+    if request.get("run_id") is not None:
+        result["run_id_sha256"] = hashlib.sha256(
+            str(request["run_id"]).encode("utf-8")
+        ).hexdigest()
+    return result
+
+
+def _compact_response_evidence(evidence: Any) -> dict[str, Any] | None:
+    if not isinstance(evidence, Mapping):
+        return None
+    redacted_text = str(evidence.get("redacted_text", ""))
+    markers = sorted(set(re.findall(r"\[(?:EMAIL|PHONE|ID|SECRET)\]", redacted_text)))
+    return {
+        "sha256": evidence.get("sha256"),
+        "original_length": evidence.get("original_length"),
+        "redactions": evidence.get("redactions", []),
+        "redaction_markers": markers,
+        "policy_version": evidence.get("policy_version"),
+    }
+
+
+def _compact_service_test_evidence(probe: Mapping[str, Any]) -> dict[str, Any]:
+    return _sanitize_report_value(
+        {
+            "status": probe.get("status"),
+            "exit_code": probe.get("exit_code"),
+            "command": probe.get("command", []),
+            "output": probe.get("output", ""),
+            "errors": probe.get("errors", []),
+        }
+    )
+
+
 def _compact_attempt_api_evidence(probe: Mapping[str, Any]) -> dict[str, Any]:
     cases: dict[str, Any] = {}
     for label, case in probe.get("cases", {}).items():
@@ -1186,7 +1773,7 @@ def _compact_attempt_api_evidence(probe: Mapping[str, Any]) -> dict[str, Any]:
             final_trace = case.get("final_trace", {}) or {}
             final_replay = case.get("final_replay", {}) or {}
             cases[label] = {
-                "request": case.get("request"),
+                "request": _compact_request_evidence(case.get("request")),
                 "before_skill_count": case.get("before_skills", {}).get("payload", {}).get("skill_count"),
                 "out_of_order": {
                     "status": case.get("out_of_order", {}).get("status"),
@@ -1216,19 +1803,97 @@ def _compact_attempt_api_evidence(probe: Mapping[str, Any]) -> dict[str, Any]:
                 "replay_sha256": sha256_json(final_replay.get("payload")) if final_replay.get("payload") else None,
             }
             continue
+        if label == "progressive_assistance":
+            deliveries = case.get("deliveries", [])
+            trace_payload = case.get("trace", {}).get("payload", {})
+            dossier_payload = case.get("dossier", {}).get("payload", {})
+            cases[label] = {
+                "initial_status": case.get("initial", {}).get("status"),
+                "delivered_levels": [
+                    {
+                        "status": item.get("status"),
+                        "ordinal": item.get("payload", {}).get("assistance", {}).get("ordinal"),
+                        "action": item.get("payload", {}).get("assistance", {}).get("action"),
+                        "state_version": item.get("payload", {}).get("state_version"),
+                        "remaining_levels": item.get("payload", {}).get("remaining_levels"),
+                        "idempotent_replay": item.get("payload", {}).get("idempotent_replay"),
+                        "diagnostic_evidence_weight": item.get("payload", {})
+                        .get("assistance", {})
+                        .get("diagnostic_evidence_weight"),
+                        "calibration_status": item.get("payload", {})
+                        .get("assistance", {})
+                        .get("calibration_status"),
+                    }
+                    for item in deliveries
+                ],
+                "exhausted": {
+                    "status": case.get("exhausted", {}).get("status"),
+                    "code": case.get("exhausted", {})
+                    .get("payload", {})
+                    .get("error", {})
+                    .get("code"),
+                },
+                "trace_verified": trace_payload.get("trace_verified"),
+                "trace_sha256": sha256_json(trace_payload) if trace_payload else None,
+                "assistance_history_count": len(dossier_payload.get("assistance_history", [])),
+                "cohort_evidence_status": dossier_payload.get("cohort_evidence", {}).get("status"),
+            }
+            continue
+        if label == "misconception_dossier":
+            dossier_payload = case.get("dossier", {}).get("payload", {})
+            correct_payload = case.get("correct_dossier", {}).get("payload", {})
+            trace_payload = case.get("trace", {}).get("payload", {})
+            correct_trace_payload = case.get("correct_trace", {}).get("payload", {})
+            cases[label] = {
+                "request": _compact_request_evidence(case.get("request")),
+                "initial_status": case.get("initial", {}).get("status"),
+                "probe_status": case.get("after_probe", {}).get("status"),
+                "dossier_status": case.get("dossier", {}).get("status"),
+                "claim_statuses": {
+                    item.get("cause_id"): item.get("claim_status")
+                    for item in dossier_payload.get("hypotheses", [])
+                },
+                "evidence_ref_counts": {
+                    item.get("cause_id"): {
+                        "supporting": len(item.get("supporting_evidence", [])),
+                        "refuting": len(item.get("refuting_evidence", [])),
+                    }
+                    for item in dossier_payload.get("hypotheses", [])
+                },
+                "cohort_evidence_status": dossier_payload.get("cohort_evidence", {}).get("status"),
+                "trace_verified": dossier_payload.get("provenance", {}).get("trace_verified"),
+                "provenance_matches_trace": _dossier_provenance_matches_trace(
+                    dossier_payload, trace_payload
+                ),
+                "pii_redacted": case.get("pii_redacted"),
+                "correct_hypothesis_count": len(correct_payload.get("hypotheses", [])),
+                "correct_learning_status": correct_payload.get("learning_status"),
+                "correct_assistance_history_count": len(
+                    correct_payload.get("assistance_history", [])
+                ),
+                "correct_uncertainty": correct_payload.get("uncertainty"),
+                "correct_cohort_evidence_status": correct_payload.get(
+                    "cohort_evidence", {}
+                ).get("status"),
+                "correct_contract_valid": not case.get("correct_contract_errors", []),
+                "correct_provenance_matches_trace": _dossier_provenance_matches_trace(
+                    correct_payload, correct_trace_payload
+                ),
+            }
+            continue
         response = case.get("response", {})
         trace = case.get("trace", {})
         replay = case.get("replay", {})
         payload = response.get("payload", {})
         cases[label] = {
-            "request": case.get("request"),
+            "request": _compact_request_evidence(case.get("request")),
             "http_status": response.get("status"),
             "schema_version": payload.get("schema_version"),
             "run_status": payload.get("status"),
             "score_passed": payload.get("score", {}).get("passed"),
             "hypothesis_count": len(payload.get("diagnosis", {}).get("hypotheses", [])),
             "verification": payload.get("verification"),
-            "response_evidence": payload.get("response_evidence"),
+            "response_evidence": _compact_response_evidence(payload.get("response_evidence")),
             "error": payload.get("error"),
             "trace_status": trace.get("status"),
             "trace_sha256": sha256_json(trace.get("payload")) if trace.get("payload") else None,
@@ -1236,14 +1901,19 @@ def _compact_attempt_api_evidence(probe: Mapping[str, Any]) -> dict[str, Any]:
             "replay_sha256": sha256_json(replay.get("payload")) if replay.get("payload") else None,
             "rejected_run_trace_status": case.get("trace_after_rejection", {}).get("status"),
         }
-    return {
+    compact = {
         "status": probe.get("status"),
         "attempt_status": probe.get("attempt_status"),
         "continuation_status": probe.get("continuation_status"),
+        "assistance_status": probe.get("assistance_status"),
+        "dossier_status": probe.get("dossier_status"),
         "errors": probe.get("errors", []),
         "continuation_errors": probe.get("continuation_errors", []),
+        "assistance_errors": probe.get("assistance_errors", []),
+        "dossier_errors": probe.get("dossier_errors", []),
         "cases": cases,
     }
+    return _sanitize_report_value(compact)
 
 
 def gate_attempt_api(ctx: Context) -> GateResult:
@@ -1296,7 +1966,7 @@ def gate_cohort_prior_guardrail(ctx: Context) -> GateResult:
     diagnosis = None
     if wrong.get("trace", {}).get("status") == 200:
         diagnosis = _diagnosis_from_trace(wrong["trace"]["payload"])
-    sources = diagnosis.get("provenance", {}).get("cohort_sources", []) if diagnosis else []
+    sources = diagnosis.get("provenance", {}).get("prior_sources", []) if diagnosis else []
     hypothesis_evidence = [item.get("evidence", []) for item in diagnosis.get("hypotheses", [])] if diagnosis else []
     evidence = [
         {
@@ -1320,6 +1990,7 @@ def gate_cohort_prior_guardrail(ctx: Context) -> GateResult:
     elif (
         not sources
         or any(source.get("sample_size") != 0 for source in sources)
+        or any(source.get("kind") != "engineering_prior" for source in sources)
         or any("synthetic" not in str(source.get("source_version", "")) for source in sources)
         or any("engineering_prior" not in labels or "cohort_prior" in labels for labels in hypothesis_evidence)
     ):
@@ -1356,6 +2027,156 @@ def gate_attempt_continuation(ctx: Context) -> GateResult:
         "attempt_continuation",
         "pass",
         "real HTTP session advances awaiting_probe → awaiting_verification → completed; illegal/stale writes fail closed and KT appears only after independent verification",
+        evidence,
+    )
+
+
+def gate_progressive_assistance(ctx: Context) -> GateResult:
+    probe = ctx.probe_attempt_api()
+    service_tests = ctx.probe_service_tests()
+    compact = _compact_attempt_api_evidence(probe)
+    evidence = [compact, {"complete_service_tests": _compact_service_test_evidence(service_tests)}]
+    status = probe.get("assistance_status", "pending")
+    if status == "pending" or service_tests.get("status") == "pending":
+        return GateResult(
+            "progressive_assistance",
+            "pending",
+            "versioned assistance endpoint and event evidence are absent",
+            evidence,
+        )
+    case = compact.get("cases", {}).get("progressive_assistance", {})
+    delivered_levels = case.get("delivered_levels", [])
+    delivered_versions = [item.get("state_version") for item in delivered_levels]
+    versions_are_monotonic = (
+        len(delivered_versions) == 6
+        and all(isinstance(version, int) for version in delivered_versions)
+        and delivered_versions == list(range(delivered_versions[0], delivered_versions[0] + 6))
+    )
+    complete_evidence = (
+        service_tests.get("status") == "pass"
+        and len(delivered_levels) == 6
+        and all(item.get("status") == 200 for item in delivered_levels)
+        and versions_are_monotonic
+        and [item.get("remaining_levels") for item in delivered_levels]
+        == [5, 4, 3, 2, 1, 0]
+        and all(item.get("idempotent_replay") is False for item in delivered_levels)
+        and case.get("exhausted", {}).get("code") == "assistance_exhausted"
+        and case.get("trace_verified") is True
+        and case.get("assistance_history_count") == 6
+    )
+    if (
+        status != "pass"
+        or service_tests.get("status") != "pass"
+        or probe.get("errors")
+        or not complete_evidence
+    ):
+        return GateResult(
+            "progressive_assistance",
+            "fail",
+            "six-level order, evidence discount, exhaustion, persistence, or trace verification failed",
+            evidence,
+        )
+    return GateResult(
+        "progressive_assistance",
+        "pass",
+        "real HTTP assistance advances six server-authored levels, records uncalibrated evidence discounts, fails closed after exhaustion, and preserves a verified trace",
+        evidence,
+    )
+
+
+def gate_misconception_dossier(ctx: Context) -> GateResult:
+    probe = ctx.probe_attempt_api()
+    service_tests = ctx.probe_service_tests()
+    compact = _compact_attempt_api_evidence(probe)
+    evidence = [compact, {"complete_service_tests": _compact_service_test_evidence(service_tests)}]
+    status = probe.get("dossier_status", "pending")
+    if status == "pending" or service_tests.get("status") == "pending":
+        return GateResult(
+            "misconception_dossier",
+            "pending",
+            "event-sourced misconception dossier endpoint is absent",
+            evidence,
+        )
+    case = compact.get("cases", {}).get("misconception_dossier", {})
+    raw_dossier = (
+        probe.get("cases", {})
+        .get("misconception_dossier", {})
+        .get("dossier", {})
+        .get("payload", {})
+    )
+    processing_contract_errors: list[str] = []
+    if isinstance(raw_dossier, Mapping) and raw_dossier:
+        dossier_schema = load_json(CONTRACT_DIR / "misconception-dossier.schema.json")
+        for state_name, learning_status, action in (
+            (
+                "processing_probe",
+                "processing_probe_response",
+                "restart_attempt_after_processing_failure",
+            ),
+            (
+                "processing_verification",
+                "processing_verification_response",
+                "restart_attempt_for_fresh_independent_verification",
+            ),
+        ):
+            processing = json.loads(json.dumps(raw_dossier))
+            processing["state"] = state_name
+            processing["learning_status"] = learning_status
+            processing["resolution"]["status"] = learning_status
+            processing["next_action"] = {
+                "action": action,
+                "target": "/v1/attempts",
+                "reason": "A consumed response did not finish processing.",
+            }
+            processing_contract_errors.extend(
+                f"{state_name}: {error}"
+                for error in validate_json(processing, dossier_schema)
+            )
+    else:
+        processing_contract_errors.append("real dossier payload is unavailable")
+    evidence.append(
+        {
+            "processing_fail_closed_contract": {
+                "states_checked": ["processing_probe", "processing_verification"],
+                "errors": processing_contract_errors,
+            }
+        }
+    )
+    evidence_counts = case.get("evidence_ref_counts", {})
+    complete_evidence = (
+        service_tests.get("status") == "pass"
+        and not processing_contract_errors
+        and case.get("dossier_status") == 200
+        and case.get("trace_verified") is True
+        and case.get("provenance_matches_trace") is True
+        and case.get("pii_redacted") is True
+        and case.get("cohort_evidence_status") == "unavailable"
+        and evidence_counts.get("denominator-current-base-confusion", {}).get("refuting", 0) > 0
+        and evidence_counts.get("ratio-growth-confusion", {}).get("supporting", 0) > 0
+        and case.get("correct_hypothesis_count") == 0
+        and case.get("correct_learning_status") == "no_misconception_observed"
+        and case.get("correct_assistance_history_count") == 0
+        and case.get("correct_uncertainty") == 0
+        and case.get("correct_cohort_evidence_status") == "unavailable"
+        and case.get("correct_contract_valid") is True
+        and case.get("correct_provenance_matches_trace") is True
+    )
+    if (
+        status != "pass"
+        or service_tests.get("status") != "pass"
+        or probe.get("errors")
+        or not complete_evidence
+    ):
+        return GateResult(
+            "misconception_dossier",
+            "fail",
+            "probe evidence, hypothesis status, empty-correct state, cohort unavailability, or trace provenance failed",
+            evidence,
+        )
+    return GateResult(
+        "misconception_dossier",
+        "pass",
+        "real HTTP dossier separates observations, authored probe support/refutation, unconfirmed cause semantics, learning resolution, and unavailable cohort evidence with trace references",
         evidence,
     )
 
@@ -1415,6 +2236,59 @@ def iter_source_files() -> Iterable[Path]:
                 yield path
 
 
+def iter_tracked_report_files() -> Iterable[Path]:
+    try:
+        result = subprocess.run(
+            ["git", "ls-files", "--", "evals/reports"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        result = None
+    candidates = (
+        [REPO_ROOT / line for line in result.stdout.splitlines() if line.strip()]
+        if result is not None and result.returncode == 0
+        else sorted(REPORT_DIR.glob("*.json"))
+    )
+    report_root = REPORT_DIR.resolve(strict=False)
+    for path in candidates:
+        resolved = path.resolve(strict=False)
+        if path.is_file() and (resolved == report_root or report_root in resolved.parents):
+            yield path
+
+
+def iter_persisted_report_files() -> Iterable[Path]:
+    for path in sorted(REPORT_DIR.iterdir()) if REPORT_DIR.is_dir() else []:
+        if path.is_file() and path.suffix in {".json", ".md"}:
+            yield path
+
+
+def _report_safety_findings(paths: Iterable[Path]) -> list[dict[str, Any]]:
+    findings: list[dict[str, Any]] = []
+    for path in paths:
+        relative = str(path.relative_to(REPO_ROOT))
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        if str(REPO_ROOT) in text or str(Path.home()) in text:
+            findings.append({"file": relative, "finding": "absolute_home_or_repository_path"})
+        if str(FORBIDDEN_REPO) in text or FORBIDDEN_REPO.name in text:
+            findings.append({"file": relative, "finding": "read_only_repository_name_or_path"})
+        if LOCAL_ABSOLUTE_PATH_PATTERN.search(text):
+            findings.append({"file": relative, "finding": "absolute_local_path"})
+        for name, pattern in SECRET_PATTERNS.items():
+            if pattern.search(text):
+                findings.append({"file": relative, "finding": name})
+        for pattern, marker in REPORT_PII_PATTERNS:
+            if pattern.search(text):
+                findings.append({"file": relative, "finding": f"raw_pii_matching_{marker}"})
+    return findings
+
+
+def _tracked_report_safety_findings() -> list[dict[str, Any]]:
+    return _report_safety_findings(iter_tracked_report_files())
+
+
 def gate_privacy(ctx: Context) -> GateResult:
     findings: list[dict[str, Any]] = []
     cloud_markers: list[str] = []
@@ -1442,10 +2316,20 @@ def gate_privacy(ctx: Context) -> GateResult:
     privacy = trace.get("privacy", {})
     if privacy.get("local_only") is not True or not privacy.get("redaction_version"):
         findings.append({"trace_privacy_contract": "missing local_only or redaction_version"})
+    tracked_report_findings = _tracked_report_safety_findings()
+    persisted_report_findings = _report_safety_findings(iter_persisted_report_files())
+    findings.extend({"tracked_report": item} for item in tracked_report_findings)
+    findings.extend({"persisted_report": item} for item in persisted_report_findings)
     evidence = [
         {"scanned_file_count": sum(1 for _ in iter_source_files()), "secret_findings": findings},
         {"cloud_marker_files": sorted(set(cloud_markers))},
         {"trace_privacy": privacy},
+        {
+            "tracked_report_count": sum(1 for _ in iter_tracked_report_files()),
+            "tracked_report_findings": tracked_report_findings,
+            "persisted_report_count": sum(1 for _ in iter_persisted_report_files()),
+            "persisted_report_findings": persisted_report_findings,
+        },
     ]
     if findings:
         return GateResult("privacy", "fail", "privacy or secret scan found release-blocking evidence", evidence)
@@ -1532,6 +2416,8 @@ GATES: dict[str, Callable[[Context], GateResult]] = {
     "attempt_api": gate_attempt_api,
     "cohort_prior_guardrail": gate_cohort_prior_guardrail,
     "attempt_continuation": gate_attempt_continuation,
+    "progressive_assistance": gate_progressive_assistance,
+    "misconception_dossier": gate_misconception_dossier,
     "trace": gate_trace,
     "diagnosis": gate_diagnosis,
     "kt": gate_kt,
@@ -1610,22 +2496,30 @@ def render_markdown(report: Mapping[str, Any]) -> str:
 def write_outputs(report: Mapping[str, Any], ctx: Context) -> None:
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
     timestamp = str(report["run_id"]).removeprefix("run-")
-    report_json = json.dumps(report, ensure_ascii=False, indent=2) + "\n"
+    safe_report = _sanitize_report_value(report)
+    report_json = json.dumps(safe_report, ensure_ascii=False, indent=2) + "\n"
     (REPORT_DIR / f"release-{timestamp}.json").write_text(report_json, encoding="utf-8")
     (REPORT_DIR / "latest.json").write_text(report_json, encoding="utf-8")
-    (REPORT_DIR / "latest.md").write_text(render_markdown(report), encoding="utf-8")
+    (REPORT_DIR / "latest.md").write_text(render_markdown(safe_report), encoding="utf-8")
     if ctx.trace is not None:
-        trace_json = json.dumps(ctx.trace, ensure_ascii=False, indent=2) + "\n"
+        trace_json = json.dumps(
+            _sanitize_report_value(ctx.trace), ensure_ascii=False, indent=2
+        ) + "\n"
         (REPORT_DIR / "golden-trajectory-latest.json").write_text(trace_json, encoding="utf-8")
     if ctx.integration_probe is not None:
         for scenario, run in ctx.integration_probe.get("runs", {}).items():
             replay = run.get("replay")
             if replay is not None:
                 path = REPORT_DIR / f"integration-{scenario}-trajectory-latest.json"
-                path.write_text(json.dumps(replay, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+                safe_replay = _sanitize_report_value(replay)
+                path.write_text(json.dumps(safe_replay, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     if ctx.attempt_api_probe is not None:
         path = REPORT_DIR / "attempt-api-evidence-latest.json"
-        path.write_text(json.dumps(ctx.attempt_api_probe, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        compact = _compact_attempt_api_evidence(ctx.attempt_api_probe)
+        path.write_text(
+            json.dumps(_sanitize_report_value(compact), ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:

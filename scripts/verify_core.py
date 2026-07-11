@@ -15,7 +15,20 @@ XINGCE = Path(os.environ.get("LUMI_XINGCE_ROOT", Path.home() / "Documents" / "xi
 
 
 def command(name: str, argv: list[str], cwd: Path) -> dict[str, object]:
-    result = subprocess.run(argv, cwd=cwd, capture_output=True, text=True)
+    env = dict(os.environ)
+    local_packages = [
+        ROOT / "engine",
+        ROOT / "runtime",
+        ROOT / "domains",
+        ROOT / "integration",
+        ROOT / "service",
+    ]
+    inherited_pythonpath = env.get("PYTHONPATH")
+    env["PYTHONPATH"] = os.pathsep.join(
+        [str(path) for path in local_packages]
+        + ([inherited_pythonpath] if inherited_pythonpath else [])
+    )
+    result = subprocess.run(argv, cwd=cwd, capture_output=True, text=True, env=env)
     return {
         "name": name,
         "command": argv,
@@ -76,6 +89,11 @@ def main() -> int:
         checks.extend(
             [
                 (
+                    "client-unit-tests",
+                    ["npm", "test", "--", "--run"],
+                    client,
+                ),
+                (
                     "client-production-build",
                     ["npm", "run", "build"],
                     client,
@@ -90,12 +108,42 @@ def main() -> int:
 
     desktop = ROOT / "desktop"
     if (desktop / "package.json").is_file():
-        checks.append(
-            (
-                "desktop-configuration",
-                ["npm", "run", "check:config"],
-                desktop,
-            )
+        cargo = Path.home() / ".cargo" / "bin" / "cargo"
+        cargo_command = str(cargo) if cargo.is_file() else "cargo"
+        checks.extend(
+            [
+                (
+                    "desktop-configuration",
+                    ["npm", "run", "check:config"],
+                    desktop,
+                ),
+                (
+                    "desktop-sidecar-binary",
+                    ["npm", "run", "check:sidecar"],
+                    desktop,
+                ),
+                (
+                    "desktop-debug-signature",
+                    ["npm", "run", "check:signature"],
+                    desktop,
+                ),
+                (
+                    "desktop-bundled-sidecar",
+                    ["npm", "run", "check:bundled-sidecar"],
+                    desktop,
+                ),
+                (
+                    "desktop-cargo-locked",
+                    [
+                        cargo_command,
+                        "check",
+                        "--locked",
+                        "--manifest-path",
+                        "src-tauri/Cargo.toml",
+                    ],
+                    desktop,
+                ),
+            ]
         )
         managed_app = (
             desktop

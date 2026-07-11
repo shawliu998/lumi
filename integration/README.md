@@ -18,11 +18,24 @@ resolved catalog fixture plus response, confidence, and elapsed time. The raw
 response is used for deterministic domain scoring in memory; only a PII-redacted
 projection and SHA-256 evidence digest enter the runtime trace. It executes only
 `observe → diagnose → probe` and interrupts before teaching. `continue_attempt`
-accepts an exact trace version/state: a real probe response resumes one teaching
-step and interrupts before verification; a real independent verification answer
-then resumes `verify → update → reflect`. Each learner response is a distinct
-append-only event. No later answer, intervention effect, or mastery update is
-invented.
+accepts an exact trace version, state, and prompt instance: a real probe response
+is recorded, evaluated only by an authored deterministic rubric when available,
+then resumes one teaching step and interrupts before verification. A real
+independent verification answer then resumes `verify → update → reflect`. Each
+learner response and probe assessment is a distinct append-only event. Assistance
+is scoped to its prompt instance; probe help discounts diagnostic evidence but
+does not contaminate a fresh verification prompt. Any verification-prompt help
+fails safe by withholding mastery. No later answer, intervention effect, or
+mastery update is invented. An authored probe can support or refute individual
+candidate causes; that evidence selects the cause-specific teaching variant and
+prevents a refuted cause from remaining the instructional focus. It never turns
+the candidate into a causal fact.
+
+Real learner boundaries stamp responses with the current UTC time. The fixed
+timestamps in named synthetic scenarios exist only to keep evaluation artifacts
+reproducible. Persisted response projections redact email addresses, mainland
+mobile/identity numbers, bearer credentials, common API-token forms, and private
+key blocks before hashing and storage.
 
 ## Run
 
@@ -41,3 +54,9 @@ disambiguating probe and records failed transfer, and `offline` proves the full
 loop and replay need no network or model call. Every mastery delta includes its
 attempt evidence, engine provenance, mastery/verification model versions, and
 learning-policy version.
+
+This P0 continuation is a trace-version CAS, not a durable background job. A
+process crash requires a new attempt, continuation commands do not yet have a
+stored command-result ledger, and each run still starts from the documented
+engineering prior rather than an authoritative longitudinal learner-skill
+state. Those boundaries are reserved for P1.

@@ -29,9 +29,48 @@
       {"cause_id": "arithmetic-mean-heuristic", "label": "误用完成时间算术平均", "synthetic_prior": 0.35, "evidence_refs": ["answer_incorrect", "averaged-completion-times"], "is_ground_truth": false}
     ]
   },
-  "probe": {"prompt": "总工作量设为1，分别写出甲、乙每天完成的份额。", "targets": ["time-rate-unit-confusion", "arithmetic-mean-heuristic"]},
-  "teach": {"prompt": "先统一成每天效率，再相加，最后用工作量除以合效率。", "strategy": "unit-rate-table"},
-  "independent_verify": {"prompt": "甲4天、乙12天单独完成，同做需要多久？", "response_mode": "single_choice", "pass_condition": {"correct_option": "C"}},
+  "probe": {
+    "prompt": "总工作量设为1，分别写出甲、乙每天完成的份额，再说明合作时怎样合并，能否直接平均两人的工期。",
+    "targets": ["time-rate-unit-confusion", "joint-rate-omission", "arithmetic-mean-heuristic"],
+    "assessment": {
+      "schema_version": "hermes.probe-assessment.v1", "evaluator": "authored_terms_v1",
+      "rules": [
+        {"cause_id": "time-rate-unit-confusion", "support_if": {"all_terms": ["甲每天完成6", "乙每天完成3"]}, "refute_if": {"all_terms": ["甲每天完成六分之一", "乙每天完成三分之一"]}},
+        {"cause_id": "joint-rate-omission", "support_if": {"all_terms": ["合作只看乙", "忽略甲的效率"]}, "refute_if": {"all_terms": ["两人效率相加", "六分之一加三分之一"]}},
+        {"cause_id": "arithmetic-mean-heuristic", "support_if": {"all_terms": ["把6天和3天平均", "得到4.5天"]}, "refute_if": {"all_terms": ["不能平均工期", "必须先换算效率"]}}
+      ],
+      "cause_samples": [
+        {"cause_id": "time-rate-unit-confusion", "supporting_response": "甲每天完成6，乙每天完成3。", "refuting_response": "甲每天完成六分之一，乙每天完成三分之一。", "ambiguous_response": "甲比乙慢一些。"},
+        {"cause_id": "joint-rate-omission", "supporting_response": "合作只看乙，忽略甲的效率。", "refuting_response": "两人效率相加，即六分之一加三分之一。", "ambiguous_response": "合作会更快。"},
+        {"cause_id": "arithmetic-mean-heuristic", "supporting_response": "把6天和3天平均，得到4.5天。", "refuting_response": "不能平均工期，必须先换算效率。", "ambiguous_response": "可以对两个数做运算。"}
+      ]
+    }
+  },
+  "teach": {
+    "prompt": "先统一成每天效率，再相加，最后用工作量除以合效率。", "strategy": "unit-rate-table",
+    "variants": [
+      {"cause_id": "time-rate-unit-confusion", "prompt": "用单位表把‘完成天数’逐项改写成‘每天完成份额’。", "strategy": "unit-conversion-table"},
+      {"cause_id": "joint-rate-omission", "prompt": "用同一时间轴叠加甲乙每天完成量，检查是否漏掉任一方。", "strategy": "parallel-rate-stack"},
+      {"cause_id": "arithmetic-mean-heuristic", "prompt": "用2天与6天的反例说明工期平均为何不等于合作时间。", "strategy": "heuristic-counterexample"}
+    ]
+  },
+  "independent_verify": {
+    "prompt": "甲4天、乙12天单独完成同一项工作，两人效率不变，同做需要多久？",
+    "response_mode": "single_choice",
+    "pass_condition": {"scorer": "exact_option_v1", "correct_option": "C", "options": {"A": "2天", "B": "2.5天", "C": "3天", "D": "8天"}},
+    "samples": {"passing_response": "C", "failing_response": "D"}
+  },
+  "assistance_ladder": {
+    "schema_version": "hermes.assistance-content.v1", "content_version": "work-rate-help.v1",
+    "steps": [
+      {"action": "retry", "title": "再试一次", "content": "把总工作量先设成 1，只写甲、乙各自一天完成多少，再判断能否直接平均天数。", "target_cause_ids": ["time-rate-unit-confusion", "joint-rate-omission", "arithmetic-mean-heuristic"]},
+      {"action": "locate_evidence", "title": "定位信息", "content": "题干给的是完成全部工作所需的天数，需要先把“天”改写成“每天完成的工作份额”。", "target_cause_ids": ["time-rate-unit-confusion"]},
+      {"action": "rule_hint", "title": "规则提示", "content": "单人效率=1÷单独完成天数；合作效率=各自效率之和；合作时间=1÷合作效率。", "target_cause_ids": ["time-rate-unit-confusion", "joint-rate-omission"]},
+      {"action": "analogous_example", "title": "同类例子", "content": "若甲 2 天、乙 6 天完成，效率分别是 1/2 和 1/6，合作效率是 2/3，不是把 2 与 6 求平均。", "target_cause_ids": ["joint-rate-omission", "arithmetic-mean-heuristic"]},
+      {"action": "worked_step", "title": "演示一步", "content": "先把本题两人的效率写成 1/6 与 1/3，并相加；最后再对合效率取倒数。", "target_cause_ids": ["time-rate-unit-confusion", "joint-rate-omission"]},
+      {"action": "full_explanation", "title": "完整说明", "content": "合作效率 1/6+1/3=1/2，所以完成时间为 1÷(1/2)=2 天。天数不能直接相加或求平均。", "target_cause_ids": ["time-rate-unit-confusion", "joint-rate-omission", "arithmetic-mean-heuristic"]}
+    ]
+  },
   "samples": {"passing_response": "B", "failing_response": "D"},
   "provenance": {"content_origin": "synthetic_original", "authoring_note": "自有合成工程题", "prior_source": "synthetic_engineering_prior_v1"}
 }

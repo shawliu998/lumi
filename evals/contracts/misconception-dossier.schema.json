@@ -1,0 +1,358 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.lumi.invalid/schemas/misconception-dossier.v1.json",
+  "title": "Lumi event-sourced misconception dossier",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "projection_version",
+    "dossier_id",
+    "run_id",
+    "fixture_id",
+    "domain",
+    "module",
+    "skills",
+    "state",
+    "learning_status",
+    "observations",
+    "hypothesis_semantics",
+    "hypotheses",
+    "uncertainty",
+    "probe",
+    "assistance_history",
+    "resolution",
+    "next_action",
+    "cohort_evidence",
+    "provenance",
+    "links"
+  ],
+  "properties": {
+    "schema_version": {"const": "hermes.misconception-dossier.v1"},
+    "projection_version": {"const": "misconception-dossier-projection.v1"},
+    "dossier_id": {"type": "string", "minLength": 1},
+    "run_id": {"type": "string", "minLength": 1},
+    "fixture_id": {"type": "string", "minLength": 1},
+    "domain": {"enum": ["xingce", "shenlun", "interview"]},
+    "module": {"type": "string", "minLength": 1},
+    "skills": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 32,
+      "items": {"$ref": "#/$defs/skill"}
+    },
+    "state": {
+      "enum": [
+        "awaiting_probe",
+        "processing_probe",
+        "awaiting_verification",
+        "processing_verification",
+        "completed",
+        "failed"
+      ]
+    },
+    "learning_status": {"$ref": "#/$defs/learning_status"},
+    "observations": {"$ref": "#/$defs/observations"},
+    "hypothesis_semantics": {"const": "ranked_candidates_never_causal_ground_truth"},
+    "hypotheses": {
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "allOf": [
+          {"$ref": "#/$defs/hypothesis"}
+        ]
+      }
+    },
+    "uncertainty": {"type": "number", "minimum": 0, "maximum": 1},
+    "probe": {"$ref": "#/$defs/probe"},
+    "assistance_history": {
+      "type": "array",
+      "maxItems": 128,
+      "items": {"$ref": "#/$defs/assistance_history_item"}
+    },
+    "resolution": {"$ref": "#/$defs/resolution"},
+    "next_action": {"$ref": "#/$defs/next_action"},
+    "cohort_evidence": {"$ref": "#/$defs/cohort_evidence"},
+    "provenance": {"$ref": "#/$defs/provenance"},
+    "links": {"$ref": "#/$defs/links"}
+  },
+  "$defs": {
+    "learning_status": {
+      "enum": [
+        "no_misconception_observed",
+        "awaiting_probe",
+        "processing_probe_response",
+        "awaiting_independent_verification",
+        "processing_verification_response",
+        "remediated_by_independent_transfer",
+        "needs_targeted_retry",
+        "inconclusive_needs_fresh_independent_verification"
+      ]
+    },
+    "skill": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["skill_id", "weight"],
+      "properties": {
+        "skill_id": {"type": "string", "minLength": 1},
+        "weight": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "score": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["score", "max_score", "passed"],
+      "properties": {
+        "score": {"type": "number", "minimum": 0},
+        "max_score": {"type": "number", "minimum": 0},
+        "passed": {"type": "boolean"}
+      }
+    },
+    "score_observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["observation_id", "kind", "value", "evidence"],
+      "properties": {
+        "observation_id": {"type": "string", "minLength": 1},
+        "kind": {"type": "string", "minLength": 1},
+        "value": {},
+        "evidence": {"type": "string", "minLength": 1}
+      }
+    },
+    "event_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["seq", "kind", "event_hash"],
+      "properties": {
+        "seq": {"type": "integer", "minimum": 1},
+        "kind": {"type": "string", "minLength": 1},
+        "event_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "nullable_event_ref": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["seq", "kind", "event_hash"],
+      "properties": {
+        "seq": {"type": "integer", "minimum": 1},
+        "kind": {"type": "string", "minLength": 1},
+        "event_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "response_event_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["seq", "event_hash"],
+      "properties": {
+        "seq": {"type": "integer", "minimum": 1},
+        "event_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "observations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["score", "items", "event"],
+      "properties": {
+        "score": {"$ref": "#/$defs/score"},
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 128,
+          "items": {"$ref": "#/$defs/score_observation"}
+        },
+        "event": {"$ref": "#/$defs/event_ref"}
+      }
+    },
+    "evidence_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "semantics"],
+      "properties": {
+        "kind": {"enum": ["initial_response_pattern", "targeted_probe_assessment"]},
+        "evidence_ids": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "event": {"$ref": "#/$defs/event_ref"},
+        "diagnostic_evidence_weight": {"type": "number", "minimum": 0, "maximum": 1},
+        "source_response_event": {"$ref": "#/$defs/response_event_ref"},
+        "assessment_event": {"$ref": "#/$defs/event_ref"},
+        "semantics": {"type": "string", "minLength": 1}
+      }
+    },
+    "prior": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "source_version", "sample_size", "population_calibrated"],
+      "properties": {
+        "kind": {"const": "engineering_prior"},
+        "source_version": {"type": "string", "minLength": 1},
+        "sample_size": {"const": 0},
+        "population_calibrated": {"const": false}
+      }
+    },
+    "hypothesis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rank",
+        "cause_id",
+        "label",
+        "claim_status",
+        "ranking_probability",
+        "probability_semantics",
+        "supporting_evidence",
+        "refuting_evidence",
+        "ranking_factors",
+        "prior"
+      ],
+      "properties": {
+        "rank": {"type": "integer", "minimum": 1},
+        "cause_id": {"type": "string", "minLength": 1},
+        "label": {"type": "string", "minLength": 1},
+        "claim_status": {
+          "enum": ["unconfirmed_hypothesis", "supported_hypothesis", "refuted_hypothesis"]
+        },
+        "ranking_probability": {"type": "number", "minimum": 0, "maximum": 1},
+        "probability_semantics": {"const": "relative_hypothesis_rank_not_population_error_rate"},
+        "supporting_evidence": {
+          "type": "array",
+          "maxItems": 128,
+          "items": {"$ref": "#/$defs/evidence_ref"}
+        },
+        "refuting_evidence": {
+          "type": "array",
+          "maxItems": 128,
+          "items": {"$ref": "#/$defs/evidence_ref"}
+        },
+        "ranking_factors": {
+          "type": "array",
+          "maxItems": 128,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "prior": {"$ref": "#/$defs/prior"}
+      }
+    },
+    "probe": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["prompt", "targets", "assessment_status", "event"],
+      "properties": {
+        "prompt": {"type": "string", "minLength": 1},
+        "targets": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "assessment_status": {"enum": ["assessed", "not_assessed"]},
+        "event": {"$ref": "#/$defs/nullable_event_ref"}
+      }
+    },
+    "assistance_history_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "phase",
+        "prompt_instance_id",
+        "ordinal",
+        "action",
+        "title",
+        "diagnostic_evidence_weight",
+        "policy_version",
+        "event"
+      ],
+      "properties": {
+        "phase": {"enum": ["probe", "verification"]},
+        "prompt_instance_id": {"type": "string", "minLength": 1},
+        "ordinal": {"type": "integer", "minimum": 1, "maximum": 6},
+        "action": {
+          "enum": [
+            "retry",
+            "locate_evidence",
+            "rule_hint",
+            "analogous_example",
+            "worked_step",
+            "full_explanation"
+          ]
+        },
+        "title": {"type": "string", "minLength": 1},
+        "diagnostic_evidence_weight": {"type": "number", "minimum": 0, "maximum": 1},
+        "policy_version": {"const": "assistance-evidence-policy.v1"},
+        "event": {"$ref": "#/$defs/event_ref"}
+      }
+    },
+    "resolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "independently_verified",
+        "effective",
+        "verification_event",
+        "update_event",
+        "reflection_event",
+        "note"
+      ],
+      "properties": {
+        "status": {"$ref": "#/$defs/learning_status"},
+        "independently_verified": {"type": "boolean"},
+        "effective": {"type": ["boolean", "null"]},
+        "verification_event": {"$ref": "#/$defs/nullable_event_ref"},
+        "update_event": {"$ref": "#/$defs/nullable_event_ref"},
+        "reflection_event": {"$ref": "#/$defs/nullable_event_ref"},
+        "note": {"type": "string", "minLength": 1}
+      }
+    },
+    "next_action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action"],
+      "properties": {
+        "action": {"type": ["string", "null"]},
+        "prompt_instance_id": {"type": "string", "minLength": 1},
+        "event": {"$ref": "#/$defs/nullable_event_ref"},
+        "target": {"type": "string", "pattern": "^/v1/"},
+        "reason": {"type": "string", "minLength": 1}
+      }
+    },
+    "cohort_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "sample_size", "reason", "display_policy"],
+      "properties": {
+        "status": {"const": "unavailable"},
+        "sample_size": {"const": 0},
+        "reason": {"type": "string", "minLength": 1},
+        "display_policy": {"type": "string", "minLength": 1}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trace_verified",
+        "source_trace_version",
+        "source_event_hash",
+        "fixture_content_sha256"
+      ],
+      "properties": {
+        "trace_verified": {"const": true},
+        "source_trace_version": {"type": "integer", "minimum": 1},
+        "source_event_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "fixture_content_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "links": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trace", "replay"],
+      "properties": {
+        "trace": {"type": "string", "pattern": "^/v1/runs/"},
+        "replay": {"type": "string", "pattern": "^/v1/runs/"}
+      }
+    }
+  }
+}

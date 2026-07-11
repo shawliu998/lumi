@@ -1,14 +1,31 @@
-# Lumi v0 architecture
+# Lumi target architecture and implemented P0.1 slice
+
+This document is the architectural direction, not a claim that every box is
+already implemented. The current executable slice is deliberately smaller:
+
+| Capability | Current status |
+| --- | --- |
+| Tauri + React Mac client, loopback Python sidecar, SQLite hash-chained trace and immutable content snapshots | implemented in P0.1 |
+| Real first answer → targeted probe → cause-specific teaching → independent verification → per-run KT update | implemented for one visible Xingce path; deterministic representative contracts cover Xingce, Shenlun, and Interview |
+| Six-level authored assistance and event-sourced misconception dossier | implemented in P0.1; policies are synthetic and uncalibrated |
+| Today plan and independent ReviewSchedule | planned P0.2 |
+| Study Pack and Shenlun process coach | planned P0.3/P0.4 |
+| Durable jobs, registries, confirmed memory, longitudinal KT, bounded background workers | planned P1 |
+| Consented event flywheel, DuckDB analytics, delayed-retention evaluation, coach view, eligible cohort priors | planned P2 |
+
+The current client is JavaScript/React rather than TypeScript. There is no
+DuckDB store, Agent Lab, Keychain integration, longitudinal learner model,
+durable job system, or background scheduler yet.
 
 ## System shape
 
-Lumi uses a local macOS shell, a typed application layer, and an AI/analytics
-sidecar. The architecture is a modular monolith for v0: process boundaries are
-clear, but premature distributed services are avoided.
+The target is a local macOS modular monolith with explicit application, agent,
+domain, learning, and analytics boundaries. P0.1 currently instantiates the UI,
+loopback sidecar, deterministic learning packages, and SQLite trace portion.
 
 ```mermaid
 flowchart TB
-  UI["macOS client: Tauri + React/TypeScript"]
+  UI["macOS client: Tauri + React"]
   APP["Local application service"]
   ORCH["Lumi orchestrator"]
   TOOLS["Typed tool registry"]
@@ -17,7 +34,7 @@ flowchart TB
   I["Interview module"]
   LEARN["Diagnosis + KT + tutor policy"]
   DATA["SQLite learner/event store"]
-  ANALYTICS["DuckDB cohort and evaluation store"]
+  ANALYTICS["DuckDB consented analytics store (P2)"]
   AI["Python AI/KT sidecar"]
   PROVIDERS["Local/cloud model adapters"]
   TRACE["Trajectory and evaluation store"]
@@ -44,21 +61,22 @@ flowchart TB
   PACK --> I
 ```
 
-## Technology decision
+## Technology direction
 
 - Tauri 2 provides the macOS app shell, native permissions, updates later, and a
   smaller footprint than Electron.
-- React and TypeScript implement the Codex-inspired multi-pane UI and typed
-  application state.
+- React currently implements the Khanmigo-grounded multi-pane UI. TypeScript is
+  a possible later migration, not a present capability.
 - Rust owns privileged local operations, sidecar lifecycle, and a narrow command
   surface. It is not the home for rapidly changing learning research.
 - Python owns KT experiments, statistical inference, embeddings where needed,
   and evaluation jobs behind a versioned local protocol.
-- SQLite is authoritative for transactional learner state and event history.
-- DuckDB reads immutable/exported events for cohort priors, offline experiments,
-  dashboards, and model comparisons.
+- SQLite currently owns append-only per-run events and immutable content
+  snapshots. Authoritative longitudinal learner state is P1 work.
+- DuckDB ingestion, consent lineage, cohort priors, dashboards, and model
+  comparisons are P2 work.
 
-## UI information architecture
+## Target UI information architecture
 
 Borrow the density and inspectability of the Codex desktop client without cloning
 branding:
@@ -72,22 +90,25 @@ branding:
 - Command palette: start practice, inspect a skill, replay a trajectory, import a
   package, or switch provider.
 
-Use progressive disclosure: learners see concise coaching; reviewers can expand
-the exact evidence and machine-readable state in Agent Lab.
+P0.1 implements Today, disabled future-task surfaces, one real training tool,
+and an evidence-only skill report. Agent Lab and the broader navigation above
+remain future product surfaces.
 
-## Agent runtime
+## Agent runtime: current boundary and P1 target
 
-The orchestrator is a durable state machine, not an unbounded autonomous loop:
+The current runtime is a bounded, append-only phase machine with interrupt and
+resume at learner-response boundaries. It is not crash-recoverable durable-job
+infrastructure. The P1 target is:
 
 ```text
 IDLE → OBSERVE → DIAGNOSE → SELECT_ACTION → EXECUTE
      → VERIFY → UPDATE_STATE → SCHEDULE → REFLECT → IDLE
 ```
 
-Every transition has typed input/output, a retry budget, timeout, cancellation,
-and an explicit failure state. Tool calls are idempotent where possible. State
-updates use optimistic concurrency and an append-only event before materialized
-views are changed.
+P0.1 has versioned inputs/outputs, SQLite compare-and-append, explicit failure
+states, and idempotent assistance commands. Retry budgets, cancellation,
+leases/fencing, checkpoint recovery, and general command-result idempotency are
+P1 requirements.
 
 The runtime borrows useful modern-agent patterns:
 
@@ -99,9 +120,9 @@ The runtime borrows useful modern-agent patterns:
 - skills/playbooks as versioned teaching procedures;
 - memory tiers with explicit promotion and expiry rules.
 
-## Memory and state
+## Target memory and state
 
-Separate four kinds of memory:
+The target separates four kinds of memory:
 
 1. Event memory: immutable attempts, edits, hints, timing, transcripts, probes.
 2. Learner model: computed mastery distributions, misconceptions, preferences,
@@ -109,9 +130,9 @@ Separate four kinds of memory:
 3. Episodic summaries: compact session summaries linked to source events.
 4. Agent working memory: temporary context with a short lifetime.
 
-Only event memory is evidence. Computed states are rebuildable projections with
-model and schema versions. Natural-language summaries cannot directly change
-mastery.
+P0.1 implements the event trace and rebuildable per-run projections only. It has
+no confirmed preference-memory store or authoritative longitudinal KT state.
+Natural-language summaries cannot directly change mastery.
 
 ## Shared learning contract
 
@@ -143,9 +164,9 @@ evaluation runs.
 Diagnosis combines:
 
 ```text
-P(cause | evidence, learner, cohort, content)
+P(cause | evidence, learner, prior, content)
 ∝ likelihood(evidence | cause)
-  × cohort prior(cause | subtype, distractor, ability band)
+  × versioned prior(cause | subtype, distractor)
   × learner prior(cause | history, prerequisite state)
 ```
 
@@ -153,7 +174,8 @@ The cause taxonomy is subtype-specific. “Careless” is not an acceptable term
 cause without an observable operational definition such as unit omission after a
 correct intermediate result.
 
-KT v0 is an ensemble research layer with an interpretable production default:
+Current P0.1 KT is a deterministic per-run BKT/PFA/Rasch-style baseline. The
+following is the broader research target:
 
 - BKT/PFA-style per-skill state and forgetting for the initial online update;
 - IRT-style item difficulty/discrimination estimates when data permits;
@@ -167,10 +189,11 @@ ranges, evidence links, version compatibility, and rollback/rebuild behavior.
 
 ## Tutor policy
 
-The policy selects among ask, hint, worked example, micro-lesson, isomorphic item,
-transfer item, spaced review, or stop/rest. v0 uses explicit rules plus expected
-information gain. Logged trajectories later support contextual-bandit experiments
-and offline policy evaluation; online reinforcement learning is out of scope.
+P0.1 implements an authored six-level assistance ladder, targeted probe,
+cause-specific teaching variant, and independent transfer item. Expected-
+information-gain selection, spaced review, contextual-bandit experiments, and
+offline policy evaluation are future work; online reinforcement learning is out
+of scope.
 
 ## Model routing policy
 
@@ -206,19 +229,18 @@ from documented requirements, owned test fixtures, and explicit import contracts
 
 ## Privacy, safety, and offline degradation
 
-- Default storage is local and encryptable; secrets use macOS Keychain.
-- Logs redact response content and personal data by schema, not string guessing.
-- Cloud providers are opt-in per capability and display the data boundary before
-  first use. A no-cloud mode must remain available.
-- Offline deterministic scoring, content retrieval, learner history, baseline KT,
-  and scheduling continue to work. Generative coaching may use a local model or a
-  constrained template fallback.
-- Audio retention is separately configurable; transcripts and extracted evidence
-  can be retained without keeping raw recordings.
+- P0.1 storage and scoring are local; the sidecar binds only to loopback and the
+  packaged app manages its lifecycle.
+- P0.1 minimizes persisted learner responses and applies versioned redaction for
+  common PII and secret forms. It does not claim comprehensive schema-driven
+  privacy classification.
+- No cloud provider is enabled in the P0.1 path.
+- Keychain-backed secrets, encrypted stores, cloud-consent UX, audio retention,
+  local generative models, and offline scheduling are future capabilities.
 
 ## Observability
 
-Each trajectory includes correlation IDs and spans for user event, policy choice,
-retrieval, prompt construction, model response, verifier result, tool call,
-database update, and evaluation. The Agent Lab supports timeline, state diff,
-JSON export, replay in dry-run mode, and comparison across policy/model versions.
+P0.1 records append-only events, tool/state artifacts, model/policy versions,
+hash verification, and replay. A reviewer can inspect JSON through the local
+service and release reports. Timeline UI, state-diff explorer, export controls,
+and cross-policy comparison in an Agent Lab are future work.
