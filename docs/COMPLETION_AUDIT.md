@@ -6,7 +6,7 @@ mean population learning efficacy or production distribution has been proved.
 
 | Requirement | Status | Authoritative evidence | Remaining limitation |
 | --- | --- | --- | --- |
-| `peikao` is the Lumi main repository | complete | root `README.md`, `AGENTS.md`, module layout; `origin=https://github.com/shawliu998/zhishixingqiu.git` | P0.1 milestone branch still requires final verified push |
+| `peikao` is the Lumi main repository | complete | root `README.md`, `AGENTS.md`, module layout; `origin=https://github.com/shawliu998/zhishixingqiu.git`; published P0.1 implementation commit `c62c66a` | review/merge remains pending; implementation continues on the milestone branch |
 | Production Shenlun repository remains read-only | complete | `scripts/check_boundaries.py`; release `readonly_boundary` gate | must remain an operational invariant on every future run |
 | Editable Xingce data factory | complete for bounded factory | `$HOME/Documents/xingcetiku/hermes`; 100-item overlay build/validation; `ENRICHMENT_AUDIT_V1.md` | 97/100 have candidate skill/misconception mappings; 3 remain explicitly blocked by missing key content |
 | Explainable KT and cause diagnosis | complete for deterministic v0 | `engine/` tests; release `diagnosis` and `kt` gates | no population calibration or delayed-retention evidence yet |
@@ -22,13 +22,12 @@ mean population learning efficacy or production distribution has been proved.
 | Automated release evidence | complete for current P0.1 source | `scripts/verify_core.py`; `evals/run_all.py`; fresh 15/15 release run `run-20260711T095034Z` | local deterministic/loopback evidence only; no population efficacy claim |
 | Portfolio evidence | complete for v0 mechanics | `portfolio/`, release reports, `client/design-qa.md`, Mac artifact | learner interviews, calibrated population results, and notarized distribution remain future evidence |
 
-## Current release blockers
+## Current release state
 
 P0.1 has passed the adversarial re-audit, fresh 15/15 release gates, final full
 verifier, strict/deep signed `Lumi.app` checks, bundle-resident sidecar checks,
-and frozen Shenlun boundary. The only remaining release action is the intentional
-Git commit and push of this exact source cut. P0.2 implementation remains blocked
-until that publication completes.
+and frozen Shenlun boundary. Implementation commit `c62c66a` is published on
+`origin/codex/lumi-p0-p1-p2`; P0.2 is now the next implementation slice.
 
 Notarization, population calibration, delayed-retention evidence, full item
 coverage, crash recovery, continuation command-result idempotency, and

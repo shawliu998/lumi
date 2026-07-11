@@ -1,8 +1,10 @@
 # Lumi P0 → P1 → P2 execution contract
 
-Status: active. This document is the phase gate for the post-v0 product build.
-Later phases may prepare read-only audits and contract proposals, but production
-implementation cannot be merged before the preceding phase passes.
+Status: active. P0.1 is verified and published on
+`origin/codex/lumi-p0-p1-p2` at implementation commit `c62c66a`; P0.2 is the
+next implementation gate. Later phases may prepare read-only audits and contract
+proposals, but production implementation cannot be merged before the preceding
+phase passes.
 
 ## Non-negotiable boundaries
 

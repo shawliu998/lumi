@@ -1,6 +1,6 @@
 # Lumi P0.1 completion audit
 
-Status: **release candidate; not yet Git-released**
+Status: **verified and Git-published P0.1 milestone**
 Evidence cut: `run-20260711T095034Z`, generated
 `2026-07-11T09:50:34.167001+00:00`
 Release report: `evals/reports/latest.json` and `evals/reports/latest.md`
@@ -29,8 +29,8 @@ real sidecar evidence for its single enabled Xingce fixture.
 All bounded P0.1 engineering gates are closed for this source cut. The packaged
 `Lumi.app` was rebuilt from the same backend and client, explicitly ad-hoc signed,
 strict/deep verified, exercised through its staged and bundle-resident sidecars,
-and checked for normal-exit and startup-failure cleanup. The milestone is not yet
-Git-released only because the verified commit and push have not happened.
+and checked for normal-exit and startup-failure cleanup. Implementation commit
+`c62c66a` is published on `origin/codex/lumi-p0-p1-p2` for review.
 
 ## Requirement-to-evidence audit
 
@@ -52,7 +52,7 @@ Git-released only because the verified commit and push have not happened.
 | Client offline, invalid/error, conflict, and processing behavior | **PASS — bounded** | `client/design-qa.md`; client API/adapter tests | Offline uses a stopped real sidecar and exposes no fallback write. Invalid-contract/error behavior is exercised with a strict health-contract harness. A real stale-version conflict requires restart. Processing states are strict DOM/contract-harness evidence: they remove the consumed prompt and inputs and offer only a fresh-attempt restart; they are not evidence of crash recovery. |
 | Packaged Mac app uses the current source | **PASS — bounded** | `desktop/src-tauri/target/debug/bundle/macos/Lumi.app`; `npm run check:sidecar`; `npm run check:bundled-sidecar`; `npm run check:signature`; `npm run check:managed-app`; `cargo check --locked`; app-tree SHA-256 `f25c4b9efbb9f6ba8fe85b26a2b46a4d9fb69a441b21b219a08a0dbab0a8276a` | The ARM64 debug app embeds `index-xjOwtbZH.js`, returns sidecar `0.2.0` with 42 scenarios, rejects PII/secret-like run and command IDs, passes strict/deep ad-hoc signature verification, and leaves zero residual managed process after normal exit and occupied-port failure. It is not Developer ID signed, notarized, universal, or production-distributed. |
 | Production Shenlun repository remains read-only | **PASS** | `readonly_boundary`; `scripts/check_boundaries.py`; root `AGENTS.md` | The final full verifier repeated the frozen boundary after packaging: head `b5a6a4065cf401d54b2809ce7639217c95db3f5d`, clean worktree, no dependency or symlink into the production repository. This remains an operational invariant. |
-| Portfolio evidence is claim-scoped | **PASS — bounded** | `portfolio/EVIDENCE_INDEX.md`; `portfolio/DEMO_SCRIPT.md`; `portfolio/CASE_STUDY.md`; `client/qa/README.md`; final report and Mac artifact above | Current portfolio evidence may demonstrate local, auditable mechanics on synthetic fixtures and one real browser/sidecar path. Only the `p01-authentic-*` allow-list is current visual evidence. Git publication is still pending and population/product claims remain prohibited. |
+| Portfolio evidence is claim-scoped | **PASS — bounded** | `portfolio/EVIDENCE_INDEX.md`; `portfolio/DEMO_SCRIPT.md`; `portfolio/CASE_STUDY.md`; `client/qa/README.md`; final report and Mac artifact above | Current portfolio evidence may demonstrate local, auditable mechanics on synthetic fixtures and one real browser/sidecar path. Only the `p01-authentic-*` allow-list is current visual evidence. The review branch is published; population/product claims remain prohibited. |
 
 ## Current P0.1 gate decision
 
@@ -67,11 +67,11 @@ Git-released only because the verified commit and push have not happened.
 | Final `Lumi.app` rebuild and strict/deep ad-hoc signature verification | **PASS** |
 | Final bundle-resident identifier guards, managed lifecycle, and zero-residual-process exercise | **PASS** |
 | Final full verifier and frozen-boundary recheck after packaging | **PASS** |
-| P0.1 Git commit/push | **PENDING; not authorized by this audit itself** |
+| P0.1 Git commit/push | **PASS — `c62c66a` on `origin/codex/lumi-p0-p1-p2`** |
 
-Therefore, the P0.1 implementation is an evidence-backed, fully verified
-**release candidate**. The remaining gate is publication of this exact source
-cut as an intentional Git commit and pushed milestone branch.
+Therefore, the P0.1 implementation is an evidence-backed, fully verified and
+Git-published milestone. Review/merge remains a repository workflow decision;
+P0.2 may now begin on top of this published source cut.
 
 ## Explicit P1 deferrals
 
@@ -132,7 +132,7 @@ These are known boundaries, not P0.1 defects hidden by a green evaluation run:
 
 ## Portfolio-safe wording
 
-Allowed for this verified release candidate before Git publication:
+Allowed for this verified, Git-published P0.1 milestone:
 
 > On 42 owned synthetic representative fixtures and one real loopback browser
 > path, Lumi enforces a versioned answer → probe → cause-specific teaching →
@@ -162,4 +162,5 @@ Not allowed:
 - [x] Run the final full verifier and repeat the frozen Shenlun boundary check.
 - [x] Confirm the final report, Mac artifact, and portfolio index refer to the
   same source cut.
-- [ ] Only then create and push the P0.1 Git milestone.
+- [x] Create and push the P0.1 Git milestone (`c62c66a`,
+  `origin/codex/lumi-p0-p1-p2`).
