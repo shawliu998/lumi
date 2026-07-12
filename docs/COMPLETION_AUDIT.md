@@ -4,6 +4,25 @@ This is the live requirement-to-evidence audit for the local Lumi objective.
 `complete` means the stated scope has direct reproducible evidence; it does not
 mean population learning efficacy or production distribution has been proved.
 
+## Current correction status (supersedes stale P0.2-only wording below)
+
+- P0.1 assistance/diagnosis and P0.2 scheduling remain bounded, verified
+  foundations.
+- P0.3 Study Pack is implemented for pasted text and text-bearing PDF; real
+  learner QA exposed and corrected answer-feedback focus, score-only completion,
+  and refresh-history loss at commit `3b237a1`.
+- These slices do **not** yet form the required five-minute product loop. The
+  active P0.3.1 gate must connect one real Xingce item through subtype-specific
+  diagnosis, probe, targeted teaching, unseen parallel transfer, independent KT
+  commit, and explainable review scheduling.
+- P0.4 Shenlun, user-facing Interview, P1 durable agent infrastructure, and P2
+  data/evaluation infrastructure remain unimplemented production work.
+- The current 42 representative synthetic contracts are backend coverage, not
+  three completed domain products or real learner trials.
+
+Until P0.3.1 passes, `complete` rows below describe their bounded mechanism only
+and must not be combined into a claim that the end-to-end P0 product is complete.
+
 | Requirement | Status | Authoritative evidence | Remaining limitation |
 | --- | --- | --- | --- |
 | `peikao` is the Lumi main repository | complete | root `README.md`, `AGENTS.md`, module layout; `origin=https://github.com/shawliu998/zhishixingqiu.git`; P0.1 commit `c62c66a`; P0.2 implementation commit `5e8709d0a1e35bfa85d5a91db2bb42dba9e10af0` | review/merge remains pending; implementation continues on the milestone branch |

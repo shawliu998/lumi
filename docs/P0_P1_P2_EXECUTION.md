@@ -1,12 +1,11 @@
 # Lumi P0 → P1 → P2 execution contract
 
-Status: active. P0.1 is verified and published on
-`origin/codex/lumi-p0-p1-p2` at implementation commit `c62c66a`. P0.2 is
-verified by final release cut `run-20260711T132028Z` and published at
-implementation commit `5e8709d0a1e35bfa85d5a91db2bb42dba9e10af0`; P0.3
-is the next production slice. Later phases may prepare read-only audits and isolated evaluation
-scaffolding, but production implementation cannot be merged before the
-preceding phase passes.
+Status: active. P0.1 and P0.2 are verified and published on
+`origin/codex/lumi-p0-p1-p2`. The bounded P0.3 Study Pack implementation is at
+`0749092`; the real-learner feedback/history correction is at `3b237a1`.
+P0.3.1 product-loop correction is now the only production slice. P0.4, P1, and
+P2 may retain read-only audits, but their production work cannot begin until the
+five-minute vertical loop below passes a real learner browser review.
 
 ## Non-negotiable boundaries
 
@@ -107,6 +106,70 @@ Gate:
 - generated questions must be answerable from cited evidence and pass schema,
   scoring, leakage, and replay checks.
 
+### P0.3.1 Five-minute product-loop correction
+
+The P0.1, P0.2, and P0.3 mechanisms currently exist as bounded slices. This
+correction joins them into one learner-visible vertical path before any new
+platform phase is allowed:
+
+`real Xingce item/material → first answer → ranked subtype-specific cause
+hypotheses → minimal probe → targeted micro-lesson/progressive help → unseen
+parallel transfer item → independent verification → explainable KT commit →
+review task`.
+
+Deliver:
+
+- a small immutable Xingce data-analysis export with manifest, source version,
+  checksums, complete stems/materials/options/keys, and no direct dependency on
+  mutable question-bank working files;
+- a first-answer screen that visibly presents material, question, choices or
+  process input and records answer, confidence, elapsed time, and bounded
+  reasoning evidence;
+- a versioned data-analysis cause tree covering at least definition/scope,
+  base/current period, growth amount/rate, denominator, unit, time range,
+  requested quantity, extraction, and calculation errors;
+- a probe selected to distinguish the leading hypotheses, followed by teaching
+  that targets the supported/refuted evidence rather than the wrong answer in
+  general;
+- a genuinely unseen parallel item that changes the diagnostic variable while
+  preserving the skill target; assisted work cannot count as independent;
+- one deterministic committer that alone may update KT and schedule review
+  after independent verification;
+- an explicit evidence-proposal bridge from Study Pack/domain activity into the
+  diagnostic loop; Study Pack itself still cannot write KT, misconception,
+  TodayPlan, or ReviewSchedule.
+
+Five-minute acceptance script:
+
+1. A learner opens one real, readable data-analysis item without inspecting
+   developer artifacts or knowing fixture IDs.
+2. The learner submits an answer and confidence; the interface keeps the
+   question and response visible and explains the next diagnostic step.
+3. Lumi shows observed facts separately from two or more visibly unconfirmed
+   cause hypotheses.
+4. One probe changes the evidence for at least one hypothesis; the UI shows
+   what was supported or refuted without claiming causality.
+5. The learner receives the smallest relevant teaching action and can request
+   progressively stronger help.
+6. A different parallel item is answered without help. Only this independent
+   verification may produce a KT delta.
+7. The result explains the state change and the resulting review task, including
+   reason, expected duration, success criterion, and skip consequence.
+
+Gate:
+
+- a real learner completes the script in the browser at desktop and narrow
+  geometry; question, feedback, and next action are visible in the current
+  viewport or reached by an obvious bounded scroll;
+- component interaction tests exercise typing, submission, feedback, explicit
+  next-step clicks, recovery, and completion; source-text regex checks are only
+  supplemental;
+- the transfer item is not the first item or the same-fixture retest;
+- no synthetic/evaluation answer enters learner projections or visual evidence;
+- the final trace replays, every state delta cites evidence, the protected
+  Shenlun repository remains untouched, and the Mac app is rebuilt only for the
+  completed release candidate.
+
 ### P0.4 Shenlun process coach
 
 Deliver one owned representative path:
@@ -165,7 +228,8 @@ while population efficacy remains unproven.
 
 ## Automation and evidence
 
-- Heartbeat automation: `lumi-p0-p2`, every 30 minutes on the supervisor task.
+- Heartbeat automation: `lumi-p0-p2` / “Lumi 产品主线持续打磨”, every two hours
+  on the supervisor task while waiting for human-only evidence.
 - Canonical evidence remains in `evals/reports/`, `client/design-qa.md`, and
   `docs/COMPLETION_AUDIT.md`.
 - Each phase ends with an explicit requirement-to-evidence audit before the next

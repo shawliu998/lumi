@@ -47,10 +47,13 @@ overridden explicitly with `LUMI_SHENLUN_EXPECTED_HEAD`.
 Bulk question-bank data remains in `$HOME/Documents/xingcetiku`. Lumi
 consumes only bounded, versioned exports with provenance and checksums.
 
-Current P0.2 evidence proves local, replayable learning and scheduling mechanics
-on one launchable owned fixture. It does not prove unseen-item transfer, delayed
-retention, calibrated population effects, or production macOS distribution
-readiness.
+Current evidence proves bounded P0.1 assistance/diagnosis, P0.2 scheduling, and
+P0.3 cited Study Pack mechanics. The active milestone is P0.3.1: join those
+mechanisms into one five-minute real Xingce path with a subtype-specific probe,
+targeted teaching, a genuinely unseen parallel transfer item, independent KT
+commit, and review scheduling. Until that passes, the repository does not claim
+a complete P0 product, three user-facing domains, unseen-item transfer, delayed
+retention, calibrated population effects, or production macOS distribution.
 
 ## Safety boundary
 

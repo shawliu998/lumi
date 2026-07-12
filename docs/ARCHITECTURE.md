@@ -1,4 +1,4 @@
-# Lumi target architecture and implemented P0.2 slice
+# Lumi target architecture and implemented P0.3 foundation
 
 This document is the architectural direction, not a claim that every box is
 already implemented. The current executable slice is deliberately smaller:
@@ -9,7 +9,8 @@ already implemented. The current executable slice is deliberately smaller:
 | Real first answer → targeted probe → cause-specific teaching → independent verification → per-run KT update | implemented for one visible Xingce path; deterministic representative contracts cover Xingce, Shenlun, and Interview |
 | Six-level authored assistance and event-sourced misconception dossier | implemented in P0.2; policies are authored engineering policy and uncalibrated |
 | Today plan and independent ReviewSchedule | implemented for completed human-local traces; one owned same-fixture launch contract |
-| Study Pack and Shenlun process coach | planned P0.3/P0.4 |
+| Cited Study Pack | implemented for pasted text and text-bearing PDF; active work is connecting verified evidence proposals into the learner-visible diagnostic loop |
+| Shenlun process coach | planned P0.4; production repository remains read-only |
 | Durable jobs, registries, confirmed memory, longitudinal KT, bounded background workers | planned P1 |
 | Consented event flywheel, DuckDB analytics, delayed-retention evaluation, coach view, eligible cohort priors | planned P2 |
 
