@@ -95,6 +95,47 @@ class IntegrationLoopTests(unittest.TestCase):
         self.assertIn("provenance", phase_events[4].payload["output"]["post_state"])
         session.store.close()
 
+    def test_product_metadata_binds_real_distinct_transfer_item_and_target_skill(self) -> None:
+        fixture = deepcopy(self.fixture)
+        fixture["task"]["item_id"] = "real-first-item"
+        fixture["task"]["content_signature"] = "first-content-hash"
+        fixture["independent_verify"]["item_id"] = "real-transfer-item"
+        fixture["independent_verify"]["content_signature"] = "transfer-content-hash"
+        fixture["independent_verify"]["novelty_status"] = "unseen_parallel_item"
+        fixture["kt_target_skill_id"] = fixture["skills"][1]["skill_id"]
+        store = EventStore(Path(self.temporary.name) / "real-item-metadata.sqlite3")
+        session = IntegrationSession(fixture, SCENARIOS["success"], store)
+        result = session.run("real-item-metadata")
+
+        observe = result.state.artifacts["observe"][-1]
+        teach = result.state.artifacts["teach"][-1]
+        verify = result.state.artifacts["verify"][-1]
+        update = result.state.artifacts["update"][-1]
+        self.assertEqual(observe["attempt"]["item_id"], "real-first-item")
+        self.assertEqual(
+            observe["attempt"]["evidence_features"]["content_signature"],
+            "first-content-hash",
+        )
+        self.assertEqual(
+            teach["independent_verification_item"],
+            {
+                "item_id": "real-transfer-item",
+                "content_signature": "transfer-content-hash",
+                "novelty_status": "unseen_parallel_item",
+                "options": fixture["independent_verify"]["pass_condition"]["options"],
+            },
+        )
+        self.assertNotIn(
+            "correct_option", teach["independent_verification_item"]
+        )
+        self.assertEqual(verify["verification_attempt"]["item_id"], "real-transfer-item")
+        self.assertEqual(
+            verify["verification_attempt"]["evidence_features"]["novelty_status"],
+            "unseen_parallel_item",
+        )
+        self.assertEqual(update["skill_id"], fixture["skills"][1]["skill_id"])
+        session.store.close()
+
     def test_real_responses_drive_distinct_score_and_diagnosis_paths(self) -> None:
         correct_session, correct = run_attempt(
             self.fixture, "B", 0.9, 18.0, Path(self.temporary.name) / "correct.sqlite3", run_id="real-correct"

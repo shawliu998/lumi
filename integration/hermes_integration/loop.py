@@ -268,6 +268,18 @@ class IntegrationSession:
             diagnosis.get("hypotheses", []),
             probe.get("assessment"),
         )
+        verification_condition = self.fixture["independent_verify"]["pass_condition"]
+        verification_item = {
+            "item_id": self.fixture["independent_verify"].get(
+                "item_id", f"{self.fixture['fixture_id']}:independent-verify"
+            ),
+            "content_signature": self.fixture["independent_verify"].get("content_signature"),
+            "novelty_status": self.fixture["independent_verify"].get(
+                "novelty_status", "different_authored_prompt"
+            ),
+        }
+        if verification_condition.get("scorer") == "exact_option_v1":
+            verification_item["options"] = dict(verification_condition["options"])
         return {
             "prompt": selection["prompt"],
             "strategy": selection["strategy"],
@@ -276,6 +288,9 @@ class IntegrationSession:
                 str(payload["run_id"]), "verification"
             ),
             "independent_verification_response_mode": self.fixture["independent_verify"]["response_mode"],
+            # Safe learner-facing projection: the correct option remains only
+            # inside the scorer contract and is never copied into this item.
+            "independent_verification_item": verification_item,
             "based_on": {
                 "probe_selection": probe["selection"],
                 "top_hypothesis": selection["instructional_focus"],
@@ -293,7 +308,17 @@ class IntegrationSession:
 
     def _verify(self, payload: Mapping[str, Any], context: ToolContext) -> Mapping[str, Any]:
         observe = payload["latest_artifacts"]["observe"]
-        skill = self.fixture["skills"][0]
+        target_skill_id = self.fixture.get("kt_target_skill_id")
+        skill = next(
+            (
+                item
+                for item in self.fixture["skills"]
+                if target_skill_id is not None and item["skill_id"] == target_skill_id
+            ),
+            self.fixture["skills"][0],
+        )
+        if target_skill_id is not None and skill["skill_id"] != target_skill_id:
+            raise ValueError("kt_target_skill_id is not present in fixture skills")
         initial_state = self._initial_state(skill["skill_id"])
         parameters = self._parameters(skill["skill_id"])
         initial_update = self.kt.update_mastery(
@@ -421,7 +446,7 @@ class IntegrationSession:
         return {
             "attempt_id": attempt_id,
             "learner_id": self.learner_id,
-            "item_id": self.fixture["fixture_id"],
+            "item_id": self.fixture.get("task", {}).get("item_id", self.fixture["fixture_id"]),
             "item_type": self.fixture["module"],
             "correct": bool(score["passed"]),
             "response_time_seconds": self.scenario.response_time_seconds,
@@ -438,6 +463,7 @@ class IntegrationSession:
             "evidence_features": {
                 "domain_observations": score["observations"],
                 "adapter_version": score["adapter_version"],
+                "content_signature": self.fixture.get("task", {}).get("content_signature"),
             },
         }
 
@@ -449,7 +475,9 @@ class IntegrationSession:
         return {
             "attempt_id": f"{run_id}:independent-verify",
             "learner_id": self.learner_id,
-            "item_id": f"{self.fixture['fixture_id']}:independent-verify",
+            "item_id": self.fixture["independent_verify"].get(
+                "item_id", f"{self.fixture['fixture_id']}:independent-verify"
+            ),
             "item_type": self.fixture["module"],
             "correct": correct,
             "response_time_seconds": self.scenario.response_time_seconds,
@@ -465,6 +493,13 @@ class IntegrationSession:
             "cause_likelihoods": {},
             "evidence_features": {
                 "different_prompt": True,
+                "novelty_status": self.fixture["independent_verify"].get(
+                    "novelty_status", "different_authored_prompt"
+                ),
+                "content_signature": self.fixture["independent_verify"].get("content_signature"),
+                "source_item_id": self.fixture.get("task", {}).get(
+                    "item_id", self.fixture["fixture_id"]
+                ),
                 "scoring": scoring,
                 "assistance": {
                     "hints_used": self.scenario.verification_hints,
