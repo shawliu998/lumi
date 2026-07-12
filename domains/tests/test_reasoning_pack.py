@@ -165,6 +165,20 @@ class ReasoningPackTests(unittest.TestCase):
             entry = entries_by_skills[tuple(transfer["target_skill_ids"])]
             self.assertNotEqual(transfer["assessment_format"], entry["assessment_format"])
 
+    def test_p02_supports_role_hypothesis_only_with_an_explicit_necessary_to_sufficient_error(self) -> None:
+        records = self.read_json("records.json")["records"]
+        probe = next(record for record in records if record["record_id"] == "P02")
+        teaching = next(record for record in records if record["record_id"] == "T02")
+
+        self.assertEqual(probe["candidate_evidence_map"]["A"], {"M-ROLE": "support", "M-READ": "insufficient"})
+        self.assertIn("必要条件", probe["options"]["A"])
+        self.assertIn("一定", probe["options"]["A"])
+        self.assertEqual(probe["candidate_evidence_map"]["D"], {"M-ROLE": "refute", "M-READ": "refute"})
+        self.assertIn("已登记", probe["options"]["D"])
+        self.assertIn("未领取", probe["options"]["D"])
+        self.assertNotIn("发生前", teaching["teaching_content"])
+        self.assertIn("凡是领取设备的人都已登记", teaching["teaching_content"])
+
     def test_rejects_probe_without_complete_option_level_evidence_map(self) -> None:
         records = self.read_json("records.json")
         probe = next(record for record in records["records"] if record["record_id"] == "P02")

@@ -119,20 +119,20 @@
       "record_id": "P02",
       "role": "probe",
       "title": "最小探查：必要不等于充分",
-      "prompt": "规则是“领取设备 → 已登记”。下列哪种情况与该规则相容，并能反驳“已登记 → 领取设备”？",
+      "prompt": "规则是“领取设备 → 已登记”。下列哪项判断最恰当地说明“已登记”不是“领取设备”的充分条件？",
       "response_mode": "single_choice",
       "assessment_format": "countermodel_selection",
       "options": {
-        "A": "某人已登记，并且已经领取设备。",
-        "B": "某人未登记，也没有领取设备。",
-        "C": "某人领取了设备，却没有登记。",
-        "D": "某人已登记，但还没有领取设备。"
+        "A": "“已登记”是领取设备的必要条件，所以已登记的人一定已经领取设备。",
+        "B": "某人未登记，也没有领取设备，因此无法判断“已登记”是否充分。",
+        "C": "某人领取了设备，却没有登记，因此“已登记”不是充分条件。",
+        "D": "某人已登记，但未领取设备；这与规则相容，所以已登记不必推出领取设备。"
       },
       "correct_option": "D",
       "formalization": "received -> registered; registered and not received is a compatible countermodel to registered -> received",
       "answer_proof": "“已登记且未领取”不违反领取→登记，同时反驳登记→领取，因此说明登记不是充分条件。",
       "distractor_map": {
-        "A": "positive_example_not_counterexample",
+        "A": "necessary_as_sufficient",
         "B": "compatible_but_non_discriminating",
         "C": "violates_rule"
       },
@@ -156,7 +156,7 @@
       "independence_group": "probe-role-01",
       "content_origin": "original_lumi",
       "review_status": "draft_unreviewed",
-      "record_sha256": "f4192b0802f0e528566d0523b7e7dfe157948c77b1b7abd6aaea5daa79a98230"
+      "record_sha256": "67f62efda086beda2f79d4c3a1368aa313ee38c236d622251b759e5ca26494f3"
     },
     {
       "record_id": "P03",
@@ -226,7 +226,7 @@
       "title": "前提不是保证",
       "teaching_strategy": "necessary_sufficient_contrast",
       "logic_rule": "B→A 表示 A 是 B 的必要条件；A∧非B 与该规则相容，因此 A 不必充分。",
-      "teaching_content": "必要条件像动作发生前必须具备的证件；有证件只说明不缺这个前提，不说明动作已经发生。用“已登记但未领取”这个兼容情形检验：登记必要，但不充分。",
+      "teaching_content": "“登记”是“领取”的必要条件，只说明凡是领取设备的人都已登记；它并不说明凡是已登记者都领取了设备。检验反向时，只要找到“已登记但未领取”且不违背规则的情形，就能知道登记不是充分条件。",
       "target_skill_ids": [
         "xingce.judgment.conditional.necessary_sufficient_role"
       ],
@@ -237,7 +237,7 @@
       "independence_group": "teach-role-01",
       "content_origin": "original_lumi",
       "review_status": "draft_unreviewed",
-      "record_sha256": "8c6bc3e79c51ce3100dec5610f0f9653dd74a1de2220b5cc189b7e91241de0c1"
+      "record_sha256": "8f8fa3f593cc4529b1b4e4f570ca0454b00d8f715beae1acaccb0e248bd8c659"
     },
     {
       "record_id": "T03",
