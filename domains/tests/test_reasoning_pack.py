@@ -144,6 +144,37 @@ class ReasoningPackTests(unittest.TestCase):
                 self.assertTrue(record["formalization"])
                 self.assertTrue(record["answer_proof"])
                 self.assertIn(record["correct_option"], record["options"])
+                self.assertTrue(record["assessment_format"])
+                if record["role"] == "probe":
+                    self.assertEqual(set(record["candidate_evidence_map"]), {"A", "B", "C", "D"})
+                    for outcomes in record["candidate_evidence_map"].values():
+                        self.assertEqual(set(outcomes), set(record["candidate_misconception_ids"]))
+
+    def test_assessment_answer_positions_and_transfer_formats_are_auditable(self) -> None:
+        records = self.read_json("records.json")["records"]
+        assessments = [record for record in records if record["role"] != "teaching_asset"]
+        counts = {option: sum(record["correct_option"] == option for record in assessments) for option in "ABCD"}
+        self.assertLessEqual(max(counts.values()) - min(counts.values()), 1)
+        self.assertTrue(all(counts.values()))
+        entries_by_skills = {
+            tuple(record["target_skill_ids"]): record
+            for record in assessments
+            if record["role"] in {"entry_diagnostic", "routing_diagnostic"}
+        }
+        for transfer in (record for record in assessments if record["role"] == "independent_transfer"):
+            entry = entries_by_skills[tuple(transfer["target_skill_ids"])]
+            self.assertNotEqual(transfer["assessment_format"], entry["assessment_format"])
+
+    def test_rejects_probe_without_complete_option_level_evidence_map(self) -> None:
+        records = self.read_json("records.json")
+        probe = next(record for record in records["records"] if record["record_id"] == "P02")
+        del probe["candidate_evidence_map"]["A"]["M-READ"]
+        probe["record_sha256"] = record_sha256(probe)
+        self.write_json("records.json", records)
+        self.refresh_artifact_checksum("records.json")
+
+        with self.assertRaisesRegex(ReasoningPackError, "candidate evidence must cover exactly"):
+            validate_reasoning_pack(self.root)
 
     def test_rejects_artifact_byte_drift(self) -> None:
         graph = self.read_json("skill-graph.json")
@@ -289,7 +320,7 @@ class ReasoningPackTests(unittest.TestCase):
         self.make_reviewed_release()
         public = load_reviewed_reasoning_pack(self.root, projection="public")
         rendered = json.dumps(public, ensure_ascii=False, sort_keys=True)
-        for sensitive in ("correct_option", "answer_proof", "distractor_map", "selected_when"):
+        for sensitive in ("correct_option", "answer_proof", "distractor_map", "candidate_evidence_map", "selected_when"):
             self.assertNotIn(sensitive, rendered)
 
 

@@ -15,7 +15,7 @@
     ],
     "excluded": [
       "除非",
-      "biconditionals",
+      "biconditionals as a target skill (they may appear only as explicitly labelled distractors)",
       "multi-premise arguments",
       "truth-teller puzzles",
       "set relations",
@@ -83,11 +83,11 @@
     },
     {
       "path": "misconception-taxonomy.json",
-      "sha256": "1473120828187b0bbb1e084d17b3fe662f1c5e15d3ed7cb01cbf8d6de99fa3bf"
+      "sha256": "fed38066cc90a031bd9251bb92ed6e5c9bcbdf35af2c3257d8bc08e47db3aba0"
     },
     {
       "path": "records.json",
-      "sha256": "d0ec978a2839413ea8142086b9e6a506a495399a5f7346ec62ccd4332e887a2e"
+      "sha256": "8b66d6adcb1656cfc2e81c53a9d976def484635de53510f748d68e901ff08228"
     }
   ]
 }

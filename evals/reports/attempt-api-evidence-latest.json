@@ -11,10 +11,10 @@
   "cases": {
     "correct": {
       "request": {
+        "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
         "response_sha256": "df7e70e5021544f4834bbee64a9e3789febc4be81470df629cad6ddb03320a5c",
         "unknown_fields": [],
         "contains_pii_test_data": false,
-        "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
         "run_id_sha256": "28bff14cae7db585f872f04d62a13ff739d7f99db47d8a9de6613b379cc8c6ee"
       },
       "http_status": 201,
@@ -32,17 +32,17 @@
       },
       "error": null,
       "trace_status": 200,
-      "trace_sha256": "054fa4a237952983c8379441947bbecd79be37f6bff4bf5f386a8378290f323d",
+      "trace_sha256": "bed04c2a940957e9486cc6591d4aeee3963802e5f52b7ca8ef4aea92eb7f2c3b",
       "replay_status": 200,
-      "replay_sha256": "c396f24c11c536a6910a17ee3c1b6cb2913ff9a0ac5c4a36b8febb502e38898c",
+      "replay_sha256": "4a322feea144343ff2d3add3773cc88a98bfb680c532c638b42ff68625f69a42",
       "rejected_run_trace_status": null
     },
     "wrong": {
       "request": {
+        "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
         "response_sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
         "unknown_fields": [],
         "contains_pii_test_data": false,
-        "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
         "run_id_sha256": "88f17323e5fe195c4667715d1988a658339217c5418f479d1cd9e9abf1bd96ef"
       },
       "http_status": 201,
@@ -60,17 +60,17 @@
       },
       "error": null,
       "trace_status": 200,
-      "trace_sha256": "9561967ef324b7408e4869b2cc94bd7053cd2656d54217a0dfc77fd94e6387a1",
+      "trace_sha256": "f592c002946104fd6288eece8eeb1dc8f76b50987eec015e4d09f5472c82b57c",
       "replay_status": 200,
-      "replay_sha256": "c1f28ce333a761b475b1d68c51ad760b0eab87e585e24f962628b40ab1d0037f",
+      "replay_sha256": "4afdb280d4992006348f01ad8d45a6bfa23d6bc81bf2fba8de4e10b8e13c41dc",
       "rejected_run_trace_status": null
     },
     "pii": {
       "request": {
+        "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
         "response_sha256": "fd07ca96eeaa46307b08faef121d6b337b927a4d3194960335e7c5e503d7e1a6",
         "unknown_fields": [],
         "contains_pii_test_data": true,
-        "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
         "run_id_sha256": "190911bcfc96aca64b883ab47161053db0f1b1d4dbe93568e257fde175b52252"
       },
       "http_status": 201,
@@ -98,19 +98,19 @@
       },
       "error": null,
       "trace_status": 200,
-      "trace_sha256": "7df52b9cf45d1a8201fe52e02704d8df12a3484e152d990cf95dc224c2e780a5",
+      "trace_sha256": "bc29752c2011d8bc565aaaa8af3f402c3d1be429ad2527612c1e223c32e2952e",
       "replay_status": 200,
-      "replay_sha256": "b5335f8ac2e86c8748412f3d0c79e762e4943cac2db70330f8c6b16b4a7a294e",
+      "replay_sha256": "e9d726a9705d8248211c589ea0882a5deafc8a819652eb452372593f53c7398b",
       "rejected_run_trace_status": null
     },
     "unknown_field": {
       "request": {
+        "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
         "response_sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
         "unknown_fields": [
           "cause_ground_truth"
         ],
         "contains_pii_test_data": false,
-        "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
         "run_id_sha256": "85ad5d35fd040ad36cb981bb5a1b392df850428d30b3175bcaecc3e5e3470a9d"
       },
       "http_status": 400,
@@ -133,8 +133,8 @@
     },
     "continuation": {
       "request": {
-        "probe_response_sha256": "5aad0cb27c9b9811ae2ceaf147989e58ba79c758af0215add4bb59f2d6b18edd",
         "raw_probe_response_retained": false,
+        "probe_response_sha256": "5aad0cb27c9b9811ae2ceaf147989e58ba79c758af0215add4bb59f2d6b18edd",
         "run_id_sha256": "88f17323e5fe195c4667715d1988a658339217c5418f479d1cd9e9abf1bd96ef"
       },
       "before_skill_count": 0,
@@ -169,7 +169,7 @@
               "attempt_id": "r_NEKPAELBPFBAAIMGFGLDIMIHFGDIGJGDLHFJIBHI:independent-verify",
               "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
               "item_type": "资料分析/增长率",
-              "observed_at": "2026-07-12T13:23:54.348913+00:00",
+              "observed_at": "2026-07-12T14:23:35.398472+00:00",
               "selected_option": "C",
               "response_time_seconds": 20.0,
               "confidence": 0.9,
@@ -214,7 +214,7 @@
                   "attempt_id": "r_NEKPAELBPFBAAIMGFGLDIMIHFGDIGJGDLHFJIBHI:initial",
                   "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
                   "item_type": "资料分析/增长率",
-                  "observed_at": "2026-07-12T13:23:54.291115+00:00",
+                  "observed_at": "2026-07-12T14:23:35.349621+00:00",
                   "selected_option": "A",
                   "response_time_seconds": 31.0,
                   "confidence": 0.8,
@@ -264,7 +264,7 @@
                   "attempt_id": "r_NEKPAELBPFBAAIMGFGLDIMIHFGDIGJGDLHFJIBHI:independent-verify",
                   "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
                   "item_type": "资料分析/增长率",
-                  "observed_at": "2026-07-12T13:23:54.348913+00:00",
+                  "observed_at": "2026-07-12T14:23:35.398472+00:00",
                   "selected_option": "C",
                   "response_time_seconds": 20.0,
                   "confidence": 0.9,
@@ -316,8 +316,8 @@
       },
       "after_skill_count": 1,
       "duplicate_after_complete_status": 409,
-      "trace_sha256": "b732dd7d5f3367c30b42b51e429054ce39ac936452c6f611400faaf65e69a1da",
-      "replay_sha256": "063c3854d804d0b568c5b7a9e146a71f7ded529fd58679d1cc5db7d0e13c53e5"
+      "trace_sha256": "6bdf40bb6252c50ec47f164620a68d3a9ae8971476253072e37b9b11f5d5867a",
+      "replay_sha256": "2cd4345aa657815468a499121b9b316ee21403a17527a6a7e9f5f7e4cbb70b8b"
     },
     "progressive_assistance": {
       "initial_status": 201,
@@ -388,14 +388,14 @@
         "code": "assistance_exhausted"
       },
       "trace_verified": true,
-      "trace_sha256": "658d5f5e487aa14867c471b13352273fd300213916453aa38337de6abbe363ab",
+      "trace_sha256": "6ce93fec6821bae3c0fda57e92b3b229aa1a6690b69bd1afa06aed4fbb651d64",
       "assistance_history_count": 6,
       "cohort_evidence_status": "unavailable"
     },
     "misconception_dossier": {
       "request": {
-        "probe_response_sha256": "4ca59dcdadf9a859f55f7dac5cef1c974e3085f55dd684be684c124b2c715c3a",
-        "raw_probe_response_retained": false
+        "raw_probe_response_retained": false,
+        "probe_response_sha256": "4ca59dcdadf9a859f55f7dac5cef1c974e3085f55dd684be684c124b2c715c3a"
       },
       "initial_status": 201,
       "probe_status": 200,

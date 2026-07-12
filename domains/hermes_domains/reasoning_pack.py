@@ -120,7 +120,16 @@ _COMMON_RECORD_KEYS = frozenset(
     }
 )
 _ASSESSMENT_RECORD_KEYS = _COMMON_RECORD_KEYS | frozenset(
-    {"prompt", "response_mode", "options", "correct_option", "formalization", "answer_proof", "distractor_map"}
+    {
+        "prompt",
+        "response_mode",
+        "assessment_format",
+        "options",
+        "correct_option",
+        "formalization",
+        "answer_proof",
+        "distractor_map",
+    }
 )
 _TEACHING_RECORD_KEYS = _COMMON_RECORD_KEYS | frozenset(
     {"teaching_strategy", "teaching_content", "logic_rule", "selected_when"}
@@ -128,12 +137,24 @@ _TEACHING_RECORD_KEYS = _COMMON_RECORD_KEYS | frozenset(
 _ROLE_OPTIONAL_KEYS = {
     "entry_diagnostic": frozenset(),
     "routing_diagnostic": frozenset(),
-    "probe": frozenset({"discriminates"}),
+    "probe": frozenset({"discriminates", "candidate_evidence_map"}),
     "independent_transfer": frozenset({"requires_no_hints"}),
     "delayed_review": frozenset({"eligible_after_transfer_ids", "scheduled_after", "requires_no_hints"}),
 }
 _PUBLIC_ASSESSMENT_KEYS = frozenset({"record_id", "role", "title", "prompt", "response_mode", "options"})
 _PUBLIC_TEACHING_KEYS = frozenset({"record_id", "role", "title", "teaching_strategy", "teaching_content", "logic_rule"})
+_PROBE_EVIDENCE_OUTCOMES = frozenset({"support", "refute", "insufficient"})
+_ASSESSMENT_FORMATS = frozenset(
+    {
+        "conclusion_selection",
+        "relation_encoding",
+        "countermodel_selection",
+        "entailment_selection",
+        "state_compatibility",
+        "argument_evaluation",
+        "inference_evaluation",
+    }
+)
 
 
 class ReasoningPackError(ContractError):
@@ -389,6 +410,8 @@ def _validate_assessment(record: Mapping[str, Any]) -> None:
         _nonempty(record.get(key), f"assessment {key}")
     if record.get("response_mode") != "single_choice":
         raise ReasoningPackError("assessment records must use deterministic single_choice")
+    if _nonempty(record.get("assessment_format"), "assessment format") not in _ASSESSMENT_FORMATS:
+        raise ReasoningPackError("assessment record has an unsupported assessment format")
     options = _require(record, "options", dict)
     if set(options) != {"A", "B", "C", "D"}:
         raise ReasoningPackError("assessment records require exactly A-D options")
@@ -410,6 +433,29 @@ def _validate_teaching_asset(record: Mapping[str, Any]) -> None:
     forbidden = {"prompt", "options", "correct_option", "answer_proof", "distractor_map"}
     if forbidden.intersection(record):
         raise ReasoningPackError("teaching asset must not masquerade as a scored item")
+
+
+def _validate_probe_evidence_map(record: Mapping[str, Any], targets: list[Any]) -> None:
+    """Require authored, option-level evidence handling for every probe.
+
+    The policy must not infer a learner cause from generic English labels such
+    as ``converse`` or ``unsupported``.  The authored mapping makes the
+    supported/refuted/insufficient result inspectable and allows deliberately
+    ambiguous responses to remain insufficient.
+    """
+
+    evidence_map = _require(record, "candidate_evidence_map", dict)
+    options = _require(record, "options", dict)
+    if set(evidence_map) != set(options):
+        raise ReasoningPackError("probe candidate evidence map must cover exactly A-D options")
+    target_ids = set(targets)
+    for option, updates in evidence_map.items():
+        if not isinstance(updates, Mapping):
+            raise ReasoningPackError(f"probe candidate evidence for {option} must be an object")
+        if set(updates) != target_ids:
+            raise ReasoningPackError("probe candidate evidence must cover exactly its candidate targets")
+        if any(outcome not in _PROBE_EVIDENCE_OUTCOMES for outcome in updates.values()):
+            raise ReasoningPackError("probe candidate evidence has an unsupported outcome")
 
 
 def _validate_records(
@@ -481,6 +527,7 @@ def _validate_records(
                 )
             if set(discriminates) != set(targets):
                 raise ReasoningPackError("probe must explicitly discriminate all its candidate targets")
+            _validate_probe_evidence_map(record, targets)
         if role in {"independent_transfer", "delayed_review"}:
             if record.get("requires_no_hints") is not True:
                 raise ReasoningPackError("transfer and delayed review must require no hints")
@@ -489,6 +536,26 @@ def _validate_records(
         raise ReasoningPackError("records do not match the approved draft inventory")
     if role_counts != EXPECTED_ROLE_COUNTS:
         raise ReasoningPackError("records do not provide the required diagnostic-to-review roles")
+
+    assessment_records = [record for record in indexed.values() if record["role"] != "teaching_asset"]
+    answer_positions = {option: 0 for option in "ABCD"}
+    for record in assessment_records:
+        answer_positions[str(record["correct_option"])] += 1
+    if min(answer_positions.values()) == 0 or max(answer_positions.values()) - min(answer_positions.values()) > 1:
+        raise ReasoningPackError("assessment answer positions must be balanced across A-D")
+
+    for transfer in (record for record in indexed.values() if record["role"] == "independent_transfer"):
+        transfer_targets = set(transfer["target_skill_ids"])
+        comparable_entries = [
+            record
+            for record in indexed.values()
+            if record["role"] in {"entry_diagnostic", "routing_diagnostic"}
+            and set(record["target_skill_ids"]) == transfer_targets
+        ]
+        if comparable_entries and all(
+            transfer["assessment_format"] == entry["assessment_format"] for entry in comparable_entries
+        ):
+            raise ReasoningPackError("independent transfer must use a different assessment format from its entry diagnostic")
 
     transfer_ids = {record_id for record_id, record in indexed.items() if record["role"] == "independent_transfer"}
     for record in indexed.values():
@@ -729,6 +796,7 @@ def _validate_release_record(
             )
         if set(discriminates) != set(targets):
             raise ReasoningPackError("release probe must discriminate all candidate targets")
+        _validate_probe_evidence_map(record, list(targets))
     if role in {"independent_transfer", "delayed_review"} and record.get("requires_no_hints") is not True:
         raise ReasoningPackError("release transfer and delayed review must require no hints")
     if role == "delayed_review":

@@ -583,6 +583,33 @@ def _probe_updates(
     selected_option: str,
     candidate_ids: tuple[str, ...],
 ) -> tuple[ProbeEvidence, ...]:
+    authored_map = probe.get("candidate_evidence_map")
+    if isinstance(authored_map, Mapping):
+        per_option = authored_map.get(selected_option)
+        if not isinstance(per_option, Mapping):
+            raise JudgmentPolicyError("authored probe evidence map has no selected option")
+        outcomes: dict[str, Literal["support", "refute", "insufficient"]] = {}
+        for cause_id in candidate_ids:
+            raw = per_option.get(cause_id)
+            if raw not in {"support", "refute", "insufficient"}:
+                raise JudgmentPolicyError("authored probe evidence map has an invalid candidate outcome")
+            outcomes[cause_id] = raw
+        return tuple(
+            ProbeEvidence(
+                cause_id=cause_id,
+                outcome=outcomes[cause_id],
+                evidence=(
+                    f"作者为 {probe['record_id']} 的选项 {selected_option} 明确指定了"
+                    f"对 {cause_id} 的 {outcomes[cause_id]} 证据；"
+                    "该更新仍是未确认候选，不是对学习者的事实判断。"
+                ),
+            )
+            for cause_id in candidate_ids
+        )
+
+    # Backward-compatible protection for an older authored fixture.  All
+    # current production-candidate probes are schema-required to use the
+    # explicit map above; never infer their evidence route from label tokens.
     correct = _option_from_record(probe, "correct_option")
     if selected_option == correct:
         return tuple(

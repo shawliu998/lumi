@@ -44,9 +44,9 @@
       "misconception_id": "M-READ",
       "label": "证据不足，可能是阅读或注意力滑失",
       "candidate_only": true,
-      "description": "一次低信心、极短用时或非语义干扰项选择不足以判断为概念错误。",
+      "description": "一次低信心、异常短反应时或非语义干扰项选择不足以判断为概念错误。",
       "observable_signals": [
-        "低信心且用时异常短",
+        "低信心且反应时异常短",
         "选择与条件关系无关的选项"
       ],
       "minimum_discriminating_evidence": "中性复述或重新阅读，不作长讲解",

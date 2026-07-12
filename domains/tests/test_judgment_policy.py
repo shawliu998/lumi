@@ -106,7 +106,7 @@ class JudgmentPolicyTests(unittest.TestCase):
             entry_record_id="D01",
             observation=self.wrong_direction_observation(),
         )
-        resolution = resolve_probe(self.records, decision=decision, selected_option="B")
+        resolution = resolve_probe(self.records, decision=decision, selected_option="A")
 
         updates = {update.cause_id: update for update in resolution.evidence_updates}
         self.assertEqual(updates["M-DIR"].outcome, "support")
@@ -136,11 +136,31 @@ class JudgmentPolicyTests(unittest.TestCase):
             entry_record_id="D01",
             observation=self.wrong_direction_observation(),
         )
-        resolution = resolve_probe(self.records, decision=decision, selected_option="A")
+        resolution = resolve_probe(self.records, decision=decision, selected_option="C")
 
         self.assertEqual({update.outcome for update in resolution.evidence_updates}, {"refute"})
         self.assertTrue(resolution.teaching_plan.is_abstention)
         self.assertIn("没有支持任何候选", resolution.teaching_plan.why_selected)
+
+    def test_authored_option_level_evidence_map_overrides_generic_distractor_labels(self) -> None:
+        records = copy.deepcopy(self.records)
+        probe = next(record for record in records if record["record_id"] == "P01")
+        # The distractor is still labelled reversed_implication, but this
+        # authored test mapping explicitly withholds causal support.  The
+        # deterministic policy must follow the map rather than infer causes
+        # from English label tokens.
+        probe["candidate_evidence_map"]["A"] = {
+            "M-DIR": "insufficient",
+            "M-READ": "insufficient",
+        }
+        decision = diagnose_entry(
+            records,
+            entry_record_id="D01",
+            observation=self.wrong_direction_observation(),
+        )
+        resolution = resolve_probe(records, decision=decision, selected_option="A")
+        self.assertEqual({update.outcome for update in resolution.evidence_updates}, {"insufficient"})
+        self.assertTrue(resolution.teaching_plan.is_abstention)
 
     def test_correct_entry_creates_no_cause_and_does_not_open_probe(self) -> None:
         decision = diagnose_entry(

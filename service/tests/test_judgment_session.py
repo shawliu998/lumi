@@ -126,7 +126,7 @@ class JudgmentSessionTests(unittest.TestCase):
 
         probed = service.answer_probe(
             session_id=started["session_id"], expected_version=1, expected_stage="awaiting_probe",
-            selected_option="B", confidence="medium", elapsed_seconds=9, command_id="c_probe_replay_0001",
+            selected_option="A", confidence="medium", elapsed_seconds=9, command_id="c_probe_replay_0001",
         )
         self.assertEqual(probed["stage"], "awaiting_transfer")
         self.assertEqual(probed["teaching"]["asset"]["record_id"], "T01")
@@ -135,7 +135,7 @@ class JudgmentSessionTests(unittest.TestCase):
 
         completed = service.answer_transfer(
             session_id=started["session_id"], expected_version=2, expected_stage="awaiting_transfer",
-            selected_option="A", confidence="high", elapsed_seconds=14, command_id="c_transfer_replay_0001",
+            selected_option="D", confidence="high", elapsed_seconds=14, command_id="c_transfer_replay_0001",
         )
         self.assertEqual(completed["stage"], "completed")
         self.assertEqual(completed["review_task"]["kind"], "delayed_retention")
@@ -144,15 +144,15 @@ class JudgmentSessionTests(unittest.TestCase):
         reopened = service.workspace()
         self.assertEqual(reopened["review_plan"], [completed["review_task"]])
         rendered = json.dumps({"entry": started, "probe": probed, "done": completed}, ensure_ascii=False)
-        for private_key in ("correct_option", "answer_proof", "distractor_map", "formalization", "selected_when"):
+        for private_key in ("correct_option", "answer_proof", "distractor_map", "candidate_evidence_map", "formalization", "selected_when"):
             self.assertNotIn(private_key, rendered)
         replay = service.replay(started["session_id"])
         self.assertTrue(replay["trace_verified"])
         self.assertEqual(replay["event_count"], 4)
         self.assertEqual(replay["timeline"][-1]["stage_after"], "completed")
         self.assertEqual(replay["timeline"][0]["result"]["entry"]["selected_option"], "B")
-        self.assertEqual(replay["timeline"][1]["result"]["probe"]["selected_option"], "B")
-        self.assertEqual(replay["timeline"][-1]["result"]["transfer"]["selected_option"], "A")
+        self.assertEqual(replay["timeline"][1]["result"]["probe"]["selected_option"], "A")
+        self.assertEqual(replay["timeline"][-1]["result"]["transfer"]["selected_option"], "D")
 
     def test_first_answer_command_replays_exactly_without_duplicate_observation(self) -> None:
         service = self.service()
@@ -187,7 +187,7 @@ class JudgmentSessionTests(unittest.TestCase):
         self.assertEqual({item["record_id"] for item in workspace["entry_items"]}, {"D01", "D02"})
         started = service.start(
             entry_record_id="D02",
-            selected_option="B",
+            selected_option="A",
             confidence="medium",
             elapsed_seconds=10,
             command_id="c_entry_inference_0001",
@@ -202,7 +202,7 @@ class JudgmentSessionTests(unittest.TestCase):
         )
         service.answer_probe(
             session_id=started["session_id"], expected_version=1, expected_stage="awaiting_probe",
-            selected_option="B", confidence="medium", elapsed_seconds=9, command_id="c_probe_resume_0001",
+            selected_option="A", confidence="medium", elapsed_seconds=9, command_id="c_probe_resume_0001",
         )
         original_commit = service._commit_transfer
 
@@ -214,7 +214,7 @@ class JudgmentSessionTests(unittest.TestCase):
             with self.assertRaisesRegex(JudgmentSessionError, "simulated interruption"):
                 service.answer_transfer(
                     session_id=started["session_id"], expected_version=2,
-                    expected_stage="awaiting_transfer", selected_option="A", confidence="high",
+                    expected_stage="awaiting_transfer", selected_option="D", confidence="high",
                     elapsed_seconds=14, command_id="c_transfer_resume_0001",
                 )
         finally:
@@ -225,7 +225,7 @@ class JudgmentSessionTests(unittest.TestCase):
         self.assertEqual(interrupted["timeline"][-1]["stage_after"], "committing_transfer")
         resumed = service.answer_transfer(
             session_id=started["session_id"], expected_version=2,
-            expected_stage="awaiting_transfer", selected_option="A", confidence="high",
+            expected_stage="awaiting_transfer", selected_option="D", confidence="high",
             elapsed_seconds=14, command_id="c_transfer_resume_0001",
         )
         self.assertEqual(resumed["stage"], "completed")
@@ -237,7 +237,7 @@ class JudgmentSessionTests(unittest.TestCase):
         started = service.start(entry_record_id="D01", selected_option="B", confidence="low", elapsed_seconds=12)
         service.answer_probe(
             session_id=started["session_id"], expected_version=1, expected_stage="awaiting_probe",
-            selected_option="B", confidence="medium", elapsed_seconds=9, command_id="c_probe_failed_0001",
+            selected_option="A", confidence="medium", elapsed_seconds=9, command_id="c_probe_failed_0001",
         )
         completed = service.answer_transfer(
             session_id=started["session_id"], expected_version=2, expected_stage="awaiting_transfer",
@@ -324,7 +324,7 @@ class JudgmentSessionTests(unittest.TestCase):
                 server,
                 "POST",
                 f"/v1/judgment/sessions/{started['session_id']}/probe",
-                {"expected_version": 0, "expected_stage": "awaiting_probe", "selected_option": "B", "confidence": "medium", "elapsed_seconds": 5, "command_id": "c_http_stale_0001"},
+                {"expected_version": 0, "expected_stage": "awaiting_probe", "selected_option": "A", "confidence": "medium", "elapsed_seconds": 5, "command_id": "c_http_stale_0001"},
             )
             self.assertEqual(status, 409)
             self.assertEqual(stale["error"]["code"], "judgment_session_conflict")
@@ -332,7 +332,7 @@ class JudgmentSessionTests(unittest.TestCase):
                 server,
                 "POST",
                 f"/v1/judgment/sessions/{started['session_id']}/probe",
-                {"expected_version": 1, "expected_stage": "awaiting_probe", "selected_option": "B", "confidence": "medium", "elapsed_seconds": 5, "command_id": "c_http_probe_0001"},
+                {"expected_version": 1, "expected_stage": "awaiting_probe", "selected_option": "A", "confidence": "medium", "elapsed_seconds": 5, "command_id": "c_http_probe_0001"},
             )
             self.assertEqual(status, 200)
             self.assertEqual(probed["stage"], "awaiting_transfer")
@@ -340,7 +340,7 @@ class JudgmentSessionTests(unittest.TestCase):
                 server,
                 "POST",
                 f"/v1/judgment/sessions/{started['session_id']}/transfer",
-                {"expected_version": 2, "expected_stage": "awaiting_transfer", "selected_option": "A", "confidence": "high", "elapsed_seconds": 5, "command_id": "c_http_transfer_0001"},
+                {"expected_version": 2, "expected_stage": "awaiting_transfer", "selected_option": "D", "confidence": "high", "elapsed_seconds": 5, "command_id": "c_http_transfer_0001"},
             )
             self.assertEqual(status, 200)
             self.assertEqual(completed["stage"], "completed")
