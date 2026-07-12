@@ -1,0 +1,146 @@
+{
+  "schema_version": "lumi.xingce-item-bundle.v0",
+  "release_id": "p031-data-analysis-v1",
+  "status": "internal_evaluation_only",
+  "purpose": "p0.3.1-five-minute-learning-loop",
+  "source_bundle": {
+    "name": "question-bank-local-primary-paper-rechecked-ocr-gkzhenti-verified-filtered-focus4-all-resolved-v2-local-refined2-final-filtered-old-risk-2010s-pruned-gkzhenti2026-docx-explanations-collecting-marked-pk-quality-cleaned17",
+    "generated_at": "2026-06-17T08:25:28.867Z",
+    "manifest_sha256": "543423a78122a614f779624b6b6ecfafddfb4c3c893b856c03d14fbeafd158a8"
+  },
+  "rights": {
+    "status": "unverified",
+    "distribution": "local_only",
+    "public_repository_payload": "metadata_and_checksums_only",
+    "notice": "Source links establish provenance, not republication permission. Generated question text must remain in ignored local_content."
+  },
+  "selection": {
+    "module": "资料分析",
+    "review_basis": "text completeness plus independent arithmetic review",
+    "selected_question_ids": [
+      "q_70b9e63de33ef42509e4",
+      "q_b1cb2eb7c07136fa2b07",
+      "q_6abeb6751e72233e6b40",
+      "q_b5d48462421128693dac",
+      "q_55d9136f300c34842116",
+      "q_49c45f29d91ddf9ff92a"
+    ]
+  },
+  "items": [
+    {
+      "question_id": "q_70b9e63de33ef42509e4",
+      "source_question_key": "baijing1:629:101",
+      "source_question_id": "24611",
+      "paper_id": "paper_31f7239f92a7ca99",
+      "paper_title": "2023年重庆市公务员录用考试《行测》题（网友回忆版）",
+      "year": 2023,
+      "question_no": 101,
+      "source_site": "baijing1",
+      "source_url": "https://gwy.gkzhenti.cn/paper/1678839703789",
+      "content_signature": "1ac1a6d0a71969bc8e1b62e345f70b03d9c712288d93b74962fea8b979cfb38b",
+      "content_answer_signature": "d67a5d6db12eac51646f60b0eb5cefc89ec81470e834c4c854f1446235850042",
+      "diagnostic_role": "first_answer",
+      "text_sufficient_reviewed": true,
+      "candidate_skills": [
+        {"skill_id": "xingce.data.base_amount.positive_growth", "confidence": 0.95, "review_status": "engineering_reviewed"},
+        {"skill_id": "xingce.data.percent.decimal_conversion", "confidence": 0.70, "review_status": "candidate"},
+        {"skill_id": "xingce.data.approximation.option_mapping", "confidence": 0.65, "review_status": "candidate"}
+      ]
+    },
+    {
+      "question_id": "q_b1cb2eb7c07136fa2b07",
+      "source_question_key": "baijing1:137:86",
+      "source_question_id": "6256",
+      "paper_id": "paper_46c8bda1523de2f4",
+      "paper_title": "2022年广东省公务员录用考试《行测》题（乡镇卷）（网友回忆版）",
+      "year": 2022,
+      "question_no": 86,
+      "source_site": "baijing1",
+      "source_url": "https://gwy.gkzhenti.cn/paper/1642422483334",
+      "content_signature": "a4f40626868c135248e4637a30423b7f821068e4c5afc20af815b4c81ba1ba79",
+      "content_answer_signature": "0ec3fc513d7412731ea466721e9f78c2a5515368cd0eaadb82a41203184a99d7",
+      "diagnostic_role": "independent_transfer",
+      "text_sufficient_reviewed": true,
+      "candidate_skills": [
+        {"skill_id": "xingce.data.base_amount.negative_growth", "confidence": 0.95, "review_status": "engineering_reviewed"},
+        {"skill_id": "xingce.data.base_amount.change_difference", "confidence": 0.90, "review_status": "engineering_reviewed"}
+      ]
+    },
+    {
+      "question_id": "q_6abeb6751e72233e6b40",
+      "source_question_key": "baijing1:155:95",
+      "source_question_id": "7294",
+      "paper_id": "paper_dcc95a9c0456f6a0",
+      "paper_title": "2018年广州市公务员录用考试 《行测》真题（3月25日网友回忆版）",
+      "year": 2018,
+      "question_no": 95,
+      "source_site": "baijing1",
+      "source_url": "https://gwy.gkzhenti.cn/paper/1525871422509",
+      "content_signature": "52e59454f7384e7f68b100702c82cb03a24dce0e45100662df8769d69284dbe6",
+      "content_answer_signature": "ef1e1116d187e43e2acaacb3bdee5426fb45feb59fb35c1c2f79ce389c465979",
+      "diagnostic_role": "reserve_reduction_rate",
+      "text_sufficient_reviewed": true,
+      "candidate_skills": [
+        {"skill_id": "xingce.data.reduction_rate.base_denominator", "confidence": 0.90, "review_status": "engineering_reviewed"},
+        {"skill_id": "xingce.data.approximation.precision_compare", "confidence": 0.90, "review_status": "engineering_reviewed"}
+      ]
+    },
+    {
+      "question_id": "q_b5d48462421128693dac",
+      "source_question_key": "baijing1:69:121",
+      "source_question_id": "4163",
+      "paper_id": "paper_3c8606db02790cc0",
+      "paper_title": "2020年北京市公务员录用考试《行测》真题（区级及以上网友回忆版）",
+      "year": 2020,
+      "question_no": 121,
+      "source_site": "baijing1",
+      "source_url": "https://gwy.gkzhenti.cn/paper/1575887984210um1",
+      "content_signature": "38755cb31c0f69ddb4ca291efb5e1d8bfdfa29ddd7303cbac6d4ed827eb849e0",
+      "content_answer_signature": "8a1728e90c641d5e566f1f39fadea1ce8f1acf5975bd6281f8a79b90c1085842",
+      "diagnostic_role": "reserve_unit_conversion",
+      "text_sufficient_reviewed": true,
+      "candidate_skills": [
+        {"skill_id": "xingce.data.average.total_from_average", "confidence": 0.90, "review_status": "engineering_reviewed"},
+        {"skill_id": "xingce.data.units.ten_thousand_to_hundred_million", "confidence": 0.90, "review_status": "engineering_reviewed"}
+      ]
+    },
+    {
+      "question_id": "q_55d9136f300c34842116",
+      "source_question_key": "baijing1:155:99",
+      "source_question_id": "7298",
+      "paper_id": "paper_dcc95a9c0456f6a0",
+      "paper_title": "2018年广州市公务员录用考试 《行测》真题（3月25日网友回忆版）",
+      "year": 2018,
+      "question_no": 99,
+      "source_site": "baijing1",
+      "source_url": "https://gwy.gkzhenti.cn/paper/1525871422509",
+      "content_signature": "4b90ed7ac70c888a9886af451f7673a74d11c99e988281b59d1e9876636bc2b6",
+      "content_answer_signature": "773737d89d77ff1559f7d630af4c3fddfc4c0002127304de12e351ed38c1c536",
+      "diagnostic_role": "reserve_unit_yield",
+      "text_sufficient_reviewed": true,
+      "candidate_skills": [
+        {"skill_id": "xingce.data.average.unit_yield", "confidence": 0.95, "review_status": "engineering_reviewed"},
+        {"skill_id": "xingce.data.units.consistent_scale", "confidence": 0.75, "review_status": "candidate"}
+      ]
+    },
+    {
+      "question_id": "q_49c45f29d91ddf9ff92a",
+      "source_question_key": "baijing1:152:86",
+      "source_question_id": "7178",
+      "paper_id": "paper_ac5f81afd6d6a083",
+      "paper_title": "2020年广东省公务员录用考试《行测》试题（乡镇卷）（网友回忆版）",
+      "year": 2020,
+      "question_no": 86,
+      "source_site": "baijing1",
+      "source_url": "https://gwy.gkzhenti.cn/paper/1600261721710geq",
+      "content_signature": "d0efcb8cca1c4893163f023ae69b579f11ccdeb795b76b1839ff25d90982833a",
+      "content_answer_signature": "822e7eb53510824b03841a4a9b0151ccf5466312c0d2d43477bf46372c7f55b4",
+      "diagnostic_role": "reserve_time_projection",
+      "text_sufficient_reviewed": true,
+      "candidate_skills": [
+        {"skill_id": "xingce.data.average.monthly_increment", "confidence": 0.90, "review_status": "engineering_reviewed"},
+        {"skill_id": "xingce.data.projection.elapsed_time", "confidence": 0.90, "review_status": "engineering_reviewed"}
+      ]
+    }
+  ]
+}
