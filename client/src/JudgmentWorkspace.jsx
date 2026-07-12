@@ -65,7 +65,8 @@ function factCopy(fact) {
     selected_option: "已选择的选项",
     correctness: "本题评分",
     confidence: "作答信心",
-    response_time: "作答用时",
+    elapsed_seconds: "作答用时",
+    hint_count: "帮助次数",
   }[fact?.kind] || "观察事实";
   return [kind, String(fact?.value ?? "已记录")];
 }
@@ -314,7 +315,7 @@ function UnavailableWorkspace({ state, onRetry }) {
   );
 }
 
-export function JudgmentWorkspace() {
+export function JudgmentWorkspace({ onServiceReachable = undefined }) {
   const [workspace, setWorkspace] = useState({ phase: "loading", data: null, error: null });
   const [selectedEntryId, setSelectedEntryId] = useState(null);
   const [entryDraft, setEntryDraft] = useState(EMPTY_DRAFT);
@@ -328,6 +329,18 @@ export function JudgmentWorkspace() {
   const [replay, setReplay] = useState(null);
   const [replayState, setReplayState] = useState("idle");
 
+  const reportServiceReachable = useCallback(() => {
+    // A successful workspace read proves the local sidecar is reachable even
+    // when the pack itself is still held at the content-review gate. Keep the
+    // shared shell indicator honest, but never let a secondary health refresh
+    // replace the authoritative workspace result.
+    try {
+      void onServiceReachable?.();
+    } catch {
+      // The workspace remains usable; the shell can retry its own health read.
+    }
+  }, [onServiceReachable]);
+
   const reloadWorkspace = useCallback(async () => {
     setWorkspace({ phase: "loading", data: null, error: null });
     setSession(null);
@@ -336,6 +349,7 @@ export function JudgmentWorkspace() {
     setReplay(null);
     try {
       const result = await fetchJudgmentWorkspace();
+      reportServiceReachable();
       if (!result.available) {
         setWorkspace({ phase: "review_required", data: result, error: null });
         return;
@@ -350,7 +364,7 @@ export function JudgmentWorkspace() {
     } catch (error) {
       setWorkspace({ phase: error?.kind === "unavailable" ? "offline" : "error", data: null, error });
     }
-  }, []);
+  }, [reportServiceReachable]);
 
   useEffect(() => { reloadWorkspace(); }, [reloadWorkspace]);
   useEffect(() => {

@@ -223,6 +223,45 @@ fields are absent; it never invents a migration result.
 P0.2 final result: passed; the earlier compatibility boundary above is closed by
 the final backend migration and stale-clock gates.
 
+## QA-only judgment workspace browser evidence — 2026-07-13
+
+This is engineering evidence for the active conditional-reasoning workspace,
+not a release or learner-acceptance claim. `qa/judgment_browser_harness.py`
+copied the still-`draft_unreviewed` pack into a temporary directory, shaped that
+copy as reviewed with explicitly synthetic QA attestations, and used a fresh
+temporary `evaluation_fixture` SQLite database. It did not alter the repository
+manifest, create a human-local attempt, or stand in for either reviewer.
+
+- A connected browser path exercised D01 first answer (`B`, low confidence) →
+  P01 minimal probe (`A`, medium confidence) → authored micro-lesson → unseen
+  V01 independent transfer (`D`, high confidence). The result displayed a
+  deterministic receipt for the two eligible conditional-logic skills and a
+  persisted delayed review decision; the replay contained the expected four
+  events (`entry_submitted`, `probe_submitted`, `transfer_observed`, and
+  `transfer_receipt`) without exposing an answer key or internal scoring map.
+- A reload produced a new D01 session. Its diagnostic surface showed prior
+  probe observations only as weak, scoped context (M-DIR: one support;
+  M-READ: one insufficient result) and explicitly said that history cannot
+  independently attribute a cause. Both candidates remained `候选 / 未确认`.
+- At `640 × 720`, the collapsed navigation remained icon-labelled for assistive
+  technology and `documentElement.scrollWidth=clientWidth=640`; no horizontal
+  page overflow occurred. A direct visual inspection found the same restrained
+  neutral, one-pixel educational-app shell rather than a chat/AI treatment.
+- Stopping the temporary sidecar produced the explicit fail-closed offline
+  state. After restart, `重新读取本机状态` restored both the workspace and the
+  shared sidebar to `本机服务已连接`. This walk-through found and corrected a
+  stale sidebar-offline state after recovery.
+- The same walk-through found and corrected two learner-facing diagnostics
+  leaks: authored internal distractor names such as `converse` are now rendered
+  as neutral Chinese evidence copy, and `elapsed_seconds` is labelled
+  `作答用时` rather than `观察事实`. Raw distractor metadata is excluded from
+  the public entry projection.
+
+The repeatable deterministic checks for this QA cut were `npm test` (77
+client tests), the targeted policy/session suites, and `npm run build`. A real
+reviewed pack and one voluntary human-local walkthrough remain required before
+any packaging or release claim.
+
 ## Retained P0.1 artifact-gate record
 
 ## Scope and visual source

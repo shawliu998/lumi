@@ -123,6 +123,11 @@ class JudgmentSessionTests(unittest.TestCase):
         self.assertEqual(started["stage"], "awaiting_probe")
         self.assertGreaterEqual(len(started["candidate_causes"]), 2)
         self.assertTrue(all(item["status"] == "unconfirmed" for item in started["candidate_causes"]))
+        self.assertEqual(
+            {fact["kind"] for fact in started["observed_facts"]},
+            {"selected_option", "correctness", "confidence", "elapsed_seconds", "hint_count"},
+        )
+        self.assertNotIn("converse", json.dumps(started, ensure_ascii=False))
         self.assertEqual(started["probe"]["record_id"], "P01")
 
         probed = service.answer_probe(

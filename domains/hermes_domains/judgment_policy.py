@@ -551,8 +551,24 @@ def _candidate_rationale(entry: Mapping[str, Any], observation: EntryObservation
     if observation.hint_count:
         qualifiers.append("已有帮助，不能把本次作答作为独立证据")
     qualifier = "；".join(qualifiers) if qualifiers else "单次选项证据不足以确认原因"
-    reason_text = f"干扰项标签为 {reason}" if reason else "没有可用的干扰项标签"
+    reason_text = _learner_reason_copy(reason)
     return f"{record_id} 首答错误，{reason_text}；{qualifier}，故 {cause_id} 仅为候选。"
+
+
+def _learner_reason_copy(reason: str | None) -> str:
+    """Translate authored distractor metadata before it enters learner copy."""
+
+    copy = {
+        "converse": "所选项把单向条件读成了反向关系",
+        "reversed_implication": "所选项把条件箭头写反了",
+        "affirming_consequent": "所选项从结果反推原因",
+        "necessary_condition_misread": "所选项没有区分必要条件与可逆关系",
+        "positive_example_not_counterexample": "所选项把一个正例当成了反例",
+        "violates_rule": "所选项与题设规则不相容",
+        "unsupported_premise": "所选项加入了题设没有给出的信息",
+        "irrelevant_conclusion": "所选项没有回应题设条件关系",
+    }
+    return copy.get(reason or "", "本次选项与题设条件关系不一致")
 
 
 def _select_probe_plan(

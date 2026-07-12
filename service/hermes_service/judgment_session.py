@@ -51,6 +51,9 @@ _PUBLIC_ASSESSMENT_FIELDS = frozenset(
 _PUBLIC_TEACHING_FIELDS = frozenset(
     {"record_id", "role", "title", "teaching_strategy", "teaching_content", "logic_rule"}
 )
+_LEARNER_VISIBLE_ENTRY_FACT_KINDS = frozenset(
+    {"selected_option", "correctness", "confidence", "elapsed_seconds", "hint_count"}
+)
 
 
 class JudgmentSessionError(RuntimeError):
@@ -483,6 +486,7 @@ class JudgmentSessionService:
             "observed_facts": [
                 {"fact_id": fact.fact_id, "kind": fact.kind, "value": fact.value, "evidence": fact.evidence}
                 for fact in decision.facts
+                if fact.kind in _LEARNER_VISIBLE_ENTRY_FACT_KINDS
             ],
             "candidate_causes": [
                 {

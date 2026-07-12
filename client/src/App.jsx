@@ -1384,7 +1384,7 @@ export function App() {
         <Sidebar page={page} setPage={setPage} collapsed={collapsed} setCollapsed={setCollapsed} onUtility={setUtility} sidecar={sidecar} onRetrySidecar={retryAll} />
         <section className="app-main">
           {page !== "tools" && page !== "judgment" && <Topbar page={page} setPage={setPage} onSearch={() => setCommandOpen(true)} onUtility={setUtility} />}
-          {page === "judgment" && <JudgmentWorkspace />}
+          {page === "judgment" && <JudgmentWorkspace onServiceReachable={refreshSidecar} />}
           {page === "overview" && <Overview setPage={setPage} sidecar={sidecar} planning={planning} />}
           {page === "practice" && <TodayPracticeScreen planning={planning} onCreate={handleCreatePlan} onCommand={handleTaskCommand} onLaunchTask={launchTask} />}
           {page === "tools" && <ToolsScreen favorites={favorites} setFavorites={setFavorites} selectedTool={selectedTool} setSelectedTool={setSelectedTool} toolStage={toolStage} setToolStage={setToolStage} sidecar={sidecar} onRefreshSkills={refreshSkills} setPage={setPage} />}

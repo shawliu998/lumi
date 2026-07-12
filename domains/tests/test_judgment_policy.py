@@ -50,6 +50,8 @@ class JudgmentPolicyTests(unittest.TestCase):
         self.assertTrue(all(not cause.is_ground_truth for cause in decision.candidate_causes))
         self.assertTrue(all(fact.kind != "candidate_cause" for fact in decision.facts))
         self.assertTrue(all(cause.evidence_fact_ids for cause in decision.candidate_causes))
+        self.assertTrue(all("converse" not in cause.rationale for cause in decision.candidate_causes))
+        self.assertIn("单向条件读成了反向关系", decision.candidate_causes[0].rationale)
         self.assertEqual(decision.policy_id, POLICY_ID)
         self.assertEqual(decision.policy_version, POLICY_VERSION)
         self.assertEqual(decision.calibration_status, CALIBRATION_STATUS)

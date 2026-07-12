@@ -28,3 +28,9 @@ supported health/report contracts while injecting HTTP 500 for planning reads,
 so browser QA can distinguish a connected error response from an offline
 transport failure. It contains no plan or learner fixtures and is not a product
 service entry point.
+
+`judgment_browser_harness.py` creates a disposable reviewed-shaped copy of the
+judgment Domain Pack and a fresh `evaluation_fixture` SQLite database for
+component/browser checks. Its two synthetic attestation identifiers are only a
+test seam: it never changes the repository draft, creates human evidence, or
+counts as logic/editorial-rights approval for packaging.
