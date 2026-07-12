@@ -355,6 +355,20 @@ class JudgmentSessionService:
             if replayed is not None:
                 self._persist_review_decision_from_result(learner_store, run_id, events, replayed)
                 return replayed
+            if (
+                events[-1].kind == "judgment_transfer_observed"
+                and events[-1].payload.get("stage_after") == "committing_transfer"
+            ):
+                return self._resume_transfer_commit(
+                    learner_store,
+                    store,
+                    run_id=run_id,
+                    events=events,
+                    command_id=command_id,
+                    selected_option=selected_option,
+                    confidence=confidence,
+                    elapsed_seconds=elapsed_seconds,
+                )
             self._assert_state(events, expected_version, expected_stage, "awaiting_transfer")
             entry_event = _require_event(events, "judgment_entry_submitted")
             probe_event = _require_event(events, "judgment_probe_submitted")
@@ -364,7 +378,6 @@ class JudgmentSessionService:
             )
             selected = _option(selected_option)
             correct = selected == str(transfer["correct_option"])
-            outcome = "passed" if correct else "failed"
             try:
                 transfer_event = store.append_if_version(
                     run_id,
@@ -382,67 +395,26 @@ class JudgmentSessionService:
                         "confidence": _confidence(confidence),
                         "elapsed_seconds": _elapsed(elapsed_seconds),
                         "correct": correct,
+                        "review_base_day": self._today_provider().isoformat(),
                     },
                 )
             except TraceVersionConflict as exc:
                 raise JudgmentSessionConflict(
                     f"stale session version: expected {exc.expected_version}, actual {exc.actual_version}"
                 ) from exc
-            receipts = self._commit_transfer(
+            return self._finalize_transfer_commit(
                 learner_store,
+                store,
                 run_id=run_id,
+                events=[*events, transfer_event],
                 transfer_event=transfer_event,
                 transfer=transfer,
                 selected_option=selected,
                 correct=correct,
                 confidence=_confidence(confidence),
                 elapsed_seconds=_elapsed(elapsed_seconds),
-                entry_event=entry_event,
-                probe_event=probe_event,
+                command_id=command_id,
             )
-            review_task = self._review_task(run_id, transfer, outcome, receipts)
-            public = {
-                "schema_version": JUDGMENT_SESSION_SCHEMA,
-                "session_id": run_id,
-                "state_version": transfer_event.seq + 1,
-                "stage": "completed",
-                "transfer": {
-                    **self._public_record(transfer),
-                    "selected_option": selected,
-                    "correct": correct,
-                },
-                "state_receipts": receipts,
-                "review_task": review_task,
-                "next_step": "delayed_review" if correct else "independent_retry",
-            }
-            try:
-                store.append_if_version(
-                    run_id,
-                    transfer_event.seq,
-                    "judgment_transfer_receipt",
-                    {
-                        "schema_version": JUDGMENT_SESSION_SCHEMA,
-                        "namespace_id": self.config.namespace_id,
-                        "evidence_origin": self.config.evidence_origin,
-                        "learner_id": self.config.learner_id,
-                        "stage_after": "completed",
-                        "command_id": command_id,
-                        "transfer_record_id": str(transfer["record_id"]),
-                        "selected_option": selected,
-                        "confidence": _confidence(confidence),
-                        "elapsed_seconds": _elapsed(elapsed_seconds),
-                        "correct": correct,
-                        "public_result": public,
-                    },
-                )
-            except TraceVersionConflict as exc:
-                raise JudgmentSessionConflict(
-                    f"stale session version: expected {exc.expected_version}, actual {exc.actual_version}"
-                ) from exc
-            self._persist_review_decision(
-                learner_store, run_id=run_id, transfer_event=transfer_event, review_task=review_task
-            )
-            return public
         finally:
             learner_store.close()
             store.close()
@@ -646,6 +618,139 @@ class JudgmentSessionService:
                 }
             )
 
+    def _resume_transfer_commit(
+        self,
+        learner_store: LearnerStateStore,
+        store: EventStore,
+        *,
+        run_id: str,
+        events: list[TraceEvent],
+        command_id: str,
+        selected_option: str,
+        confidence: str,
+        elapsed_seconds: float,
+    ) -> dict[str, Any]:
+        """Finish a transfer whose observation was durably appended before a crash."""
+
+        transfer_event = events[-1]
+        selected = _option(selected_option)
+        normalized_confidence = _confidence(confidence)
+        normalized_elapsed = _elapsed(elapsed_seconds)
+        if (
+            transfer_event.payload.get("command_id") != command_id
+            or transfer_event.payload.get("selected_option") != selected
+            or transfer_event.payload.get("confidence") != normalized_confidence
+            or transfer_event.payload.get("elapsed_seconds") != normalized_elapsed
+        ):
+            raise JudgmentSessionConflict("committing transfer belongs to a different command")
+        transfer = self._assessment_record(
+            _short_public_id(transfer_event.payload.get("transfer_record_id"), "transfer record id"),
+            role="independent_transfer",
+        )
+        correct = selected == str(transfer["correct_option"])
+        if transfer_event.payload.get("correct") is not correct:
+            raise JudgmentSessionError("committing transfer scorer outcome is inconsistent")
+        return self._finalize_transfer_commit(
+            learner_store,
+            store,
+            run_id=run_id,
+            events=events,
+            transfer_event=transfer_event,
+            transfer=transfer,
+            selected_option=selected,
+            correct=correct,
+            confidence=normalized_confidence,
+            elapsed_seconds=normalized_elapsed,
+            command_id=command_id,
+        )
+
+    def _finalize_transfer_commit(
+        self,
+        learner_store: LearnerStateStore,
+        store: EventStore,
+        *,
+        run_id: str,
+        events: list[TraceEvent],
+        transfer_event: TraceEvent,
+        transfer: Mapping[str, Any],
+        selected_option: str,
+        correct: bool,
+        confidence: str,
+        elapsed_seconds: float,
+        command_id: str,
+    ) -> dict[str, Any]:
+        entry_event = _require_event(events, "judgment_entry_submitted")
+        probe_event = _require_event(events, "judgment_probe_submitted")
+        receipts = self._commit_transfer(
+            learner_store,
+            run_id=run_id,
+            transfer_event=transfer_event,
+            transfer=transfer,
+            selected_option=selected_option,
+            correct=correct,
+            confidence=confidence,
+            elapsed_seconds=elapsed_seconds,
+            entry_event=entry_event,
+            probe_event=probe_event,
+        )
+        review_task = self._review_task(
+            run_id,
+            transfer,
+            "passed" if correct else "failed",
+            receipts,
+            base_day=_review_base_day(transfer_event.payload.get("review_base_day")),
+        )
+        public = {
+            "schema_version": JUDGMENT_SESSION_SCHEMA,
+            "session_id": run_id,
+            "state_version": transfer_event.seq + 1,
+            "stage": "completed",
+            "transfer": {
+                **self._public_record(transfer),
+                "selected_option": selected_option,
+                "correct": correct,
+            },
+            "state_receipts": receipts,
+            "review_task": review_task,
+            "next_step": "delayed_review" if correct else "independent_retry",
+        }
+        try:
+            store.append_if_version(
+                run_id,
+                transfer_event.seq,
+                "judgment_transfer_receipt",
+                {
+                    "schema_version": JUDGMENT_SESSION_SCHEMA,
+                    "namespace_id": self.config.namespace_id,
+                    "evidence_origin": self.config.evidence_origin,
+                    "learner_id": self.config.learner_id,
+                    "stage_after": "completed",
+                    "command_id": command_id,
+                    "transfer_record_id": str(transfer["record_id"]),
+                    "selected_option": selected_option,
+                    "confidence": confidence,
+                    "elapsed_seconds": elapsed_seconds,
+                    "correct": correct,
+                    "public_result": public,
+                },
+            )
+        except TraceVersionConflict as exc:
+            replayed = self._replay_transfer_command(
+                self._owned_events(store, run_id), command_id, selected_option, confidence, elapsed_seconds
+            )
+            if replayed is not None:
+                self._persist_review_decision_from_result(
+                    learner_store, run_id, self._owned_events(store, run_id), replayed
+                )
+                return replayed
+            raise JudgmentSessionConflict(
+                f"transfer receipt version conflict: expected {exc.expected_version}, actual {exc.actual_version}"
+            ) from exc
+        self._persist_review_decision(
+            learner_store, run_id=run_id, transfer_event=transfer_event, review_task=review_task
+        )
+        return public
+
     def _commit_transfer(
         self,
         learner_store: LearnerStateStore,
@@ -708,7 +813,15 @@ class JudgmentSessionService:
             receipts.append(_public_receipt(receipt))
         return receipts
 
-    def _review_task(self, run_id: str, transfer: Mapping[str, Any], outcome: str, receipts: list[dict[str, Any]]) -> dict[str, Any]:
+    def _review_task(
+        self,
+        run_id: str,
+        transfer: Mapping[str, Any],
+        outcome: str,
+        receipts: list[dict[str, Any]],
+        *,
+        base_day: date | None = None,
+    ) -> dict[str, Any]:
         passed = outcome == "passed" and all(
             receipt["state_delta"]["commit_status"] == "committed" for receipt in receipts
         )
@@ -718,7 +831,7 @@ class JudgmentSessionService:
         return {
             "task_id": "jrt_" + _digest(f"{run_id}:{task_kind}"),
             "kind": task_kind,
-            "due_on": (self._today_provider() + timedelta(days=offset)).isoformat(),
+            "due_on": ((base_day or self._today_provider()) + timedelta(days=offset)).isoformat(),
             "source_session_id": run_id,
             "evidence_origin": self.config.evidence_origin,
             "namespace_id": self.config.namespace_id,
@@ -936,6 +1049,15 @@ def _short_public_id(value: Any, label: str) -> str:
     if not isinstance(value, str) or not value.strip() or len(value) > 240:
         raise JudgmentSessionError(f"{label} is invalid")
     return value.strip()
+
+
+def _review_base_day(value: Any) -> date:
+    if not isinstance(value, str):
+        raise JudgmentSessionError("committing transfer lacks its local review date")
+    try:
+        return date.fromisoformat(value)
+    except ValueError as exc:
+        raise JudgmentSessionError("committing transfer has an invalid local review date") from exc
 
 
 def _option(value: str) -> str:

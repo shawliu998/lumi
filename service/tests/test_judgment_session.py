@@ -19,6 +19,7 @@ from hermes_service.judgment_session import (
     JudgmentContentUnavailable,
     JudgmentSessionConfig,
     JudgmentSessionConflict,
+    JudgmentSessionError,
     JudgmentSessionService,
     judgment_pack_status,
 )
@@ -193,6 +194,43 @@ class JudgmentSessionTests(unittest.TestCase):
         )
         self.assertEqual(started["stage"], "awaiting_probe")
         self.assertEqual(started["probe"]["record_id"], "P03")
+
+    def test_transfer_commit_resumes_after_the_observation_event_is_durable(self) -> None:
+        service = self.service()
+        started = service.start(
+            entry_record_id="D01", selected_option="B", confidence="low", elapsed_seconds=12
+        )
+        service.answer_probe(
+            session_id=started["session_id"], expected_version=1, expected_stage="awaiting_probe",
+            selected_option="B", confidence="medium", elapsed_seconds=9, command_id="c_probe_resume_0001",
+        )
+        original_commit = service._commit_transfer
+
+        def interrupted_commit(*args: object, **kwargs: object) -> list[dict]:
+            raise JudgmentSessionError("simulated interruption after durable observation")
+
+        service._commit_transfer = interrupted_commit  # type: ignore[method-assign]
+        try:
+            with self.assertRaisesRegex(JudgmentSessionError, "simulated interruption"):
+                service.answer_transfer(
+                    session_id=started["session_id"], expected_version=2,
+                    expected_stage="awaiting_transfer", selected_option="A", confidence="high",
+                    elapsed_seconds=14, command_id="c_transfer_resume_0001",
+                )
+        finally:
+            service._commit_transfer = original_commit  # type: ignore[method-assign]
+
+        interrupted = service.replay(started["session_id"])
+        self.assertEqual(interrupted["event_count"], 3)
+        self.assertEqual(interrupted["timeline"][-1]["stage_after"], "committing_transfer")
+        resumed = service.answer_transfer(
+            session_id=started["session_id"], expected_version=2,
+            expected_stage="awaiting_transfer", selected_option="A", confidence="high",
+            elapsed_seconds=14, command_id="c_transfer_resume_0001",
+        )
+        self.assertEqual(resumed["stage"], "completed")
+        self.assertEqual(service.replay(started["session_id"])["event_count"], 4)
+        self.assertEqual(service.workspace()["review_plan"], [resumed["review_task"]])
 
     def test_failed_transfer_is_withheld_and_command_replay_is_exact(self) -> None:
         service = self.service()
