@@ -2526,6 +2526,11 @@ button.connection-status:hover {
 
 .practice-reveal {
   padding-top: 14px;
+  scroll-margin-top: 14px;
+}
+
+.practice-reveal:focus {
+  outline: none;
 }
 
 .practice-reveal > header {
@@ -2622,7 +2627,7 @@ button.connection-status:hover {
 }
 
 .study-pack-practice.completed {
-  width: min(560px, 100%);
+  width: min(680px, 100%);
   margin: 0 auto;
   padding-top: 22px;
 }
@@ -2645,31 +2650,92 @@ button.connection-status:hover {
   line-height: 18px;
 }
 
-.practice-result-list {
-  margin: 0 0 13px;
+.practice-review-list {
+  display: grid;
+  gap: 11px;
+  margin: 0 0 16px;
   padding: 0;
-  margin-bottom: 13px;
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
   list-style: none;
 }
 
-.practice-result-list > li {
-  min-height: 36px;
-  border-top: 1px solid #e9eaed;
+.practice-review-item {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+}
+
+.practice-review-item > header {
+  min-height: 38px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
   display: grid;
-  grid-template-columns: 1fr 90px 70px;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
-  color: #5b5e66;
-  font-size: 12px;
+  gap: 10px;
+  color: #555860;
+  background: #fafafa;
+  font-size: 11px;
 }
 
-.practice-result-list > li:first-child {
-  border-top: 0;
+.practice-review-item > header strong {
+  color: var(--success);
+  font-size: 11px;
 }
 
-.practice-result-list strong {
+.practice-review-item > header strong.incorrect {
+  color: #99613e;
+}
+
+.practice-review-item > header small {
+  color: #6b6e76;
+  font-size: 10px;
+}
+
+.practice-review-item > dl {
+  margin: 0;
+  padding: 3px 10px;
+}
+
+.practice-review-item > dl > div {
+  padding: 8px 0;
+  border-bottom: 1px solid #ececef;
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 10px;
   color: #44464d;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.practice-review-item > dl > div:last-child {
+  border-bottom: 0;
+}
+
+.practice-review-item dt {
+  color: #747780;
+}
+
+.practice-review-item dd {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.practice-cited-context.compact {
+  margin: 0 10px;
+  padding-top: 8px;
+  border-top: 1px solid #ececef;
+}
+
+.attempt-history-section .practice-review-list {
+  margin-top: 12px;
+}
+
+.attempt-history-note {
+  margin: 7px 0 0;
+  color: #666972;
+  font-size: 11px;
+  line-height: 17px;
 }
 
 .candidate-skills-disclosure summary:focus-visible,
@@ -4593,6 +4659,19 @@ button.connection-status:hover {
 
   .practice-reveal dl > div {
     grid-template-columns: 56px minmax(0, 1fr);
+  }
+
+  .practice-review-item > dl > div {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+
+  .practice-review-item > header {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .practice-review-item > header small {
+    grid-column: 1 / -1;
   }
 }
 

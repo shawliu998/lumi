@@ -972,6 +972,7 @@ class StudyPackStore:
             "candidate_skill_links": [
                 item.to_dict() for item in self._load_skill_links(pack_id)
             ],
+            "attempt_history": self._public_attempt_history(pack_id),
             "review": {
                 "accepted": bool(decisions)
                 and all(bool(row["accepted"]) for row in decisions),
@@ -1007,6 +1008,110 @@ class StudyPackStore:
                 "replay": f"/v1/study-packs/{pack_id}/replay",
             },
         }
+
+    def _public_attempt_history(self, pack_id: str) -> list[dict[str, Any]]:
+        """Return verified, chronological human attempts for the pack detail.
+
+        Attempt history is deliberately reconstructed from immutable attempt,
+        artifact-version, and source-span records. Evaluation fixtures are not
+        learner history. Any stale/tampered join, score, digest, scorer, or
+        citation fails the whole projection closed instead of returning a
+        partially trusted answer key.
+        """
+        rows = self._connection.execute(
+            """
+            SELECT t.*,
+                   a.pack_id AS artifact_pack_id,
+                   a.artifact_version AS exact_artifact_version,
+                   a.artifact_type,
+                   a.content_json,
+                   a.content_digest
+            FROM study_pack_attempts t
+            LEFT JOIN study_pack_artifacts a
+              ON a.pack_id = t.pack_id
+             AND a.artifact_id = t.artifact_id
+             AND a.artifact_version = t.artifact_version
+            WHERE t.pack_id = ? AND t.evidence_origin = ?
+            ORDER BY t.created_at, t.attempt_id
+            """,
+            (pack_id, HUMAN_ATTEMPT_EVIDENCE_ORIGIN),
+        ).fetchall()
+        history: list[dict[str, Any]] = []
+        for row in rows:
+            try:
+                if (
+                    row["artifact_pack_id"] is None
+                    or row["exact_artifact_version"] is None
+                    or str(row["artifact_type"]) != "study_pack.practice_item"
+                    or str(row["activity_kind"]) != "within_pack_practice"
+                ):
+                    raise ValueError("attempt does not join its exact practice artifact")
+                content = json.loads(str(row["content_json"]))
+                if content_digest(content) != str(row["content_digest"]):
+                    raise ValueError("artifact content digest mismatch")
+                learner_answer = str(row["learner_answer_text"])
+                if sha256_text(normalized_exact(learner_answer)) != str(
+                    row["answer_digest"]
+                ):
+                    raise ValueError("learner answer digest mismatch")
+                scorer_id = f"{content['scorer']['kind']}@{content['scorer']['version']}"
+                if scorer_id != str(row["scorer_id"]):
+                    raise ValueError("attempt scorer mismatch")
+                correct, score = score_practice(content, learner_answer)
+                if correct != bool(row["correct"]) or score != float(row["score"]):
+                    raise ValueError("attempt score mismatch")
+                contexts = []
+                for citation in content["citations"]:
+                    excerpt, span = self._resolve_span_with_record(
+                        str(citation["span_ref"]), pack_id=pack_id
+                    )
+                    contexts.append(
+                        {
+                            "field_pointer": str(citation["field_pointer"]),
+                            "span_id": span.span_id,
+                            "locator_kind": span.locator_kind,
+                            "locator_index": span.locator_index,
+                            "start_offset": span.start_offset,
+                            "end_offset": span.end_offset,
+                            "slice_sha256": span.slice_sha256,
+                            "excerpt": excerpt,
+                        }
+                    )
+            except (KeyError, TypeError, ValueError, json.JSONDecodeError) as error:
+                raise StudyPackError(
+                    "attempt_history_invalid",
+                    "saved practice attempt history failed integrity verification",
+                ) from error
+            attempt = PracticeAttempt(
+                attempt_id=str(row["attempt_id"]),
+                pack_id=str(row["pack_id"]),
+                artifact_id=str(row["artifact_id"]),
+                artifact_version=int(row["artifact_version"]),
+                answer_digest=str(row["answer_digest"]),
+                correct=bool(row["correct"]),
+                score=float(row["score"]),
+                evidence_origin=str(row["evidence_origin"]),
+                activity_kind=str(row["activity_kind"]),
+                scorer_id=str(row["scorer_id"]),
+            )
+            history.append(
+                {
+                    "schema_version": "lumi.study-pack-attempt-history-entry.v1",
+                    "attempt": attempt.to_dict(),
+                    "prompt": str(content["prompt"]),
+                    "learner_answer": learner_answer,
+                    "result": {
+                        "correct": correct,
+                        "score": score,
+                        "max_score": 1.0,
+                    },
+                    "answer": str(content["answer"]),
+                    "explanation": str(content["explanation"]),
+                    "cited_source_context": contexts,
+                    "created_at": str(row["created_at"]),
+                }
+            )
+        return history
 
     def _pack_state(self, pack_id: str) -> dict[str, Any]:
         pack = self._require_pack(pack_id)

@@ -23,7 +23,7 @@ const LIST_ITEM_KEYS = ["pack_id", "title", "lifecycle", "version", "created_at"
 const DETAIL_KEYS = [
   "schema_version", "pack_id", "title", "lifecycle", "version", "source",
   "artifact_set_digest", "artifact_counts", "artifacts", "candidate_skill_links",
-  "review", "quarantine_reason", "generator", "learning_projection_writes",
+  "attempt_history", "review", "quarantine_reason", "generator", "learning_projection_writes",
   "created_at", "updated_at", "links",
 ];
 const SOURCE_KEYS = [
@@ -47,6 +47,10 @@ const SKILL_LINK_KEYS = [
   "artifact_id", "label", "skill_id", "status", "taxonomy_version", "taxonomy_digest",
 ];
 const PROJECTION_KEYS = ["kt", "misconception", "today_plan", "review_schedule"];
+const ATTEMPT_KEYS = [
+  "schema_version", "attempt_id", "pack_id", "artifact_id", "artifact_version", "answer_digest",
+  "correct", "score", "evidence_origin", "activity_kind", "scorer_id",
+];
 
 export class StudyPackContractError extends Error {
   constructor(message, code = "invalid_study_pack_contract") {
@@ -382,6 +386,76 @@ export function normalizeStudyPackDetail(payload, expected) {
   });
   const candidateKeys = candidateSkillLinks.map((link) => `${link.artifactId}\u0000${link.label}\u0000${link.skillId || ""}`);
   if (new Set(candidateKeys).size !== candidateKeys.length) fail("studyPack.candidate_skill_links", "duplicate candidate link");
+  if (!Array.isArray(payload.attempt_history) || payload.attempt_history.length > 10_000) fail("studyPack.attempt_history", "invalid attempt history");
+  const attemptHistory = payload.attempt_history.map((entry, index) => {
+    const path = `studyPack.attempt_history[${index}]`;
+    exactKeys(entry, [
+      "schema_version", "attempt", "prompt", "learner_answer", "result", "answer",
+      "explanation", "cited_source_context", "created_at",
+    ], path);
+    if (entry.schema_version !== "lumi.study-pack-attempt-history-entry.v1") fail(`${path}.schema_version`, "unsupported history schema");
+    exactKeys(entry.attempt, ATTEMPT_KEYS, `${path}.attempt`);
+    if (entry.attempt.schema_version !== "lumi.study-pack-attempt.v1") fail(`${path}.attempt.schema_version`, "unsupported attempt schema");
+    const attemptId = identifier(entry.attempt.attempt_id, ATTEMPT_ID, `${path}.attempt.attempt_id`);
+    if (entry.attempt.pack_id !== packId) fail(`${path}.attempt.pack_id`, "attempt pack mismatch");
+    const artifactId = identifier(entry.attempt.artifact_id, ARTIFACT_ID, `${path}.attempt.artifact_id`);
+    const artifactVersion = integer(entry.attempt.artifact_version, `${path}.attempt.artifact_version`, { min: 1 });
+    const artifact = artifacts.find((item) => item.artifactId === artifactId);
+    if (!artifact || artifact.type !== "study_pack.practice_item" || artifact.artifactVersion !== artifactVersion) fail(`${path}.attempt`, "history does not bind an exact practice artifact version");
+    hash(entry.attempt.answer_digest, `${path}.attempt.answer_digest`);
+    rejectEvaluationOrigin(entry.attempt.evidence_origin, `${path}.attempt.evidence_origin`);
+    if (entry.attempt.activity_kind !== ACTIVITY_KIND) fail(`${path}.attempt.activity_kind`, "unsupported activity kind");
+    const scorerId = text(entry.attempt.scorer_id, `${path}.attempt.scorer_id`, { max: 100 });
+    if (scorerId !== `${artifact.content.scorer.kind}@${artifact.content.scorer.version}`) fail(`${path}.attempt.scorer_id`, "history scorer mismatch");
+    if (typeof entry.attempt.correct !== "boolean") fail(`${path}.attempt.correct`, "invalid correctness");
+    const attemptScore = finite(entry.attempt.score, `${path}.attempt.score`, { min: 0 });
+    const prompt = text(entry.prompt, `${path}.prompt`, { max: 1_000 });
+    if (prompt !== artifact.content.prompt) fail(`${path}.prompt`, "history prompt mismatch");
+    exactKeys(entry.result, ["correct", "score", "max_score"], `${path}.result`);
+    if (entry.result.correct !== entry.attempt.correct) fail(`${path}.result.correct`, "history result mismatch");
+    const score = finite(entry.result.score, `${path}.result.score`, { min: 0 });
+    const maxScore = finite(entry.result.max_score, `${path}.result.max_score`, { min: 0.000001 });
+    if (score !== attemptScore || score > maxScore) fail(`${path}.result.score`, "history score mismatch");
+    if (!Array.isArray(entry.cited_source_context) || entry.cited_source_context.length !== 2) fail(`${path}.cited_source_context`, "history requires exact answer and explanation citations");
+    const citedContext = entry.cited_source_context.map((citation, citationIndex) => {
+      const citationPath = `${path}.cited_source_context[${citationIndex}]`;
+      exactKeys(citation, ["field_pointer", "span_id", "locator_kind", "locator_index", "start_offset", "end_offset", "slice_sha256", "excerpt"], citationPath);
+      if (!["page", "section"].includes(citation.locator_kind)) fail(`${citationPath}.locator_kind`, "unsupported locator");
+      const startOffset = integer(citation.start_offset, `${citationPath}.start_offset`);
+      const endOffset = integer(citation.end_offset, `${citationPath}.end_offset`, { min: 1 });
+      if (endOffset <= startOffset) fail(citationPath, "invalid citation range");
+      return {
+        fieldPointer: text(citation.field_pointer, `${citationPath}.field_pointer`, { max: 300 }),
+        spanId: identifier(citation.span_id, SPAN_ID, `${citationPath}.span_id`),
+        locatorKind: citation.locator_kind,
+        locatorIndex: integer(citation.locator_index, `${citationPath}.locator_index`, { min: 1, max: 120 }),
+        startOffset,
+        endOffset,
+        sliceSha256: hash(citation.slice_sha256, `${citationPath}.slice_sha256`),
+        excerpt: text(citation.excerpt, `${citationPath}.excerpt`, { max: 2_000 }),
+      };
+    });
+    const pointers = citedContext.map((item) => item.fieldPointer);
+    if (new Set(pointers).size !== 2 || !pointers.includes("/answer") || !pointers.includes("/explanation")) fail(`${path}.cited_source_context`, "history citations must exactly cover answer and explanation");
+    return {
+      attemptId,
+      artifactId,
+      artifactVersion,
+      prompt,
+      learnerAnswer: text(entry.learner_answer, `${path}.learner_answer`, { max: 20_000 }),
+      correct: entry.result.correct,
+      score,
+      maxScore,
+      answer: text(entry.answer, `${path}.answer`, { max: 2_000 }),
+      explanation: text(entry.explanation, `${path}.explanation`, { max: 2_500 }),
+      citedContext,
+      createdAt: timestamp(entry.created_at, `${path}.created_at`),
+    };
+  });
+  if (new Set(attemptHistory.map((item) => item.attemptId)).size !== attemptHistory.length) fail("studyPack.attempt_history", "duplicate attempt identifier");
+  for (let index = 1; index < attemptHistory.length; index += 1) {
+    if (attemptHistory[index - 1].createdAt > attemptHistory[index].createdAt) fail("studyPack.attempt_history", "attempt history is not chronological");
+  }
   exactKeys(payload.review, REVIEW_KEYS, "studyPack.review");
   if (typeof payload.review.accepted !== "boolean") fail("studyPack.review.accepted", "invalid review status");
   integer(payload.review.decision_count, "studyPack.review.decision_count");
@@ -454,6 +528,7 @@ export function normalizeStudyPackDetail(payload, expected) {
     artifactCounts,
     artifacts,
     candidateSkillLinks,
+    attemptHistory,
     review: {
       accepted: payload.review.accepted,
       decisionCount: payload.review.decision_count,

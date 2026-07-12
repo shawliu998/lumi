@@ -145,6 +145,7 @@ function detail(lifecycle = "draft", overrides = {}) {
       taxonomy_version: null,
       taxonomy_digest: null,
     }],
+    attempt_history: [],
     review: {
       accepted: reviewed,
       decision_count: decisions.length,
@@ -245,6 +246,22 @@ function attemptResult(origin = "human_local_interactive", overrides = {}) {
   };
 }
 
+function attemptHistoryEntry(overrides = {}) {
+  const submitted = attemptResult();
+  return {
+    schema_version: "lumi.study-pack-attempt-history-entry.v1",
+    attempt: submitted.attempt,
+    prompt: "第 1 题：先确认____。",
+    learner_answer: "统计口径",
+    result: submitted.result,
+    answer: submitted.answer,
+    explanation: submitted.explanation,
+    cited_source_context: submitted.cited_source_context.map((item) => ({ ...item, slice_sha256: HASH })),
+    created_at: "2026-07-12T00:01:00+00:00",
+    ...overrides,
+  };
+}
+
 test("Study Pack route helpers close every public path", () => {
   assert.equal(studyPackPath(PACK_ID), `/v1/study-packs/${PACK_ID}`);
   assert.equal(studyPackCommandPath(PACK_ID), `/v1/study-packs/${PACK_ID}/commands`);
@@ -306,6 +323,29 @@ test("detail and command responses are bound to the exact request and version tr
     expectedVersion: 2,
     previousLifecycle: "draft",
   }), /original lifecycle/i);
+});
+
+test("detail restores only closed, exact-version human attempt history", () => {
+  const restored = normalizeStudyPackDetail(detail("published", {
+    version: 4,
+    attempt_history: [attemptHistoryEntry()],
+  }), { packId: PACK_ID });
+  assert.equal(restored.attemptHistory.length, 1);
+  assert.equal(restored.attemptHistory[0].prompt, "第 1 题：先确认____。");
+  assert.equal(restored.attemptHistory[0].learnerAnswer, "统计口径");
+  assert.equal(restored.attemptHistory[0].answer, "统计口径");
+
+  const fixture = structuredClone(detail("published", { attempt_history: [attemptHistoryEntry()] }));
+  fixture.attempt_history[0].attempt.evidence_origin = "evaluation_fixture";
+  assert.throws(() => normalizeStudyPackDetail(fixture, { packId: PACK_ID }), /evaluation fixture/i);
+
+  const wrongPrompt = structuredClone(detail("published", { attempt_history: [attemptHistoryEntry()] }));
+  wrongPrompt.attempt_history[0].prompt = "另一道题";
+  assert.throws(() => normalizeStudyPackDetail(wrongPrompt, { packId: PACK_ID }), /prompt mismatch/i);
+
+  const missingCitation = structuredClone(detail("published", { attempt_history: [attemptHistoryEntry()] }));
+  missingCitation.attempt_history[0].cited_source_context.pop();
+  assert.throws(() => normalizeStudyPackDetail(missingCitation, { packId: PACK_ID }), /citations/i);
 });
 
 test("duplicate artifacts, decisions, unsafe candidate links, and lifecycle mismatches fail closed", () => {
@@ -537,4 +577,35 @@ test("StrictMode lifecycle replay re-arms every async write guard and clears in-
     assert.ok(section.indexOf("inFlightRef.current = false;", cleanup) > cleanup, "cleanup must not leave in-flight stuck");
     assert.ok(section.indexOf("operationRef.current += 1;", cleanup) > cleanup, "cleanup must invalidate the prior operation");
   }
+});
+
+test("practice feedback preserves the submitted question and answer for an explicit three-item review", () => {
+  const source = readFileSync(new URL("./StudyPackViews.jsx", import.meta.url), "utf8");
+  const start = source.indexOf("function StudyPackPractice");
+  const end = source.indexOf("export function StudyPackMaterials", start);
+  const practice = source.slice(start, end);
+
+  assert.match(practice, /prompt: createActivePracticeProjection\(state\.launch\)\.prompt/);
+  assert.match(practice, /learnerAnswer: state\.answer\.trim\(\)/);
+  assert.match(practice, /feedbackRef\.current\?\.focus\(\{ preventScroll: true \}\)/);
+  assert.match(practice, /feedbackRef\.current\?\.scrollIntoView\(\{ block: "start" \}\)/);
+  assert.match(practice, /<dt>题目<\/dt><dd>\{result\.prompt\}<\/dd>/);
+  assert.match(practice, /<dt>你的答案<\/dt><dd>\{result\.learnerAnswer\}<\/dd>/);
+  assert.match(practice, /<dt>正确答案<\/dt><dd>\{result\.answer\}<\/dd>/);
+  assert.match(practice, /<dt>解释<\/dt><dd>\{result\.explanation\}<\/dd>/);
+  assert.match(practice, /result\.citedContext\.map/);
+  assert.match(practice, /onClick=\{next\}/);
+  assert.doesNotMatch(practice, /setTimeout\([^)]*next/);
+});
+
+test("published detail renders verified persisted attempts without claiming a practice round", () => {
+  const source = readFileSync(new URL("./StudyPackViews.jsx", import.meta.url), "utf8");
+  assert.match(source, /Array\.isArray\(pack\.attemptHistory\)/);
+  assert.match(source, /attemptHistory\.length > 0/);
+  assert.match(source, /已完成的作答记录/);
+  assert.match(source, /不推断练习轮次/);
+  assert.match(source, /result\.learnerAnswer/);
+  assert.match(source, /result\.answer/);
+  assert.match(source, /result\.explanation/);
+  assert.match(source, /核验引用/);
 });

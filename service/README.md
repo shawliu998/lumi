@@ -118,7 +118,11 @@ All learner-facing `lumi.study-pack-detail.v1` projections redact practice-item
 only its schema, item kind, prompt, and scorer. `lumi.study-pack-launch.v1` is
 equally answer-free. Only an accepted real attempt returns the deterministic
 score, answer, explanation, and cited source context in
-`lumi.study-pack-attempt-result.v1`. Study Pack events and replay contain opaque
+`lumi.study-pack-attempt-result.v1`. Pack detail also exposes a verified,
+chronological `attempt_history` of accepted `human_local_interactive` attempts;
+it is empty before a real answer, excludes evaluation fixtures, and fails closed
+if the exact artifact version, digests, scorer, score, or citation hashes no
+longer verify. Study Pack events and replay contain opaque
 references, hashes, bounded decisions, and answer digests—not raw source text or
 pre-attempt answer keys.
 

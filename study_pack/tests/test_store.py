@@ -75,6 +75,7 @@ class StudyPackStoreTests(unittest.TestCase):
         self.assertEqual(created["schema_version"], "lumi.study-pack-detail.v1")
         self.assertEqual(created["version"], 1)
         self.assertEqual(created["source"]["extraction_state"], "accepted")
+        self.assertEqual(created["attempt_history"], [])
         self.assertEqual(
             set(created["links"]), {"self", "commands", "replay"}
         )
@@ -160,6 +161,30 @@ class StudyPackStoreTests(unittest.TestCase):
             (attempt["attempt"]["attempt_id"],),
         ).fetchone()[0]
         self.assertEqual(saved_origin, "human_local_interactive")
+        history = self.store.get_pack(created["pack_id"])["attempt_history"]
+        self.assertEqual(len(history), 1)
+        self.assertEqual(
+            set(history[0]),
+            {
+                "schema_version",
+                "attempt",
+                "prompt",
+                "learner_answer",
+                "result",
+                "answer",
+                "explanation",
+                "cited_source_context",
+                "created_at",
+            },
+        )
+        self.assertEqual(history[0]["learner_answer"], private["answer"])
+        self.assertEqual(history[0]["answer"], private["answer"])
+        self.assertTrue(history[0]["result"]["correct"])
+        self.assertEqual(history[0]["attempt"]["attempt_id"], attempt["attempt"]["attempt_id"])
+        self.assertTrue(history[0]["cited_source_context"])
+        self.assertTrue(
+            all("slice_sha256" in item for item in history[0]["cited_source_context"])
+        )
         accepted_event = self.store.events(created["pack_id"])[-1]
         self.assertEqual(
             accepted_event.payload["attempt"]["evidence_origin"],
@@ -189,6 +214,10 @@ class StudyPackStoreTests(unittest.TestCase):
         self.assertTrue(replay["trace_verified"])
         self.assertTrue(replay["projection_verified"])
         self.assertEqual(replay["frames"][-1]["state"]["version"], 4)
+        self.assertEqual(
+            self.store.get_pack(pack_id)["attempt_history"][0]["learner_answer"],
+            private["answer"],
+        )
 
     def test_evaluation_fixture_origin_is_constructor_owned_and_not_human_evidence(
         self,
@@ -248,6 +277,9 @@ class StudyPackStoreTests(unittest.TestCase):
             self.assertEqual(
                 result["attempt"]["evidence_origin"], "evaluation_fixture"
             )
+            self.assertEqual(
+                evaluation_store.get_pack(created["pack_id"])["attempt_history"], []
+            )
             self.assertNotEqual(
                 result["attempt"]["evidence_origin"], "human_local_interactive"
             )
@@ -286,6 +318,64 @@ class StudyPackStoreTests(unittest.TestCase):
             self.assertNotIn("human_local_interactive", serialized_evidence)
         finally:
             evaluation_store.close()
+
+    def test_human_attempt_history_fails_closed_on_integrity_mismatch(self) -> None:
+        _, _, published = self.publish()
+        practice = next(
+            item
+            for item in published["artifacts"]
+            if item["artifact_type"] == "study_pack.practice_item"
+        )
+        private = self.private_practice_content(practice["artifact_id"])
+        attempt = self.store.attempt_item(
+            artifact_id=practice["artifact_id"],
+            learner_answer=private["answer"],
+            expected_pack_version=3,
+            expected_artifact_version=1,
+            command_id=self.command(),
+        )
+        attempt_id = attempt["attempt"]["attempt_id"]
+        pack_id = published["pack_id"]
+        connection = self.store._connection  # type: ignore[attr-defined]
+        connection.execute("DROP TRIGGER study_pack_attempts_no_update")
+
+        original = connection.execute(
+            "SELECT artifact_version, score, scorer_id FROM study_pack_attempts WHERE attempt_id = ?",
+            (attempt_id,),
+        ).fetchone()
+        mutations = (
+            ("artifact_version", 99, original["artifact_version"]),
+            ("score", 0.25, original["score"]),
+            ("scorer_id", "untrusted@9", original["scorer_id"]),
+        )
+        for column, invalid_value, original_value in mutations:
+            with self.subTest(column=column):
+                connection.execute(
+                    f"UPDATE study_pack_attempts SET {column} = ? WHERE attempt_id = ?",
+                    (invalid_value, attempt_id),
+                )
+                with self.assertRaises(StudyPackError) as caught:
+                    self.store.get_pack(pack_id)
+                self.assertEqual(caught.exception.code, "attempt_history_invalid")
+                connection.execute(
+                    f"UPDATE study_pack_attempts SET {column} = ? WHERE attempt_id = ?",
+                    (original_value, attempt_id),
+                )
+
+        connection.execute("DROP TRIGGER study_pack_artifact_content_immutable")
+        stored_content = connection.execute(
+            "SELECT content_json FROM study_pack_artifacts WHERE artifact_id = ?",
+            (practice["artifact_id"],),
+        ).fetchone()[0]
+        tampered_content = json.loads(stored_content)
+        tampered_content["explanation"] += "篡改"
+        connection.execute(
+            "UPDATE study_pack_artifacts SET content_json = ? WHERE artifact_id = ?",
+            (json.dumps(tampered_content, ensure_ascii=False), practice["artifact_id"]),
+        )
+        with self.assertRaises(StudyPackError) as digest_error:
+            self.store.get_pack(pack_id)
+        self.assertEqual(digest_error.exception.code, "attempt_history_invalid")
 
     def test_constructor_rejects_unknown_attempt_origin_before_creating_storage(
         self,

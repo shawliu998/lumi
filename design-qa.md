@@ -22,6 +22,7 @@ AI imagery. It is not claimed as a pixel-identical state clone.
 | offline | 1280×720 | `client/qa/p03-materials-offline-final-1280x720.png` | passed; import unavailable and retry explicit |
 | connected service error | 1280×720 | `client/qa/p03-materials-error-final-640x720.png` | passed; fail-closed error and retry explicit |
 | quarantined pack | 1280×720 | `client/qa/p03-materials-quarantined-final-1280x720.png` | passed; zero contents and no publish/practice action |
+| persisted post-answer history | 486×908 | live in-app DOM + product SQLite, 2026-07-12 | passed; 3 real human attempts restore question, learner answer, correct answer, explanation, and exact citations |
 
 DOM/browser checks also verified:
 
@@ -30,7 +31,14 @@ DOM/browser checks also verified:
   horizontal padding at desktop/narrow widths;
 - pre-answer textarea is empty and no `.practice-reveal` or
   `.practice-cited-context` exists;
-- the product-default QA database still contains zero Study Pack attempts;
+- before the manual gate, the product-default QA database contained zero Study
+  Pack attempts; the learner then submitted exactly three
+  `human_local_interactive` attempts bound to three distinct artifacts;
+- after sidecar restart and page reload, the published detail restored exactly
+  those three verified human records; no `evaluation_fixture` record appeared;
+- the 486px layout used `.screen.materials-screen` as the scroll container
+  (`clientHeight=835`, `scrollHeight=2774`) and reached its final record at
+  `scrollTop=1938.5` of `maxScroll=1939` without horizontal page overflow;
 - 640px responsive navigation retains explicit accessible names after hidden
   copy was replaced by icon-only presentation;
 - connected browser console contained no warning or error entries during the
@@ -62,12 +70,23 @@ engineering jargon remains in the Study Pack flow.
    regression test.
 4. Browser QA then found unnamed icon-only controls at 640px; Sol added stable
    accessible names and regression coverage without changing the visual layout.
+5. The first real learner run exposed a post-answer UX failure: revealed-state
+   focus returned to the question above the feedback, and the completed summary
+   showed scores without the question, learner answer, correct answer, or
+   explanation. Sol moved focus and scroll to the feedback itself and replaced
+   the score-only summary with a restrained three-item review.
+6. Refreshing or exiting also discarded the client-only summary. Pack detail now
+   restores chronological human attempts from authoritative storage only after
+   recomputing the answer digest, artifact digest, scorer, score, and citation
+   slices. Unanswered items and `evaluation_fixture` attempts remain absent.
 
 ## Final result
 
-`blocked` for the full revealed/completed browser matrix only. Connected,
-offline, error, quarantine, published, and active pre-answer states pass. The
-revealed answer, long explanation/citation bottom reachability, and three-item
-completed summary must be exercised by an actual learner entering answers.
-Automation deliberately did not type or submit a learner answer, so those states
-remain unclaimed rather than being simulated as human evidence.
+`partially passed` for the post-answer matrix. Connected, offline, error,
+quarantine, published, active pre-answer, and persisted post-answer history all
+pass. The real learner's three accepted answers survived restart and the final
+record is reachable at 486px. The corrected immediate revealed-state focus has
+deterministic client coverage but has not been claimed as browser-verified,
+because doing so would require another real learner submission; automation did
+not manufacture one. P0.3 therefore remains honest about that narrow visual
+evidence gap while preserving the completed learner record.

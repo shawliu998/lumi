@@ -313,6 +313,7 @@ class StudyPackApiTests(unittest.TestCase):
             "artifact_counts",
             "artifacts",
             "candidate_skill_links",
+            "attempt_history",
             "review",
             "quarantine_reason",
             "generator",
@@ -323,6 +324,27 @@ class StudyPackApiTests(unittest.TestCase):
         }
         self.assertTrue(required.issubset(pack))
         self.assertTrue(set(pack).issubset(required | {"idempotent_replay"}))
+        for entry in pack["attempt_history"]:
+            self.assertEqual(
+                set(entry),
+                {
+                    "schema_version",
+                    "attempt",
+                    "prompt",
+                    "learner_answer",
+                    "result",
+                    "answer",
+                    "explanation",
+                    "cited_source_context",
+                    "created_at",
+                },
+            )
+            self.assertEqual(
+                entry["attempt"]["evidence_origin"], "human_local_interactive"
+            )
+            self.assertEqual(set(entry["result"]), {"correct", "score", "max_score"})
+            for context in entry["cited_source_context"]:
+                self.assertIn("slice_sha256", context)
         self.assertEqual(
             set(pack["source"]),
             {
@@ -777,6 +799,7 @@ class StudyPackApiTests(unittest.TestCase):
         )
         self.assertEqual(status, 200)
         self.assert_practice_artifacts_redacted(current)
+        self.assertEqual(current["attempt_history"], [])
         launch_id = next(
             artifact["artifact_id"]
             for artifact in current["artifacts"]
@@ -841,6 +864,21 @@ class StudyPackApiTests(unittest.TestCase):
             attempted["attempt"]["activity_kind"], "within_pack_practice"
         )
         self.assertTrue(attempted["cited_source_context"])
+        self.assertEqual(self.learning_state_digest(), baseline)
+
+        status, history_pack = self.request(
+            "GET", f"/v1/study-packs/{published['pack_id']}"
+        )
+        self.assertEqual(status, 200)
+        self.assert_practice_artifacts_redacted(history_pack)
+        self.assertEqual(len(history_pack["attempt_history"]), 1)
+        history_entry = history_pack["attempt_history"][0]
+        self.assertEqual(history_entry["prompt"], launch["prompt"])
+        self.assertEqual(history_entry["learner_answer"], expected_answer)
+        self.assertEqual(history_entry["answer"], expected_answer)
+        self.assertEqual(
+            history_entry["attempt"]["attempt_id"], attempted["attempt"]["attempt_id"]
+        )
         self.assertEqual(self.learning_state_digest(), baseline)
 
         status, replay_after_attempt = self.request(
@@ -1391,6 +1429,11 @@ class StudyPackApiTests(unittest.TestCase):
         self.assertEqual(
             attempted["attempt"]["evidence_origin"], "evaluation_fixture"
         )
+        status, detail = self.request(
+            "GET", f"/v1/study-packs/{published['pack_id']}"
+        )
+        self.assertEqual(status, 200)
+        self.assertEqual(detail["attempt_history"], [])
         connection = sqlite3.connect(self.database)
         try:
             origins = connection.execute(

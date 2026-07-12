@@ -144,6 +144,16 @@ private payload, or raw source outside the question prompt. The attempt response
 may reveal deterministic score, answer, explanation, and cited source context
 only after a real learner answer is accepted.
 
+`GET /v1/study-packs/{pack_id}` includes chronological `attempt_history` only
+for persisted `human_local_interactive` attempts. Before the first accepted
+human answer it is an empty array and discloses no practice answer. Each history
+entry re-joins the exact immutable artifact id/version and re-verifies the
+artifact and learner-answer digests, scorer, saved score, and every source
+slice/hash before returning the prompt, learner answer, correct answer,
+explanation, and cited context. Evaluation-fixture attempts are always excluded;
+any integrity mismatch fails the projection closed. History is chronological
+evidence, not a claimed learning “round” because P0.3 has no session identifier.
+
 This is a direct-key disclosure boundary, not a cheating-prevention claim: the
 learner owns the frozen source, and published notes or knowledge cards may
 contain the same source statement. While an item is unanswered, the client must
@@ -161,7 +171,8 @@ Stable failures include `invalid_source_body`, `source_too_large`,
 `pdf_text_unavailable_ocr_required`, `source_insufficient_for_pack`,
 `citation_unresolved`, `artifact_unsupported`, `artifact_quarantined`,
 `artifact_not_published`, `stale_version`, `command_conflict`, and
-`invalid_transition`. Parse/input failures leave no document, artifact, event,
+`invalid_transition`. Persisted history integrity failures use
+`attempt_history_invalid`. Parse/input failures leave no document, artifact, event,
 or learning-state write. A successfully frozen source whose generation is
 insufficient may leave a quarantined pack with a bounded reason code.
 

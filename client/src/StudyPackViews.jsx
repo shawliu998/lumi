@@ -274,6 +274,7 @@ function PublishedArtifacts({ pack, onStartPractice }) {
   const note = pack.artifacts.find((item) => item.type === "study_pack.one_page_notes");
   const cards = pack.artifacts.filter((item) => item.type === "study_pack.knowledge_card");
   const reviewTask = pack.artifacts.find((item) => item.type === "study_pack.review_task");
+  const attemptHistory = Array.isArray(pack.attemptHistory) ? pack.attemptHistory : [];
 
   return (
     <div className="published-pack-content">
@@ -306,6 +307,24 @@ function PublishedArtifacts({ pack, onStartPractice }) {
         <div><small>练习</small><h2>3 道连续练习</h2><p>开始后，答题屏只显示当前题目；提交答案后才会显示正确答案、解释和引用原文。</p></div>
         <button className="button primary" type="button" onClick={onStartPractice}><ListChecks size={13} />开始练习</button>
       </section>
+
+      {attemptHistory.length > 0 && (
+        <section className="pack-artifact-section attempt-history-section" aria-labelledby="attempt-history-title">
+          <header><div><small>作答回看</small><h2 id="attempt-history-title">已完成的作答记录</h2></div><span>{attemptHistory.length} 条</span></header>
+          <p className="attempt-history-note">这里只显示已经提交并通过完整性核验的本机作答；记录按时间排列，不推断练习轮次。</p>
+          <ol className="practice-review-list">
+            {attemptHistory.map((result, index) => (
+              <li key={result.attemptId}>
+                <article className="practice-review-item">
+                  <header><span>记录 {index + 1}</span><strong className={result.correct ? "correct" : "incorrect"}>{result.correct ? "回答正确" : "需要再看"}</strong><small>{formatUpdated(result.createdAt)} · {result.score} / {result.maxScore} 分</small></header>
+                  <dl><div><dt>题目</dt><dd>{result.prompt}</dd></div><div><dt>你的答案</dt><dd>{result.learnerAnswer}</dd></div><div><dt>正确答案</dt><dd>{result.answer}</dd></div><div><dt>解释</dt><dd>{result.explanation}</dd></div></dl>
+                  <div className="practice-cited-context compact"><strong>核验引用</strong>{result.citedContext.map((citation) => <blockquote key={`${result.attemptId}-${citation.spanId}-${citation.fieldPointer}`}><p>{citation.excerpt}</p><footer>{locatorCopy(citation.locatorKind, citation.locatorIndex)} · 字符位置 {citation.startOffset}–{citation.endOffset}</footer></blockquote>)}</div>
+                </article>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
 
       <section className="pack-artifact-section review-task-section">
         <header><div><small>包内复习任务</small><h2>复述练习</h2></div><span>不写入复习安排</span></header>
@@ -450,6 +469,7 @@ function StudyPackPractice({ practiceItems, onExit, onRefreshPack, onPackRefresh
   const operationRef = useRef(0);
   const inFlightRef = useRef(false);
   const headingRef = useRef(null);
+  const feedbackRef = useRef(null);
   const [state, setState] = useState({
     phase: "launching", index: 0, launch: null, answer: "", result: null,
     results: [], error: null, commandId: null,
@@ -481,7 +501,12 @@ function StudyPackPractice({ practiceItems, onExit, onRefreshPack, onPackRefresh
   }, [launchAt]);
 
   useEffect(() => {
-    if (["active", "revealed", "completed"].includes(state.phase)) headingRef.current?.focus();
+    if (state.phase === "revealed") {
+      feedbackRef.current?.focus({ preventScroll: true });
+      feedbackRef.current?.scrollIntoView({ block: "start" });
+      return;
+    }
+    if (["active", "completed"].includes(state.phase)) headingRef.current?.focus();
   }, [state.index, state.phase]);
 
   const submit = async (event) => {
@@ -496,7 +521,12 @@ function StudyPackPractice({ practiceItems, onExit, onRefreshPack, onPackRefresh
       if (!aliveRef.current || operation !== operationRef.current) return;
       inFlightRef.current = false;
       if (result.refreshedPack) onPackRefreshed(result.refreshedPack);
-      setState((current) => ({ ...current, phase: "revealed", result, results: [...current.results, result], commandId: null }));
+      const review = {
+        ...result,
+        prompt: createActivePracticeProjection(state.launch).prompt,
+        learnerAnswer: state.answer.trim(),
+      };
+      setState((current) => ({ ...current, phase: "revealed", result: review, results: [...current.results, review], commandId: null }));
     } catch (error) {
       if (!aliveRef.current || operation !== operationRef.current) return;
       const recovery = studyPackWriteRecovery(error);
@@ -553,8 +583,25 @@ function StudyPackPractice({ practiceItems, onExit, onRefreshPack, onPackRefresh
         <div className="practice-complete-mark"><CheckCircle size={26} weight="fill" /></div>
         <h1 ref={headingRef} tabIndex={-1}>本轮练习已完成</h1>
         <p>完成 3 道题，答对 {summary.correct} 道。结果只保存在这个学习包中，不会更新技能掌握、错因档案或今日计划。</p>
-        <ol className="practice-result-list">
-          {state.results.map((result, index) => <li key={result.attemptId}><span>第 {index + 1} 题</span><strong>{result.correct ? "正确" : "需再看"}</strong><span>{result.score} / {result.maxScore}</span></li>)}
+        <ol className="practice-review-list">
+          {state.results.map((result, index) => (
+            <li key={result.attemptId}>
+              <article className="practice-review-item">
+                <header>
+                  <span>第 {index + 1} 题</span>
+                  <strong className={result.correct ? "correct" : "incorrect"}>{result.correct ? "回答正确" : "需要再看"}</strong>
+                  <small>{result.score} / {result.maxScore} 分</small>
+                </header>
+                <dl>
+                  <div><dt>题目</dt><dd>{result.prompt}</dd></div>
+                  <div><dt>你的答案</dt><dd>{result.learnerAnswer}</dd></div>
+                  <div><dt>正确答案</dt><dd>{result.answer}</dd></div>
+                  <div><dt>解释</dt><dd>{result.explanation}</dd></div>
+                </dl>
+                <div className="practice-cited-context compact"><strong>引用原文</strong>{result.citedContext.map((citation) => <blockquote key={`${citation.spanId}-${citation.fieldPointer}`}><p>{citation.excerpt}</p><footer>{locatorCopy(citation.locatorKind, citation.locatorIndex)} · 字符位置 {citation.startOffset}–{citation.endOffset}</footer></blockquote>)}</div>
+              </article>
+            </li>
+          ))}
         </ol>
         <button className="button primary" type="button" onClick={safeExit}>返回学习包</button>
       </div>
@@ -578,9 +625,9 @@ function StudyPackPractice({ practiceItems, onExit, onRefreshPack, onPackRefresh
               <div className="practice-submit-row"><span>提交前不显示答案、解释或来源原文。</span><button className="button primary" type="submit" disabled={!state.answer.trim() || state.phase === "submitting"}>{state.phase === "submitting" ? "正在提交" : "提交答案"}</button></div>
             </form>
           ) : (
-            <section className="practice-reveal">
+            <section ref={feedbackRef} tabIndex={-1} className="practice-reveal" aria-label={`第 ${state.index + 1} 题作答反馈`}>
               <header className={state.result.correct ? "correct" : "incorrect"}>{state.result.correct ? <CheckCircle size={18} /> : <XCircle size={18} />}<div><strong>{state.result.correct ? "回答正确" : "这题需要再看"}</strong><span>得分 {state.result.score} / {state.result.maxScore}</span></div></header>
-              <dl><div><dt>正确答案</dt><dd>{state.result.answer}</dd></div><div><dt>解释</dt><dd>{state.result.explanation}</dd></div></dl>
+              <dl><div><dt>你的答案</dt><dd>{state.result.learnerAnswer}</dd></div><div><dt>正确答案</dt><dd>{state.result.answer}</dd></div><div><dt>解释</dt><dd>{state.result.explanation}</dd></div></dl>
               <div className="practice-cited-context"><strong>引用原文</strong>{state.result.citedContext.map((citation) => <blockquote key={`${citation.spanId}-${citation.fieldPointer}`}><p>{citation.excerpt}</p><footer>{locatorCopy(citation.locatorKind, citation.locatorIndex)} · 字符位置 {citation.startOffset}–{citation.endOffset}</footer></blockquote>)}</div>
               <button className="button primary" type="button" onClick={next}>{state.index === 2 ? "查看练习总结" : "继续下一题"}<ArrowRight size={13} /></button>
             </section>
