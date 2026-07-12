@@ -1,7 +1,7 @@
 # Lumi release evidence
 
-- Run: `run-20260712T040331Z`
-- Generated: `2026-07-12T04:03:31.953581+00:00`
+- Run: `run-20260712T044634Z`
+- Generated: `2026-07-12T04:46:34.943160+00:00`
 - Overall: **PASS**
 - Counts: 17 pass / 0 fail / 0 pending
 

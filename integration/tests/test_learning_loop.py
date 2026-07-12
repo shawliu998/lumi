@@ -11,6 +11,7 @@ from hermes_integration.loop import (
     ContinuationError,
     IntegrationSession,
     SCENARIOS,
+    Scenario,
     _select_teaching_variant,
     attempt_state_name,
     continue_attempt,
@@ -81,8 +82,78 @@ class IntegrationLoopTests(unittest.TestCase):
             self.assertTrue(update["evidence"]["verification_attempt_id"])
             self.assertEqual(update["model_version"]["mastery"], "bkt-pfa-rasch-ensemble-v1")
             self.assertEqual(update["model_version"]["verification"], "independent-transfer-check-v1")
-            self.assertEqual(update["policy_version"], "integration-learning-policy-v1")
+            self.assertEqual(update["policy_version"], "integration-learning-policy-v2")
             session.store.close()
+
+    def test_failed_independent_transfer_withholds_mastery_update(self) -> None:
+        scenario = Scenario(
+            name="failed-independent-transfer",
+            initial_response="A",
+            probe_response="增长率的分母应是基期量。",
+            verification_response="A",
+            independently_answered=True,
+            verification_hints=0,
+        )
+        store = EventStore(Path(self.temporary.name) / "failed-independent.sqlite3")
+        session = IntegrationSession(self.fixture, scenario, store)
+        result = session.run("failed-independent")
+
+        verify = result.state.artifacts["verify"][-1]
+        update = result.state.artifacts["update"][-1]
+        reflect = result.state.artifacts["reflect"][-1]
+        self.assertTrue(verify["verification"]["independently_verified"])
+        self.assertFalse(verify["verification"]["effective"])
+        self.assertEqual(update["commit_status"], "withheld_failed_verification")
+        self.assertEqual(update["previous_mastery"], update["new_mastery"])
+        self.assertEqual(update["mastery_delta"], 0.0)
+        self.assertEqual(reflect["outcome"], "not_yet_mastered")
+        self.assertEqual(reflect["next_action"], "schedule_targeted_retry")
+        session.store.close()
+
+    def test_assisted_correct_transfer_withholds_mastery_update(self) -> None:
+        scenario = Scenario(
+            name="assisted-correct-transfer",
+            initial_response="A",
+            probe_response="增长率的分母应是基期量。",
+            verification_response="C",
+            independently_answered=False,
+            verification_hints=1,
+            verification_evidence_weight=0.0,
+        )
+        store = EventStore(Path(self.temporary.name) / "assisted-correct.sqlite3")
+        session = IntegrationSession(self.fixture, scenario, store)
+        result = session.run("assisted-correct")
+
+        verify = result.state.artifacts["verify"][-1]
+        update = result.state.artifacts["update"][-1]
+        reflect = result.state.artifacts["reflect"][-1]
+        self.assertTrue(verify["verification_attempt"]["correct"])
+        self.assertFalse(verify["verification"]["independently_verified"])
+        self.assertIsNone(verify["verification"]["effective"])
+        self.assertEqual(update["commit_status"], "withheld_assisted_verification")
+        self.assertEqual(update["previous_mastery"], update["new_mastery"])
+        self.assertEqual(update["mastery_delta"], 0.0)
+        self.assertEqual(reflect["outcome"], "not_yet_mastered")
+        self.assertEqual(reflect["next_action"], "schedule_targeted_retry")
+        session.store.close()
+
+    def test_successful_independent_transfer_commits_mastery_update(self) -> None:
+        store = EventStore(Path(self.temporary.name) / "successful-independent.sqlite3")
+        session = IntegrationSession(self.fixture, SCENARIOS["success"], store)
+        result = session.run("successful-independent")
+
+        verify = result.state.artifacts["verify"][-1]
+        update = result.state.artifacts["update"][-1]
+        reflect = result.state.artifacts["reflect"][-1]
+        self.assertTrue(verify["verification_attempt"]["correct"])
+        self.assertTrue(verify["verification"]["independently_verified"])
+        self.assertTrue(verify["verification"]["effective"])
+        self.assertEqual(update["commit_status"], "committed")
+        self.assertGreater(update["new_mastery"], update["previous_mastery"])
+        self.assertGreater(update["mastery_delta"], 0.0)
+        self.assertEqual(reflect["outcome"], "verified_transfer")
+        self.assertEqual(reflect["next_action"], "schedule_delayed_retention")
+        session.store.close()
 
     def test_trace_contains_all_seven_real_phase_artifacts(self) -> None:
         session, result = self.run_case("success")

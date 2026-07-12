@@ -32,6 +32,7 @@ import {
   normalizeProductActivityBundle,
   productActivityListPath,
 } from "./productActivityAdapter.js";
+import { masteryCommitSummary, reviewCommitSummary } from "./learningResultAdapter.js";
 
 export { createRunId };
 
@@ -346,10 +347,23 @@ export async function continueAttempt({ session, phase, response, confidence, re
     }
     return { continuation };
   }
-  if (!continuation?.mastery_update || !continuation?.reflection) {
-    throw new HermesApiError("独立验证结果缺少掌握变化或复盘记录。", {
+  if (!continuation?.reflection) {
+    throw new HermesApiError("独立验证结果缺少复盘记录。", {
       kind: "contract",
       code: "incomplete_verification_result",
+    });
+  }
+  try {
+    masteryCommitSummary(continuation.mastery_commit);
+    reviewCommitSummary(continuation.review_schedule_commit);
+    if (
+      continuation.mastery_commit.status === "committed" && !continuation.mastery_update
+      || continuation.mastery_commit.status === "withheld" && continuation.mastery_update !== null
+    ) throw new TypeError("mastery projection disagrees with commit receipt");
+  } catch {
+    throw new HermesApiError("独立验证结果缺少可信的 KT 或复习写入回执。", {
+      kind: "contract",
+      code: "invalid_learning_commit_receipt",
     });
   }
   const [trace, replay] = await Promise.all([

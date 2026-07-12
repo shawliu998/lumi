@@ -677,7 +677,12 @@ def build_scheduler_decision(
                     due_on=due_on,
                 )
                 priority = (
-                    2,
+                    (
+                        0
+                        if item.activity_ref.fixture_id
+                        == "xingce.data-analysis.base-amount.p031-v1"
+                        else 2
+                    ),
                     evidence_counts_by_domain[item.domain],
                     -_datetime_sort_value(item.occurred_at),
                     source_key,
@@ -761,11 +766,21 @@ class ScheduleStore:
         path: str | Path,
         *,
         planning_timezone: tzinfo = timezone.utc,
+        allowed_evidence_origins: frozenset[str] | None = None,
     ) -> None:
         self.path = str(path)
         if not isinstance(planning_timezone, tzinfo):
             raise ScheduleValidationError("planning_timezone must be tzinfo")
         self._planning_timezone = planning_timezone
+        self._allowed_evidence_origins = (
+            frozenset({"human_local_interactive"})
+            if allowed_evidence_origins is None
+            else frozenset(allowed_evidence_origins)
+        )
+        if not self._allowed_evidence_origins.issubset(
+            {"human_local_interactive", "evaluation_fixture"}
+        ):
+            raise ScheduleValidationError("unsupported schedule evidence origin")
         self._connection = open_sqlite_connection(self.path)
         retry_sqlite_locked(self._create_schema)
 
@@ -1638,7 +1653,7 @@ class ScheduleStore:
             or observation_events[0].event_seq != max(observe_sequences)
         ):
             raise ScheduleError("initial-answer evidence is not the latest observe event")
-        committed_updates = [
+        schedulable_updates = [
             seq
             for seq, event in events.items()
             if str(event["kind"]) == "phase_completed"
@@ -1646,18 +1661,19 @@ class ScheduleStore:
             and json.loads(event["payload_json"])
             .get("output", {})
             .get("commit_status")
-            == "committed"
+            in {"committed", "withheld_failed_verification"}
         ]
         for ref, payload in verification_events:
             output = payload.get("output", {})
             if (
-                output.get("commit_status") != "committed"
+                output.get("commit_status")
+                not in {"committed", "withheld_failed_verification"}
                 or output.get("skill_id") != task.get("skill_id")
-                or not committed_updates
-                or ref.event_seq != max(committed_updates)
+                or not schedulable_updates
+                or ref.event_seq != max(schedulable_updates)
             ):
                 raise ScheduleError(
-                    "verification evidence is not the latest committed update for its skill"
+                    "verification evidence is not the latest schedulable update for its skill"
                 )
         latest_assessment_by_cause: dict[str, tuple[int, str]] = {}
         for seq, event in events.items():
@@ -1729,7 +1745,7 @@ class ScheduleStore:
         if (
             not isinstance(context, dict)
             or context.get("scenario") != "attempt"
-            or context.get("evidence_origin") != "human_local_interactive"
+            or context.get("evidence_origin") not in self._allowed_evidence_origins
             or context.get("fixture_id") != activity.get("fixture_id")
             or context.get("fixture_content_sha256") != content_hash
         ):
@@ -2185,6 +2201,99 @@ class ScheduleStore:
                 occurred_at,
             )
             response["event_stream"] = self._stream_metadata("today_plan", plan_id)
+            self._record_command(command_id, fingerprint, response, occurred_at)
+            connection.execute("COMMIT")
+            return response
+        except Exception:
+            connection.execute("ROLLBACK")
+            raise
+
+    def commit_review_tasks(
+        self,
+        *,
+        as_of_date: str,
+        command_id: str,
+        evidence: Sequence[PlanningEvidence],
+    ) -> dict[str, Any]:
+        """Materialize the one deterministic review task selected for a run.
+
+        This is the write-side companion to ``review_schedule``.  It is called
+        only after a completed learning continuation; reads never create work.
+        The evidence-derived ``source_key`` and command result make retries and
+        process restarts idempotent.
+        """
+
+        _parse_date(as_of_date, "as_of_date")
+        if not _valid_command_id(command_id):
+            raise ScheduleValidationError("command_id is invalid")
+        evidence_items = tuple(evidence)
+        if not evidence_items:
+            raise ScheduleValidationError("review commit requires completed-run evidence")
+        run_ids = {item.evidence_ref.run_id for item in evidence_items}
+        if len(run_ids) != 1:
+            raise ScheduleValidationError("review commit evidence must belong to one run")
+        for item in evidence_items:
+            self._validate_planning_evidence(item)
+        decision = build_scheduler_decision(
+            evidence_items,
+            plan_date=as_of_date,
+            exam_date=None,
+            daily_budget_minutes=240,
+        )
+        if len(decision.candidate_tasks) != 1:
+            raise ScheduleValidationError(
+                "completed run must select exactly one deterministic review task"
+            )
+        spec = decision.candidate_tasks[0]
+        request = {
+            "operation": "commit_review_tasks",
+            "as_of_date": as_of_date,
+            "run_id": next(iter(run_ids)),
+            "source_key": spec.source_key,
+            "command_id": command_id,
+        }
+        fingerprint = _fingerprint(request)
+        connection = self._connection
+        connection.execute("BEGIN IMMEDIATE")
+        try:
+            replay = self._command_replay(
+                command_id, fingerprint, validate_plan_contract=False
+            )
+            if replay is not None:
+                connection.execute("COMMIT")
+                return replay
+            existing = connection.execute(
+                "SELECT * FROM review_schedule_tasks WHERE source_key = ?",
+                (spec.source_key,),
+            ).fetchone()
+            created = existing is None
+            if existing is None:
+                occurred_at = _utc_now()
+                task = _task_from_spec(spec, due_on=spec.due_on, occurred_at=occurred_at)
+                self._validate_task_provenance(task)
+                self._insert_task_projection(task)
+                self._append_event(
+                    "review_task",
+                    task["task_id"],
+                    "task_created",
+                    {
+                        "schema_version": SCHEDULE_SCHEMA_VERSION,
+                        "causation_command_id": command_id,
+                        "task_after": task,
+                    },
+                    occurred_at,
+                )
+            else:
+                task = _task_from_row(existing)
+                self._validate_task_provenance(task)
+                occurred_at = task["created_at"]
+            response = {
+                "schema_version": SCHEDULE_SCHEMA_VERSION,
+                "status": "committed",
+                "created": created,
+                "idempotent_replay": not created,
+                "task": task,
+            }
             self._record_command(command_id, fingerprint, response, occurred_at)
             connection.execute("COMMIT")
             return response
@@ -2725,7 +2834,13 @@ class ScheduleStore:
             return False
         return _canonical_json(projected) == _canonical_json(replayed_state)
 
-    def _command_replay(self, command_id: str, fingerprint: str) -> dict[str, Any] | None:
+    def _command_replay(
+        self,
+        command_id: str,
+        fingerprint: str,
+        *,
+        validate_plan_contract: bool = True,
+    ) -> dict[str, Any] | None:
         row = self._connection.execute(
             "SELECT request_fingerprint, response_json FROM schedule_command_results WHERE command_id = ?",
             (command_id,),
@@ -2737,7 +2852,7 @@ class ScheduleStore:
                 "command_id was already used for a different schedule command"
             )
         response = json.loads(row["response_json"])
-        if _response_uses_superseded_schedule_contract(response):
+        if validate_plan_contract and _response_uses_superseded_schedule_contract(response):
             raise ScheduleCommandConflict(
                 "command receipt uses a superseded pre-release schedule contract; reload the current plan"
             )

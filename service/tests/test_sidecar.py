@@ -240,7 +240,17 @@ class SidecarTests(unittest.TestCase):
                         20,
                     )
                     self.assertFalse(completed["verification"]["effective"])
-                    self.assertLessEqual(completed["mastery_update"]["mastery_delta"], 0)
+                    self.assertIsNone(completed["mastery_update"])
+                    self.assertEqual(
+                        completed["mastery_commit"]["status"], "withheld"
+                    )
+                    self.assertEqual(
+                        completed["mastery_commit"]["reason_code"],
+                        "failed_verification",
+                    )
+                    self.assertEqual(
+                        completed["mastery_commit"]["mastery_delta"], 0
+                    )
 
     def test_real_attempt_responses_change_score_and_diagnosis(self) -> None:
         fixture_id = "xingce.data-analysis.growth-rate.synthetic-01"
@@ -803,7 +813,12 @@ class SidecarTests(unittest.TestCase):
         self.assertIsNone(completed["verification"]["effective"])
         self.assertIsNone(completed["mastery_update"])
         self.assertEqual(
-            completed["reflection"]["outcome"], "inconclusive_needs_independent_retry"
+            completed["reflection"]["outcome"], "not_yet_mastered"
+        )
+        self.assertEqual(completed["mastery_commit"]["status"], "withheld")
+        self.assertEqual(
+            completed["mastery_commit"]["reason_code"],
+            "assisted_verification",
         )
         _, skills, _ = self.request("GET", "/v1/skills/report")
         self.assertEqual(skills["skill_count"], 0)

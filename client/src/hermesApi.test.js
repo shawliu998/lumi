@@ -109,3 +109,11 @@ test("attempt submission rejects caller-supplied run ids outside the closed prof
   assert.match(source, /attempt\?\.run_id !== resolvedRunId/);
   assert.match(source, /!isRunId\(attempt\?\.run_id\)/);
 });
+
+test("verification client requires closed KT and review commit receipts", () => {
+  const source = readFileSync(new URL("./hermesApi.js", import.meta.url), "utf8");
+  assert.match(source, /masteryCommitSummary\(continuation\.mastery_commit\)/);
+  assert.match(source, /reviewCommitSummary\(continuation\.review_schedule_commit\)/);
+  assert.match(source, /invalid_learning_commit_receipt/);
+  assert.doesNotMatch(source, /if \(!continuation\?\.mastery_update \|\| !continuation\?\.reflection\)/);
+});

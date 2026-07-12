@@ -89,6 +89,7 @@ class ProductActivityCatalog:
         if activities is None:
             activities = load_product_activities(path) if path.is_file() else ()
         self._launchers: dict[str, Any] = {}
+        self._launchable_fixture_ids: set[str] = set()
         self._items: dict[str, dict[str, Any]] = {}
         for activity in activities:
             public = activity.public_view()
@@ -105,6 +106,8 @@ class ProductActivityCatalog:
             # transfer item is bound to that session and submitted through the
             # continuation endpoint, never as a freestanding first attempt.
             self._launchers[first_id] = activity
+            fixture = activity.to_runtime_fixture()
+            self._launchable_fixture_ids.add(str(fixture["fixture_id"]))
 
     def list(
         self,
@@ -139,6 +142,9 @@ class ProductActivityCatalog:
             raise KeyError(activity_id) from exc
         validate_product_activity_runtime(fixture)
         return fixture
+
+    def is_launchable_fixture(self, fixture_id: str) -> bool:
+        return fixture_id in self._launchable_fixture_ids
 
     @staticmethod
     def _project(item: dict[str, Any], release_id: str) -> dict[str, Any]:

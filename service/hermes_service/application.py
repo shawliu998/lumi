@@ -79,6 +79,7 @@ class SidecarApplication:
         attempt_evidence_origin: str = "human_local_interactive",
         product_activity_payload_path: str | Path | None = None,
         product_activity_catalog: ProductActivityCatalog | None = None,
+        review_commit_evidence_origins: frozenset[str] | None = None,
     ) -> None:
         if study_pack_attempt_evidence_origin not in ATTEMPT_EVIDENCE_ORIGINS:
             raise ValueError("unsupported Study Pack attempt evidence origin")
@@ -109,6 +110,15 @@ class SidecarApplication:
             study_pack_attempt_evidence_origin
         )
         self._attempt_evidence_origin = attempt_evidence_origin
+        self._review_commit_evidence_origins = (
+            frozenset({"human_local_interactive"})
+            if review_commit_evidence_origins is None
+            else frozenset(review_commit_evidence_origins)
+        )
+        if not self._review_commit_evidence_origins.issubset(
+            {"human_local_interactive", "evaluation_fixture"}
+        ):
+            raise ValueError("review commit origins may contain only human or explicit evaluation evidence")
 
     def health(self) -> dict[str, Any]:
         store = EventStore(self.database)
@@ -176,6 +186,7 @@ class SidecarApplication:
                 "study_pack_item_attempt": "POST /v1/study-pack-items/{artifact_id}/attempts",
                 "trace": "GET /v1/runs/{run_id}/trace",
                 "replay": "GET /v1/runs/{run_id}/replay",
+                "review_commit": "POST /v1/runs/{run_id}/review-commit",
                 "skills": "GET /v1/skills/report",
             },
         }
@@ -648,6 +659,7 @@ class SidecarApplication:
                     "respond": f"/v1/attempts/{run_id}/responses",
                     "assist": f"/v1/attempts/{run_id}/assistance",
                     "misconception": f"/v1/misconceptions/{run_id}",
+                    "review_commit": f"/v1/runs/{run_id}/review-commit",
                 },
             }
             if phase == "probe":
@@ -700,6 +712,19 @@ class SidecarApplication:
                             else None
                         ),
                         "reflection": artifacts["reflect"][-1],
+                    }
+                )
+                payload["mastery_commit"] = _public_mastery_commit(mastery_update)
+                provenance = fixture.get("provenance", {})
+                payload["review_schedule_commit"] = (
+                    self._commit_completed_run_review(run_id)
+                    if isinstance(provenance, dict)
+                    and provenance.get("content_origin")
+                    == "local_versioned_export"
+                    else {
+                        "status": "withheld",
+                        "code": "not_a_versioned_product_activity",
+                        "retryable": False,
                     }
                 )
             return payload
@@ -1023,7 +1048,9 @@ class SidecarApplication:
             raise ServiceError(500, "clock_unavailable", "local date provider is unavailable")
         if plan_date != server_today.isoformat():
             store = ScheduleStore(
-                self.database, planning_timezone=self._planning_timezone
+                self.database,
+                planning_timezone=self._planning_timezone,
+                allowed_evidence_origins=self._review_commit_evidence_origins,
             )
             try:
                 try:
@@ -1048,7 +1075,9 @@ class SidecarApplication:
         try:
             evidence = self._planning_evidence(plan_date)
             store = ScheduleStore(
-                self.database, planning_timezone=self._planning_timezone
+                self.database,
+                planning_timezone=self._planning_timezone,
+                allowed_evidence_origins=self._review_commit_evidence_origins,
             )
             try:
                 return store.create_today_plan(
@@ -1068,7 +1097,9 @@ class SidecarApplication:
         if not _valid_plan_id(plan_id):
             raise ServiceError(400, "invalid_plan_id", "plan_id contains unsupported characters")
         store = ScheduleStore(
-            self.database, planning_timezone=self._planning_timezone
+            self.database,
+            planning_timezone=self._planning_timezone,
+            allowed_evidence_origins=self._review_commit_evidence_origins,
         )
         try:
             try:
@@ -1122,7 +1153,9 @@ class SidecarApplication:
         if not isinstance(server_today, date):
             raise ServiceError(500, "clock_unavailable", "local date provider is unavailable")
         store = ScheduleStore(
-            self.database, planning_timezone=self._planning_timezone
+            self.database,
+            planning_timezone=self._planning_timezone,
+            allowed_evidence_origins=self._review_commit_evidence_origins,
         )
         try:
             try:
@@ -1143,7 +1176,9 @@ class SidecarApplication:
 
     def review_schedule(self) -> dict[str, Any]:
         store = ScheduleStore(
-            self.database, planning_timezone=self._planning_timezone
+            self.database,
+            planning_timezone=self._planning_timezone,
+            allowed_evidence_origins=self._review_commit_evidence_origins,
         )
         try:
             return store.review_schedule()
@@ -1161,7 +1196,9 @@ class SidecarApplication:
         if not valid_stream_id:
             raise ServiceError(400, "invalid_stream_id", "stream identifier is invalid")
         store = ScheduleStore(
-            self.database, planning_timezone=self._planning_timezone
+            self.database,
+            planning_timezone=self._planning_timezone,
+            allowed_evidence_origins=self._review_commit_evidence_origins,
         )
         try:
             try:
@@ -1171,13 +1208,17 @@ class SidecarApplication:
         finally:
             store.close()
 
-    def _planning_evidence(self, plan_date: str) -> list[PlanningEvidence]:
+    def _planning_evidence(
+        self, plan_date: str, *, only_run_id: str | None = None
+    ) -> list[PlanningEvidence]:
         """Project only trace-backed, per-run evidence allowed by scheduler v1."""
 
         store = EventStore(self.database)
         try:
             projected: list[PlanningEvidence] = []
             for run_id in store.run_ids():
+                if only_run_id is not None and run_id != only_run_id:
+                    continue
                 events = store.events(run_id)
                 if not events or not store.verify(run_id):
                     continue
@@ -1191,7 +1232,7 @@ class SidecarApplication:
                 if (
                     state.context.get("scenario") != "attempt"
                     or state.context.get("evidence_origin")
-                    != "human_local_interactive"
+                    not in self._review_commit_evidence_origins
                     or state.status is not RunStatus.COMPLETED
                 ):
                     continue
@@ -1208,11 +1249,8 @@ class SidecarApplication:
                 activity_ref = ActivityRef(
                     fixture_id=str(fixture["fixture_id"]),
                     fixture_content_sha256=fixture_hash,
-                    availability=(
-                        "launchable"
-                        if fixture["fixture_id"]
-                        == "xingce.data-analysis.growth-rate.synthetic-01"
-                        else "activity_unavailable"
+                    availability=self._review_activity_availability(
+                        str(fixture["fixture_id"])
                     ),
                 )
                 terminal_event = next(
@@ -1273,14 +1311,34 @@ class SidecarApplication:
                 if update_event is not None:
                     update = update_event.payload.get("output", {})
                     update_skill_id = update.get("skill_id")
+                    update_evidence = update.get("evidence", {})
+                    verification_effective = (
+                        update_evidence.get("verification_effective")
+                        if isinstance(update_evidence, dict)
+                        else None
+                    )
+                    schedulable_update = (
+                        update.get("policy_version")
+                        == "integration-learning-policy-v2"
+                        and update.get("commit_status") in {
+                            "committed",
+                            "withheld_failed_verification",
+                        }
+                    ) or (
+                        # Legacy v1 incorrectly wrote failed verification as a
+                        # KT commit.  Keep it out of skill_report, but retain
+                        # its immutable failed-transfer fact for a retry task.
+                        update.get("policy_version")
+                        == "integration-learning-policy-v1"
+                        and update.get("commit_status") == "committed"
+                        and verification_effective is False
+                    )
                     if (
-                        update.get("commit_status") == "committed"
+                        schedulable_update
                         and isinstance(update_skill_id, str)
                         and update_skill_id in fixture_skills
                     ):
-                        effective = update.get("evidence", {}).get(
-                            "verification_effective"
-                        )
+                        effective = verification_effective
                         occurred_on, timezone_offset = self._event_local_basis(
                             update_event.occurred_at
                         )
@@ -1420,6 +1478,108 @@ class SidecarApplication:
             return projected
         finally:
             store.close()
+
+    def _commit_completed_run_review(self, run_id: str) -> dict[str, Any]:
+        """Commit scheduling as a separate, retry-safe projection.
+
+        The learning trace is already complete when this runs.  A scheduling
+        failure is therefore returned as an explicit retryable projection
+        status and never rewrites or rolls back the learner's trace.
+        """
+
+        trace_store = EventStore(self.database)
+        try:
+            try:
+                state = trace_store.load_state(run_id)
+                fixture = self._session_fixture(state, trace_store)
+            except (KeyError, ServiceError, ValueError):
+                return {
+                    "status": "withheld",
+                    "code": "run_or_fixture_unavailable",
+                    "retryable": False,
+                }
+            if fixture.get("provenance", {}).get("content_origin") != "local_versioned_export":
+                return {
+                    "status": "withheld",
+                    "code": "not_product_activity",
+                    "retryable": False,
+                }
+        finally:
+            trace_store.close()
+
+        today = self._today_provider()
+        if not isinstance(today, date):
+            return {
+                "status": "retry_required",
+                "code": "clock_unavailable",
+                "retryable": True,
+            }
+
+        try:
+            evidence = self._planning_evidence(
+                today.isoformat(), only_run_id=run_id
+            )
+            if not evidence:
+                return {
+                    "status": "withheld",
+                    "code": "ineligible_evidence_origin_or_incomplete_run",
+                    "retryable": False,
+                }
+            store = ScheduleStore(
+                self.database,
+                planning_timezone=self._planning_timezone,
+                allowed_evidence_origins=self._review_commit_evidence_origins,
+            )
+            try:
+                result = store.commit_review_tasks(
+                    as_of_date=today.isoformat(),
+                    command_id=_deterministic_review_command_id(run_id),
+                    evidence=evidence,
+                )
+            finally:
+                store.close()
+            return {
+                "status": "committed",
+                "code": "review_task_committed",
+                "retryable": False,
+                "task": result["task"],
+            }
+        except Exception:
+            return {
+                "status": "retry_required",
+                "code": "review_schedule_commit_failed",
+                "retryable": True,
+            }
+
+    def commit_completed_run_review(self, run_id: str) -> dict[str, Any]:
+        """Explicit retry entrypoint for the post-completion projection."""
+
+        if not _valid_stored_run_id(run_id):
+            raise ServiceError(400, "invalid_run_id", "run_id contains unsupported characters")
+        store = EventStore(self.database)
+        try:
+            try:
+                state = store.load_state(run_id)
+            except KeyError:
+                raise ServiceError(404, "run_not_found", "attempt session does not exist") from None
+            if state.status is not RunStatus.COMPLETED:
+                raise ServiceError(
+                    409,
+                    "run_incomplete",
+                    "review scheduling requires a completed learning run",
+                )
+        finally:
+            store.close()
+        return self._commit_completed_run_review(run_id)
+
+    def _review_activity_availability(self, fixture_id: str) -> str:
+        if fixture_id == "xingce.data-analysis.growth-rate.synthetic-01":
+            return "launchable"
+        return (
+            "launchable"
+            if self.product_activities.is_launchable_fixture(fixture_id)
+            else "activity_unavailable"
+        )
 
     def _event_local_basis(self, occurred_at: str) -> tuple[str, int]:
         parsed = datetime.fromisoformat(occurred_at.replace("Z", "+00:00"))
@@ -1572,14 +1732,18 @@ class SidecarApplication:
                     update = event.payload.get("output", {})
                     if update.get("commit_status", "committed") != "committed":
                         continue
+                    evidence = update.get("evidence", {})
+                    if not _is_valid_mastery_commit(update):
+                        # Preserve the immutable legacy trace, but never project
+                        # an invalid old failed/assisted commit as current KT.
+                        continue
                     skill_id = update.get("skill_id")
                     if not isinstance(skill_id, str):
                         continue
                     row = aggregates[skill_id]
                     row["run_ids"].append(run_id)
                     row["deltas"].append(float(update["mastery_delta"]))
-                    evidence = update.get("evidence", {})
-                    effective = evidence.get("verification_effective") if isinstance(evidence, dict) else None
+                    effective = evidence.get("verification_effective")
                     if effective is True:
                         row["verified_transfers"] += 1
                     else:
@@ -1931,6 +2095,64 @@ def _new_public_run_id() -> str:
         f"{alphabet[byte >> 4]}{alphabet[byte & 15]}"
         for byte in secrets.token_bytes(20)
     )
+
+
+def _deterministic_review_command_id(run_id: str) -> str:
+    alphabet = "ABCDEFGHIJKLMNOP"
+    digest = hashlib.sha256(f"review-schedule:{run_id}".encode("utf-8")).digest()[:20]
+    return "c_" + "".join(
+        f"{alphabet[byte >> 4]}{alphabet[byte & 15]}" for byte in digest
+    )
+
+
+def _public_mastery_commit(update: Any) -> dict[str, Any]:
+    if not isinstance(update, dict):
+        return {
+            "status": "withheld",
+            "reason_code": "inconclusive_verification",
+            "skill_id": None,
+            "previous_mastery": None,
+            "new_mastery": None,
+            "mastery_delta": 0,
+        }
+    raw_status = update.get("commit_status")
+    reason_by_status = {
+        "committed": "verified_independent_transfer",
+        "withheld_failed_verification": "failed_verification",
+        "withheld_assisted_verification": "assisted_verification",
+        "withheld_inconclusive_verification": "inconclusive_verification",
+    }
+    committed = raw_status == "committed"
+    previous = update.get("previous_mastery")
+    new = update.get("new_mastery") if committed else previous
+    return {
+        "status": "committed" if committed else "withheld",
+        "reason_code": reason_by_status.get(
+            raw_status, "inconclusive_verification"
+        ),
+        "skill_id": update.get("skill_id"),
+        "previous_mastery": previous,
+        "new_mastery": new,
+        "mastery_delta": update.get("mastery_delta", 0) if committed else 0,
+    }
+
+
+def _is_valid_mastery_commit(update: Any) -> bool:
+    if not isinstance(update, dict) or update.get("commit_status") != "committed":
+        return False
+    evidence = update.get("evidence")
+    if (
+        not isinstance(evidence, dict)
+        or evidence.get("verification_effective") is not True
+        or evidence.get("independently_verified") is not True
+    ):
+        return False
+    if update.get("policy_version") == "integration-learning-policy-v2":
+        return (
+            evidence.get("scorer_passed") is True
+            and evidence.get("independently_answered_without_help") is True
+        )
+    return True
 
 
 def _is_human_local_attempt_state(state: Any) -> bool:

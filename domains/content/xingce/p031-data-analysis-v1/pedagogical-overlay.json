@@ -31,12 +31,12 @@
           "evaluator": "authored_terms_v1",
           "rules": [
             {"cause_id": "base-current-time-direction-confusion", "support_if": {"all_terms": ["现期在后", "基期在前"], "none_terms": ["时间无关"]}, "refute_if": {"all_terms": ["先看时间", "辨认基期"]}},
-            {"cause_id": "growth-rate-formula-selection-confusion", "support_if": {"all_terms": ["现期量乘", "一加增长率"]}, "refute_if": {"all_terms": ["现期量除", "一加增长率"]}},
+            {"cause_id": "growth-rate-formula-selection-confusion", "support_if": {"all_terms": ["现期量×", "1＋增长率"]}, "refute_if": {"all_terms": ["现期量÷", "1＋增长率"]}},
             {"cause_id": "percentage-decimal-conversion-slip", "support_if": {"all_terms": ["百分数直接", "不化小数"]}, "refute_if": {"all_terms": ["百分数化", "小数计算"]}}
           ],
           "cause_samples": [
             {"cause_id": "base-current-time-direction-confusion", "supporting_response": "我没有分清现期在后、基期在前。", "refuting_response": "我会先看时间并辨认基期。", "ambiguous_response": "我不确定两个时期怎么放。"},
-            {"cause_id": "growth-rate-formula-selection-confusion", "supporting_response": "我会用现期量乘一加增长率。", "refuting_response": "我会用现期量除以一加增长率。", "ambiguous_response": "我记得有一加增长率，但不确定乘除。"},
+            {"cause_id": "growth-rate-formula-selection-confusion", "supporting_response": "我会用现期量×（1＋增长率）。", "refuting_response": "我会用现期量÷（1＋增长率）。", "ambiguous_response": "我记得有一加增长率，但不确定乘除。"},
             {"cause_id": "percentage-decimal-conversion-slip", "supporting_response": "我把百分数直接代入，不化小数。", "refuting_response": "我先把百分数化成小数计算。", "ambiguous_response": "我可能会在百分号这里算错。"}
           ]
         }

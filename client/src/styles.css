@@ -3759,6 +3759,10 @@ button.connection-status:hover {
   color: var(--success);
 }
 
+.run-result-heading.needs-review > svg {
+  color: #a1643f;
+}
+
 .run-result-heading h3 {
   margin: 0;
   font-size: 12px;
@@ -3939,6 +3943,138 @@ button.connection-status:hover {
 
 .probe-prompt {
   margin: 0;
+}
+
+.probe-choice-field {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.probe-choice-field legend {
+  margin-bottom: 6px;
+  color: #555861;
+  font-size: 8px;
+  font-weight: 650;
+}
+
+.probe-choice-field > div {
+  display: grid;
+  gap: 6px;
+}
+
+.probe-choice-field label {
+  min-height: 38px;
+  padding: 8px 10px;
+  border: 1px solid #d9dae0;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #44474e;
+  background: white;
+  cursor: pointer;
+  font-size: 8.5px;
+  line-height: 14px;
+}
+
+.probe-choice-field label.selected {
+  border-color: #817df0;
+  color: #4541bc;
+  background: #f6f6ff;
+}
+
+.probe-choice-field input {
+  accent-color: var(--accent);
+}
+
+.probe-reason textarea {
+  min-height: 54px;
+}
+
+.answer-review {
+  display: grid;
+  gap: 8px;
+}
+
+.answer-review > div {
+  padding: 9px 10px;
+  border: 1px solid #dedfe5;
+  border-radius: 5px;
+  background: #fafafa;
+}
+
+.answer-review small,
+.answer-review span {
+  color: #777a83;
+  font-size: 7.5px;
+  line-height: 12px;
+}
+
+.answer-review strong {
+  float: right;
+  color: #3f4148;
+  font-size: 8px;
+}
+
+.answer-review p {
+  margin: 5px 0;
+  color: #3f4148;
+  font-size: 8px;
+  line-height: 13px;
+}
+
+.answer-review details {
+  margin-top: 7px;
+  padding-top: 6px;
+  border-top: 1px solid #e5e6e9;
+}
+
+.answer-review summary {
+  width: max-content;
+  color: #5c59d8;
+  cursor: pointer;
+  font-size: 7.5px;
+}
+
+.answer-review details p {
+  max-height: 180px;
+  overflow-y: auto;
+  color: #666971;
+  white-space: pre-wrap;
+}
+
+.result-notice {
+  padding: 9px 10px;
+  border: 1px solid #dedfe5;
+  border-left: 3px solid #9699a2;
+  border-radius: 4px;
+  background: #fafafa;
+}
+
+.result-notice.insufficient,
+.result-notice.withheld,
+.result-notice.retry-required {
+  border-left-color: #b3784e;
+  background: #fffdf9;
+}
+
+.result-notice.committed,
+.result-notice.supports-candidate {
+  border-left-color: var(--success);
+}
+
+.result-notice strong {
+  color: #3f4148;
+  font-size: 8.5px;
+}
+
+.result-notice p {
+  margin: 4px 0 0;
+  color: #6a6d75;
+  font-size: 7.5px;
+  line-height: 12px;
 }
 
 .teaching-block {

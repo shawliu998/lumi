@@ -23,6 +23,7 @@ MAX_BODY_BYTES = 64 * 1024
 STUDY_PACK_MAX_BODY_BYTES = 12 * 1024 * 1024
 REQUEST_ID_PATTERN = re.compile(r"^[A-Za-z0-9._-]{1,64}$")
 RUN_ROUTE = re.compile(r"^/v1/runs/([^/]+)/(trace|replay)$")
+RUN_REVIEW_COMMIT_ROUTE = re.compile(r"^/v1/runs/([^/]+)/review-commit$")
 ATTEMPT_RESPONSE_ROUTE = re.compile(r"^/v1/attempts/([^/]+)/responses$")
 ATTEMPT_ASSISTANCE_ROUTE = re.compile(r"^/v1/attempts/([^/]+)/assistance$")
 MISCONCEPTION_ROUTE = re.compile(r"^/v1/misconceptions/([^/]+)$")
@@ -215,6 +216,20 @@ def _handler_factory(application: SidecarApplication, allowed_origins: frozenset
                         body["response"],
                         body["confidence"],
                         body["response_time_seconds"],
+                    )
+                    self._send(200, payload, request_id, origin)
+                    return
+                review_commit_match = RUN_REVIEW_COMMIT_ROUTE.fullmatch(parsed.path)
+                if method == "POST" and review_commit_match:
+                    body = self._read_json(set())
+                    if body:
+                        raise ServiceError(
+                            400,
+                            "invalid_body",
+                            "review commit body must be an empty object",
+                        )
+                    payload = application.commit_completed_run_review(
+                        unquote(review_commit_match.group(1))
                     )
                     self._send(200, payload, request_id, origin)
                     return

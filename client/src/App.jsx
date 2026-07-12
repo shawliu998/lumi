@@ -37,6 +37,7 @@ import {
   submitAttempt,
 } from "./hermesApi";
 import { assertIndependentTransferBinding } from "./productActivityAdapter.js";
+import { normalizeCompletedLearningResult, probeChoicesFromPrompt } from "./learningResultAdapter.js";
 import { ProductActivityLoadState, ProductActivityQuestion } from "./ProductActivityViews.jsx";
 import {
   ASSISTANCE_ACTIONS,
@@ -532,6 +533,7 @@ function ToolsScreen({
   const [activityState, setActivityState] = useState({ phase: "idle", bundle: null, error: null });
   const [attemptStartedAt, setAttemptStartedAt] = useState(0);
   const [phaseAnswer, setPhaseAnswer] = useState("");
+  const [probeReason, setProbeReason] = useState("");
   const [phaseConfidence, setPhaseConfidence] = useState("");
   const [phaseStartedAt, setPhaseStartedAt] = useState(0);
   const [runEvidence, setRunEvidence] = useState(null);
@@ -563,6 +565,23 @@ function ToolsScreen({
       return { ready: false, activity: null, error };
     }
   }, [activityState.bundle, runEvidence?.continuation]);
+  const probeChoices = useMemo(
+    () => probeChoicesFromPrompt(runEvidence?.attempt?.probe?.prompt),
+    [runEvidence?.attempt?.probe?.prompt],
+  );
+  const completedResult = useMemo(() => {
+    if (toolStage !== "result" || !runEvidence?.attempt || !runEvidence?.continuation || !activityState.bundle) return null;
+    try {
+      return normalizeCompletedLearningResult({
+        attempt: runEvidence.attempt,
+        continuation: runEvidence.continuation,
+        firstActivity: activityState.bundle.firstAnswer,
+        transferActivity: activityState.bundle.independentTransfer,
+      });
+    } catch {
+      return null;
+    }
+  }, [activityState.bundle, runEvidence, toolStage]);
 
   useEffect(() => {
     if (!["active", "probe", "verification"].includes(toolStage) || !phaseStartedAt && !attemptStartedAt) return undefined;
@@ -605,6 +624,7 @@ function ToolsScreen({
     setAnswer("");
     setConfidence("");
     setPhaseAnswer("");
+    setProbeReason("");
     setPhaseConfidence("");
     setRunEvidence(null);
     setRunError(null);
@@ -621,6 +641,7 @@ function ToolsScreen({
     setAnswer("");
     setConfidence("");
     setPhaseAnswer("");
+    setProbeReason("");
     setPhaseConfidence("");
     setRunEvidence(null);
     setRunError(null);
@@ -712,6 +733,7 @@ function ToolsScreen({
       });
       setRunEvidence(evidence);
       setPhaseAnswer("");
+      setProbeReason("");
       setPhaseConfidence("");
       setPhaseStartedAt(Date.now());
       setElapsedSeconds(0);
@@ -736,7 +758,7 @@ function ToolsScreen({
       const next = await continueAttempt({
         session,
         phase,
-        response: phaseAnswer,
+        response: phase === "probe" && probeReason.trim() ? `${phaseAnswer}；${probeReason.trim()}` : phaseAnswer,
         confidence: confidenceValues[phaseConfidence],
         responseTimeSeconds: (Date.now() - phaseStartedAt) / 1000,
       });
@@ -773,6 +795,7 @@ function ToolsScreen({
     setWorkNotes("");
     setElapsedSeconds(0);
     setPhaseAnswer("");
+    setProbeReason("");
     setPhaseConfidence("");
     setAssistance(createAssistanceState());
     setDossierState({ phase: "idle", dossier: null, error: null });
@@ -787,6 +810,7 @@ function ToolsScreen({
     setWorkNotes("");
     setElapsedSeconds(0);
     setPhaseAnswer("");
+    setProbeReason("");
     setPhaseConfidence("");
     setAssistance(createAssistanceState());
     setDossierState({ phase: "idle", dossier: null, error: null });
@@ -892,7 +916,12 @@ function ToolsScreen({
                 <>
                   <div className="prompt-block probe-prompt"><small>探查题</small><p>{runEvidence.attempt.probe.prompt}</p></div>
                   <AssistanceLadder state={assistance} promptAvailable={Boolean(runEvidence.attempt.probe?.prompt_instance_id)} onRequest={requestProbeAssistance} />
-                  <label className="answer-field"><span>你的判断</span><textarea value={phaseAnswer} onChange={(event) => setPhaseAnswer(event.target.value)} placeholder="写下公式或判断依据" /></label>
+                  {probeChoices.length === 2 ? (
+                    <fieldset className="probe-choice-field"><legend>选择你会使用的公式</legend><div>{probeChoices.map((choice) => <label className={phaseAnswer === choice.value ? "selected" : ""} key={choice.id}><input type="radio" name="probe-formula" value={choice.value} checked={phaseAnswer === choice.value} onChange={(event) => setPhaseAnswer(event.target.value)} /><span>{choice.value}</span></label>)}</div></fieldset>
+                  ) : (
+                    <label className="answer-field"><span>写下你的公式或判断</span><textarea value={phaseAnswer} onChange={(event) => setPhaseAnswer(event.target.value)} placeholder="回答上面的探查题，不是填写网络或连接状态" /></label>
+                  )}
+                  <label className="answer-field probe-reason"><span>补充一句理由（可选）</span><textarea value={probeReason} onChange={(event) => setProbeReason(event.target.value)} placeholder="例如：要求的是变化前的量，所以……" /></label>
                   <label className="answer-field"><span>作答信心</span><select value={phaseConfidence} onChange={(event) => setPhaseConfidence(event.target.value)}><option value="">请选择</option><option value="low">不太确定</option><option value="medium">基本确定</option><option value="high">非常确定</option></select></label>
                   <button className="button primary panel-primary" disabled={phaseAnswer.trim().length < 2 || !phaseConfidence} onClick={() => submitContinuation("probe")}>提交探查作答</button>
                 </>
@@ -925,22 +954,19 @@ function ToolsScreen({
               ) : verificationGate.kind === "ready" ? <div className="continuation-boundary blocked" role="alert" data-testid="transfer-binding-error"><Info size={15} /><div><strong>迁移题绑定未通过</strong><p>服务返回的 item_id 或内容签名与本机真题投影不一致；为避免错题评分，本题已锁定。</p></div></div> : null}
             </div>
           )}
-          {toolStage === "result" && runEvidence && (
+          {toolStage === "result" && runEvidence && completedResult && (
             <div className="run-result" role="status" data-testid="run-status" data-state="completed" data-version={runEvidence.continuation?.state_version}>
-              <div className="run-result-heading"><CheckCircle size={20} weight="fill" /><div><h3>本轮验证已完成</h3><small>{runEvidence.attempt.run_id}</small></div></div>
-              <dl className="run-result-list">
-                <div><dt>运行状态</dt><dd>{runEvidence.continuation?.state === "completed" ? "已完成" : runEvidence.continuation?.state}</dd></div>
-                <div><dt>作答评分</dt><dd>{runEvidence.attempt.score?.passed ? "通过" : "未通过"} · {runEvidence.attempt.score?.score}/{runEvidence.attempt.score?.max_score}</dd></div>
-                <div><dt>诊断决策</dt><dd>{diagnosisDecisionCopy(runEvidence.attempt.diagnosis?.decision)}</dd></div>
-                <div><dt>独立验证</dt><dd>{runEvidence.continuation?.verification?.effective ? "通过" : "未通过"}</dd></div>
-                <div><dt>本轮轨迹变化</dt><dd>{Number(runEvidence.continuation?.mastery_update?.mastery_delta) >= 0 ? "+" : ""}{Number(runEvidence.continuation?.mastery_update?.mastery_delta || 0).toFixed(3)} · 非纵向掌握</dd></div>
-                <div><dt>轨迹校验</dt><dd>{traceVerified ? "已通过" : "未通过"}</dd></div>
-                <div><dt>轨迹 / 回放</dt><dd>{runEvidence.trace.event_count} 个事件 · {runEvidence.replay.frame_count} 帧</dd></div>
-              </dl>
+              <div className={`run-result-heading ${completedResult.transfer.correct ? "passed" : "needs-review"}`}>{completedResult.transfer.correct ? <CheckCircle size={20} weight="fill" /> : <Info size={20} />}<div><h3>{completedResult.transfer.correct ? "迁移题回答正确" : "本轮完成，还需要再练"}</h3><small>{runEvidence.attempt.run_id}</small></div></div>
+              <section className="answer-review"><div><small>首题</small><strong>{completedResult.initial.correct ? "回答正确" : "回答错误"}</strong><p>{completedResult.initial.title}</p><span>你的答案：{completedResult.initial.answer}</span><details><summary>查看题目材料</summary><p>{completedResult.initial.material}</p></details></div><div><small>迁移题</small><strong>{completedResult.transfer.correct ? "回答正确" : "回答错误"}</strong><p>{completedResult.transfer.title}</p><span>你的答案：{completedResult.transfer.answer}</span><details><summary>查看题目材料</summary><p>{completedResult.transfer.material}</p></details></div></section>
+              <section className={`result-notice ${completedResult.probe.status}`}><strong>{completedResult.probe.title}</strong><p>{completedResult.probe.detail}</p></section>
+              <section className={`result-notice ${completedResult.mastery.status}`}><strong>{completedResult.mastery.title}</strong><p>{completedResult.mastery.detail}</p></section>
+              <section className={`result-notice ${completedResult.review.status}`}><strong>{completedResult.review.title}</strong><p>{completedResult.review.detail}</p></section>
+              <dl className="run-result-list"><div><dt>轨迹校验</dt><dd>{traceVerified ? "已通过" : "未通过"}</dd></div><div><dt>轨迹 / 回放</dt><dd>{runEvidence.trace.event_count} 个事件 · {runEvidence.replay.frame_count} 帧</dd></div></dl>
               <MisconceptionDossier state={dossierState} />
               <button className="button primary panel-primary" onClick={() => { closeTool(); setPage("reports"); }}>查看技能报告</button>
             </div>
           )}
+          {toolStage === "result" && runEvidence && !completedResult && <div className="continuation-boundary blocked" role="alert"><Info size={15} /><div><strong>结果详情未通过核验</strong><p>本轮轨迹仍保存在本机，但客户端不会猜测答案、KT 或复习安排。</p></div></div>}
           {toolStage === "error" && (
             <div className="run-error" role="alert" data-testid="run-status" data-state="error">
               <Info size={20} />

@@ -503,3 +503,31 @@ Verified visible states:
 The activity stopped at the unanswered first question. Probe, teaching,
 transfer submission, KT commit, and delayed review still require a real learner
 response and are not claimed by this visual pass.
+
+## P0.3.1 real learner correction evidence — 2026-07-12
+
+A real learner subsequently completed all seven phases in immutable run
+`r_NNPBCBAOLCDCFLFJJALKBJCMMFHKKIIHEGLFGEFN`. The learner answered both the
+first item and distinct transfer item incorrectly and used no transfer hint.
+The probe response did not distinguish the authored hypotheses. This is useful
+failure evidence, not a mastery pass.
+
+The run exposed three product defects that are corrected in the current build:
+
+- failed independent transfer now withholds the KT write and preserves the
+  previous mastery value instead of applying a negative delta;
+- completion now atomically and idempotently persists a +1-day independent
+  retry with evidence, duration, success criterion, and skip consequence;
+- the probe renders the two authored formula choices explicitly, and its exact
+  choice text is understood by the deterministic assessment rubric.
+
+The historical trace was not edited. Its invalid negative v1 KT projection is
+excluded from the current skill report, while its failed verification evidence
+created review task `review-6692e00a2ab02ed8da348de5`, due 2026-07-13. Repeating
+the review-commit request returned the same task and produced no duplicate.
+
+The corrected `Lumi.app` passed the 18/18 core verifier, strict/deep signature,
+bundled-sidecar lifecycle, graceful/abrupt-exit, occupied-port, and frozen-worker
+checks. A fresh real learner full completion on policy v2 remains the final
+P0.3.1 acceptance gap; this document does not substitute deterministic tests or
+the historical v1 run for that evidence.

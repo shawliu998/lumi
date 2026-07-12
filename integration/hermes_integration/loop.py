@@ -28,7 +28,7 @@ from .learning_support import (
 )
 
 
-POLICY_VERSION = "integration-learning-policy-v1"
+POLICY_VERSION = "integration-learning-policy-v2"
 NO_ERROR_MODEL_VERSION = "deterministic-no-error-gate-v1"
 MASTERY_MODEL_VERSION = "bkt-pfa-rasch-ensemble-v1"
 VERIFY_MODEL_VERSION = "independent-transfer-check-v1"
@@ -395,7 +395,34 @@ class IntegrationSession:
         verify = payload["latest_artifacts"]["verify"]
         initial = self._initial_state(verify["post_state"]["skill_id"])
         initial_mastery = float(initial["mastery"])
-        committed = bool(verify["verification"]["independently_verified"])
+        verification = verify["verification"]
+        verification_attempt = verify.get("verification_attempt")
+        independently_answered_without_help = bool(
+            isinstance(verification_attempt, Mapping)
+            and verification_attempt.get("independently_answered") is True
+            and verification_attempt.get("hints_used") == 0
+            and verification.get("independently_verified") is True
+        )
+        scorer_passed = bool(
+            isinstance(verification_attempt, Mapping)
+            and verification_attempt.get("correct") is True
+        )
+        committed = bool(
+            independently_answered_without_help
+            and scorer_passed
+            and verification.get("effective") is True
+        )
+        if committed:
+            commit_status = "committed"
+        elif (
+            isinstance(verification_attempt, Mapping)
+            and not independently_answered_without_help
+        ):
+            commit_status = "withheld_assisted_verification"
+        elif verification.get("effective") is False:
+            commit_status = "withheld_failed_verification"
+        else:
+            commit_status = "withheld_inconclusive_verification"
         final_mastery = float(verify["post_state"]["mastery"]) if committed else initial_mastery
         return {
             "skill_id": verify["post_state"]["skill_id"],
@@ -403,7 +430,7 @@ class IntegrationSession:
             "new_mastery": final_mastery,
             "mastery_delta": round(final_mastery - initial_mastery, 12),
             "uncertainty": verify["post_state"]["uncertainty"] if committed else initial["uncertainty"],
-            "commit_status": "committed" if committed else "withheld_assisted_verification",
+            "commit_status": commit_status,
             "evidence": {
                 "initial_attempt_id": observe["attempt"]["attempt_id"],
                 "verification_attempt_id": (
@@ -413,6 +440,8 @@ class IntegrationSession:
                 ),
                 "independently_verified": verify["verification"]["independently_verified"],
                 "verification_effective": verify["verification"]["effective"],
+                "scorer_passed": scorer_passed,
+                "independently_answered_without_help": independently_answered_without_help,
                 "engine_provenance": verify["post_state"]["provenance"],
             },
             "model_version": {
@@ -425,19 +454,16 @@ class IntegrationSession:
 
     def _reflect(self, payload: Mapping[str, Any], context: ToolContext) -> Mapping[str, Any]:
         update = payload["latest_artifacts"]["update"]
-        verification = payload["latest_artifacts"]["verify"]["verification"]
-        effective = verification["effective"]
-        if effective is True:
+        committed = update["commit_status"] == "committed"
+        if committed:
             outcome = "verified_transfer"
-        elif effective is None:
-            outcome = "inconclusive_needs_independent_retry"
         else:
             outcome = "not_yet_mastered"
         return {
             "continue": False,
             "outcome": outcome,
             "mastery_delta": update["mastery_delta"],
-            "next_action": "schedule_delayed_retention" if effective else "schedule_targeted_retry",
+            "next_action": "schedule_delayed_retention" if committed else "schedule_targeted_retry",
             "policy_version": POLICY_VERSION,
         }
 
