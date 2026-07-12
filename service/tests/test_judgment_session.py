@@ -15,6 +15,7 @@ from hermes_domains.reasoning_pack import (
     record_sha256,
     reviewed_manifest_sha256,
 )
+from hermes_runtime.learner_state import LearnerStateStore
 from hermes_service.judgment_session import (
     JudgmentContentUnavailable,
     JudgmentSessionConfig,
@@ -194,6 +195,49 @@ class JudgmentSessionTests(unittest.TestCase):
         )
         self.assertEqual(started["stage"], "awaiting_probe")
         self.assertEqual(started["probe"]["record_id"], "P03")
+
+    def test_prior_probe_observations_are_local_replay_context_not_a_diagnosis(self) -> None:
+        service = self.service()
+        first = service.start(
+            entry_record_id="D01", selected_option="B", confidence="low", elapsed_seconds=12,
+            command_id="c_history_first_entry_0001",
+        )
+        service.answer_probe(
+            session_id=first["session_id"], expected_version=1, expected_stage="awaiting_probe",
+            selected_option="A", confidence="medium", elapsed_seconds=8,
+            command_id="c_history_first_probe_0001",
+        )
+        # A similarly named historical cause from another authored pack
+        # version is intentionally not eligible to influence this session.
+        learner_store = LearnerStateStore(self.database)
+        try:
+            learner_store.append_hypothesis(
+                {
+                    "schema_version": "lumi.diagnosis-hypothesis.v1",
+                    "hypothesis_id": "dxh_history_other_pack_version",
+                    "namespace_id": "eval:judgment:test",
+                    "evidence_origin": "evaluation_fixture",
+                    "learner_id": "test-learner",
+                    "episode_id": "episode_history_other_pack_version",
+                    "skill_id": "xingce.judgment.conditional.language_direction",
+                    "cause_id": "M-READ",
+                    "status": "supported",
+                    "pack_id": "lumi-conditional-reasoning-v0",
+                    "pack_version": "0.0.9-other-draft",
+                    "evidence_refs": [f"evt_{first['session_id']}_probe"],
+                }
+            )
+        finally:
+            learner_store.close()
+        second = service.start(
+            entry_record_id="D01", selected_option="B", confidence="low", elapsed_seconds=11,
+            command_id="c_history_second_entry_0001",
+        )
+        by_cause = {candidate["cause_id"]: candidate for candidate in second["candidate_causes"]}
+        self.assertEqual(by_cause["M-DIR"]["status"], "unconfirmed")
+        self.assertEqual(by_cause["M-DIR"]["prior_probe_observations"]["supported_count"], 1)
+        self.assertEqual(by_cause["M-READ"]["prior_probe_observations"]["supported_count"], 0)
+        self.assertIn("不能单独触发教学", by_cause["M-DIR"]["prior_probe_observations"]["usage"])
 
     def test_transfer_commit_resumes_after_the_observation_event_is_durable(self) -> None:
         service = self.service()

@@ -562,6 +562,34 @@ class LearnerStateStore:
         decisions = [json.loads(str(row["decision_json"])) for row in rows]
         return [decision for decision in decisions if decision.get("learner_id") == learner_id]
 
+    def replay_hypotheses(
+        self,
+        *,
+        namespace_id: str,
+        evidence_origin: str,
+        learner_id: str,
+    ) -> list[dict[str, Any]]:
+        """Return one learner's append-only diagnostic observations in order.
+
+        Historical diagnosis is deliberately weaker than learner state: callers
+        receive individual, still-unconfirmed hypothesis records rather than a
+        latent-trait score.  Earlier rows that did not bind a learner id remain
+        readable in storage but cannot influence this projection.
+        """
+
+        namespace_id, evidence_origin = _validate_identity(namespace_id, evidence_origin)
+        learner_id = _short_string(learner_id, "learner_id")
+        rows = self._connection.execute(
+            """
+            SELECT hypothesis_json FROM learner_state_hypotheses
+            WHERE namespace_id = ? AND evidence_origin = ?
+            ORDER BY created_at, hypothesis_id
+            """,
+            (namespace_id, evidence_origin),
+        ).fetchall()
+        hypotheses = [json.loads(str(row["hypothesis_json"])) for row in rows]
+        return [hypothesis for hypothesis in hypotheses if hypothesis.get("learner_id") == learner_id]
+
     def _validate_evidence_refs(
         self,
         refs: Any,

@@ -5637,6 +5637,10 @@ button.connection-status:hover {
   color: #74676a;
 }
 
+.judgment-candidates .judgment-history-note {
+  color: #5b6474;
+}
+
 .probe-policy {
   padding: 10px;
   border-top: 1px solid #e9eaee;

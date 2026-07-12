@@ -127,6 +127,34 @@ class LearnerStateStoreTests(unittest.TestCase):
                 evidence_origin="evaluation_fixture",
             )
         )
+
+    def test_hypothesis_replay_is_scoped_to_the_bound_local_learner(self) -> None:
+        self.store.append_evidence(self.verification_event("evt-history"))
+        for hypothesis_id, learner_id, status in (
+            ("dxh-history-supported", self.learner_id, "supported"),
+            ("dxh-history-other-learner", "other-local-learner", "refuted"),
+        ):
+            self.store.append_hypothesis(
+                {
+                    "schema_version": "lumi.diagnosis-hypothesis.v1",
+                    "hypothesis_id": hypothesis_id,
+                    "namespace_id": self.namespace_id,
+                    "evidence_origin": self.evidence_origin,
+                    "learner_id": learner_id,
+                    "episode_id": f"episode-{hypothesis_id}",
+                    "skill_id": self.skill_id,
+                    "cause_id": "M-ROLE",
+                    "status": status,
+                    "evidence_refs": ["evt-history"],
+                }
+            )
+        replayed = self.store.replay_hypotheses(
+            namespace_id=self.namespace_id,
+            evidence_origin=self.evidence_origin,
+            learner_id=self.learner_id,
+        )
+        self.assertEqual([item["hypothesis_id"] for item in replayed], ["dxh-history-supported"])
+        self.assertEqual(replayed[0]["status"], "supported")
         with self.assertRaises(LearnerStateValidationError):
             self.commit("vr-cross-origin", "evt-eval-only", expected_state_version=0)
         self.assertIsNone(

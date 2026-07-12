@@ -87,6 +87,29 @@ class DecisionFact:
 
 
 @dataclass(frozen=True, slots=True)
+class HistoricalCandidateEvidence:
+    """A replayable, non-diagnostic summary from earlier local sessions.
+
+    Counts are observations of prior probe outcomes, not probabilities or an
+    inferred learner trait.  They may break a tie only after the *current*
+    probe supports more than one authored candidate; history alone can never
+    select teaching, confirm a cause, or update learner state.
+    """
+
+    cause_id: str
+    supported_count: int = 0
+    refuted_count: int = 0
+    insufficient_count: int = 0
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.cause_id, str) or not self.cause_id.strip():
+            raise JudgmentPolicyError("historical cause_id must be non-empty")
+        for value in (self.supported_count, self.refuted_count, self.insufficient_count):
+            if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+                raise JudgmentPolicyError("historical evidence counts must be non-negative integers")
+
+
+@dataclass(frozen=True, slots=True)
 class CandidateCause:
     """A ranked explanation that remains explicitly unconfirmed."""
 
@@ -151,6 +174,7 @@ class EntryPolicyDecision:
     candidate_causes: tuple[CandidateCause, ...]
     probe_plan: ProbePlan
     next_action: Literal["probe", "retention_or_abstain", "abstain"]
+    historical_context: tuple[HistoricalCandidateEvidence, ...] = ()
     policy_id: str = POLICY_ID
     policy_version: str = POLICY_VERSION
     calibration_status: str = CALIBRATION_STATUS
@@ -188,6 +212,7 @@ class TeachingPlan:
     selected_asset_id: str | None
     target_cause_id: str | None
     why_selected: str
+    history_used_for_tie_break: bool = False
     policy_id: str = POLICY_ID
     policy_version: str = POLICY_VERSION
     calibration_status: str = CALIBRATION_STATUS
@@ -235,6 +260,7 @@ def diagnose_entry(
     *,
     entry_record_id: str,
     observation: EntryObservation,
+    historical_context: Sequence[HistoricalCandidateEvidence] = (),
 ) -> EntryPolicyDecision:
     """Diagnose a single entry answer without writing learner state.
 
@@ -244,6 +270,7 @@ def diagnose_entry(
     inventing a causal route.
     """
 
+    history = _normalized_historical_context(historical_context)
     index = _index_records(records)
     entry = _record(index, entry_record_id)
     if entry.get("role") not in _ENTRY_ROLES:
@@ -266,6 +293,7 @@ def diagnose_entry(
                 why_selected="首答正确；不把一次正确作答解释为无错因或已掌握，进入保留/延迟复测或暂不动作。",
             ),
             next_action="retention_or_abstain",
+            historical_context=history,
         )
 
     candidate_ids = _minimal_discriminable_candidate_ids(entry, _probe_records(index))
@@ -279,6 +307,7 @@ def diagnose_entry(
             candidate_causes=(),
             probe_plan=plan,
             next_action="abstain",
+            historical_context=history,
         )
 
     evidence_ids = tuple(fact.fact_id for fact in facts)
@@ -299,6 +328,7 @@ def diagnose_entry(
         candidate_causes=candidates,
         probe_plan=plan,
         next_action="probe" if plan.selected_probe_id else "abstain",
+        historical_context=history,
     )
 
 
@@ -344,7 +374,7 @@ def resolve_probe(
         ),
     )
     updates = _probe_updates(probe, selected, candidates)
-    teaching = _select_teaching_plan(index, updates)
+    teaching = _select_teaching_plan(index, updates, decision.historical_context)
     used_groups = _used_independence_groups(index, decision.entry_record_id, probe["record_id"], teaching.selected_asset_id)
     entry = _record(index, decision.entry_record_id)
     transfer = _select_transfer_plan(
@@ -406,6 +436,21 @@ def _string_tuple(value: object, label: str) -> tuple[str, ...]:
     if len(strings) != len(value) or len(set(strings)) != len(strings):
         raise JudgmentPolicyError(f"{label} must contain unique non-empty strings")
     return strings
+
+
+def _normalized_historical_context(
+    values: Sequence[HistoricalCandidateEvidence],
+) -> tuple[HistoricalCandidateEvidence, ...]:
+    """Keep one bounded, explicit summary per cause without inventing scores."""
+
+    history: dict[str, HistoricalCandidateEvidence] = {}
+    for value in values:
+        if not isinstance(value, HistoricalCandidateEvidence):
+            raise JudgmentPolicyError("historical context must contain HistoricalCandidateEvidence")
+        if value.cause_id in history:
+            raise JudgmentPolicyError("historical context must not repeat a cause")
+        history[value.cause_id] = value
+    return tuple(history[cause_id] for cause_id in sorted(history))
 
 
 def _entry_facts(
@@ -669,6 +714,7 @@ def _causes_supported_by_reason(reason: str | None, candidate_ids: tuple[str, ..
 def _select_teaching_plan(
     index: Mapping[str, Mapping[str, Any]],
     updates: Sequence[ProbeEvidence],
+    historical_context: Sequence[HistoricalCandidateEvidence],
 ) -> TeachingPlan:
     supported = tuple(update.cause_id for update in updates if update.outcome == "support")
     if not supported:
@@ -692,11 +738,37 @@ def _select_teaching_plan(
             target_cause_id=None,
             why_selected="探查只支持了没有关联作者教学资产的候选；为避免泛化讲解而暂不教学。",
         )
-    cause_id, asset_id, _ = min(candidates, key=lambda row: (supported.index(row[0]), row[1]))
+    history_by_cause = {item.cause_id: item for item in historical_context}
+    current_supported = set(supported)
+    has_current_tie = len(current_supported) > 1
+
+    def selection_key(row: tuple[str, str, Mapping[str, Any]]) -> tuple[int, int, str]:
+        cause_id, asset_id, _ = row
+        prior = history_by_cause.get(cause_id)
+        prior_supports = prior.supported_count if prior is not None else 0
+        # Current support is always the admission criterion.  Prior observations
+        # can only resolve an otherwise-current tie, never elevate an unsupported
+        # cause over a supported one.
+        return (-prior_supports if has_current_tie else 0, supported.index(cause_id), asset_id)
+
+    cause_id, asset_id, _ = min(candidates, key=selection_key)
+    history_used = has_current_tie and any(
+        item.supported_count > 0 for item in historical_context if item.cause_id in current_supported
+    )
+    history_note = (
+        "；当前探查同时支持多个候选，才用同一学习者既往探查观察作同分排序，"
+        "既往观察本身不触发教学也不确认错因。"
+        if history_used
+        else ""
+    )
     return TeachingPlan(
         selected_asset_id=asset_id,
         target_cause_id=cause_id,
-        why_selected=f"探查仅支持候选 {cause_id}，选择其关联的作者教学资产 {asset_id}；候选仍未确认。",
+        why_selected=(
+            f"当前探查支持候选 {cause_id}，选择其关联的作者教学资产 {asset_id}；"
+            f"候选仍未确认。{history_note}"
+        ),
+        history_used_for_tie_break=history_used,
     )
 
 

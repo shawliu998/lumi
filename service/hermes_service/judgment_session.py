@@ -20,6 +20,7 @@ from typing import Any, Callable, Mapping
 from hermes_domains.judgment_policy import (
     EntryObservation,
     EntryPolicyDecision,
+    HistoricalCandidateEvidence,
     JudgmentPolicyError,
     ProbeResolution,
     diagnose_entry,
@@ -193,12 +194,6 @@ class JudgmentSessionService:
             elapsed_seconds=elapsed_seconds,
             hint_count=0,
         )
-        try:
-            decision = diagnose_entry(
-                self._records, entry_record_id=entry_record_id, observation=observation
-            )
-        except JudgmentPolicyError as exc:
-            raise JudgmentSessionError(str(exc)) from exc
         # First answer is a durable write.  A public command id lets a lost
         # response retry the *same* observation rather than create another.
         normalized_command_id = _command_id(command_id) if command_id is not None else None
@@ -217,6 +212,16 @@ class JudgmentSessionService:
                 return self._replay_entry_command(
                     existing, normalized_command_id, entry_record_id, observation, rationale
                 )
+            history = self._historical_context(learner_store, entry)
+            try:
+                decision = diagnose_entry(
+                    self._records,
+                    entry_record_id=entry_record_id,
+                    observation=observation,
+                    historical_context=history,
+                )
+            except JudgmentPolicyError as exc:
+                raise JudgmentSessionError(str(exc)) from exc
             stage = _entry_stage(decision)
             public = self._entry_projection(run_id, 1, entry, observation, decision, stage)
             try:
@@ -289,7 +294,16 @@ class JudgmentSessionService:
                 elapsed_seconds=float(entry_event.payload["elapsed_seconds"]),
                 hint_count=0,
             )
-            decision = diagnose_entry(self._records, entry_record_id=str(entry["record_id"]), observation=observation)
+            history = self._historical_context(learner_store, entry)
+            try:
+                decision = diagnose_entry(
+                    self._records,
+                    entry_record_id=str(entry["record_id"]),
+                    observation=observation,
+                    historical_context=history,
+                )
+            except JudgmentPolicyError as exc:
+                raise JudgmentSessionError(str(exc)) from exc
             try:
                 resolution = resolve_probe(
                     self._records, decision=decision, selected_option=selected_option
@@ -476,6 +490,9 @@ class JudgmentSessionService:
                     "status": candidate.status,
                     "rank": candidate.rank,
                     "rationale": candidate.rationale,
+                    "prior_probe_observations": _public_prior_observations(
+                        candidate.cause_id, decision.historical_context
+                    ),
                     "is_ground_truth": False,
                 }
                 for candidate in decision.candidate_causes
@@ -536,6 +553,7 @@ class JudgmentSessionService:
                 "asset": teaching,
                 "target_cause_id": resolution.teaching_plan.target_cause_id,
                 "why_selected": resolution.teaching_plan.why_selected,
+                "history_used_for_tie_break": resolution.teaching_plan.history_used_for_tie_break,
             },
             "transfer": self._public_record(transfer),
             "independence": {
@@ -566,6 +584,49 @@ class JudgmentSessionService:
             )
         )
 
+    def _historical_context(
+        self, learner_store: LearnerStateStore, entry: Mapping[str, Any]
+    ) -> tuple[HistoricalCandidateEvidence, ...]:
+        """Summarise only this learner's earlier probe observations.
+
+        The result is intentionally not a probability or an updated cause
+        label.  It excludes other packs, other origins, unbound legacy rows,
+        and current-entry hypotheses.  The policy may consume it only as a
+        tie-break after current discriminating evidence supports alternatives.
+        """
+
+        targets = set(entry.get("candidate_misconception_ids", []))
+        counts: dict[str, dict[str, int]] = {
+            cause_id: {"supported": 0, "refuted": 0, "insufficient": 0}
+            for cause_id in targets
+            if isinstance(cause_id, str)
+        }
+        for hypothesis in learner_store.replay_hypotheses(
+            namespace_id=self.config.namespace_id,
+            evidence_origin=self.config.evidence_origin,
+            learner_id=self.config.learner_id,
+        ):
+            if (
+                hypothesis.get("pack_id") != self.pack_id
+                or hypothesis.get("pack_version") != self.pack_version
+            ):
+                continue
+            cause_id = hypothesis.get("cause_id")
+            status = hypothesis.get("status")
+            if cause_id not in counts or status not in counts[cause_id]:
+                continue
+            counts[cause_id][str(status)] += 1
+        return tuple(
+            HistoricalCandidateEvidence(
+                cause_id=cause_id,
+                supported_count=counts[cause_id]["supported"],
+                refuted_count=counts[cause_id]["refuted"],
+                insufficient_count=counts[cause_id]["insufficient"],
+            )
+            for cause_id in sorted(counts)
+            if any(counts[cause_id].values())
+        )
+
     def _append_entry_hypotheses(self, learner_store: LearnerStateStore, decision: EntryPolicyDecision, event: TraceEvent) -> None:
         for candidate in decision.candidate_causes:
             learner_store.append_hypothesis(
@@ -576,6 +637,9 @@ class JudgmentSessionService:
                     "evidence_origin": self.config.evidence_origin,
                     "episode_id": f"episode_{event.run_id}",
                     "skill_id": self._skill_for_cause(candidate.cause_id),
+                    "learner_id": self.config.learner_id,
+                    "pack_id": self.pack_id,
+                    "pack_version": self.pack_version,
                     "cause_id": candidate.cause_id,
                     "status": "unconfirmed",
                     "evidence_refs": [f"evt_{event.run_id}_entry"],
@@ -611,6 +675,9 @@ class JudgmentSessionService:
                     "evidence_origin": self.config.evidence_origin,
                     "episode_id": f"episode_{event.run_id}",
                     "skill_id": self._skill_for_cause(update.cause_id),
+                    "learner_id": self.config.learner_id,
+                    "pack_id": self.pack_id,
+                    "pack_version": self.pack_version,
                     "cause_id": update.cause_id,
                     "status": "supported" if update.outcome == "support" else "refuted" if update.outcome == "refute" else "insufficient",
                     "evidence_refs": [f"evt_{event.run_id}_probe"],
@@ -1022,6 +1089,25 @@ def _entry_stage(decision: EntryPolicyDecision) -> str:
     if decision.next_action == "retention_or_abstain":
         return "completed_no_error"
     return "blocked_insufficient_evidence"
+
+
+def _public_prior_observations(
+    cause_id: str, history: tuple[HistoricalCandidateEvidence, ...]
+) -> dict[str, Any]:
+    prior = next((item for item in history if item.cause_id == cause_id), None)
+    if prior is None:
+        return {
+            "supported_count": 0,
+            "refuted_count": 0,
+            "insufficient_count": 0,
+            "usage": "没有可用的既往探查观察；本轮只依据当前作答。",
+        }
+    return {
+        "supported_count": prior.supported_count,
+        "refuted_count": prior.refuted_count,
+        "insufficient_count": prior.insufficient_count,
+        "usage": "既往观察只可在当前探查也支持多个候选时排序微课；不能单独触发教学、确认错因或更新学习状态。",
+    }
 
 
 def _new_session_id() -> str:

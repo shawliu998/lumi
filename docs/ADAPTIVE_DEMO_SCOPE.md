@@ -54,6 +54,16 @@ support or refute it; none can turn it into a causal fact by itself.
 | transfer | no-help verification | distinct `independence_group`, surface vocabulary, and option order |
 | delayed review | retention evidence | distinct item and later scheduled session |
 
+### Cross-session evidence rule
+
+Earlier probe observations may be replayed only for the same local learner,
+namespace, origin, and exact Domain Pack version. They remain counts of `supported`,
+`refuted`, or `insufficient` observations—not probabilities, diagnoses, or
+mastery. A later session must still run its current authored probe. Only if the
+current probe supports more than one authored teaching route may earlier
+observations break that current tie; history alone cannot select teaching,
+confirm a cause, create a state update, or schedule a review.
+
 ## Content and release policy
 
 The initial pack is **Lumi Original Conditional Reasoning Pack** under CC BY

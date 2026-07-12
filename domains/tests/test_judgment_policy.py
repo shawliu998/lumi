@@ -9,6 +9,7 @@ from hermes_domains import (
     POLICY_ID,
     POLICY_VERSION,
     EntryObservation,
+    HistoricalCandidateEvidence,
     JudgmentPolicyError,
     diagnose_entry,
     resolve_probe,
@@ -161,6 +162,37 @@ class JudgmentPolicyTests(unittest.TestCase):
         resolution = resolve_probe(records, decision=decision, selected_option="A")
         self.assertEqual({update.outcome for update in resolution.evidence_updates}, {"insufficient"})
         self.assertTrue(resolution.teaching_plan.is_abstention)
+
+    def test_history_cannot_teach_without_current_probe_support(self) -> None:
+        decision = diagnose_entry(
+            self.records,
+            entry_record_id="D01",
+            observation=self.wrong_direction_observation(),
+            historical_context=(HistoricalCandidateEvidence("M-DIR", supported_count=99),),
+        )
+        resolution = resolve_probe(self.records, decision=decision, selected_option="B")
+        self.assertTrue(resolution.teaching_plan.is_abstention)
+        self.assertFalse(resolution.teaching_plan.history_used_for_tie_break)
+
+    def test_history_breaks_only_a_current_supported_teaching_tie(self) -> None:
+        records = copy.deepcopy(self.records)
+        probe = next(record for record in records if record["record_id"] == "P01")
+        probe["candidate_evidence_map"]["A"] = {"M-DIR": "support", "M-READ": "support"}
+        teaching = next(record for record in records if record["record_id"] == "T01")
+        teaching["candidate_misconception_ids"] = ["M-DIR", "M-READ"]
+        decision = diagnose_entry(
+            records,
+            entry_record_id="D01",
+            observation=self.wrong_direction_observation(),
+            historical_context=(
+                HistoricalCandidateEvidence("M-DIR", supported_count=1),
+                HistoricalCandidateEvidence("M-READ", supported_count=3),
+            ),
+        )
+        resolution = resolve_probe(records, decision=decision, selected_option="A")
+        self.assertEqual(resolution.teaching_plan.target_cause_id, "M-READ")
+        self.assertTrue(resolution.teaching_plan.history_used_for_tie_break)
+        self.assertIn("既往探查观察", resolution.teaching_plan.why_selected)
 
     def test_correct_entry_creates_no_cause_and_does_not_open_probe(self) -> None:
         decision = diagnose_entry(

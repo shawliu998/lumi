@@ -194,6 +194,10 @@ function JudgmentQuestion({
 function DiagnosisPanel({ session }) {
   if (!session?.observed_facts) return null;
   const selectedAction = session.policy?.candidate_actions?.find((item) => item.selected);
+  const priorObservationCopy = (prior) => {
+    if (!prior || !(prior.supported_count || prior.refuted_count || prior.insufficient_count)) return null;
+    return `既往探查：支持 ${prior.supported_count} 次、反驳 ${prior.refuted_count} 次、证据不足 ${prior.insufficient_count} 次。仅作当前探查后的同分排序，不单独归因。`;
+  };
   return (
     <section className="judgment-panel diagnosis-panel" aria-labelledby="diagnosis-heading">
       <header><div><ListMagnifyingGlass size={16} /><h2 id="diagnosis-heading">本次诊断</h2></div><small>候选均未确认</small></header>
@@ -210,7 +214,7 @@ function DiagnosisPanel({ session }) {
         <div>
           <h3>尚未确认的候选</h3>
           {session.candidate_causes?.length ? <ol className="judgment-candidates">
-            {session.candidate_causes.map((candidate) => <li key={candidate.cause_id}><span>{candidate.rank}</span><div><strong>{candidate.cause_id}</strong><p>{candidate.rationale}</p><small>{candidateStatusCopy(candidate.status)}</small></div></li>)}
+            {session.candidate_causes.map((candidate) => <li key={candidate.cause_id}><span>{candidate.rank}</span><div><strong>{candidate.cause_id}</strong><p>{candidate.rationale}</p><small>{candidateStatusCopy(candidate.status)}</small>{priorObservationCopy(candidate.prior_probe_observations) && <p className="judgment-history-note">{priorObservationCopy(candidate.prior_probe_observations)}</p>}</div></li>)}
           </ol> : <p className="judgment-quiet-copy">本题没有生成错因候选；一次正确首答不等于已掌握。</p>}
         </div>
       </div>
