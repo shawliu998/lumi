@@ -23,7 +23,11 @@ from unittest.mock import patch
 from hermes_service.api import create_server
 from hermes_service.application import SidecarApplication
 from hermes_service.cli import (
+    INTERNAL_EVALUATION_PROJECTION_ENV,
     INTERNAL_ATTEMPT_ORIGIN_ENV,
+    INTERNAL_LEARNING_ATTEMPT_ORIGIN_ENV,
+    configured_evaluation_projection,
+    configured_learning_attempt_origin,
     configured_study_pack_attempt_origin,
     main as cli_main,
 )
@@ -637,6 +641,37 @@ class StudyPackApiTests(unittest.TestCase):
                 SystemExit, "invalid internal Study Pack attempt origin"
             ):
                 configured_study_pack_attempt_origin()
+
+    def test_cli_learning_evaluation_mode_is_explicit_and_private(self) -> None:
+        with patch.dict(os.environ, {}, clear=True):
+            self.assertEqual(
+                configured_learning_attempt_origin(), "human_local_interactive"
+            )
+            self.assertFalse(
+                configured_evaluation_projection(
+                    attempt_origin="human_local_interactive"
+                )
+            )
+        with patch.dict(
+            os.environ,
+            {
+                INTERNAL_LEARNING_ATTEMPT_ORIGIN_ENV: "evaluation_fixture",
+                INTERNAL_EVALUATION_PROJECTION_ENV: "1",
+            },
+            clear=True,
+        ):
+            origin = configured_learning_attempt_origin()
+            self.assertEqual(origin, "evaluation_fixture")
+            self.assertTrue(configured_evaluation_projection(attempt_origin=origin))
+        with patch.dict(
+            os.environ,
+            {INTERNAL_EVALUATION_PROJECTION_ENV: "1"},
+            clear=True,
+        ):
+            with self.assertRaisesRegex(SystemExit, "invalid internal evaluation"):
+                configured_evaluation_projection(
+                    attempt_origin="human_local_interactive"
+                )
 
     def test_pasted_text_full_loop_survives_restart_without_learning_writes(self) -> None:
         baseline = self.learning_state_digest()

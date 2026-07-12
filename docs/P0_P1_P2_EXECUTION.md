@@ -1,6 +1,13 @@
-# Lumi P0 → P1 → P2 execution contract
+# Historical P0 → P1 → P2 execution contract
 
-Status: active. P0.1 and P0.2 are verified and published on
+> **Superseded as the application product roadmap on 2026-07-12.** This file
+> records the earlier multi-domain/data-analysis programme and its evidence.
+> The active application target is the judgement-reasoning-first Lumi charter:
+> [PRODUCT_CHARTER.md](PRODUCT_CHARTER.md). Existing contracts remain valuable
+> infrastructure, but P0.4 Shenlun, Interview, broad Xingce coverage, P1, and
+> P2 are not the current demonstration scope.
+
+Status: historical infrastructure record. P0.1 and P0.2 are verified and published on
 `origin/codex/lumi-p0-p1-p2`. The bounded P0.3 Study Pack implementation is at
 `0749092`; the real-learner feedback/history correction is at `3b237a1`.
 P0.3.1 product-loop correction is now the only production slice. P0.4, P1, and

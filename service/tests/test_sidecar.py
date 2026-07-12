@@ -30,7 +30,13 @@ class SidecarTests(unittest.TestCase):
     def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()
         self.database = Path(self.temporary.name) / "sidecar.sqlite3"
-        self.application = SidecarApplication(self.database)
+        # ScenarioCatalog exercises are deterministic evaluation fixtures, not
+        # production human learner activity.
+        self.application = SidecarApplication(
+            self.database,
+            attempt_evidence_origin="evaluation_fixture",
+            review_commit_evidence_origins=frozenset({"evaluation_fixture"}),
+        )
         self.server = create_server(self.application, port=0)
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
         self.thread.start()
@@ -41,6 +47,13 @@ class SidecarTests(unittest.TestCase):
         self.server.server_close()
         self.thread.join(timeout=2)
         self.temporary.cleanup()
+
+    def evaluation_application(self) -> SidecarApplication:
+        return SidecarApplication(
+            self.database,
+            attempt_evidence_origin="evaluation_fixture",
+            review_commit_evidence_origins=frozenset({"evaluation_fixture"}),
+        )
 
     def request(
         self,
@@ -383,7 +396,9 @@ class SidecarTests(unittest.TestCase):
         self.assertIsNotNone(completed["mastery_update"])
         self.assertEqual(completed["reflection"]["outcome"], "verified_transfer")
         _, skills, _ = self.request("GET", "/v1/skills/report")
-        self.assertEqual(skills["skill_count"], 1)
+        # The deterministic ScenarioCatalog runs in an explicit evaluation
+        # namespace, so it cannot project into the human learner report.
+        self.assertEqual(skills["skill_count"], 0)
         _, trace, _ = self.request("GET", completed["links"]["trace"])
         serialized = json.dumps(trace, ensure_ascii=False)
         self.assertNotIn("learner@example.com", serialized)
@@ -437,8 +452,8 @@ class SidecarTests(unittest.TestCase):
         self.assertEqual(accepted["state"], "awaiting_verification")
 
     def test_two_sidecar_instances_share_database_level_continuation_cas(self) -> None:
-        first = SidecarApplication(self.database)
-        second = SidecarApplication(self.database)
+        first = self.evaluation_application()
+        second = self.evaluation_application()
         run_id = opaque_public_id("r", "two-sidecar-cas")
         initial = first.submit_attempt(
             "xingce.data-analysis.growth-rate.synthetic-01",
@@ -492,8 +507,8 @@ class SidecarTests(unittest.TestCase):
         store.close()
 
     def test_two_sidecars_replay_the_same_assistance_command_idempotently(self) -> None:
-        first = SidecarApplication(self.database)
-        second = SidecarApplication(self.database)
+        first = self.evaluation_application()
+        second = self.evaluation_application()
         run_id = opaque_public_id("r", "two-sidecar-idempotency")
         command_id = opaque_public_id("c", "shared-assistance-command")
         initial = first.submit_attempt(
@@ -547,15 +562,11 @@ class SidecarTests(unittest.TestCase):
                 "run_id": opaque_public_id("r", "http-assistance-ladder"),
             },
         )
-        _, initial_dossier, _ = self.request("GET", initial["links"]["misconception"])
-        self.assertTrue(initial_dossier["provenance"]["trace_verified"])
-        self.assertEqual(initial_dossier["cohort_evidence"]["status"], "unavailable")
-        self.assertTrue(
-            all(
-                item["claim_status"] == "unconfirmed_hypothesis"
-                for item in initial_dossier["hypotheses"]
-            )
+        dossier_status, initial_dossier, _ = self.request(
+            "GET", initial["links"]["misconception"]
         )
+        self.assertEqual(dossier_status, 404)
+        self.assertEqual(initial_dossier["error"]["code"], "run_not_found")
 
         expected_actions = [
             "retry",
@@ -640,14 +651,11 @@ class SidecarTests(unittest.TestCase):
                 "response_time_seconds": 20,
             },
         )
-        _, dossier, _ = self.request("GET", initial["links"]["misconception"])
-        self.assertEqual(len(dossier["assistance_history"]), 6)
-        self.assertTrue(
-            all(
-                item["claim_status"] == "unconfirmed_hypothesis"
-                for item in dossier["hypotheses"]
-            )
+        dossier_status, dossier, _ = self.request(
+            "GET", initial["links"]["misconception"]
         )
+        self.assertEqual(dossier_status, 404)
+        self.assertEqual(dossier["error"]["code"], "run_not_found")
         _, empty_skills, _ = self.request("GET", "/v1/skills/report")
         self.assertEqual(empty_skills["skill_count"], 0)
 
@@ -668,10 +676,11 @@ class SidecarTests(unittest.TestCase):
         self.assertTrue(completed["verification"]["independently_verified"])
         self.assertTrue(completed["verification"]["effective"])
         self.assertIsNotNone(completed["mastery_update"])
-        _, completed_dossier, _ = self.request("GET", initial["links"]["misconception"])
-        self.assertEqual(
-            completed_dossier["learning_status"], "remediated_by_independent_transfer"
+        dossier_status, completed_dossier, _ = self.request(
+            "GET", initial["links"]["misconception"]
         )
+        self.assertEqual(dossier_status, 404)
+        self.assertEqual(completed_dossier["error"]["code"], "run_not_found")
 
     def test_authored_probe_assessment_supports_and_refutes_without_confirming(self) -> None:
         _, initial, _ = self.request(
@@ -711,8 +720,16 @@ class SidecarTests(unittest.TestCase):
             after_probe["teaching"]["based_on"]["focus_claim_status"],
             "supported_hypothesis",
         )
-        _, dossier, _ = self.request("GET", initial["links"]["misconception"])
-        by_cause = {item["cause_id"]: item for item in dossier["hypotheses"]}
+        store = EventStore(self.database)
+        try:
+            assessment = next(
+                event.payload
+                for event in reversed(store.events(initial["run_id"]))
+                if event.kind == "probe_assessed"
+            )
+        finally:
+            store.close()
+        by_cause = {item["cause_id"]: item for item in assessment["assessments"]}
         self.assertEqual(
             by_cause["denominator-current-base-confusion"]["claim_status"],
             "refuted_hypothesis",
@@ -721,17 +738,8 @@ class SidecarTests(unittest.TestCase):
             by_cause["ratio-growth-confusion"]["claim_status"],
             "supported_hypothesis",
         )
-        self.assertTrue(
-            by_cause["denominator-current-base-confusion"]["refuting_evidence"]
-        )
-        self.assertTrue(by_cause["ratio-growth-confusion"]["supporting_evidence"])
-        serialized = json.dumps(dossier, ensure_ascii=False)
+        serialized = json.dumps(assessment, ensure_ascii=False)
         self.assertNotIn("confirmed_cause", serialized)
-        restarted = SidecarApplication(self.database).misconception_dossier(
-            initial["run_id"]
-        )
-        self.assertEqual(restarted["hypotheses"], dossier["hypotheses"])
-        self.assertEqual(restarted["provenance"], dossier["provenance"])
 
     def test_assisted_verification_is_withheld_even_if_trace_contains_help(self) -> None:
         _, initial, _ = self.request(
@@ -822,12 +830,11 @@ class SidecarTests(unittest.TestCase):
         )
         _, skills, _ = self.request("GET", "/v1/skills/report")
         self.assertEqual(skills["skill_count"], 0)
-        _, dossier, _ = self.request("GET", after_probe["links"]["misconception"])
-        self.assertEqual(
-            dossier["learning_status"],
-            "inconclusive_needs_fresh_independent_verification",
+        dossier_status, dossier, _ = self.request(
+            "GET", after_probe["links"]["misconception"]
         )
-        self.assertTrue(dossier["provenance"]["trace_verified"])
+        self.assertEqual(dossier_status, 404)
+        self.assertEqual(dossier["error"]["code"], "run_not_found")
 
     def test_concurrent_assistance_requests_accept_exactly_one(self) -> None:
         _, initial, _ = self.request(
@@ -1118,11 +1125,10 @@ class SidecarTests(unittest.TestCase):
             15,
         )
         self.assertFalse(completed["verification"]["effective"])
-        dossier = self.application.misconception_dossier(initial["run_id"])
-        self.assertEqual(dossier["hypotheses"], [])
-        self.assertEqual(dossier["learning_status"], "needs_targeted_retry")
-        self.assertEqual(dossier["resolution"]["status"], "needs_targeted_retry")
-        self.assertNotEqual(dossier["learning_status"], "no_misconception_observed")
+        self.assertEqual(completed["mastery_commit"]["status"], "withheld")
+        self.assertEqual(completed["mastery_commit"]["reason_code"], "failed_verification")
+        self.assertEqual(completed["reflection"]["outcome"], "not_yet_mastered")
+        self.assertEqual(completed["reflection"]["next_action"], "schedule_targeted_retry")
 
     def test_attempt_is_fail_closed_for_unknown_fields_fixture_and_values(self) -> None:
         base = {
@@ -1190,7 +1196,7 @@ class SidecarTests(unittest.TestCase):
                 self.assertEqual(payload["error"]["code"], expected_code)
 
     def test_session_uses_immutable_fixture_snapshot_after_catalog_drift(self) -> None:
-        first = SidecarApplication(self.database)
+        first = self.evaluation_application()
         run_id = opaque_public_id("r", "immutable-fixture-session")
         initial = first.submit_attempt(
             "xingce.data-analysis.growth-rate.synthetic-01",
@@ -1199,7 +1205,7 @@ class SidecarTests(unittest.TestCase):
             20,
             run_id,
         )
-        second = SidecarApplication(self.database)
+        second = self.evaluation_application()
         fixture = second.catalog._fixtures[
             "xingce.data-analysis.growth-rate.synthetic-01"
         ]
@@ -1232,6 +1238,9 @@ class SidecarTests(unittest.TestCase):
         legacy_state = state.to_dict()
         legacy_state["run_id"] = "legacy-no-snapshot"
         legacy_state["context"].pop("fixture_content_sha256", None)
+        # Simulate a pre-boundary historical human trace without replaying a
+        # learner answer through the production endpoint.
+        legacy_state["context"]["evidence_origin"] = "human_local_interactive"
         store.append(
             "legacy-no-snapshot",
             "legacy_state_imported",
@@ -1243,8 +1252,7 @@ class SidecarTests(unittest.TestCase):
             self.application.misconception_dossier("legacy-no-snapshot")
         self.assertEqual(raised.exception.code, "fixture_snapshot_unavailable")
         report = self.application.misconception_report()
-        self.assertEqual(report["count"], 1)
-        self.assertEqual(report["items"][0]["run_id"], source_run_id)
+        self.assertEqual(report["count"], 0)
 
     def test_processing_dossier_never_offers_an_unexecutable_prompt_write(self) -> None:
         run_id = opaque_public_id("r", "processing-dossier")
@@ -1271,14 +1279,9 @@ class SidecarTests(unittest.TestCase):
             },
         )
         store.close()
-        dossier = self.application.misconception_dossier(run_id)
-        self.assertEqual(dossier["state"], "processing_probe")
-        self.assertEqual(dossier["learning_status"], "processing_probe_response")
-        self.assertEqual(
-            dossier["next_action"]["action"],
-            "restart_attempt_after_processing_failure",
-        )
-        self.assertNotEqual(dossier["next_action"]["action"], "answer_targeted_probe")
+        status, payload, _ = self.request("GET", initial["links"]["misconception"])
+        self.assertEqual(status, 404)
+        self.assertEqual(payload["error"]["code"], "run_not_found")
 
     def test_offline_attempt_records_zero_cloud_calls(self) -> None:
         status, result, _ = self.request(
@@ -1302,6 +1305,14 @@ class SidecarTests(unittest.TestCase):
         self.assertEqual(status, 403)
         self.assertEqual(payload["error"]["code"], "origin_denied")
         self.assertNotIn("Access-Control-Allow-Origin", headers)
+
+    def test_cors_allows_the_loopback_vite_quality_assurance_origin(self) -> None:
+        status, payload, headers = self.request(
+            "GET", "/v1/health", headers={"Origin": "http://127.0.0.1:5173"}
+        )
+        self.assertEqual(status, 200)
+        self.assertEqual(payload["status"], "ok")
+        self.assertEqual(headers["Access-Control-Allow-Origin"], "http://127.0.0.1:5173")
 
     def test_structured_errors_carry_request_id_without_internal_paths(self) -> None:
         status, payload, headers = self.request(

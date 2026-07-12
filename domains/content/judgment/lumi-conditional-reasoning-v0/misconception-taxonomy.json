@@ -1,0 +1,56 @@
+{
+  "schema_version": "lumi.reasoning-misconception-taxonomy.v0",
+  "pack_id": "lumi-conditional-reasoning-v0",
+  "pack_version": "0.1.0-draft",
+  "review_status": "draft_unreviewed",
+  "candidate_misconceptions": [
+    {
+      "misconception_id": "M-DIR",
+      "label": "把‘只有’读成反向条件",
+      "candidate_only": true,
+      "description": "可能把‘只有 A，才 B’错误地写成 A→B。",
+      "observable_signals": [
+        "选择把必要条件当作充分条件的干扰项",
+        "在新语境的箭头题中再次选择反向关系"
+      ],
+      "minimum_discriminating_evidence": "P01 的新语境箭头选择",
+      "preferred_teaching_asset_id": "T01"
+    },
+    {
+      "misconception_id": "M-ROLE",
+      "label": "把必要条件当作充分条件",
+      "candidate_only": true,
+      "description": "可能知道某条件必须具备，却把它误认为出现该条件就一定发生结果。",
+      "observable_signals": [
+        "声称已登记就必然已经领取设备",
+        "拒绝‘已登记但未领取’这一兼容反例"
+      ],
+      "minimum_discriminating_evidence": "P02 的兼容反例选择",
+      "preferred_teaching_asset_id": "T02"
+    },
+    {
+      "misconception_id": "M-INF",
+      "label": "在条件推理中使用无效方向",
+      "candidate_only": true,
+      "description": "可能正确读懂条件句，却从后件肯定前件，或从前件否定后件。",
+      "observable_signals": [
+        "由 P→Q 和 Q 推出 P",
+        "由 P→Q 和非P推出非Q"
+      ],
+      "minimum_discriminating_evidence": "P03 的符号条件推理选择",
+      "preferred_teaching_asset_id": "T03"
+    },
+    {
+      "misconception_id": "M-READ",
+      "label": "证据不足，可能是阅读或注意力滑失",
+      "candidate_only": true,
+      "description": "一次低信心、极短用时或非语义干扰项选择不足以判断为概念错误。",
+      "observable_signals": [
+        "低信心且用时异常短",
+        "选择与条件关系无关的选项"
+      ],
+      "minimum_discriminating_evidence": "中性复述或重新阅读，不作长讲解",
+      "preferred_teaching_asset_id": null
+    }
+  ]
+}

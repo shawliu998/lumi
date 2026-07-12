@@ -25,9 +25,15 @@ export function ProductActivityQuestion({
   stepLabel,
   independentCopy,
   submitLabel,
+  submitHelp,
   onSubmit,
 }) {
   const source = activity.source;
+  const missingRequirement = !answer
+    ? "请选择一个答案后再提交。"
+    : !confidence
+      ? "请选择作答信心后再提交。"
+      : submitHelp;
   return (
     <form className="product-activity" data-testid="product-activity" data-activity-id={activity.activityId} data-content-signature={activity.contentSignature} onSubmit={(event) => { event.preventDefault(); onSubmit(); }}>
       <header className="activity-meta">
@@ -73,7 +79,10 @@ export function ProductActivityQuestion({
         <small>本版只用于你整理思路，不参与评分，也不作为错因证据。</small>
       </details>
 
-      <button className="button primary panel-primary" type="submit" disabled={!answer || !confidence}>{submitLabel}</button>
+      <footer className="activity-submit-bar">
+        <p className={!answer || !confidence ? "activity-submit-help pending" : "activity-submit-help"} role="status">{missingRequirement}</p>
+        <button className="button primary panel-primary" type="submit" disabled={!answer || !confidence}>{submitLabel}</button>
+      </footer>
     </form>
   );
 }

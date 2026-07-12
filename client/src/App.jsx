@@ -55,9 +55,11 @@ import {
   TodayPracticeScreen,
 } from "./TodayPlanViews";
 import { StudyPackMaterials } from "./StudyPackViews.jsx";
+import { JudgmentWorkspace } from "./JudgmentWorkspace.jsx";
 
 const NAV_ITEMS = [
-  { id: "overview", label: "今日学习", icon: House },
+  { id: "judgment", label: "学习空间", icon: Target },
+  { id: "overview", label: "历史总览", icon: House },
   { id: "practice", label: "练习任务", icon: ListChecks },
   { id: "tools", label: "训练工具", icon: Toolbox },
   { id: "materials", label: "学习资料", icon: Books },
@@ -635,6 +637,17 @@ function ToolsScreen({
     loadProductActivities();
   };
 
+  useEffect(() => {
+    if (
+      selectedTool?.available
+      && sidecar.phase === "connected"
+      && toolStage === "ready"
+      && activityState.phase === "idle"
+    ) {
+      openTool(selectedTool);
+    }
+  }, [activityState.phase, selectedTool, sidecar.phase, toolStage]);
+
   const closeTool = () => {
     setSelectedTool(null);
     setToolStage("ready");
@@ -879,8 +892,8 @@ function ToolsScreen({
               {activityState.phase === "ready" && <p className="activity-ready-summary">已核对 {activityState.bundle.firstAnswer.source.year} 年真题与独立迁移题 · 题目版本 {activityState.bundle.releaseId}</p>}
               {activityState.phase === "loading" && <ProductActivityLoadState phase="loading" />}
               {activityState.phase === "error" && <ProductActivityLoadState phase="error" error={activityState.error} onRetry={loadProductActivities} />}
-              <div className="evidence-note"><Info size={15} /><span>{sidecar.phase === "connected" ? "先提交作答与信心；未作答前，客户端只读取不含答案与解析的安全题目投影。" : "本机服务不可用；真实训练暂不能开始，也不会创建本机轨迹。"}</span></div>
-              <button className="button primary panel-primary" disabled={sidecar.phase !== "connected" || activityState.phase !== "ready"} onClick={startConfiguredRun}>{activityState.phase === "loading" ? "正在读取真题" : activityState.phase === "error" ? "真题不可用" : sidecar.phase === "connected" ? "开始作答" : "本机服务不可用"}</button>
+              <div className="evidence-note"><Info size={15} /><span>{sidecar.phase === "connected" ? "先查看首题；只有选择答案与信心并提交首答后，才会创建本机学习记录。未提交前不读取答案或解析。" : "本机服务不可用；真实训练暂不能开始，也不会创建本机轨迹。"}</span></div>
+              <button className="button primary panel-primary" disabled={sidecar.phase !== "connected" || activityState.phase !== "ready"} onClick={startConfiguredRun}>{activityState.phase === "loading" ? "正在读取真题" : activityState.phase === "error" ? "真题不可用" : sidecar.phase === "connected" ? "查看首题（尚未创建记录）" : "本机服务不可用"}</button>
             </>
           )}
           {toolStage === "running" && (
@@ -901,8 +914,9 @@ function ToolsScreen({
               onWorkNotes={setWorkNotes}
               elapsedSeconds={elapsedSeconds}
               stepLabel="步骤 1 / 3 · 独立首答"
-              independentCopy="初答不提供帮助；提交后如需辨析，只把你的选项、信心与用时写入本机轨迹。"
-              submitLabel="提交首答"
+              independentCopy="初答不提供帮助；点击提交首答后，才会把你的选项、信心与用时写入本机轨迹。"
+              submitLabel="提交首答并创建本机记录"
+              submitHelp="提交后才会创建本机学习记录，并进入错因探查。"
               onSubmit={submitConfiguredAttempt}
             /> : <ProductActivityLoadState phase="error" error={activityState.error} onRetry={loadProductActivities} />
           )}
@@ -948,6 +962,7 @@ function ToolsScreen({
                     stepLabel="步骤 3 / 3 · 未见迁移题"
                     independentCopy="这是一道不同题号的真题，不提供帮助；只有独立作答后，服务才可能更新掌握状态。"
                     submitLabel="提交独立验证"
+                    submitHelp="提交后完成本轮验证；只有无提示且回答正确时，才可能更新掌握状态。"
                     onSubmit={() => submitContinuation("verification")}
                   />
                 </>
@@ -1131,6 +1146,7 @@ function AuxiliaryScreen({ page, setPage }) {
 function CommandPalette({ onClose, setPage, onOpenTool }) {
   const [query, setQuery] = useState("");
   const items = [
+    { label: "判断推理学习空间", meta: "当前主线", action: () => setPage("judgment") },
     { label: "今日学习", meta: "页面", action: () => setPage("overview") },
     { label: "错因辨析", meta: "训练工具", action: () => onOpenTool("错因辨析") },
     { label: "技能报告", meta: "页面", action: () => setPage("reports") },
@@ -1166,7 +1182,7 @@ function UtilityPanel({ type, onClose }) {
 }
 
 export function App() {
-  const [page, setPage] = useState("overview");
+  const [page, setPage] = useState("judgment");
   const [collapsed, setCollapsed] = useState(false);
   const [favorites, setFavorites] = useState([]);
   const [selectedTool, setSelectedTool] = useState(null);
@@ -1367,7 +1383,8 @@ export function App() {
       <div className={collapsed ? "app-window sidebar-collapsed" : "app-window"}>
         <Sidebar page={page} setPage={setPage} collapsed={collapsed} setCollapsed={setCollapsed} onUtility={setUtility} sidecar={sidecar} onRetrySidecar={retryAll} />
         <section className="app-main">
-          {page !== "tools" && <Topbar page={page} setPage={setPage} onSearch={() => setCommandOpen(true)} onUtility={setUtility} />}
+          {page !== "tools" && page !== "judgment" && <Topbar page={page} setPage={setPage} onSearch={() => setCommandOpen(true)} onUtility={setUtility} />}
+          {page === "judgment" && <JudgmentWorkspace />}
           {page === "overview" && <Overview setPage={setPage} sidecar={sidecar} planning={planning} />}
           {page === "practice" && <TodayPracticeScreen planning={planning} onCreate={handleCreatePlan} onCommand={handleTaskCommand} onLaunchTask={launchTask} />}
           {page === "tools" && <ToolsScreen favorites={favorites} setFavorites={setFavorites} selectedTool={selectedTool} setSelectedTool={setSelectedTool} toolStage={toolStage} setToolStage={setToolStage} sidecar={sidecar} onRefreshSkills={refreshSkills} setPage={setPage} />}

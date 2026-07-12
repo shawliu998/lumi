@@ -4,7 +4,42 @@ This is the live requirement-to-evidence audit for the local Lumi objective.
 `complete` means the stated scope has direct reproducible evidence; it does not
 mean population learning efficacy or production distribution has been proved.
 
-## Current correction status (supersedes stale P0.2-only wording below)
+> **Scope correction — 2026-07-12.** The application target is now the
+> judgement-reasoning-first [Inspectable Adaptive Learning Agent
+> charter](PRODUCT_CHARTER.md), with its active acceptance scope in
+> [ADAPTIVE_DEMO_SCOPE.md](ADAPTIVE_DEMO_SCOPE.md). The P0.1–P0.3.1 material
+> below is retained as a **historical infrastructure audit**: it documents
+> reusable local event, verification, replay, and scheduling mechanisms, not
+> the current product release. In particular, a data-analysis run, a Study
+> Pack, synthetic fixture coverage, or the old 42-path matrix cannot satisfy
+> the new judgement-reasoning learner-workspace acceptance.
+
+> **Current release status:** not ready. The new scope needs (1) a
+> human-reviewed, rights-cleared in-repository judgement-reasoning pack, (2)
+> a human-local cross-run learner-state/decision projection, (3) a connected
+> workspace for observe → diagnose → probe → teach → verify → update →
+> reflect, (4) deterministic replay/evaluation evidence, and (5) one voluntary
+> human walkthrough. No automated answer may be used to fill item (5), and no
+> learning-effect claim is permitted from the resulting demo.
+
+## Current judgment-reasoning implementation slice
+
+This table supersedes any implication that the historical 42-fixture or
+data-analysis gates are a release signal for the active application.
+
+| Active requirement | Current evidence | Remaining release condition |
+| --- | --- | --- |
+| Rights-clear conditional-reasoning content | 12 original CC BY 4.0 records, checksum-bound manifest, public/private projection, and fail-closed draft validator in `domains/content/judgment/lumi-conditional-reasoning-v0` | Two real, distinct logic and editorial/rights reviewer attestations must bind the exact manifest, artifact, and record hashes. The repository draft is deliberately not launchable. |
+| Reachable observe → diagnose → probe → teach → verify loop | `JudgmentSessionService`, closed local HTTP routes, and Workspace expose both D01 condition-direction and D02 inference-validity entry paths; candidates remain unconfirmed and only authored probes/teaching/transfer roles can follow | One reviewed content pack must complete this exact path in the human-local sidecar; automated paths remain `evaluation_fixture`. |
+| Durable learner evidence and update gate | `LearnerStateStore` records origin-isolated facts, hypotheses, decisions, verification receipts, and append-only snapshots. Only an unhinted, unseen transfer may produce its bounded deterministic update; failed or assisted outcomes are withheld. | Current update policy remains engineering-unvalidated, and history-aware action selection plus crash-resume recovery are not yet release evidence. |
+| Reflect and replay | First-answer commands are idempotent; a completed transfer persists a replayable `schedule_review` policy decision. Workspace reload derives local review tasks from that decision ledger; replay displays the learner's submitted answers and state receipt without answer-key/proof leakage. | Review-task completion and delayed-item delivery still need their dedicated current-domain flow and human walkthrough. |
+| Four-policy mechanics evaluation | `evals/judgment_experiment` has isolated `synthetic:` databases, frozen manifests, redacted traces, paired per-seed outputs, and independent-transfer commit tests for the four protocol policies. | This proves only deterministic simulation mechanics. It cannot approve content, enter a human namespace, or support learning-effect, calibration, cohort, causal, or fairness claims. |
+
+The historical `evals/reports/latest.*` release count therefore remains
+compatibility evidence only. It must not be cited as active
+judgment-reasoning product acceptance.
+
+## Historical P0.1–P0.3.1 correction status
 
 - P0.1 assistance/diagnosis and P0.2 scheduling remain bounded, verified
   foundations.

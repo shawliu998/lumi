@@ -90,6 +90,7 @@ class ProductActivityCatalog:
             activities = load_product_activities(path) if path.is_file() else ()
         self._launchers: dict[str, Any] = {}
         self._launchable_fixture_ids: set[str] = set()
+        self._launchable_fixtures: dict[str, dict[str, Any]] = {}
         self._items: dict[str, dict[str, Any]] = {}
         for activity in activities:
             public = activity.public_view()
@@ -107,7 +108,9 @@ class ProductActivityCatalog:
             # continuation endpoint, never as a freestanding first attempt.
             self._launchers[first_id] = activity
             fixture = activity.to_runtime_fixture()
-            self._launchable_fixture_ids.add(str(fixture["fixture_id"]))
+            fixture_id = str(fixture["fixture_id"])
+            self._launchable_fixture_ids.add(fixture_id)
+            self._launchable_fixtures[fixture_id] = copy.deepcopy(fixture)
 
     def list(
         self,
@@ -145,6 +148,16 @@ class ProductActivityCatalog:
 
     def is_launchable_fixture(self, fixture_id: str) -> bool:
         return fixture_id in self._launchable_fixture_ids
+
+    def resolve_launchable_fixture(self, fixture_id: str) -> dict[str, Any]:
+        """Return the current runtime fixture for a launchable fixture id."""
+
+        try:
+            fixture = copy.deepcopy(self._launchable_fixtures[fixture_id])
+        except KeyError as exc:
+            raise KeyError(fixture_id) from exc
+        validate_product_activity_runtime(fixture)
+        return fixture
 
     @staticmethod
     def _project(item: dict[str, Any], release_id: str) -> dict[str, Any]:

@@ -1,7 +1,7 @@
 {
   "schema_version": "release-report-v1",
-  "run_id": "run-20260712T044634Z",
-  "generated_at": "2026-07-12T04:46:34.943160+00:00",
+  "run_id": "run-20260712T131142Z",
+  "generated_at": "2026-07-12T13:11:42.948538+00:00",
   "repository": "[REPO_ROOT]",
   "overall_status": "pass",
   "summary": {
@@ -86,7 +86,7 @@
         }
       ],
       "blocking": true,
-      "duration_ms": 7
+      "duration_ms": 5
     },
     {
       "name": "fixtures",
@@ -535,7 +535,7 @@
         }
       ],
       "blocking": true,
-      "duration_ms": 19
+      "duration_ms": 24
     },
     {
       "name": "engine_tests",
@@ -553,11 +553,11 @@
             "-v"
           ],
           "exit_code": 0,
-          "output": "test_policy_is_explicitly_uncalibrated_engineering_policy (test_assistance.AssistancePolicyTests.test_policy_is_explicitly_uncalibrated_engineering_policy) ... ok\ntest_server_side_next_level_fails_closed_after_six (test_assistance.AssistancePolicyTests.test_server_side_next_level_fails_closed_after_six) ... ok\ntest_six_levels_are_ordered_and_full_explanation_has_zero_credit (test_assistance.AssistancePolicyTests.test_six_levels_are_ordered_and_full_explanation_has_zero_credit) ... ok\ntest_counts_cannot_exceed_attempts (test_cohort.CohortPriorTests.test_counts_cannot_exceed_attempts) ... ok\ntest_eligible_aggregate_is_shrunk_and_provenance_carries_sample_size (test_cohort.CohortPriorTests.test_eligible_aggregate_is_shrunk_and_provenance_carries_sample_size) ... ok\ntest_small_cohort_fails_closed_without_exposing_counts (test_cohort.CohortPriorTests.test_small_cohort_fails_closed_without_exposing_counts) ... ok\ntest_unknown_taxonomy_cause_is_rejected (test_cohort.CohortPriorTests.test_unknown_taxonomy_cause_is_rejected) ... ok\ntest_unreviewed_aggregate_never_influences_prior (test_cohort.CohortPriorTests.test_unreviewed_aggregate_never_influences_prior) ... ok\ntest_distractor_and_history_raise_specific_cause (test_diagnosis.DiagnosisTests.test_distractor_and_history_raise_specific_cause) ... ok\ntest_invalid_empty_prior_is_rejected (test_diagnosis.DiagnosisTests.test_invalid_empty_prior_is_rejected) ... ok\ntest_tool_boundary_is_json_friendly (test_diagnosis.DiagnosisTests.test_tool_boundary_is_json_friendly) ... ok\ntest_complex_diagnosis_routes_to_strong_model (test_guardrails.RoutingAndGuardrailTests.test_complex_diagnosis_routes_to_strong_model) ... ok\ntest_low_cost_output_requires_independent_probe (test_guardrails.RoutingAndGuardrailTests.test_low_cost_output_requires_independent_probe) ... ok\ntest_routine_generation_routes_to_balanced_model (test_guardrails.RoutingAndGuardrailTests.test_routine_generation_routes_to_balanced_model) ... ok\ntest_schema_guard_rejects_unnormalized_or_unproven_claims (test_guardrails.RoutingAndGuardrailTests.test_schema_guard_rejects_unnormalized_or_unproven_claims) ... ok\ntest_correct_attempt_increases_mastery_and_records_components (test_mastery.MasteryTests.test_correct_attempt_increases_mastery_and_records_components) ... ok\ntest_hinted_verification_is_inconclusive (test_mastery.MasteryTests.test_hinted_verification_is_inconclusive) ... ok\ntest_incorrect_attempt_reduces_mastery (test_mastery.MasteryTests.test_incorrect_attempt_reduces_mastery) ... ok\ntest_independent_verification_can_mark_teaching_effective (test_mastery.MasteryTests.test_independent_verification_can_mark_teaching_effective) ... ok\ntest_non_independent_or_hinted_verification_never_mutates_mastery (test_mastery.MasteryTests.test_non_independent_or_hinted_verification_never_mutates_mastery) ... ok\ntest_tool_update_is_serializable (test_mastery.MasteryTests.test_tool_update_is_serializable) ... ok\ntest_zero_weight_observation_leaves_authoritative_state_unchanged (test_mastery.MasteryTests.test_zero_weight_observation_leaves_authoritative_state_unchanged) ... ok\n\n----------------------------------------------------------------------\nRan 22 tests in 0.001s\n\nOK"
+          "output": "test_policy_is_explicitly_uncalibrated_engineering_policy (test_assistance.AssistancePolicyTests.test_policy_is_explicitly_uncalibrated_engineering_policy) ... ok\ntest_server_side_next_level_fails_closed_after_six (test_assistance.AssistancePolicyTests.test_server_side_next_level_fails_closed_after_six) ... ok\ntest_six_levels_are_ordered_and_full_explanation_has_zero_credit (test_assistance.AssistancePolicyTests.test_six_levels_are_ordered_and_full_explanation_has_zero_credit) ... ok\ntest_counts_cannot_exceed_attempts (test_cohort.CohortPriorTests.test_counts_cannot_exceed_attempts) ... ok\ntest_eligible_aggregate_is_shrunk_and_provenance_carries_sample_size (test_cohort.CohortPriorTests.test_eligible_aggregate_is_shrunk_and_provenance_carries_sample_size) ... ok\ntest_small_cohort_fails_closed_without_exposing_counts (test_cohort.CohortPriorTests.test_small_cohort_fails_closed_without_exposing_counts) ... ok\ntest_unknown_taxonomy_cause_is_rejected (test_cohort.CohortPriorTests.test_unknown_taxonomy_cause_is_rejected) ... ok\ntest_unreviewed_aggregate_never_influences_prior (test_cohort.CohortPriorTests.test_unreviewed_aggregate_never_influences_prior) ... ok\ntest_distractor_and_history_raise_specific_cause (test_diagnosis.DiagnosisTests.test_distractor_and_history_raise_specific_cause) ... ok\ntest_invalid_empty_prior_is_rejected (test_diagnosis.DiagnosisTests.test_invalid_empty_prior_is_rejected) ... ok\ntest_tool_boundary_is_json_friendly (test_diagnosis.DiagnosisTests.test_tool_boundary_is_json_friendly) ... ok\ntest_complex_diagnosis_routes_to_strong_model (test_guardrails.RoutingAndGuardrailTests.test_complex_diagnosis_routes_to_strong_model) ... ok\ntest_low_cost_output_requires_independent_probe (test_guardrails.RoutingAndGuardrailTests.test_low_cost_output_requires_independent_probe) ... ok\ntest_routine_generation_routes_to_balanced_model (test_guardrails.RoutingAndGuardrailTests.test_routine_generation_routes_to_balanced_model) ... ok\ntest_schema_guard_rejects_unnormalized_or_unproven_claims (test_guardrails.RoutingAndGuardrailTests.test_schema_guard_rejects_unnormalized_or_unproven_claims) ... ok\ntest_correct_attempt_increases_mastery_and_records_components (test_mastery.MasteryTests.test_correct_attempt_increases_mastery_and_records_components) ... ok\ntest_hinted_verification_is_inconclusive (test_mastery.MasteryTests.test_hinted_verification_is_inconclusive) ... ok\ntest_incorrect_attempt_reduces_mastery (test_mastery.MasteryTests.test_incorrect_attempt_reduces_mastery) ... ok\ntest_independent_verification_can_mark_teaching_effective (test_mastery.MasteryTests.test_independent_verification_can_mark_teaching_effective) ... ok\ntest_non_independent_or_hinted_verification_never_mutates_mastery (test_mastery.MasteryTests.test_non_independent_or_hinted_verification_never_mutates_mastery) ... ok\ntest_tool_update_is_serializable (test_mastery.MasteryTests.test_tool_update_is_serializable) ... ok\ntest_zero_weight_observation_leaves_authoritative_state_unchanged (test_mastery.MasteryTests.test_zero_weight_observation_leaves_authoritative_state_unchanged) ... ok\n\n----------------------------------------------------------------------\nRan 22 tests in 0.002s\n\nOK"
         }
       ],
       "blocking": true,
-      "duration_ms": 64
+      "duration_ms": 65
     },
     {
       "name": "integration_surfaces",
@@ -567,24 +567,24 @@
         {
           "runtime_tests": {
             "exit_code": 0,
-            "test_count": 40,
+            "test_count": 48,
             "failure_count": 0,
             "error_count": 0,
             "skipped_count": 0,
             "stable_failure_codes": [],
-            "output_sha256": "efa471833a247b1add972c0a35ae989108064c635cf315953f6477e18f711da5",
+            "output_sha256": "5a95e9c7260313b1ff309de1abc50e80760efd37833f2ad32c57d13c2031742c",
             "raw_output_saved": false
           }
         },
         {
           "domains_tests": {
             "exit_code": 0,
-            "test_count": 40,
+            "test_count": 61,
             "failure_count": 0,
             "error_count": 0,
             "skipped_count": 0,
             "stable_failure_codes": [],
-            "output_sha256": "7ad839f9cd26eee034de1cd4030a7a5d590e28989939b570e0147c9b64ccc830",
+            "output_sha256": "408b76514443601f25ceb06747fa6b516154cd29feff6bc4f885c4db90e68594",
             "raw_output_saved": false
           }
         },
@@ -596,7 +596,7 @@
             "error_count": 0,
             "skipped_count": 0,
             "stable_failure_codes": [],
-            "output_sha256": "fe0a12f636a04a36e42ebd345df9d38c2d6abcb80dc5523728f7671b1770db0f",
+            "output_sha256": "8d1e89ac67fedb6363300435065e7727c3e3f71f7451f7c57d709c476f170583",
             "raw_output_saved": false
           }
         },
@@ -810,7 +810,7 @@
                   "trace_verified": true,
                   "model_calls_recorded": 0
                 },
-                "replay_sha256": "40c035213fa62b4078672517283f82c4163827d4ed0ddf4ccf3ea19bdfac0810",
+                "replay_sha256": "c18c9157ad62e87d15efa16143f0b72e681746fb39e8711b31d10c1e346af1ad",
                 "assertion_errors": []
               },
               "ambiguous": {
@@ -826,7 +826,7 @@
                   "trace_verified": true,
                   "model_calls_recorded": 0
                 },
-                "replay_sha256": "8b29883dc9caf027206ef6f0d9df8bbaeb403d7c895ae5451ed9fe00dbb807c8",
+                "replay_sha256": "0b429b69fc17ccb0ef0f0b271ad8e9f9b48449f753e2b5c381d49f1379ad94b5",
                 "assertion_errors": []
               },
               "offline": {
@@ -842,7 +842,7 @@
                   "trace_verified": true,
                   "model_calls_recorded": 0
                 },
-                "replay_sha256": "2b2581277cbd090a3c4ecc2909dcfa290b7b13ff6489261f59984f5f668d664a",
+                "replay_sha256": "babaf38a3a87b005658f4696497c8224932945f9a0fb3ea1a4203adad5a93435",
                 "assertion_errors": []
               }
             }
@@ -850,7 +850,7 @@
         }
       ],
       "blocking": true,
-      "duration_ms": 2228
+      "duration_ms": 2374
     },
     {
       "name": "attempt_api",
@@ -872,8 +872,8 @@
               "request": {
                 "response_sha256": "df7e70e5021544f4834bbee64a9e3789febc4be81470df629cad6ddb03320a5c",
                 "unknown_fields": [],
-                "contains_pii_test_data": false,
                 "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "contains_pii_test_data": false,
                 "run_id_sha256": "28bff14cae7db585f872f04d62a13ff739d7f99db47d8a9de6613b379cc8c6ee"
               },
               "http_status": 201,
@@ -891,17 +891,17 @@
               },
               "error": null,
               "trace_status": 200,
-              "trace_sha256": "d681ca048b8e34863a995cd47f6e219a6fd7309705e7d47bba1a9aa1d1c7bca0",
+              "trace_sha256": "c29091ce28932c164cd6075a188dce4d217ae0b3301fe6d14c9dfd3c7948b2a7",
               "replay_status": 200,
-              "replay_sha256": "67c897a2a46f41d9f7272f97ca36163e569347ad249cb8ad47d95cc73eca44ef",
+              "replay_sha256": "a75c473d56e3ea34b629332d7a16c2540e68358a7933d970d752557dbab0d920",
               "rejected_run_trace_status": null
             },
             "wrong": {
               "request": {
                 "response_sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
                 "unknown_fields": [],
-                "contains_pii_test_data": false,
                 "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "contains_pii_test_data": false,
                 "run_id_sha256": "88f17323e5fe195c4667715d1988a658339217c5418f479d1cd9e9abf1bd96ef"
               },
               "http_status": 201,
@@ -919,17 +919,17 @@
               },
               "error": null,
               "trace_status": 200,
-              "trace_sha256": "f2c582f6805c91a03f4ceb32c24684ced5cc7d7fd580746468c16c9185c7e335",
+              "trace_sha256": "5c3e2f26da71f7d3ccb423c792ed9a012b12327445f0966dda684ba5bdc66d23",
               "replay_status": 200,
-              "replay_sha256": "dd1edc248cce59991f9d25cc13d4df6ea86cdfb186ae7c950cb67e5a8d152fd3",
+              "replay_sha256": "ebce7dbf6b86626bb68fdae7898ae49d4a09eb08c6e401f0b2912691e1097ac0",
               "rejected_run_trace_status": null
             },
             "pii": {
               "request": {
                 "response_sha256": "fd07ca96eeaa46307b08faef121d6b337b927a4d3194960335e7c5e503d7e1a6",
                 "unknown_fields": [],
-                "contains_pii_test_data": true,
                 "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "contains_pii_test_data": true,
                 "run_id_sha256": "190911bcfc96aca64b883ab47161053db0f1b1d4dbe93568e257fde175b52252"
               },
               "http_status": 201,
@@ -957,9 +957,9 @@
               },
               "error": null,
               "trace_status": 200,
-              "trace_sha256": "eae03a6616e5867fdf7ebe31f6a72f956f4d22ac69d2d58ece6da8606f8844b6",
+              "trace_sha256": "b682bd923fe6a434c7822c907842a75f6f2c5f6a5950ed8b0ade8672256e77f0",
               "replay_status": 200,
-              "replay_sha256": "640959689dc9916af0b476388f76178453672dd3637850cf7633724d2172aee2",
+              "replay_sha256": "a5f2ae869cf46b25efd19feec84523037fa249bfde77ad7588560b3c8718225c",
               "rejected_run_trace_status": null
             },
             "unknown_field": {
@@ -968,8 +968,8 @@
                 "unknown_fields": [
                   "cause_ground_truth"
                 ],
-                "contains_pii_test_data": false,
                 "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "contains_pii_test_data": false,
                 "run_id_sha256": "85ad5d35fd040ad36cb981bb5a1b392df850428d30b3175bcaecc3e5e3470a9d"
               },
               "http_status": 400,
@@ -1028,7 +1028,7 @@
                       "attempt_id": "r_NEKPAELBPFBAAIMGFGLDIMIHFGDIGJGDLHFJIBHI:independent-verify",
                       "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
                       "item_type": "资料分析/增长率",
-                      "observed_at": "2026-07-12T04:44:22.208541+00:00",
+                      "observed_at": "2026-07-12T13:10:24.595514+00:00",
                       "selected_option": "C",
                       "response_time_seconds": 20.0,
                       "confidence": 0.9,
@@ -1073,7 +1073,7 @@
                           "attempt_id": "r_NEKPAELBPFBAAIMGFGLDIMIHFGDIGJGDLHFJIBHI:initial",
                           "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
                           "item_type": "资料分析/增长率",
-                          "observed_at": "2026-07-12T04:44:22.156377+00:00",
+                          "observed_at": "2026-07-12T13:10:24.534783+00:00",
                           "selected_option": "A",
                           "response_time_seconds": 31.0,
                           "confidence": 0.8,
@@ -1123,7 +1123,7 @@
                           "attempt_id": "r_NEKPAELBPFBAAIMGFGLDIMIHFGDIGJGDLHFJIBHI:independent-verify",
                           "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
                           "item_type": "资料分析/增长率",
-                          "observed_at": "2026-07-12T04:44:22.208541+00:00",
+                          "observed_at": "2026-07-12T13:10:24.595514+00:00",
                           "selected_option": "C",
                           "response_time_seconds": 20.0,
                           "confidence": 0.9,
@@ -1175,8 +1175,8 @@
               },
               "after_skill_count": 1,
               "duplicate_after_complete_status": 409,
-              "trace_sha256": "fc82c578b5c77e620567dcca55b5a71d8f0d1c8dd8f71c81eefe15fe1c7f395d",
-              "replay_sha256": "e16f7da49a567c58b48bd3903c75bba0bbe66328b1dd5041fa5ce41f8b28cb3b"
+              "trace_sha256": "67670fd1188c5ee110f183e0e2e484f0e15c00c1eb28f90453252acc506090ad",
+              "replay_sha256": "bd26c0f6595a85128ed49c621f43f404223ccb971691485a9c6c753093788cc4"
             },
             "progressive_assistance": {
               "initial_status": 201,
@@ -1247,7 +1247,7 @@
                 "code": "assistance_exhausted"
               },
               "trace_verified": true,
-              "trace_sha256": "4f6d7f9bf104c14d69b4da8da7cc9dadb7e213b04f83ce7e31ef169562f1d01c",
+              "trace_sha256": "9deed2e9a01358e45f05f31e834f620659c23b827aa6b1b03da1765ba7bdc6d3",
               "assistance_history_count": 6,
               "cohort_evidence_status": "unavailable"
             },
@@ -1294,7 +1294,7 @@
         }
       ],
       "blocking": true,
-      "duration_ms": 349
+      "duration_ms": 382
     },
     {
       "name": "cohort_prior_guardrail",
@@ -1314,7 +1314,7 @@
             "-v"
           ],
           "exit_code": 0,
-          "output": "test_counts_cannot_exceed_attempts (test_cohort.CohortPriorTests.test_counts_cannot_exceed_attempts) ... ok\ntest_eligible_aggregate_is_shrunk_and_provenance_carries_sample_size (test_cohort.CohortPriorTests.test_eligible_aggregate_is_shrunk_and_provenance_carries_sample_size) ... ok\ntest_small_cohort_fails_closed_without_exposing_counts (test_cohort.CohortPriorTests.test_small_cohort_fails_closed_without_exposing_counts) ... ok\ntest_unknown_taxonomy_cause_is_rejected (test_cohort.CohortPriorTests.test_unknown_taxonomy_cause_is_rejected) ... ok\ntest_unreviewed_aggregate_never_influences_prior (test_cohort.CohortPriorTests.test_unreviewed_aggregate_never_influences_prior) ... ok\n\n----------------------------------------------------------------------\nRan 5 tests in 0.000s\n\nOK"
+          "output": "test_counts_cannot_exceed_attempts (test_cohort.CohortPriorTests.test_counts_cannot_exceed_attempts) ... ok\ntest_eligible_aggregate_is_shrunk_and_provenance_carries_sample_size (test_cohort.CohortPriorTests.test_eligible_aggregate_is_shrunk_and_provenance_carries_sample_size) ... ok\ntest_small_cohort_fails_closed_without_exposing_counts (test_cohort.CohortPriorTests.test_small_cohort_fails_closed_without_exposing_counts) ... ok\ntest_unknown_taxonomy_cause_is_rejected (test_cohort.CohortPriorTests.test_unknown_taxonomy_cause_is_rejected) ... ok\ntest_unreviewed_aggregate_never_influences_prior (test_cohort.CohortPriorTests.test_unreviewed_aggregate_never_influences_prior) ... ok\n\n----------------------------------------------------------------------\nRan 5 tests in 0.001s\n\nOK"
         },
         {
           "attempt_trace": {
@@ -1363,7 +1363,7 @@
         }
       ],
       "blocking": true,
-      "duration_ms": 53
+      "duration_ms": 57
     },
     {
       "name": "attempt_continuation",
@@ -1385,8 +1385,8 @@
               "request": {
                 "response_sha256": "df7e70e5021544f4834bbee64a9e3789febc4be81470df629cad6ddb03320a5c",
                 "unknown_fields": [],
-                "contains_pii_test_data": false,
                 "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "contains_pii_test_data": false,
                 "run_id_sha256": "28bff14cae7db585f872f04d62a13ff739d7f99db47d8a9de6613b379cc8c6ee"
               },
               "http_status": 201,
@@ -1404,17 +1404,17 @@
               },
               "error": null,
               "trace_status": 200,
-              "trace_sha256": "d681ca048b8e34863a995cd47f6e219a6fd7309705e7d47bba1a9aa1d1c7bca0",
+              "trace_sha256": "c29091ce28932c164cd6075a188dce4d217ae0b3301fe6d14c9dfd3c7948b2a7",
               "replay_status": 200,
-              "replay_sha256": "67c897a2a46f41d9f7272f97ca36163e569347ad249cb8ad47d95cc73eca44ef",
+              "replay_sha256": "a75c473d56e3ea34b629332d7a16c2540e68358a7933d970d752557dbab0d920",
               "rejected_run_trace_status": null
             },
             "wrong": {
               "request": {
                 "response_sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
                 "unknown_fields": [],
-                "contains_pii_test_data": false,
                 "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "contains_pii_test_data": false,
                 "run_id_sha256": "88f17323e5fe195c4667715d1988a658339217c5418f479d1cd9e9abf1bd96ef"
               },
               "http_status": 201,
@@ -1432,17 +1432,17 @@
               },
               "error": null,
               "trace_status": 200,
-              "trace_sha256": "f2c582f6805c91a03f4ceb32c24684ced5cc7d7fd580746468c16c9185c7e335",
+              "trace_sha256": "5c3e2f26da71f7d3ccb423c792ed9a012b12327445f0966dda684ba5bdc66d23",
               "replay_status": 200,
-              "replay_sha256": "dd1edc248cce59991f9d25cc13d4df6ea86cdfb186ae7c950cb67e5a8d152fd3",
+              "replay_sha256": "ebce7dbf6b86626bb68fdae7898ae49d4a09eb08c6e401f0b2912691e1097ac0",
               "rejected_run_trace_status": null
             },
             "pii": {
               "request": {
                 "response_sha256": "fd07ca96eeaa46307b08faef121d6b337b927a4d3194960335e7c5e503d7e1a6",
                 "unknown_fields": [],
-                "contains_pii_test_data": true,
                 "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "contains_pii_test_data": true,
                 "run_id_sha256": "190911bcfc96aca64b883ab47161053db0f1b1d4dbe93568e257fde175b52252"
               },
               "http_status": 201,
@@ -1470,9 +1470,9 @@
               },
               "error": null,
               "trace_status": 200,
-              "trace_sha256": "eae03a6616e5867fdf7ebe31f6a72f956f4d22ac69d2d58ece6da8606f8844b6",
+              "trace_sha256": "b682bd923fe6a434c7822c907842a75f6f2c5f6a5950ed8b0ade8672256e77f0",
               "replay_status": 200,
-              "replay_sha256": "640959689dc9916af0b476388f76178453672dd3637850cf7633724d2172aee2",
+              "replay_sha256": "a5f2ae869cf46b25efd19feec84523037fa249bfde77ad7588560b3c8718225c",
               "rejected_run_trace_status": null
             },
             "unknown_field": {
@@ -1481,8 +1481,8 @@
                 "unknown_fields": [
                   "cause_ground_truth"
                 ],
-                "contains_pii_test_data": false,
                 "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "contains_pii_test_data": false,
                 "run_id_sha256": "85ad5d35fd040ad36cb981bb5a1b392df850428d30b3175bcaecc3e5e3470a9d"
               },
               "http_status": 400,
@@ -1541,7 +1541,7 @@
                       "attempt_id": "r_NEKPAELBPFBAAIMGFGLDIMIHFGDIGJGDLHFJIBHI:independent-verify",
                       "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
                       "item_type": "资料分析/增长率",
-                      "observed_at": "2026-07-12T04:44:22.208541+00:00",
+                      "observed_at": "2026-07-12T13:10:24.595514+00:00",
                       "selected_option": "C",
                       "response_time_seconds": 20.0,
                       "confidence": 0.9,
@@ -1586,7 +1586,7 @@
                           "attempt_id": "r_NEKPAELBPFBAAIMGFGLDIMIHFGDIGJGDLHFJIBHI:initial",
                           "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
                           "item_type": "资料分析/增长率",
-                          "observed_at": "2026-07-12T04:44:22.156377+00:00",
+                          "observed_at": "2026-07-12T13:10:24.534783+00:00",
                           "selected_option": "A",
                           "response_time_seconds": 31.0,
                           "confidence": 0.8,
@@ -1636,7 +1636,7 @@
                           "attempt_id": "r_NEKPAELBPFBAAIMGFGLDIMIHFGDIGJGDLHFJIBHI:independent-verify",
                           "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
                           "item_type": "资料分析/增长率",
-                          "observed_at": "2026-07-12T04:44:22.208541+00:00",
+                          "observed_at": "2026-07-12T13:10:24.595514+00:00",
                           "selected_option": "C",
                           "response_time_seconds": 20.0,
                           "confidence": 0.9,
@@ -1688,8 +1688,8 @@
               },
               "after_skill_count": 1,
               "duplicate_after_complete_status": 409,
-              "trace_sha256": "fc82c578b5c77e620567dcca55b5a71d8f0d1c8dd8f71c81eefe15fe1c7f395d",
-              "replay_sha256": "e16f7da49a567c58b48bd3903c75bba0bbe66328b1dd5041fa5ce41f8b28cb3b"
+              "trace_sha256": "67670fd1188c5ee110f183e0e2e484f0e15c00c1eb28f90453252acc506090ad",
+              "replay_sha256": "bd26c0f6595a85128ed49c621f43f404223ccb971691485a9c6c753093788cc4"
             },
             "progressive_assistance": {
               "initial_status": 201,
@@ -1760,7 +1760,7 @@
                 "code": "assistance_exhausted"
               },
               "trace_verified": true,
-              "trace_sha256": "4f6d7f9bf104c14d69b4da8da7cc9dadb7e213b04f83ce7e31ef169562f1d01c",
+              "trace_sha256": "9deed2e9a01358e45f05f31e834f620659c23b827aa6b1b03da1765ba7bdc6d3",
               "assistance_history_count": 6,
               "cohort_evidence_status": "unavailable"
             },
@@ -1812,7 +1812,7 @@
     {
       "name": "today_plan_schedule",
       "status": "pass",
-      "summary": "23 real HTTP/storage cases prove empty and three human-attempt branches, canonical trace provenance, same-fixture disclosure, fixed-unvalidated and overdue timing, accepted-budget fail-closed/retry plus fair commitment carry, restart migration, command receipts/CAS with no partial writes, clock-skew historical safety, verified replay, synthetic-origin exclusion, and user-marked completion with no KT write",
+      "summary": "23 real HTTP/storage cases prove empty and three evaluation-fixture branches, canonical trace provenance, same-fixture disclosure, fixed-unvalidated and overdue timing, accepted-budget fail-closed/retry plus fair commitment carry, restart migration, command receipts/CAS with no partial writes, clock-skew historical safety, verified replay, synthetic-origin exclusion, and user-marked completion with no KT write",
       "evidence": [
         {
           "schema_version": "lumi.today-plan-eval-evidence.v1",
@@ -2073,7 +2073,7 @@
         }
       ],
       "blocking": true,
-      "duration_ms": 19633
+      "duration_ms": 20209
     },
     {
       "name": "study_pack",
@@ -2093,7 +2093,7 @@
           "loopback_http": true,
           "eval_dependency_network_calls": 0,
           "public_batch_or_synthetic_route_advertised": false,
-          "capabilities_sha256": "7517b641753ad3188afbaf437c140055c6d6b60b3e555d143c18067216491186",
+          "capabilities_sha256": "2ccd198899a612db1d61389e1c83f3c54c9461f7e206ad39de450ecb9591eada",
           "ephemeral_evaluation_fixture_attempt_count": 2,
           "ephemeral_human_attempt_count": 0,
           "ephemeral_test_input_database_destroyed": true,
@@ -2148,7 +2148,7 @@
               "normalized_source_sha256": "b4b476e3fbff1f59f01caaf636367f508a541193db2ad2b5380bb1de0d1d54cb",
               "source_byte_count": 468,
               "locator_count": 5,
-              "pack_ref_sha256": "b59d015b323a2a9047d01307cd2280b6011cc023d804c186f969329abec66b96",
+              "pack_ref_sha256": "32287fc9ad8018f21963fc2bd116d24c8e6008da691a07ae498d06cfb4c4bfae",
               "artifact_count": 10,
               "artifact_generator_isolation_metadata_checked_count": 10,
               "artifact_generator_isolation_metadata_verified_count": 10,
@@ -2157,7 +2157,7 @@
               "candidate_links_unconfirmed": true,
               "citation_count": 17,
               "citation_verified_count": 17,
-              "citation_projection_set_sha256": "816623b52be999b52a86a74b4785448febc6381b1bd153efac9d11ed0784f39a",
+              "citation_projection_set_sha256": "af041469274d1689d93fcc69fee4dc660b548d8188a8e63f1cf0a3ca7f182c25",
               "scorer_count": 3,
               "scorer_vectors_recomputed": 6,
               "answer_sha256": "aa45572522f9ac82c808ab20a635c8255a620cf314324d1dbc624cea9e88c9e8",
@@ -2169,7 +2169,7 @@
               "cas_and_conflict_count": 3,
               "draft_launch_status": 409,
               "draft_launch_code": "artifact_not_published",
-              "launch_projection_set_sha256": "0134d3c7c73cb09d353934c30760a3c6d8b508a7a81a92bdc670ea7093bb653e",
+              "launch_projection_set_sha256": "996092efd7b951fdf092e90ca85249b14aa27b11e8d60e3bb15afd11a816c542",
               "replay_before_restart_verified": true,
               "restart_detail_verified": true,
               "restart_replay_verified": true,
@@ -2194,7 +2194,7 @@
               "normalized_source_sha256": "c49c0108901ff0be26a81f749d11cfd5d1c0ca5a0cb1a065691912680ef17762",
               "source_byte_count": 3566,
               "locator_count": 2,
-              "pack_ref_sha256": "2a9ebaded788f27c676f4255ffd3859452a085d40f2ba416cac4db36756f24a3",
+              "pack_ref_sha256": "52186607a67e15f947858986444f435933a27272907c7893a2ee6f906ff95a76",
               "artifact_count": 10,
               "artifact_generator_isolation_metadata_checked_count": 10,
               "artifact_generator_isolation_metadata_verified_count": 10,
@@ -2203,7 +2203,7 @@
               "candidate_links_unconfirmed": true,
               "citation_count": 17,
               "citation_verified_count": 17,
-              "citation_projection_set_sha256": "2cb0e43a8f7af42d83d95db7c9d5c963be77006a8fe9c9b45601b1d7b26b6783",
+              "citation_projection_set_sha256": "9b961d79cdab2032e939a29291442b67944b2fc9d0f7e8f128aa018b5e722731",
               "scorer_count": 3,
               "scorer_vectors_recomputed": 6,
               "answer_sha256": "c6ef5c624589d2a48a0381eba7dd93bb0332431611192e1e18aeae7b4f45e23c",
@@ -2215,7 +2215,7 @@
               "cas_and_conflict_count": 3,
               "draft_launch_status": 409,
               "draft_launch_code": "artifact_not_published",
-              "launch_projection_set_sha256": "7057e1fac1a8e3f7349f9f3455e833fc461fc6d61f24925746ccd159eac0edea",
+              "launch_projection_set_sha256": "f44edf63d7d379ea0ad9da2d9f0fe3e2f0ed2a617399034f9702e2eb0289b748",
               "replay_before_restart_verified": true,
               "restart_detail_verified": true,
               "restart_replay_verified": true,
@@ -2483,7 +2483,7 @@
         }
       ],
       "blocking": true,
-      "duration_ms": 2286
+      "duration_ms": 2397
     },
     {
       "name": "progressive_assistance",
@@ -2505,8 +2505,8 @@
               "request": {
                 "response_sha256": "df7e70e5021544f4834bbee64a9e3789febc4be81470df629cad6ddb03320a5c",
                 "unknown_fields": [],
-                "contains_pii_test_data": false,
                 "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "contains_pii_test_data": false,
                 "run_id_sha256": "28bff14cae7db585f872f04d62a13ff739d7f99db47d8a9de6613b379cc8c6ee"
               },
               "http_status": 201,
@@ -2524,17 +2524,17 @@
               },
               "error": null,
               "trace_status": 200,
-              "trace_sha256": "d681ca048b8e34863a995cd47f6e219a6fd7309705e7d47bba1a9aa1d1c7bca0",
+              "trace_sha256": "c29091ce28932c164cd6075a188dce4d217ae0b3301fe6d14c9dfd3c7948b2a7",
               "replay_status": 200,
-              "replay_sha256": "67c897a2a46f41d9f7272f97ca36163e569347ad249cb8ad47d95cc73eca44ef",
+              "replay_sha256": "a75c473d56e3ea34b629332d7a16c2540e68358a7933d970d752557dbab0d920",
               "rejected_run_trace_status": null
             },
             "wrong": {
               "request": {
                 "response_sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
                 "unknown_fields": [],
-                "contains_pii_test_data": false,
                 "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "contains_pii_test_data": false,
                 "run_id_sha256": "88f17323e5fe195c4667715d1988a658339217c5418f479d1cd9e9abf1bd96ef"
               },
               "http_status": 201,
@@ -2552,17 +2552,17 @@
               },
               "error": null,
               "trace_status": 200,
-              "trace_sha256": "f2c582f6805c91a03f4ceb32c24684ced5cc7d7fd580746468c16c9185c7e335",
+              "trace_sha256": "5c3e2f26da71f7d3ccb423c792ed9a012b12327445f0966dda684ba5bdc66d23",
               "replay_status": 200,
-              "replay_sha256": "dd1edc248cce59991f9d25cc13d4df6ea86cdfb186ae7c950cb67e5a8d152fd3",
+              "replay_sha256": "ebce7dbf6b86626bb68fdae7898ae49d4a09eb08c6e401f0b2912691e1097ac0",
               "rejected_run_trace_status": null
             },
             "pii": {
               "request": {
                 "response_sha256": "fd07ca96eeaa46307b08faef121d6b337b927a4d3194960335e7c5e503d7e1a6",
                 "unknown_fields": [],
-                "contains_pii_test_data": true,
                 "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "contains_pii_test_data": true,
                 "run_id_sha256": "190911bcfc96aca64b883ab47161053db0f1b1d4dbe93568e257fde175b52252"
               },
               "http_status": 201,
@@ -2590,9 +2590,9 @@
               },
               "error": null,
               "trace_status": 200,
-              "trace_sha256": "eae03a6616e5867fdf7ebe31f6a72f956f4d22ac69d2d58ece6da8606f8844b6",
+              "trace_sha256": "b682bd923fe6a434c7822c907842a75f6f2c5f6a5950ed8b0ade8672256e77f0",
               "replay_status": 200,
-              "replay_sha256": "640959689dc9916af0b476388f76178453672dd3637850cf7633724d2172aee2",
+              "replay_sha256": "a5f2ae869cf46b25efd19feec84523037fa249bfde77ad7588560b3c8718225c",
               "rejected_run_trace_status": null
             },
             "unknown_field": {
@@ -2601,8 +2601,8 @@
                 "unknown_fields": [
                   "cause_ground_truth"
                 ],
-                "contains_pii_test_data": false,
                 "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "contains_pii_test_data": false,
                 "run_id_sha256": "85ad5d35fd040ad36cb981bb5a1b392df850428d30b3175bcaecc3e5e3470a9d"
               },
               "http_status": 400,
@@ -2661,7 +2661,7 @@
                       "attempt_id": "r_NEKPAELBPFBAAIMGFGLDIMIHFGDIGJGDLHFJIBHI:independent-verify",
                       "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
                       "item_type": "资料分析/增长率",
-                      "observed_at": "2026-07-12T04:44:22.208541+00:00",
+                      "observed_at": "2026-07-12T13:10:24.595514+00:00",
                       "selected_option": "C",
                       "response_time_seconds": 20.0,
                       "confidence": 0.9,
@@ -2706,7 +2706,7 @@
                           "attempt_id": "r_NEKPAELBPFBAAIMGFGLDIMIHFGDIGJGDLHFJIBHI:initial",
                           "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
                           "item_type": "资料分析/增长率",
-                          "observed_at": "2026-07-12T04:44:22.156377+00:00",
+                          "observed_at": "2026-07-12T13:10:24.534783+00:00",
                           "selected_option": "A",
                           "response_time_seconds": 31.0,
                           "confidence": 0.8,
@@ -2756,7 +2756,7 @@
                           "attempt_id": "r_NEKPAELBPFBAAIMGFGLDIMIHFGDIGJGDLHFJIBHI:independent-verify",
                           "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
                           "item_type": "资料分析/增长率",
-                          "observed_at": "2026-07-12T04:44:22.208541+00:00",
+                          "observed_at": "2026-07-12T13:10:24.595514+00:00",
                           "selected_option": "C",
                           "response_time_seconds": 20.0,
                           "confidence": 0.9,
@@ -2808,8 +2808,8 @@
               },
               "after_skill_count": 1,
               "duplicate_after_complete_status": 409,
-              "trace_sha256": "fc82c578b5c77e620567dcca55b5a71d8f0d1c8dd8f71c81eefe15fe1c7f395d",
-              "replay_sha256": "e16f7da49a567c58b48bd3903c75bba0bbe66328b1dd5041fa5ce41f8b28cb3b"
+              "trace_sha256": "67670fd1188c5ee110f183e0e2e484f0e15c00c1eb28f90453252acc506090ad",
+              "replay_sha256": "bd26c0f6595a85128ed49c621f43f404223ccb971691485a9c6c753093788cc4"
             },
             "progressive_assistance": {
               "initial_status": 201,
@@ -2880,7 +2880,7 @@
                 "code": "assistance_exhausted"
               },
               "trace_verified": true,
-              "trace_sha256": "4f6d7f9bf104c14d69b4da8da7cc9dadb7e213b04f83ce7e31ef169562f1d01c",
+              "trace_sha256": "9deed2e9a01358e45f05f31e834f620659c23b827aa6b1b03da1765ba7bdc6d3",
               "assistance_history_count": 6,
               "cohort_evidence_status": "unavailable"
             },
@@ -2929,18 +2929,18 @@
           "complete_service_tests": {
             "status": "pass",
             "exit_code": 0,
-            "test_count": 79,
+            "test_count": 91,
             "failure_count": 0,
             "error_count": 0,
             "skipped_count": 0,
             "stable_failure_codes": [],
-            "output_sha256": "75a35c3bec3a5da22f90f67c14d7ca5e44dd0f21912c882eceedccf9baac0eb2",
+            "output_sha256": "8146347f04f622ec7bb2cf8871b7f43de8577210bfe8c66c6382b08d618502a7",
             "raw_output_saved": false
           }
         }
       ],
       "blocking": true,
-      "duration_ms": 49855
+      "duration_ms": 54116
     },
     {
       "name": "misconception_dossier",
@@ -2962,8 +2962,8 @@
               "request": {
                 "response_sha256": "df7e70e5021544f4834bbee64a9e3789febc4be81470df629cad6ddb03320a5c",
                 "unknown_fields": [],
-                "contains_pii_test_data": false,
                 "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "contains_pii_test_data": false,
                 "run_id_sha256": "28bff14cae7db585f872f04d62a13ff739d7f99db47d8a9de6613b379cc8c6ee"
               },
               "http_status": 201,
@@ -2981,17 +2981,17 @@
               },
               "error": null,
               "trace_status": 200,
-              "trace_sha256": "d681ca048b8e34863a995cd47f6e219a6fd7309705e7d47bba1a9aa1d1c7bca0",
+              "trace_sha256": "c29091ce28932c164cd6075a188dce4d217ae0b3301fe6d14c9dfd3c7948b2a7",
               "replay_status": 200,
-              "replay_sha256": "67c897a2a46f41d9f7272f97ca36163e569347ad249cb8ad47d95cc73eca44ef",
+              "replay_sha256": "a75c473d56e3ea34b629332d7a16c2540e68358a7933d970d752557dbab0d920",
               "rejected_run_trace_status": null
             },
             "wrong": {
               "request": {
                 "response_sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
                 "unknown_fields": [],
-                "contains_pii_test_data": false,
                 "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "contains_pii_test_data": false,
                 "run_id_sha256": "88f17323e5fe195c4667715d1988a658339217c5418f479d1cd9e9abf1bd96ef"
               },
               "http_status": 201,
@@ -3009,17 +3009,17 @@
               },
               "error": null,
               "trace_status": 200,
-              "trace_sha256": "f2c582f6805c91a03f4ceb32c24684ced5cc7d7fd580746468c16c9185c7e335",
+              "trace_sha256": "5c3e2f26da71f7d3ccb423c792ed9a012b12327445f0966dda684ba5bdc66d23",
               "replay_status": 200,
-              "replay_sha256": "dd1edc248cce59991f9d25cc13d4df6ea86cdfb186ae7c950cb67e5a8d152fd3",
+              "replay_sha256": "ebce7dbf6b86626bb68fdae7898ae49d4a09eb08c6e401f0b2912691e1097ac0",
               "rejected_run_trace_status": null
             },
             "pii": {
               "request": {
                 "response_sha256": "fd07ca96eeaa46307b08faef121d6b337b927a4d3194960335e7c5e503d7e1a6",
                 "unknown_fields": [],
-                "contains_pii_test_data": true,
                 "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "contains_pii_test_data": true,
                 "run_id_sha256": "190911bcfc96aca64b883ab47161053db0f1b1d4dbe93568e257fde175b52252"
               },
               "http_status": 201,
@@ -3047,9 +3047,9 @@
               },
               "error": null,
               "trace_status": 200,
-              "trace_sha256": "eae03a6616e5867fdf7ebe31f6a72f956f4d22ac69d2d58ece6da8606f8844b6",
+              "trace_sha256": "b682bd923fe6a434c7822c907842a75f6f2c5f6a5950ed8b0ade8672256e77f0",
               "replay_status": 200,
-              "replay_sha256": "640959689dc9916af0b476388f76178453672dd3637850cf7633724d2172aee2",
+              "replay_sha256": "a5f2ae869cf46b25efd19feec84523037fa249bfde77ad7588560b3c8718225c",
               "rejected_run_trace_status": null
             },
             "unknown_field": {
@@ -3058,8 +3058,8 @@
                 "unknown_fields": [
                   "cause_ground_truth"
                 ],
-                "contains_pii_test_data": false,
                 "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "contains_pii_test_data": false,
                 "run_id_sha256": "85ad5d35fd040ad36cb981bb5a1b392df850428d30b3175bcaecc3e5e3470a9d"
               },
               "http_status": 400,
@@ -3118,7 +3118,7 @@
                       "attempt_id": "r_NEKPAELBPFBAAIMGFGLDIMIHFGDIGJGDLHFJIBHI:independent-verify",
                       "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
                       "item_type": "资料分析/增长率",
-                      "observed_at": "2026-07-12T04:44:22.208541+00:00",
+                      "observed_at": "2026-07-12T13:10:24.595514+00:00",
                       "selected_option": "C",
                       "response_time_seconds": 20.0,
                       "confidence": 0.9,
@@ -3163,7 +3163,7 @@
                           "attempt_id": "r_NEKPAELBPFBAAIMGFGLDIMIHFGDIGJGDLHFJIBHI:initial",
                           "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
                           "item_type": "资料分析/增长率",
-                          "observed_at": "2026-07-12T04:44:22.156377+00:00",
+                          "observed_at": "2026-07-12T13:10:24.534783+00:00",
                           "selected_option": "A",
                           "response_time_seconds": 31.0,
                           "confidence": 0.8,
@@ -3213,7 +3213,7 @@
                           "attempt_id": "r_NEKPAELBPFBAAIMGFGLDIMIHFGDIGJGDLHFJIBHI:independent-verify",
                           "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
                           "item_type": "资料分析/增长率",
-                          "observed_at": "2026-07-12T04:44:22.208541+00:00",
+                          "observed_at": "2026-07-12T13:10:24.595514+00:00",
                           "selected_option": "C",
                           "response_time_seconds": 20.0,
                           "confidence": 0.9,
@@ -3265,8 +3265,8 @@
               },
               "after_skill_count": 1,
               "duplicate_after_complete_status": 409,
-              "trace_sha256": "fc82c578b5c77e620567dcca55b5a71d8f0d1c8dd8f71c81eefe15fe1c7f395d",
-              "replay_sha256": "e16f7da49a567c58b48bd3903c75bba0bbe66328b1dd5041fa5ce41f8b28cb3b"
+              "trace_sha256": "67670fd1188c5ee110f183e0e2e484f0e15c00c1eb28f90453252acc506090ad",
+              "replay_sha256": "bd26c0f6595a85128ed49c621f43f404223ccb971691485a9c6c753093788cc4"
             },
             "progressive_assistance": {
               "initial_status": 201,
@@ -3337,7 +3337,7 @@
                 "code": "assistance_exhausted"
               },
               "trace_verified": true,
-              "trace_sha256": "4f6d7f9bf104c14d69b4da8da7cc9dadb7e213b04f83ce7e31ef169562f1d01c",
+              "trace_sha256": "9deed2e9a01358e45f05f31e834f620659c23b827aa6b1b03da1765ba7bdc6d3",
               "assistance_history_count": 6,
               "cohort_evidence_status": "unavailable"
             },
@@ -3386,12 +3386,12 @@
           "complete_service_tests": {
             "status": "pass",
             "exit_code": 0,
-            "test_count": 79,
+            "test_count": 91,
             "failure_count": 0,
             "error_count": 0,
             "skipped_count": 0,
             "stable_failure_codes": [],
-            "output_sha256": "75a35c3bec3a5da22f90f67c14d7ca5e44dd0f21912c882eceedccf9baac0eb2",
+            "output_sha256": "8146347f04f622ec7bb2cf8871b7f43de8577210bfe8c66c6382b08d618502a7",
             "raw_output_saved": false
           }
         },
@@ -3406,7 +3406,7 @@
         }
       ],
       "blocking": true,
-      "duration_ms": 10
+      "duration_ms": 9
     },
     {
       "name": "trace",
@@ -3415,7 +3415,7 @@
       "evidence": [
         {
           "trace_id": "trace-9fa80b49f5419fe7",
-          "sha256": "7f3d5241b6dc03109d1289ec5b000f3984e7da7fc10b37d00b6dfe0b51a70613",
+          "sha256": "a862c4519c57977db57fb1b1ace8785afa73c9b3d1540883a03a33a5a19b2c23",
           "trace": {
             "trace_id": "trace-9fa80b49f5419fe7",
             "schema_version": "trajectory-v1",
@@ -3565,7 +3565,7 @@
                   "attempt:attempt-demo-probe-001"
                 ],
                 "output": {
-                  "sha256": "4ce48a300cde4a9c2e248570d742628617176065d4f527698a12e664a47cab21",
+                  "sha256": "adff082c772084e9ed84178c7fe9eeb7c36c4f0f37b669ec45152a16730362a5",
                   "result": {
                     "post_state": {
                       "learner_id": "learner-demo-redacted",
@@ -3577,7 +3577,7 @@
                       "evidence_count": 4,
                       "mastery": 0.5751921245771141,
                       "uncertainty": 0.40476676779245535,
-                      "last_updated_at": "2026-07-12T04:45:34.202490+00:00",
+                      "last_updated_at": "2026-07-12T13:11:41.554921+00:00",
                       "provenance": [
                         {
                           "attempt": {
@@ -3669,7 +3669,7 @@
                 "evidence_count": 4,
                 "mastery": 0.5751921245771141,
                 "uncertainty": 0.40476676779245535,
-                "last_updated_at": "2026-07-12T04:45:34.202490+00:00",
+                "last_updated_at": "2026-07-12T13:11:41.554921+00:00",
                 "provenance": [
                   {
                     "attempt": {
@@ -3833,7 +3833,7 @@
       "summary": "real KT update is bounded, versioned, and linked to one evidence event",
       "evidence": [
         {
-          "state_sha256": "014b87fd4325a35bffbbd92f840528ab3e9dbbd6895c9435975286acc4357c86",
+          "state_sha256": "8dc9b54a5149c72b3c27a9cc59bdf6a70a7c2f70b4b5cd58a4b89ec00a591515",
           "state": {
             "learner_id": "learner-demo-redacted",
             "skill_id": "xingce.data_analysis.growth_rate.base_current",
@@ -3844,7 +3844,7 @@
             "evidence_count": 4,
             "mastery": 0.5751921245771141,
             "uncertainty": 0.40476676779245535,
-            "last_updated_at": "2026-07-12T04:45:34.202425+00:00",
+            "last_updated_at": "2026-07-12T13:11:41.554852+00:00",
             "provenance": [
               {
                 "attempt": {
@@ -3917,7 +3917,7 @@
               "model_version": "independent-transfer-check-v1"
             }
           },
-          "mechanics_sha256": "4ce48a300cde4a9c2e248570d742628617176065d4f527698a12e664a47cab21"
+          "mechanics_sha256": "adff082c772084e9ed84178c7fe9eeb7c36c4f0f37b669ec45152a16730362a5"
         },
         {
           "domain_engine_runtime_integration": {
@@ -3934,7 +3934,7 @@
                 "trace_verified": true,
                 "model_calls_recorded": 0
               },
-              "replay_sha256": "40c035213fa62b4078672517283f82c4163827d4ed0ddf4ccf3ea19bdfac0810",
+              "replay_sha256": "c18c9157ad62e87d15efa16143f0b72e681746fb39e8711b31d10c1e346af1ad",
               "assertion_errors": []
             },
             "ambiguous": {
@@ -3950,7 +3950,7 @@
                 "trace_verified": true,
                 "model_calls_recorded": 0
               },
-              "replay_sha256": "8b29883dc9caf027206ef6f0d9df8bbaeb403d7c895ae5451ed9fe00dbb807c8",
+              "replay_sha256": "0b429b69fc17ccb0ef0f0b271ad8e9f9b48449f753e2b5c381d49f1379ad94b5",
               "assertion_errors": []
             },
             "offline": {
@@ -3966,7 +3966,7 @@
                 "trace_verified": true,
                 "model_calls_recorded": 0
               },
-              "replay_sha256": "2b2581277cbd090a3c4ecc2909dcfa290b7b13ff6489261f59984f5f668d664a",
+              "replay_sha256": "babaf38a3a87b005658f4696497c8224932945f9a0fb3ea1a4203adad5a93435",
               "assertion_errors": []
             }
           },
@@ -3982,7 +3982,7 @@
       "summary": "local trace privacy contract and static secret scan passed; no cloud operations detected",
       "evidence": [
         {
-          "scanned_file_count": 397,
+          "scanned_file_count": 417,
           "secret_findings": []
         },
         {
@@ -3998,12 +3998,12 @@
         {
           "tracked_report_count": 9,
           "tracked_report_findings": [],
-          "persisted_report_count": 52,
+          "persisted_report_count": 57,
           "persisted_report_findings": []
         }
       ],
       "blocking": true,
-      "duration_ms": 881
+      "duration_ms": 950
     },
     {
       "name": "readonly_boundary",
@@ -4028,7 +4028,7 @@
         }
       ],
       "blocking": true,
-      "duration_ms": 59858
+      "duration_ms": 443
     }
   ]
 }

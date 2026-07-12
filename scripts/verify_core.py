@@ -109,11 +109,37 @@ def main() -> int:
             ROOT / "engine",
         ),
         (
-            "xingce-bounded-data-validation",
-            [sys.executable, "hermes/scripts/validate_bundle.py", "--limit", "100"],
-            XINGCE,
+            "judgment-reasoning-domain-pack",
+            [sys.executable, "-m", "hermes_domains.reasoning_pack"],
+            ROOT / "domains",
+        ),
+        (
+            "judgment-synthetic-policy-experiment",
+            [
+                sys.executable,
+                "-m",
+                "unittest",
+                "discover",
+                "-s",
+                "evals/tests",
+                "-p",
+                "test_judgment_experiment.py",
+                "-v",
+            ],
+            ROOT,
         ),
     ]
+    # The application must be reproducible from its own compact, rights-cleared
+    # Domain Pack.  Validation of the mutable external Xingce data factory is
+    # a separate maintainer concern and must never make a reviewer setup fail.
+    if os.environ.get("LUMI_INCLUDE_LEGACY_XINGCE_VALIDATION") == "1":
+        checks.append(
+            (
+                "legacy-xingce-data-factory-validation",
+                [sys.executable, "hermes/scripts/validate_bundle.py", "--limit", "100"],
+                XINGCE,
+            )
+        )
     if runtime_study_pack_python is None:
         checks.append(
             (

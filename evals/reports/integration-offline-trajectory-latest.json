@@ -1533,7 +1533,7 @@
                 "evidence_count": 1,
                 "failures": 0.35,
                 "irt_theta": -0.04375,
-                "last_updated_at": "2026-07-12T04:44:21.905384+00:00",
+                "last_updated_at": "2026-07-12T13:10:24.261190+00:00",
                 "learner_id": "integration-learner",
                 "mastery": 0.3179550732662862,
                 "provenance": [
@@ -1597,7 +1597,7 @@
                 "evidence_count": 2,
                 "failures": 0.35,
                 "irt_theta": 0.08398393893641105,
-                "last_updated_at": "2026-07-12T04:44:21.905484+00:00",
+                "last_updated_at": "2026-07-12T13:10:24.261292+00:00",
                 "learner_id": "integration-learner",
                 "mastery": 0.5473890567792533,
                 "provenance": [
@@ -2107,7 +2107,7 @@
                 "evidence_count": 1,
                 "failures": 0.35,
                 "irt_theta": -0.04375,
-                "last_updated_at": "2026-07-12T04:44:21.905384+00:00",
+                "last_updated_at": "2026-07-12T13:10:24.261190+00:00",
                 "learner_id": "integration-learner",
                 "mastery": 0.3179550732662862,
                 "provenance": [
@@ -2171,7 +2171,7 @@
                 "evidence_count": 2,
                 "failures": 0.35,
                 "irt_theta": 0.08398393893641105,
-                "last_updated_at": "2026-07-12T04:44:21.905484+00:00",
+                "last_updated_at": "2026-07-12T13:10:24.261292+00:00",
                 "learner_id": "integration-learner",
                 "mastery": 0.5473890567792533,
                 "provenance": [
@@ -2939,7 +2939,7 @@
                 "evidence_count": 1,
                 "failures": 0.35,
                 "irt_theta": -0.04375,
-                "last_updated_at": "2026-07-12T04:44:21.905384+00:00",
+                "last_updated_at": "2026-07-12T13:10:24.261190+00:00",
                 "learner_id": "integration-learner",
                 "mastery": 0.3179550732662862,
                 "provenance": [
@@ -3003,7 +3003,7 @@
                 "evidence_count": 2,
                 "failures": 0.35,
                 "irt_theta": 0.08398393893641105,
-                "last_updated_at": "2026-07-12T04:44:21.905484+00:00",
+                "last_updated_at": "2026-07-12T13:10:24.261292+00:00",
                 "learner_id": "integration-learner",
                 "mastery": 0.5473890567792533,
                 "provenance": [
@@ -3681,7 +3681,7 @@
                 "evidence_count": 1,
                 "failures": 0.35,
                 "irt_theta": -0.04375,
-                "last_updated_at": "2026-07-12T04:44:21.905384+00:00",
+                "last_updated_at": "2026-07-12T13:10:24.261190+00:00",
                 "learner_id": "integration-learner",
                 "mastery": 0.3179550732662862,
                 "provenance": [
@@ -3745,7 +3745,7 @@
                 "evidence_count": 2,
                 "failures": 0.35,
                 "irt_theta": 0.08398393893641105,
-                "last_updated_at": "2026-07-12T04:44:21.905484+00:00",
+                "last_updated_at": "2026-07-12T13:10:24.261292+00:00",
                 "learner_id": "integration-learner",
                 "mastery": 0.5473890567792533,
                 "provenance": [

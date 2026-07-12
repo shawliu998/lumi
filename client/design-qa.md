@@ -531,3 +531,23 @@ bundled-sidecar lifecycle, graceful/abrupt-exit, occupied-port, and frozen-worke
 checks. A fresh real learner full completion on policy v2 remains the final
 P0.3.1 acceptance gap; this document does not substitute deterministic tests or
 the historical v1 run for that evidence.
+
+## P0.3.1 entry and pre-submit browser QA — 2026-07-12
+
+A disposable loopback sidecar with an empty temporary database was used for
+connected browser QA. No learner response was entered or submitted, and the
+temporary service stayed at `run_count: 0` throughout.
+
+- Both the direct card path and global-search path opened `错因辨析`, loaded the
+  signed local activity bundle, and exposed `查看首题（尚未创建记录）`.
+- Opening the first question exposed real 2023 material, four options,
+  confidence controls, and an explicit disabled-state explanation. It did not
+  create a run.
+- The only write action is now visibly named `提交首答并创建本机记录`; the page
+  states that a selected answer and confidence are required first.
+- At `640 × 800`, `scrollWidth === clientWidth === 640`; the sticky primary
+  submit action remained inside the viewport (`top=645`, `bottom=677`).
+
+This is pre-submit component/browser evidence. It deliberately does not claim
+the learner-only probe, teaching, transfer, KT, or review outcomes; those still
+require the real v2 acceptance run in `docs/P031_ACCEPTANCE.md`.

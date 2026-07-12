@@ -126,3 +126,17 @@ test("real activity UI has no synthetic question fallback or pre-answer solution
   assert.match(view, /补充作答过程（可选）/);
   assert.doesNotMatch(view, /activity\.(answer|explanation|correct)/);
 });
+
+test("real activity copy makes the local write boundary and required submit choices explicit", () => {
+  const app = readFileSync(new URL("./App.jsx", import.meta.url), "utf8");
+  const view = readFileSync(new URL("./ProductActivityViews.jsx", import.meta.url), "utf8");
+  const css = readFileSync(new URL("./styles.css", import.meta.url), "utf8");
+
+  assert.match(app, /查看首题（尚未创建记录）/);
+  assert.match(app, /提交首答并创建本机记录/);
+  assert.match(app, /只有选择答案与信心并提交首答后，才会创建本机学习记录/);
+  assert.match(view, /请选择一个答案后再提交/);
+  assert.match(view, /请选择作答信心后再提交/);
+  assert.match(view, /className="activity-submit-bar"/);
+  assert.match(css, /\.activity-submit-bar\s*\{[\s\S]*?position:\s*sticky/);
+});

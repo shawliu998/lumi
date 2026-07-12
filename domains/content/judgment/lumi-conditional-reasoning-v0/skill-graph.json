@@ -1,0 +1,33 @@
+{
+  "schema_version": "lumi.reasoning-skill-graph.v0",
+  "pack_id": "lumi-conditional-reasoning-v0",
+  "pack_version": "0.1.0-draft",
+  "review_status": "draft_unreviewed",
+  "skills": [
+    {
+      "skill_id": "xingce.judgment.conditional.language_direction",
+      "label": "条件句的自然语言方向",
+      "description": "把‘只有 A，才 B’和‘只要 A，就 B’稳定地转换为单向条件关系。",
+      "mastery_claim": "能够写出并解释单向关系，不把‘只有’读成反向箭头。",
+      "prerequisite_skill_ids": []
+    },
+    {
+      "skill_id": "xingce.judgment.conditional.necessary_sufficient_role",
+      "label": "必要条件与充分条件的角色",
+      "description": "区分一个条件是动作发生的必要前提，还是足以保证动作发生的条件。",
+      "mastery_claim": "能用一个兼容反例说明必要不等于充分。",
+      "prerequisite_skill_ids": [
+        "xingce.judgment.conditional.language_direction"
+      ]
+    },
+    {
+      "skill_id": "xingce.judgment.conditional.inference_validity",
+      "label": "条件推理的有效方向",
+      "description": "区分肯定前件、否定后件与肯定后件、否定前件。",
+      "mastery_claim": "能在自然语言和符号形式中拒绝反向或逆命题推理。",
+      "prerequisite_skill_ids": [
+        "xingce.judgment.conditional.language_direction"
+      ]
+    }
+  ]
+}

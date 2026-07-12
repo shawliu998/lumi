@@ -1,5 +1,13 @@
 # Lumi v0 evaluation plan
 
+> **Scope note — 2026-07-12.** The active application evaluation is the
+> in-repository `xingce.judgment` adaptive-demo path in
+> [ADAPTIVE_DEMO_SCOPE.md](ADAPTIVE_DEMO_SCOPE.md). References below to broad
+> Xingce, Shenlun, Interview, the 42 representative fixtures, or the earlier
+> data-analysis activity are historical mechanism coverage, not evidence that
+> those are current user-facing domains. The active demo has no learning-effect
+> claim until a declared comparison protocol and appropriate evidence exist.
+
 ## Evaluation philosophy
 
 Lumi is evaluated as a learning system and as an agent. A fluent explanation is
@@ -46,6 +54,17 @@ pass only when the versioned HTTP contract proves legal state order,
 optimistic-concurrency rejection, redacted response persistence, and independent
 verification. The initial-attempt gate alone is not evidence that this
 multi-step contract works.
+
+### 2.1.1 Judgment-reasoning synthetic policy experiment
+
+`evals/judgment_experiment` is a deterministic, **synthetic-only** mechanics
+runner for the active judgment-reasoning charter. It compares the four frozen
+policy identifiers from `JUDGMENT_REASONING_EXPERIMENT_PROTOCOL.md` using one
+fresh `synthetic:` SQLite database per `(seed, policy)` arm. Its report contains
+only redacted traces, paired per-seed descriptive outcomes, manifest/hash
+bindings, and independent-transfer state receipts. It cannot use a human
+namespace, write a learner-facing projection, approve a draft Domain Pack, or
+support any human-learning, calibration, cohort, causal, or fairness claim.
 
 ### 2.2 Explainable TodayPlan and independent ReviewSchedule
 

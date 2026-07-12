@@ -174,6 +174,20 @@ class ProductActivityCatalogTests(unittest.TestCase):
         self.assertEqual([item["activity_id"] for item in first], ["q_product_first"])
         self.assertEqual(len(catalog.list(release_id="p031-test-v1")), 2)
 
+    def test_launchable_fixture_lookup_uses_runtime_fixture_id(self) -> None:
+        catalog = ProductActivityCatalog()
+        if not catalog.list():
+            self.skipTest("ignored local Xingce payload has not been generated")
+        first = catalog.list(diagnostic_role="first_answer")
+        fixture = catalog.resolve_fixture(first[0]["activity_id"])
+        resolved = catalog.resolve_launchable_fixture(fixture["fixture_id"])
+        self.assertEqual(resolved["fixture_id"], fixture["fixture_id"])
+        self.assertEqual(
+            resolved["provenance"]["content_origin"], "local_versioned_export"
+        )
+        with self.assertRaises(KeyError):
+            catalog.resolve_launchable_fixture("xingce.data-analysis.growth-rate.synthetic-01")
+
     def test_default_catalog_resolves_only_bound_first_answer_when_local_payload_exists(self) -> None:
         catalog = ProductActivityCatalog()
         if not catalog.list():
@@ -215,7 +229,21 @@ class ProductActivityHttpTests(unittest.TestCase):
         self.temporary.cleanup()
 
     def get(self, path: str) -> tuple[int, dict[str, Any]]:
-        request = urllib.request.Request(self.base + path, method="GET")
+        return self.request("GET", path)
+
+    def request(
+        self,
+        method: str,
+        path: str,
+        body: dict[str, Any] | None = None,
+    ) -> tuple[int, dict[str, Any]]:
+        data = None if body is None else json.dumps(body).encode("utf-8")
+        request = urllib.request.Request(
+            self.base + path,
+            data=data,
+            headers={"Content-Type": "application/json"} if data is not None else {},
+            method=method,
+        )
         try:
             response = urllib.request.urlopen(request, timeout=5)
         except urllib.error.HTTPError as error:
@@ -224,6 +252,22 @@ class ProductActivityHttpTests(unittest.TestCase):
             return response.status, json.loads(response.read())
         finally:
             response.close()
+
+    def test_human_attempt_rejects_legacy_scenario_fixture(self) -> None:
+        status, error = self.request(
+            "POST",
+            "/v1/attempts",
+            {
+                "fixture_id": "xingce.data-analysis.growth-rate.synthetic-01",
+                "response": "A",
+                "confidence": 0.7,
+                "response_time_seconds": 12,
+            },
+        )
+        self.assertEqual(status, 404)
+        self.assertEqual(error["error"]["code"], "product_activity_required")
+        _, health = self.get("/v1/health")
+        self.assertEqual(health["run_count"], 0)
 
     def test_list_detail_and_capabilities_are_safe(self) -> None:
         status, listing = self.get(

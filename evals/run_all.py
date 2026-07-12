@@ -805,6 +805,11 @@ def _service_environment() -> dict[str, str]:
         )
     ]
     environment["PYTHONPATH"] = os.pathsep.join(str(path) for path in roots) + os.pathsep + environment.get("PYTHONPATH", "")
+    # This environment is used only by disposable release-evaluation sidecars.
+    # It keeps automated answers in the private evaluation namespace while
+    # exposing their projections to this process for contract verification.
+    environment["LUMI_INTERNAL_LEARNING_ATTEMPT_ORIGIN"] = "evaluation_fixture"
+    environment["LUMI_INTERNAL_EVALUATION_PROJECTION"] = "1"
     return environment
 
 
@@ -3227,6 +3232,9 @@ class _ScheduleHTTPHarness:
             self.database,
             today_provider=clock or self.clock,
             planning_timezone=timezone.utc,
+            attempt_evidence_origin="evaluation_fixture",
+            review_commit_evidence_origins=frozenset({"evaluation_fixture"}),
+            evaluation_projection_enabled=True,
         )
         server = self._create_server(application, port=0)
         thread = threading.Thread(target=server.serve_forever, daemon=True)
@@ -4011,7 +4019,7 @@ def _probe_schedule_api() -> dict[str, Any]:
                 initial_response=initial_response,
                 verification_response=verification_response,
             )
-            checks.equal(completed.get("state"), "completed", f"{name}: completed human attempt")
+            checks.equal(completed.get("state"), "completed", f"{name}: completed evaluation attempt")
             seed = harness.create_plan(f"plan-{name}-seed")
             checks.equal(seed["status"], 201, f"{name}: seed plan status")
             schedule_response = harness.request("GET", "/v1/review-schedule")
@@ -5935,6 +5943,8 @@ def _probe_attempt_api() -> dict[str, Any]:
             if process.stderr is not None:
                 process.stderr.close()
     return {
+        "evidence_origin": "evaluation_fixture",
+        "evaluation_projection": "private_disposable_sidecar",
         "status": "fail" if errors or continuation_errors or assistance_errors or dossier_errors else "pass",
         "attempt_status": "fail" if errors else "pass",
         "continuation_status": "fail" if continuation_errors else "pass",
@@ -6915,7 +6925,7 @@ def gate_today_plan_schedule(ctx: Context) -> GateResult:
     return GateResult(
         "today_plan_schedule",
         "pass",
-        "23 real HTTP/storage cases prove empty and three human-attempt branches, canonical trace provenance, same-fixture disclosure, fixed-unvalidated and overdue timing, accepted-budget fail-closed/retry plus fair commitment carry, restart migration, command receipts/CAS with no partial writes, clock-skew historical safety, verified replay, synthetic-origin exclusion, and user-marked completion with no KT write",
+        "23 real HTTP/storage cases prove empty and three evaluation-fixture branches, canonical trace provenance, same-fixture disclosure, fixed-unvalidated and overdue timing, accepted-budget fail-closed/retry plus fair commitment carry, restart migration, command receipts/CAS with no partial writes, clock-skew historical safety, verified replay, synthetic-origin exclusion, and user-marked completion with no KT write",
         evidence,
     )
 

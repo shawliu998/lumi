@@ -83,6 +83,269 @@ export async function fetchSkillReport() {
   return report;
 }
 
+const JUDGMENT_UNSAFE_PUBLIC_KEYS = new Set([
+  "correct_option",
+  "answer_proof",
+  "distractor_map",
+  "selected_when",
+  "formalization",
+]);
+
+export async function fetchJudgmentWorkspace() {
+  const workspace = await request("/v1/judgment/workspace");
+  if (!isValidJudgmentWorkspaceContract(workspace)) {
+    throw new HermesApiError("判断推理工作台返回格式不完整，未展示任何替代题目。", {
+      kind: "contract",
+      code: "invalid_judgment_workspace_contract",
+    });
+  }
+  return workspace;
+}
+
+export async function startJudgmentSession({
+  entryRecordId,
+  selectedOption,
+  confidence,
+  elapsedSeconds,
+  rationale,
+  commandId,
+} = {}) {
+  const body = judgmentAnswerBody({
+    selectedOption,
+    confidence,
+    elapsedSeconds,
+    commandId,
+  });
+  if (typeof entryRecordId !== "string" || !entryRecordId.trim()) {
+    throw new HermesApiError("当前题目记录不可用。", { kind: "client", code: "invalid_judgment_entry" });
+  }
+  if (rationale !== undefined && (typeof rationale !== "string" || rationale.length > 1200)) {
+    throw new HermesApiError("补充过程最多 1200 个字符。", { kind: "client", code: "invalid_judgment_rationale" });
+  }
+  const result = await request("/v1/judgment/sessions", {
+    method: "POST",
+    body: {
+      entry_record_id: entryRecordId,
+      ...body,
+      ...(rationale?.trim() ? { rationale: rationale.trim() } : {}),
+    },
+  });
+  assertJudgmentSessionResult(result, { expectedStages: ["awaiting_probe", "completed_no_error"] });
+  return result;
+}
+
+export async function answerJudgmentProbe({
+  session,
+  selectedOption,
+  confidence,
+  elapsedSeconds,
+  commandId,
+} = {}) {
+  assertJudgmentContinuation(session, "awaiting_probe");
+  const body = judgmentAnswerBody({ selectedOption, confidence, elapsedSeconds, commandId });
+  const result = await request(`/v1/judgment/sessions/${encodeURIComponent(session.session_id)}/probe`, {
+    method: "POST",
+    body: {
+      expected_version: session.state_version,
+      expected_stage: "awaiting_probe",
+      ...body,
+    },
+  });
+  assertJudgmentSessionResult(result, { expectedStages: ["awaiting_transfer"] });
+  return result;
+}
+
+export async function answerJudgmentTransfer({
+  session,
+  selectedOption,
+  confidence,
+  elapsedSeconds,
+  commandId,
+} = {}) {
+  assertJudgmentContinuation(session, "awaiting_transfer");
+  const body = judgmentAnswerBody({ selectedOption, confidence, elapsedSeconds, commandId });
+  const result = await request(`/v1/judgment/sessions/${encodeURIComponent(session.session_id)}/transfer`, {
+    method: "POST",
+    body: {
+      expected_version: session.state_version,
+      expected_stage: "awaiting_transfer",
+      ...body,
+    },
+  });
+  assertJudgmentSessionResult(result, { expectedStages: ["completed"] });
+  return result;
+}
+
+export async function fetchJudgmentReplay(sessionId) {
+  if (typeof sessionId !== "string" || !/^jr_[a-f0-9]{24,96}$/i.test(sessionId)) {
+    throw new HermesApiError("学习记录编号不可用。", { kind: "client", code: "invalid_judgment_session_id" });
+  }
+  const replay = await request(`/v1/judgment/sessions/${encodeURIComponent(sessionId)}/replay`);
+  if (
+    replay?.schema_version !== "lumi.judgment-session.v1"
+    || replay?.session_id !== sessionId
+    || replay?.trace_verified !== true
+    || !Number.isInteger(replay?.event_count)
+    || !Array.isArray(replay?.timeline)
+    || containsUnsafeJudgmentKey(replay)
+  ) {
+    throw new HermesApiError("证据回放格式不完整，未展示不可信记录。", {
+      kind: "contract",
+      code: "invalid_judgment_replay_contract",
+    });
+  }
+  return replay;
+}
+
+export function isValidJudgmentWorkspaceContract(workspace) {
+  if (!workspace || typeof workspace !== "object" || containsUnsafeJudgmentKey(workspace)) return false;
+  if (workspace.available === false) {
+    return workspace.schema_version === "lumi.judgment-workspace.v1"
+      && workspace.reason === "content_review_required"
+      && typeof workspace.message === "string"
+      && workspace.message.length > 0;
+  }
+  return workspace.available === true
+    && workspace.schema_version === "lumi.judgment-session.v1"
+    && typeof workspace?.pack?.pack_id === "string"
+    && typeof workspace?.pack?.pack_version === "string"
+    && workspace.next_step === "answer_entry"
+    && workspace.privacy === "local_only"
+    && Array.isArray(workspace.entry_items)
+    && workspace.entry_items.length > 0
+    && workspace.entry_items.every((item) => isValidJudgmentPublicRecord(item, ["entry_diagnostic", "routing_diagnostic"]));
+}
+
+export function isValidJudgmentPublicRecord(record, expectedRole) {
+  if (!record || typeof record !== "object" || containsUnsafeJudgmentKey(record)) return false;
+  const allowedRoles = Array.isArray(expectedRole) ? expectedRole : [expectedRole];
+  return allowedRoles.includes(record.role)
+    && typeof record.record_id === "string"
+    && typeof record.title === "string"
+    && typeof record.prompt === "string"
+    && record.response_mode === "single_choice"
+    && isJudgmentOptionCollection(record.options);
+}
+
+function judgmentAnswerBody({ selectedOption, confidence, elapsedSeconds, commandId } = {}) {
+  const selected = String(selectedOption || "").trim().toUpperCase();
+  const normalizedConfidence = String(confidence || "").trim().toLowerCase();
+  if (!/^[A-D]$/.test(selected) || !["low", "medium", "high"].includes(normalizedConfidence)) {
+    throw new HermesApiError("请选择答案和作答信心。", { kind: "client", code: "invalid_judgment_answer" });
+  }
+  const body = {
+    selected_option: selected,
+    confidence: normalizedConfidence,
+    elapsed_seconds: Math.max(0, Math.min(Number(elapsedSeconds) || 0, 7200)),
+  };
+  if (commandId !== undefined) {
+    if (typeof commandId !== "string" || !/^c_[A-P]{40}$/.test(commandId)) {
+      throw new HermesApiError("本机命令编号不可用。", { kind: "client", code: "invalid_judgment_command_id" });
+    }
+    body.command_id = commandId;
+  }
+  return body;
+}
+
+function assertJudgmentContinuation(session, expectedStage) {
+  if (
+    !session
+    || typeof session.session_id !== "string"
+    || !Number.isInteger(session.state_version)
+    || session.stage !== expectedStage
+  ) {
+    throw new HermesApiError("当前学习步骤已过期；请先重新读取本机记录。", {
+      kind: "client",
+      code: "invalid_judgment_continuation",
+    });
+  }
+}
+
+function assertJudgmentSessionResult(result, { expectedStages }) {
+  if (
+    !result
+    || result.schema_version !== "lumi.judgment-session.v1"
+    || typeof result.session_id !== "string"
+    || !Number.isInteger(result.state_version)
+    || !expectedStages.includes(result.stage)
+    || containsUnsafeJudgmentKey(result)
+  ) {
+    throw new HermesApiError("本机服务返回了不一致的判断推理步骤。", {
+      kind: "contract",
+      code: "invalid_judgment_session_contract",
+    });
+  }
+  if (result.stage === "awaiting_probe") {
+    if (
+      !isValidJudgmentPublicRecord(result.entry, ["entry_diagnostic", "routing_diagnostic"])
+      || !isValidJudgmentPublicRecord(result.probe, "probe")
+      || !Array.isArray(result.observed_facts)
+      || !Array.isArray(result.candidate_causes)
+      || !isValidJudgmentPolicy(result.policy)
+    ) throw new HermesApiError("本机服务没有返回可解释的探查步骤。", { kind: "contract", code: "incomplete_judgment_diagnosis" });
+  }
+  if (result.stage === "awaiting_transfer") {
+    if (
+      !isValidJudgmentPublicRecord(result.probe, "probe")
+      || !isValidJudgmentPublicRecord(result.transfer, "independent_transfer")
+      || !result.teaching?.asset
+      || !isValidJudgmentTeachingAsset(result.teaching.asset)
+      || result.independence?.requires_no_hints !== true
+    ) throw new HermesApiError("本机服务没有返回安全的教学和迁移步骤。", { kind: "contract", code: "incomplete_judgment_transfer" });
+  }
+  if (result.stage === "completed") {
+    if (
+      !isValidJudgmentPublicRecord(result.transfer, "independent_transfer")
+      || typeof result.transfer.correct !== "boolean"
+      || !Array.isArray(result.state_receipts)
+      || !result.review_task
+    ) throw new HermesApiError("本机服务没有返回状态收据或复习任务。", { kind: "contract", code: "incomplete_judgment_receipt" });
+  }
+}
+
+function isValidJudgmentTeachingAsset(asset) {
+  if (!asset || typeof asset !== "object" || containsUnsafeJudgmentKey(asset)) return false;
+  return asset.role === "teaching_asset"
+    && typeof asset.record_id === "string"
+    && typeof asset.title === "string"
+    && typeof asset.teaching_strategy === "string"
+    && typeof asset.teaching_content === "string"
+    && typeof asset.logic_rule === "string";
+}
+
+function isJudgmentOptionCollection(options) {
+  if (Array.isArray(options)) {
+    return options.length >= 2
+      && options.every((option) => /^[A-D]$/.test(option?.label || "") && typeof option?.text === "string");
+  }
+  if (!options || typeof options !== "object") return false;
+  const entries = Object.entries(options);
+  return entries.length >= 2
+    && entries.every(([label, text]) => /^[A-D]$/.test(label) && typeof text === "string");
+}
+
+function isValidJudgmentPolicy(policy) {
+  return policy
+    && typeof policy.policy_id === "string"
+    && typeof policy.policy_version === "string"
+    && typeof policy.why_selected === "string"
+    && Array.isArray(policy.candidate_actions)
+    && policy.candidate_actions.every((action) => (
+      typeof action?.record_id === "string"
+      && Array.isArray(action?.coverage)
+      && typeof action?.selected === "boolean"
+      && (action.selected
+        ? (typeof action?.why_selected === "string" && action?.why_not_selected === null)
+        : (action?.why_selected === null && typeof action?.why_not_selected === "string"))
+    ));
+}
+
+function containsUnsafeJudgmentKey(value) {
+  if (!value || typeof value !== "object") return false;
+  if (Array.isArray(value)) return value.some(containsUnsafeJudgmentKey);
+  return Object.entries(value).some(([key, child]) => JUDGMENT_UNSAFE_PUBLIC_KEYS.has(key) || containsUnsafeJudgmentKey(child));
+}
+
 export async function fetchProductActivityBundle({
   releaseId = PRODUCT_ACTIVITY_RELEASE_ID,
   requestImpl = request,

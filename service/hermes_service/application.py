@@ -55,6 +55,15 @@ from hermes_runtime.store import EventStore, TraceVersionConflict
 
 from .catalog import ProductActivityCatalog, ScenarioCatalog
 from .dossier import project_misconception_dossier
+from .judgment_session import (
+    HUMAN_ORIGIN as JUDGMENT_HUMAN_ORIGIN,
+    JudgmentContentUnavailable,
+    JudgmentSessionConfig,
+    JudgmentSessionConflict,
+    JudgmentSessionError,
+    JudgmentSessionService,
+    judgment_pack_status,
+)
 
 
 SERVICE_VERSION = "0.3.0"
@@ -80,6 +89,9 @@ class SidecarApplication:
         product_activity_payload_path: str | Path | None = None,
         product_activity_catalog: ProductActivityCatalog | None = None,
         review_commit_evidence_origins: frozenset[str] | None = None,
+        evaluation_projection_enabled: bool = False,
+        judgment_pack_root: str | Path | None = None,
+        judgment_session_service: JudgmentSessionService | None = None,
     ) -> None:
         if study_pack_attempt_evidence_origin not in ATTEMPT_EVIDENCE_ORIGINS:
             raise ValueError("unsupported Study Pack attempt evidence origin")
@@ -89,6 +101,14 @@ class SidecarApplication:
             "synthetic_isolated",
         }:
             raise ValueError("unsupported learning attempt evidence origin")
+        if (
+            not isinstance(evaluation_projection_enabled, bool)
+            or evaluation_projection_enabled
+            and attempt_evidence_origin != "evaluation_fixture"
+        ):
+            raise ValueError(
+                "evaluation projection requires the explicit evaluation_fixture origin"
+            )
         self.database = str(database)
         self.catalog = ScenarioCatalog()
         if product_activity_catalog is not None and product_activity_payload_path is not None:
@@ -110,6 +130,7 @@ class SidecarApplication:
             study_pack_attempt_evidence_origin
         )
         self._attempt_evidence_origin = attempt_evidence_origin
+        self._evaluation_projection_enabled = evaluation_projection_enabled
         self._review_commit_evidence_origins = (
             frozenset({"human_local_interactive"})
             if review_commit_evidence_origins is None
@@ -119,11 +140,45 @@ class SidecarApplication:
             {"human_local_interactive", "evaluation_fixture"}
         ):
             raise ValueError("review commit origins may contain only human or explicit evaluation evidence")
+        if judgment_session_service is not None and judgment_pack_root is not None:
+            raise ValueError("provide either a JudgmentSessionService or a reviewed pack root")
+        if judgment_session_service is not None:
+            if judgment_session_service.config.evidence_origin != attempt_evidence_origin:
+                raise ValueError("judgment session origin must match the sidecar attempt origin")
+            self._judgment_sessions = judgment_session_service
+            self._judgment_content_status = {"available": True}
+        elif judgment_pack_root is not None and attempt_evidence_origin in {
+            "human_local_interactive",
+            "evaluation_fixture",
+        }:
+            evidence_origin = attempt_evidence_origin
+            namespace = (
+                "human:local-lumi"
+                if evidence_origin == JUDGMENT_HUMAN_ORIGIN
+                else "eval:judgment-session"
+            )
+            try:
+                self._judgment_sessions = JudgmentSessionService(
+                    self.database,
+                    reviewed_pack_root=judgment_pack_root,
+                    config=JudgmentSessionConfig(
+                        namespace_id=namespace,
+                        evidence_origin=evidence_origin,
+                        learner_id="local-lumi",
+                    ),
+                )
+                self._judgment_content_status = {"available": True}
+            except JudgmentContentUnavailable:
+                self._judgment_sessions = None
+                self._judgment_content_status = judgment_pack_status(judgment_pack_root)
+        else:
+            self._judgment_sessions = None
+            self._judgment_content_status = judgment_pack_status(None)
 
     def health(self) -> dict[str, Any]:
         store = EventStore(self.database)
         try:
-            run_count = len(_human_attempt_run_ids(store))
+            run_count = len(self._projectable_attempt_run_ids(store))
         finally:
             store.close()
         return {
@@ -159,6 +214,7 @@ class SidecarApplication:
                 "append-only-trace",
                 "hash-verified-replay",
                 "skill-summary",
+                "judgment-reasoning-workspace-v1",
             ],
             "endpoints": {
                 "health": "GET /v1/health",
@@ -188,8 +244,117 @@ class SidecarApplication:
                 "replay": "GET /v1/runs/{run_id}/replay",
                 "review_commit": "POST /v1/runs/{run_id}/review-commit",
                 "skills": "GET /v1/skills/report",
+                "judgment_workspace": "GET /v1/judgment/workspace",
+                "judgment_session": "POST /v1/judgment/sessions",
+                "judgment_probe": "POST /v1/judgment/sessions/{session_id}/probe",
+                "judgment_transfer": "POST /v1/judgment/sessions/{session_id}/transfer",
+                "judgment_replay": "GET /v1/judgment/sessions/{session_id}/replay",
             },
         }
+
+    def judgment_workspace(self) -> dict[str, Any]:
+        """Return the public workspace, or the review gate without draft text."""
+
+        if self._judgment_sessions is None:
+            return {
+                "schema_version": "lumi.judgment-workspace.v1",
+                "available": False,
+                "reason": "content_review_required",
+                "message": self._judgment_content_status.get(
+                    "message",
+                    "判断推理题包尚未通过审核，不能开始学习记录。",
+                ),
+            }
+        try:
+            return self._judgment_sessions.workspace()
+        except JudgmentSessionError as exc:
+            raise _judgment_service_error(exc) from None
+
+    def start_judgment_session(
+        self,
+        entry_record_id: Any,
+        selected_option: Any,
+        confidence: Any,
+        elapsed_seconds: Any,
+        rationale: Any,
+        command_id: Any,
+    ) -> dict[str, Any]:
+        service = self._judgment_service()
+        try:
+            return service.start(
+                entry_record_id=entry_record_id,
+                selected_option=selected_option,
+                confidence=confidence,
+                elapsed_seconds=elapsed_seconds,
+                rationale=rationale,
+                command_id=command_id,
+            )
+        except JudgmentSessionError as exc:
+            raise _judgment_service_error(exc) from None
+
+    def answer_judgment_probe(
+        self,
+        session_id: Any,
+        expected_version: Any,
+        expected_stage: Any,
+        selected_option: Any,
+        confidence: Any,
+        elapsed_seconds: Any,
+        command_id: Any,
+    ) -> dict[str, Any]:
+        service = self._judgment_service()
+        try:
+            return service.answer_probe(
+                session_id=session_id,
+                expected_version=expected_version,
+                expected_stage=expected_stage,
+                selected_option=selected_option,
+                confidence=confidence,
+                elapsed_seconds=elapsed_seconds,
+                command_id=command_id,
+            )
+        except JudgmentSessionError as exc:
+            raise _judgment_service_error(exc) from None
+
+    def answer_judgment_transfer(
+        self,
+        session_id: Any,
+        expected_version: Any,
+        expected_stage: Any,
+        selected_option: Any,
+        confidence: Any,
+        elapsed_seconds: Any,
+        command_id: Any,
+    ) -> dict[str, Any]:
+        service = self._judgment_service()
+        try:
+            return service.answer_transfer(
+                session_id=session_id,
+                expected_version=expected_version,
+                expected_stage=expected_stage,
+                selected_option=selected_option,
+                confidence=confidence,
+                elapsed_seconds=elapsed_seconds,
+                command_id=command_id,
+            )
+        except JudgmentSessionError as exc:
+            raise _judgment_service_error(exc) from None
+
+    def judgment_session_replay(self, session_id: Any) -> dict[str, Any]:
+        service = self._judgment_service()
+        try:
+            return service.replay(session_id)
+        except JudgmentSessionError as exc:
+            raise _judgment_service_error(exc) from None
+
+    def _judgment_service(self) -> JudgmentSessionService:
+        if self._judgment_sessions is None:
+            raise ServiceError(
+                409,
+                "content_review_required",
+                "判断推理题包尚未通过逻辑与编辑/权属审核，不能开始学习记录。",
+            )
+        return self._judgment_sessions
 
     def create_study_pack(
         self,
@@ -465,17 +630,31 @@ class SidecarApplication:
     ) -> dict[str, Any]:
         if not isinstance(fixture_id, str) or not fixture_id or len(fixture_id) > 200:
             raise ServiceError(400, "invalid_fixture_id", "fixture_id must be a non-empty catalog identifier")
-        try:
-            fixture = self.catalog.resolve(fixture_id)
-        except KeyError:
+        if self._attempt_evidence_origin == "human_local_interactive":
+            # Production learner activity is deliberately narrower than the
+            # representative ScenarioCatalog.  The latter remains available
+            # only to explicit evaluation namespaces; it must never create a
+            # human learner trace or seed a production review task.
             try:
                 fixture = self.product_activities.resolve_fixture(fixture_id)
             except KeyError:
                 raise ServiceError(
                     404,
-                    "fixture_not_found",
-                    "fixture_id is not in an available attempt catalog",
+                    "product_activity_required",
+                    "human local attempts require a launchable versioned product activity",
                 ) from None
+        else:
+            try:
+                fixture = self.catalog.resolve(fixture_id)
+            except KeyError:
+                try:
+                    fixture = self.product_activities.resolve_fixture(fixture_id)
+                except KeyError:
+                    raise ServiceError(
+                        404,
+                        "fixture_not_found",
+                        "fixture_id is not in an available attempt catalog",
+                    ) from None
         if not isinstance(response, str) or not response.strip():
             raise ServiceError(400, "invalid_response", "response must be non-empty text")
         if len(response) > 20_000:
@@ -941,7 +1120,7 @@ class SidecarApplication:
                 state = store.load_state(run_id)
             except KeyError:
                 raise ServiceError(404, "run_not_found", "attempt session does not exist") from None
-            if not _is_human_local_attempt_state(state):
+            if not self._is_projectable_attempt_state(state):
                 raise ServiceError(404, "run_not_found", "attempt session does not exist")
             fixture = self._session_fixture(state, store)
             return project_misconception_dossier(store, run_id, fixture)
@@ -955,7 +1134,7 @@ class SidecarApplication:
             for run_id in store.run_ids():
                 try:
                     state = store.load_state(run_id)
-                    if not _is_human_local_attempt_state(state):
+                    if not self._is_projectable_attempt_state(state):
                         continue
                     fixture = self._session_fixture(state, store)
                     dossier = project_misconception_dossier(store, run_id, fixture)
@@ -1236,6 +1415,14 @@ class SidecarApplication:
                     or state.status is not RunStatus.COMPLETED
                 ):
                     continue
+                if (
+                    state.context.get("evidence_origin") == "human_local_interactive"
+                    and not self._is_launchable_versioned_product_fixture(fixture)
+                ):
+                    # Legacy representative fixtures may remain in a local
+                    # database from earlier builds. They are traceable, but
+                    # cannot become human ReviewSchedule evidence.
+                    continue
                 domain = str(fixture["domain"])
                 fixture_skills = {
                     str(item["skill_id"]): float(item["weight"])
@@ -1498,10 +1685,23 @@ class SidecarApplication:
                     "code": "run_or_fixture_unavailable",
                     "retryable": False,
                 }
-            if fixture.get("provenance", {}).get("content_origin") != "local_versioned_export":
+            origin = state.context.get("evidence_origin")
+            if (
+                origin == "human_local_interactive"
+                and not self._is_launchable_versioned_product_fixture(fixture)
+            ):
                 return {
                     "status": "withheld",
-                    "code": "not_product_activity",
+                    "code": "not_launchable_versioned_product_activity",
+                    "retryable": False,
+                }
+            if (
+                origin == "evaluation_fixture"
+                and not self._evaluation_projection_enabled
+            ):
+                return {
+                    "status": "withheld",
+                    "code": "evaluation_projection_disabled",
                     "retryable": False,
                 }
         finally:
@@ -1580,6 +1780,51 @@ class SidecarApplication:
             if self.product_activities.is_launchable_fixture(fixture_id)
             else "activity_unavailable"
         )
+
+    def _is_launchable_versioned_product_fixture(
+        self, fixture: dict[str, Any]
+    ) -> bool:
+        """Return true only for the exact currently launchable product release.
+
+        A persisted run is bound to its immutable snapshot. Matching only an
+        identifier would let a stale or legacy fixture be projected into the
+        human review schedule after an activity release changed.
+        """
+
+        provenance = fixture.get("provenance")
+        fixture_id = fixture.get("fixture_id")
+        if (
+            not isinstance(provenance, dict)
+            or provenance.get("content_origin") != "local_versioned_export"
+            or not isinstance(fixture_id, str)
+            or not self.product_activities.is_launchable_fixture(fixture_id)
+        ):
+            return False
+        try:
+            current = self.product_activities.resolve_launchable_fixture(fixture_id)
+        except KeyError:
+            return False
+        return fixture_content_hash(current) == fixture_content_hash(fixture)
+
+    def _is_projectable_attempt_state(self, state: Any) -> bool:
+        context = getattr(state, "context", None)
+        if not isinstance(context, dict) or context.get("scenario") != "attempt":
+            return False
+        origin = context.get("evidence_origin")
+        return origin == "human_local_interactive" or (
+            self._evaluation_projection_enabled and origin == "evaluation_fixture"
+        )
+
+    def _projectable_attempt_run_ids(self, store: EventStore) -> list[str]:
+        run_ids: list[str] = []
+        for run_id in store.run_ids():
+            try:
+                state = store.load_state(run_id)
+            except (KeyError, ValueError):
+                continue
+            if self._is_projectable_attempt_state(state):
+                run_ids.append(run_id)
+        return run_ids
 
     def _event_local_basis(self, occurred_at: str) -> tuple[str, int]:
         parsed = datetime.fromisoformat(occurred_at.replace("Z", "+00:00"))
@@ -1724,7 +1969,7 @@ class SidecarApplication:
                     state = store.load_state(run_id)
                 except KeyError:
                     continue
-                if not _is_human_local_attempt_state(state):
+                if not self._is_projectable_attempt_state(state):
                     continue
                 for event in store.events(run_id):
                     if event.kind != "phase_completed" or event.payload.get("phase") != "update":
@@ -1784,6 +2029,14 @@ class SidecarApplication:
             return events, store.verify(run_id)
         finally:
             store.close()
+
+
+def _judgment_service_error(error: JudgmentSessionError) -> ServiceError:
+    if isinstance(error, JudgmentContentUnavailable):
+        return ServiceError(409, "content_review_required", str(error))
+    if isinstance(error, JudgmentSessionConflict):
+        return ServiceError(409, "judgment_session_conflict", str(error))
+    return ServiceError(400, "invalid_judgment_session", str(error))
 
 
 def _schedule_service_error(error: ScheduleError) -> ServiceError:

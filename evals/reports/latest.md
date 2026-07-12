@@ -1,7 +1,7 @@
 # Lumi release evidence
 
-- Run: `run-20260712T044634Z`
-- Generated: `2026-07-12T04:46:34.943160+00:00`
+- Run: `run-20260712T131142Z`
+- Generated: `2026-07-12T13:11:42.948538+00:00`
 - Overall: **PASS**
 - Counts: 17 pass / 0 fail / 0 pending
 
@@ -14,7 +14,7 @@
 | `attempt_api` | **PASS** | real POST /v1/attempts preserves zero-cause correctness, unconfirmed error candidates, PII redaction, fail-closed fields, and verified replay |
 | `cohort_prior_guardrail` | **PASS** | privacy/size guardrails pass and the real attempt trace uses sample_size=0 synthetic engineering priors without cohort claims |
 | `attempt_continuation` | **PASS** | real HTTP session advances awaiting_probe → awaiting_verification → completed; illegal/stale writes fail closed and KT appears only after independent verification |
-| `today_plan_schedule` | **PASS** | 23 real HTTP/storage cases prove empty and three human-attempt branches, canonical trace provenance, same-fixture disclosure, fixed-unvalidated and overdue timing, accepted-budget fail-closed/retry plus fair commitment carry, restart migration, command receipts/CAS with no partial writes, clock-skew historical safety, verified replay, synthetic-origin exclusion, and user-marked completion with no KT write |
+| `today_plan_schedule` | **PASS** | 23 real HTTP/storage cases prove empty and three evaluation-fixture branches, canonical trace provenance, same-fixture disclosure, fixed-unvalidated and overdue timing, accepted-budget fail-closed/retry plus fair commitment carry, restart migration, command receipts/CAS with no partial writes, clock-skew historical safety, verified replay, synthetic-origin exclusion, and user-marked completion with no KT write |
 | `study_pack` | **PASS** | pasted text and text-bearing PDF passed cited lifecycle, TEST INPUT scoring, restart, isolation, and adversarial checks |
 | `progressive_assistance` | **PASS** | real HTTP assistance advances six server-authored levels, records uncalibrated evidence discounts, fails closed after exhaustion, and preserves a verified trace |
 | `misconception_dossier` | **PASS** | real HTTP dossier separates observations, authored probe support/refutation, unconfirmed cause semantics, learning resolution, and unavailable cohort evidence with trace references |

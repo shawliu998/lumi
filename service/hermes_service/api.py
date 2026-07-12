@@ -15,6 +15,8 @@ DEFAULT_ALLOWED_ORIGINS = frozenset(
     {
         "http://127.0.0.1:1420",
         "http://localhost:1420",
+        "http://127.0.0.1:5173",
+        "http://localhost:5173",
         "tauri://localhost",
         "https://tauri.localhost",
     }
@@ -46,6 +48,9 @@ STUDY_PACK_ITEM_ATTEMPT_ROUTE = re.compile(
     r"^/v1/study-pack-items/([^/]+)/attempts$"
 )
 PRODUCT_ACTIVITY_ROUTE = re.compile(r"^/v1/product-activities/([^/]+)$")
+JUDGMENT_SESSION_PROBE_ROUTE = re.compile(r"^/v1/judgment/sessions/([^/]+)/probe$")
+JUDGMENT_SESSION_TRANSFER_ROUTE = re.compile(r"^/v1/judgment/sessions/([^/]+)/transfer$")
+JUDGMENT_SESSION_REPLAY_ROUTE = re.compile(r"^/v1/judgment/sessions/([^/]+)/replay$")
 
 
 class LocalThreadingHTTPServer(ThreadingHTTPServer):
@@ -133,6 +138,98 @@ def _handler_factory(application: SidecarApplication, allowed_origins: frozenset
                         body.get("run_id"),
                     )
                     self._send(201, payload, request_id, origin)
+                    return
+                if method == "POST" and parsed.path == "/v1/judgment/sessions":
+                    body = self._read_json(
+                        {
+                            "entry_record_id",
+                            "selected_option",
+                            "confidence",
+                            "elapsed_seconds",
+                            "rationale",
+                            "command_id",
+                        }
+                    )
+                    required = {
+                        "entry_record_id",
+                        "selected_option",
+                        "confidence",
+                        "elapsed_seconds",
+                        "command_id",
+                    }
+                    if not required.issubset(body) or set(body) - (required | {"rationale"}):
+                        raise ServiceError(
+                            400,
+                            "invalid_body",
+                            "judgment session body has unsupported or missing fields",
+                        )
+                    payload = application.start_judgment_session(
+                        body["entry_record_id"],
+                        body["selected_option"],
+                        body["confidence"],
+                        body["elapsed_seconds"],
+                        body.get("rationale"),
+                        body["command_id"],
+                    )
+                    self._send(201, payload, request_id, origin)
+                    return
+                judgment_probe_match = JUDGMENT_SESSION_PROBE_ROUTE.fullmatch(parsed.path)
+                if method == "POST" and judgment_probe_match:
+                    body = self._read_json(
+                        {
+                            "expected_version",
+                            "expected_stage",
+                            "selected_option",
+                            "confidence",
+                            "elapsed_seconds",
+                            "command_id",
+                        }
+                    )
+                    if set(body) != {
+                        "expected_version",
+                        "expected_stage",
+                        "selected_option",
+                        "confidence",
+                        "elapsed_seconds",
+                        "command_id",
+                    }:
+                        raise ServiceError(400, "invalid_body", "judgment probe body must contain every declared field")
+                    payload = application.answer_judgment_probe(
+                        unquote(judgment_probe_match.group(1)),
+                        body["expected_version"], body["expected_stage"],
+                        body["selected_option"], body["confidence"],
+                        body["elapsed_seconds"], body["command_id"],
+                    )
+                    self._send(200, payload, request_id, origin)
+                    return
+                judgment_transfer_match = JUDGMENT_SESSION_TRANSFER_ROUTE.fullmatch(parsed.path)
+                if method == "POST" and judgment_transfer_match:
+                    body = self._read_json(
+                        {
+                            "expected_version",
+                            "expected_stage",
+                            "selected_option",
+                            "confidence",
+                            "elapsed_seconds",
+                            "command_id",
+                        }
+                    )
+                    if set(body) != {
+                        "expected_version",
+                        "expected_stage",
+                        "selected_option",
+                        "confidence",
+                        "elapsed_seconds",
+                        "command_id",
+                    }:
+                        raise ServiceError(400, "invalid_body", "judgment transfer body must contain every declared field")
+                    payload = application.answer_judgment_transfer(
+                        unquote(judgment_transfer_match.group(1)),
+                        body["expected_version"], body["expected_stage"],
+                        body["selected_option"], body["confidence"],
+                        body["elapsed_seconds"], body["command_id"],
+                    )
+                    self._send(200, payload, request_id, origin)
                     return
                 if method == "POST" and parsed.path == "/v1/study-packs":
                     body = self._read_json(
@@ -377,6 +474,17 @@ def _handler_factory(application: SidecarApplication, allowed_origins: frozenset
                 return application.health()
             if path == "/v1/capabilities":
                 return application.capabilities()
+            if path == "/v1/judgment/workspace":
+                if query:
+                    raise ServiceError(400, "invalid_query", "judgment workspace does not accept query parameters")
+                return application.judgment_workspace()
+            judgment_replay_match = JUDGMENT_SESSION_REPLAY_ROUTE.fullmatch(path)
+            if judgment_replay_match:
+                if query:
+                    raise ServiceError(400, "invalid_query", "judgment replay does not accept query parameters")
+                return application.judgment_session_replay(
+                    unquote(judgment_replay_match.group(1))
+                )
             if path == "/v1/scenarios":
                 domain = _single_query(query, "domain")
                 mode = _single_query(query, "mode")

@@ -24,6 +24,7 @@ class ReviewCommitApiTests(unittest.TestCase):
             # Explicit test-only injection: automated answers never masquerade
             # as human_local_interactive evidence.
             review_commit_evidence_origins=frozenset({"evaluation_fixture"}),
+            evaluation_projection_enabled=True,
         )
         self.server = create_server(self.application, port=0)
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)

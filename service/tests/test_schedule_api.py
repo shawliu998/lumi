@@ -14,6 +14,7 @@ from typing import Any
 
 from hermes_service.api import create_server
 from hermes_service.application import SidecarApplication
+from hermes_integration.loop import continue_attempt, load_fixture, run_attempt
 
 
 def opaque_public_id(prefix: str, label: str) -> str:
@@ -52,6 +53,11 @@ class ScheduleApiTests(unittest.TestCase):
             self.database,
             today_provider=self.clock,
             planning_timezone=timezone.utc,
+            # The legacy fixture suite exercises only the explicit evaluation
+            # namespace. Production human attempts are product-only.
+            attempt_evidence_origin="evaluation_fixture",
+            review_commit_evidence_origins=frozenset({"evaluation_fixture"}),
+            evaluation_projection_enabled=True,
         )
         self.server = create_server(self.application, port=0)
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
@@ -292,6 +298,74 @@ class ScheduleApiTests(unittest.TestCase):
         _, schedule = self.request("GET", "/v1/review-schedule")
         self.assertEqual(schedule["count"], 0)
 
+    def test_legacy_human_scenario_trace_cannot_seed_review_schedule(self) -> None:
+        """Historical synthetic human traces remain replayable but inert."""
+
+        fixture = load_fixture()
+        run_id = opaque_public_id("r", "legacy-human-scenario")
+        initial_session, initial = run_attempt(
+            fixture,
+            "A",
+            0.6,
+            20,
+            self.database,
+            run_id=run_id,
+            evidence_origin="human_local_interactive",
+        )
+        try:
+            initial_version = initial_session.store.events(run_id)[-1].seq
+            probe_prompt = initial.state.artifacts["probe"][-1]["prompt_instance_id"]
+        finally:
+            initial_session.store.close()
+        probe_session, after_probe = continue_attempt(
+            fixture,
+            self.database,
+            run_id,
+            phase="probe",
+            expected_version=initial_version,
+            expected_state="awaiting_probe",
+            prompt_instance=probe_prompt,
+            response="120÷100",
+            confidence=0.8,
+            response_time_seconds=15,
+        )
+        try:
+            probe_version = probe_session.store.events(run_id)[-1].seq
+            verification_prompt = after_probe.state.artifacts["teach"][-1][
+                "independent_verification_prompt_instance_id"
+            ]
+        finally:
+            probe_session.store.close()
+        final_session, completed = continue_attempt(
+            fixture,
+            self.database,
+            run_id,
+            phase="verification",
+            expected_version=probe_version,
+            expected_state="awaiting_verification",
+            prompt_instance=verification_prompt,
+            response="C",
+            confidence=0.9,
+            response_time_seconds=20,
+        )
+        final_session.store.close()
+        self.assertEqual(completed.state.status.value, "completed")
+
+        status, receipt = self.request(
+            "POST", f"/v1/runs/{run_id}/review-commit", {}
+        )
+        self.assertEqual(status, 200)
+        self.assertEqual(receipt["status"], "withheld")
+        self.assertEqual(
+            receipt["code"], "not_launchable_versioned_product_activity"
+        )
+        status, plan = self.create_plan("legacy-human-scenario-plan")
+        self.assertEqual(status, 201)
+        self.assertEqual(plan["status"], "empty")
+        self.assertEqual(plan["empty_reason"], "no_recorded_evidence")
+        _, schedule = self.request("GET", "/v1/review-schedule")
+        self.assertEqual(schedule["count"], 0)
+
     def test_new_writes_use_opaque_ids_and_legacy_32hex_trace_remains_readable(self) -> None:
         status, attempt = self.request(
             "POST",
@@ -479,6 +553,9 @@ class ScheduleApiTests(unittest.TestCase):
             self.database,
             today_provider=self.clock,
             planning_timezone=timezone.utc,
+            attempt_evidence_origin="evaluation_fixture",
+            review_commit_evidence_origins=frozenset({"evaluation_fixture"}),
+            evaluation_projection_enabled=True,
         )
         second_server = create_server(second_application, port=0)
         second_thread = threading.Thread(
@@ -546,6 +623,9 @@ class ScheduleApiTests(unittest.TestCase):
             self.database,
             today_provider=self.clock,
             planning_timezone=timezone.utc,
+            attempt_evidence_origin="evaluation_fixture",
+            review_commit_evidence_origins=frozenset({"evaluation_fixture"}),
+            evaluation_projection_enabled=True,
         )
         second_server = create_server(second_application, port=0)
         second_thread = threading.Thread(
@@ -589,6 +669,9 @@ class ScheduleApiTests(unittest.TestCase):
             self.database,
             today_provider=newer_clock,
             planning_timezone=timezone.utc,
+            attempt_evidence_origin="evaluation_fixture",
+            review_commit_evidence_origins=frozenset({"evaluation_fixture"}),
+            evaluation_projection_enabled=True,
         )
         newer_server = create_server(newer_application, port=0)
         newer_thread = threading.Thread(
@@ -646,6 +729,9 @@ class ScheduleApiTests(unittest.TestCase):
             self.database,
             today_provider=newer_clock,
             planning_timezone=timezone.utc,
+            attempt_evidence_origin="evaluation_fixture",
+            review_commit_evidence_origins=frozenset({"evaluation_fixture"}),
+            evaluation_projection_enabled=True,
         )
         newer_server = create_server(newer_application, port=0)
         newer_thread = threading.Thread(
