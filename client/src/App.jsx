@@ -29,12 +29,15 @@ import {
   createTodayPlan,
   fetchHealth,
   fetchMisconceptionDossier,
+  fetchProductActivityBundle,
   fetchReviewSchedule,
   fetchSkillReport,
   fetchTodayPlan,
   requestNextAssistance,
   submitAttempt,
 } from "./hermesApi";
+import { assertIndependentTransferBinding } from "./productActivityAdapter.js";
+import { ProductActivityLoadState, ProductActivityQuestion } from "./ProductActivityViews.jsx";
 import {
   ASSISTANCE_ACTIONS,
   appendAssistance,
@@ -75,7 +78,6 @@ const TOOLS = [
   { category: "复盘", title: "提纲复盘", description: "检查面试回答的观点、层次与例证。", available: false },
 ];
 
-const CONNECTED_FIXTURE_ID = "xingce.data-analysis.growth-rate.synthetic-01";
 const CONNECTED_SKILL_NAME = "增长率与基期量";
 const CONNECTED_SKILL_IDS = new Set([
   "xingce.data.growth.identify-base-current",
@@ -379,7 +381,7 @@ function MisconceptionDossier({ state }) {
               <li key={item.id} data-claim-status={item.claimStatus} data-learning-status={item.learningStatus}>
                 <span>{item.rank}</span>
                 <div><strong>{item.label}</strong><small>{item.subtype}</small></div>
-                <em>候选 / 未确认 · {claimStatusCopy(item.claimStatus)}</em>
+                <em>候选 / 待验证 · {claimStatusCopy(item.claimStatus)}</em>
               </li>
             ))}
           </ol>
@@ -525,6 +527,9 @@ function ToolsScreen({
   const [query, setQuery] = useState("");
   const [answer, setAnswer] = useState("");
   const [confidence, setConfidence] = useState("");
+  const [workNotes, setWorkNotes] = useState("");
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [activityState, setActivityState] = useState({ phase: "idle", bundle: null, error: null });
   const [attemptStartedAt, setAttemptStartedAt] = useState(0);
   const [phaseAnswer, setPhaseAnswer] = useState("");
   const [phaseConfidence, setPhaseConfidence] = useState("");
@@ -543,6 +548,30 @@ function ToolsScreen({
     "verification",
     runEvidence?.continuation?.verification?.prompt_instance_id,
   );
+  const transferBinding = useMemo(() => {
+    if (!runEvidence?.continuation || !activityState.bundle) return { ready: false, error: null };
+    try {
+      return {
+        ready: true,
+        activity: assertIndependentTransferBinding(
+          runEvidence.continuation,
+          activityState.bundle.independentTransfer,
+        ),
+        error: null,
+      };
+    } catch (error) {
+      return { ready: false, activity: null, error };
+    }
+  }, [activityState.bundle, runEvidence?.continuation]);
+
+  useEffect(() => {
+    if (!["active", "probe", "verification"].includes(toolStage) || !phaseStartedAt && !attemptStartedAt) return undefined;
+    const startedAt = toolStage === "active" ? attemptStartedAt : phaseStartedAt;
+    const update = () => setElapsedSeconds(Math.max(0, Math.floor((Date.now() - startedAt) / 1000)));
+    update();
+    const timer = window.setInterval(update, 1000);
+    return () => window.clearInterval(timer);
+  }, [attemptStartedAt, phaseStartedAt, toolStage]);
 
   const visible = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase("zh-CN");
@@ -557,6 +586,18 @@ function ToolsScreen({
     setFavorites((items) => items.includes(title) ? items.filter((item) => item !== title) : [...items, title]);
   };
 
+  const loadProductActivities = async () => {
+    setActivityState({ phase: "loading", bundle: null, error: null });
+    try {
+      const bundle = await fetchProductActivityBundle();
+      setActivityState({ phase: "ready", bundle, error: null });
+      return bundle;
+    } catch (error) {
+      setActivityState({ phase: "error", bundle: null, error });
+      return null;
+    }
+  };
+
   const openTool = (tool) => {
     if (!tool.available || sidecar.phase !== "connected") return;
     setSelectedTool(tool);
@@ -567,8 +608,11 @@ function ToolsScreen({
     setPhaseConfidence("");
     setRunEvidence(null);
     setRunError(null);
+    setWorkNotes("");
+    setElapsedSeconds(0);
     setAssistance(createAssistanceState());
     setDossierState({ phase: "idle", dossier: null, error: null });
+    loadProductActivities();
   };
 
   const closeTool = () => {
@@ -580,16 +624,20 @@ function ToolsScreen({
     setPhaseConfidence("");
     setRunEvidence(null);
     setRunError(null);
+    setWorkNotes("");
+    setElapsedSeconds(0);
     setAssistance(createAssistanceState());
     setDossierState({ phase: "idle", dossier: null, error: null });
+    setActivityState({ phase: "idle", bundle: null, error: null });
   };
 
   const startConfiguredRun = () => {
-    if (sidecar.phase !== "connected") return;
+    if (sidecar.phase !== "connected" || activityState.phase !== "ready") return;
     setToolStage("active");
     setAnswer("");
     setConfidence("");
     setAttemptStartedAt(Date.now());
+    setElapsedSeconds(0);
     setAssistance(createAssistanceState());
     setDossierState({ phase: "idle", dossier: null, error: null });
   };
@@ -650,14 +698,14 @@ function ToolsScreen({
   };
 
   const submitConfiguredAttempt = async () => {
-    if (sidecar.phase !== "connected") return;
+    if (sidecar.phase !== "connected" || activityState.phase !== "ready" || !activityState.bundle) return;
     setToolStage("running");
     setRunEvidence(null);
     setRunError(null);
     const confidenceValues = { low: 0.35, medium: 0.65, high: 0.9 };
     try {
       const evidence = await submitAttempt({
-        fixtureId: CONNECTED_FIXTURE_ID,
+        fixtureId: activityState.bundle.firstAnswer.activityId,
         response: answer,
         confidence: confidenceValues[confidence],
         responseTimeSeconds: (Date.now() - attemptStartedAt) / 1000,
@@ -666,6 +714,8 @@ function ToolsScreen({
       setPhaseAnswer("");
       setPhaseConfidence("");
       setPhaseStartedAt(Date.now());
+      setElapsedSeconds(0);
+      setWorkNotes("");
       setAssistance(createAssistanceState({ available: Boolean(evidence.attempt?.probe?.prompt_instance_id) }));
       setToolStage("probe");
       loadDossier(evidence.attempt.run_id);
@@ -677,7 +727,7 @@ function ToolsScreen({
 
   const submitContinuation = async (phase) => {
     const gate = phase === "probe" ? probeGate : verificationGate;
-    if (gate.kind !== "ready") return;
+    if (gate.kind !== "ready" || phase === "verification" && !transferBinding.ready) return;
     setToolStage("running");
     setRunError(null);
     const confidenceValues = { low: 0.35, medium: 0.65, high: 0.9 };
@@ -695,6 +745,8 @@ function ToolsScreen({
       setPhaseConfidence("");
       if (phase === "probe") {
         setPhaseStartedAt(Date.now());
+        setElapsedSeconds(0);
+        setWorkNotes("");
         setToolStage("verification");
       } else {
         setToolStage("result");
@@ -718,6 +770,8 @@ function ToolsScreen({
     setRunError(null);
     setAnswer("");
     setConfidence("");
+    setWorkNotes("");
+    setElapsedSeconds(0);
     setPhaseAnswer("");
     setPhaseConfidence("");
     setAssistance(createAssistanceState());
@@ -730,6 +784,8 @@ function ToolsScreen({
     setRunError(null);
     setAnswer("");
     setConfidence("");
+    setWorkNotes("");
+    setElapsedSeconds(0);
     setPhaseAnswer("");
     setPhaseConfidence("");
     setAssistance(createAssistanceState());
@@ -763,7 +819,7 @@ function ToolsScreen({
             const liked = favorites.includes(tool.title);
             const operable = tool.available && sidecar.phase === "connected";
             return (
-              <article className={operable ? "tool-card" : "tool-card unavailable"} key={tool.title} data-tool-title={tool.title} data-availability={operable ? "connected" : tool.available ? "service-unavailable" : "phased"} data-fixture-id={tool.available ? CONNECTED_FIXTURE_ID : undefined}>
+              <article className={operable ? "tool-card" : "tool-card unavailable"} key={tool.title} data-tool-title={tool.title} data-availability={operable ? "connected" : tool.available ? "service-unavailable" : "phased"}>
                 <button className="tool-card-main" disabled={!operable} onClick={() => openTool(tool)}>
                   <small>{tool.category}</small>
                   <strong>{tool.title}</strong>
@@ -796,8 +852,11 @@ function ToolsScreen({
                 <label><span>本次验证</span><input value="公式方向是否混淆" readOnly /></label>
                 <label><span>本轮步骤</span><input value="3 · 首答、探查、独立验证" readOnly /></label>
               </div>
-              <div className="evidence-note"><Info size={15} /><span>{sidecar.phase === "connected" ? "先提交作答与信心；服务只会依据这次真实输入生成轨迹。" : "本机服务不可用；真实训练暂不能开始，也不会创建本机轨迹。"}</span></div>
-              <button className="button primary panel-primary" disabled={sidecar.phase !== "connected"} onClick={startConfiguredRun}>{sidecar.phase === "connected" ? "开始作答" : "本机服务不可用"}</button>
+              {activityState.phase === "ready" && <p className="activity-ready-summary">已核对 {activityState.bundle.firstAnswer.source.year} 年真题与独立迁移题 · 题目版本 {activityState.bundle.releaseId}</p>}
+              {activityState.phase === "loading" && <ProductActivityLoadState phase="loading" />}
+              {activityState.phase === "error" && <ProductActivityLoadState phase="error" error={activityState.error} onRetry={loadProductActivities} />}
+              <div className="evidence-note"><Info size={15} /><span>{sidecar.phase === "connected" ? "先提交作答与信心；未作答前，客户端只读取不含答案与解析的安全题目投影。" : "本机服务不可用；真实训练暂不能开始，也不会创建本机轨迹。"}</span></div>
+              <button className="button primary panel-primary" disabled={sidecar.phase !== "connected" || activityState.phase !== "ready"} onClick={startConfiguredRun}>{activityState.phase === "loading" ? "正在读取真题" : activityState.phase === "error" ? "真题不可用" : sidecar.phase === "connected" ? "开始作答" : "本机服务不可用"}</button>
             </>
           )}
           {toolStage === "running" && (
@@ -808,17 +867,20 @@ function ToolsScreen({
             </div>
           )}
           {toolStage === "active" && (
-            <>
-              <div className="run-progress"><span>步骤 1 / 3</span><strong>{CONNECTED_SKILL_NAME}</strong></div>
-              <div className="prompt-block">
-                <small>请独立作答</small>
-                <p>某园区产值由 2024 年的 200 亿元增至 2025 年的 230 亿元，同比增长率约为多少？</p>
-              </div>
-              <div className="independent-boundary"><Info size={13} /><span>初答不提供帮助；提交后如需辨析，服务会在定向探查题上开放渐进帮助。</span></div>
-              <label className="answer-field"><span>你的答案</span><select value={answer} onChange={(event) => setAnswer(event.target.value)}><option value="">请选择</option><option value="A">A · 13.0%</option><option value="B">B · 15.0%</option><option value="C">C · 30.0%</option><option value="D">D · 115.0%</option></select></label>
-              <label className="answer-field"><span>作答信心</span><select value={confidence} onChange={(event) => setConfidence(event.target.value)}><option value="">请选择</option><option value="low">不太确定</option><option value="medium">基本确定</option><option value="high">非常确定</option></select></label>
-              <button className="button primary panel-primary" disabled={!answer || !confidence} onClick={submitConfiguredAttempt}>提交本机验证</button>
-            </>
+            activityState.bundle ? <ProductActivityQuestion
+              activity={activityState.bundle.firstAnswer}
+              answer={answer}
+              onAnswer={setAnswer}
+              confidence={confidence}
+              onConfidence={setConfidence}
+              workNotes={workNotes}
+              onWorkNotes={setWorkNotes}
+              elapsedSeconds={elapsedSeconds}
+              stepLabel="步骤 1 / 3 · 独立首答"
+              independentCopy="初答不提供帮助；提交后如需辨析，只把你的选项、信心与用时写入本机轨迹。"
+              submitLabel="提交首答"
+              onSubmit={submitConfiguredAttempt}
+            /> : <ProductActivityLoadState phase="error" error={activityState.error} onRetry={loadProductActivities} />
           )}
           {toolStage === "probe" && runEvidence?.attempt && (
             <div className="continuation-stage" data-testid="attempt-stage" data-state="awaiting-probe" data-version={runEvidence.attempt.state_version} data-run-id={runEvidence.attempt.run_id}>
@@ -842,16 +904,25 @@ function ToolsScreen({
               <div className="stage-kicker"><span>步骤 3 / 3</span><strong>独立验证</strong></div>
               {verificationGate.kind !== "ready" && <ContinuationBoundary gate={verificationGate} onRestart={restartWithFreshRun} />}
               <MisconceptionDossier state={dossierState} />
-              {verificationGate.kind === "ready" ? (
+              {verificationGate.kind === "ready" && transferBinding.ready ? (
                 <>
                   <section className="teaching-block"><small>针对性提示</small><p>{runEvidence.continuation.teaching.prompt}</p><span>{runEvidence.continuation.teaching.strategy === "worked-example-fading" ? "先标出基期，再独立完成一题。" : "请按提示完成后续验证。"}</span></section>
-                  <div className="independent-boundary"><Info size={13} /><span>独立验证不提供帮助；只有这一步完成后，服务才可能更新掌握状态。</span></div>
-                  <div className="prompt-block probe-prompt"><small>独立验证题</small><p>{runEvidence.continuation.verification.prompt}</p></div>
-                  <label className="answer-field"><span>你的答案</span><select value={phaseAnswer} onChange={(event) => setPhaseAnswer(event.target.value)}><option value="">请选择</option><option value="A">A · 12%</option><option value="B">B · 13%</option><option value="C">C · 15%</option><option value="D">D · 115%</option></select></label>
-                  <label className="answer-field"><span>作答信心</span><select value={phaseConfidence} onChange={(event) => setPhaseConfidence(event.target.value)}><option value="">请选择</option><option value="low">不太确定</option><option value="medium">基本确定</option><option value="high">非常确定</option></select></label>
-                  <button className="button primary panel-primary" disabled={!phaseAnswer || !phaseConfidence} onClick={() => submitContinuation("verification")}>提交独立验证</button>
+                  <ProductActivityQuestion
+                    activity={transferBinding.activity}
+                    answer={phaseAnswer}
+                    onAnswer={setPhaseAnswer}
+                    confidence={phaseConfidence}
+                    onConfidence={setPhaseConfidence}
+                    workNotes={workNotes}
+                    onWorkNotes={setWorkNotes}
+                    elapsedSeconds={elapsedSeconds}
+                    stepLabel="步骤 3 / 3 · 未见迁移题"
+                    independentCopy="这是一道不同题号的真题，不提供帮助；只有独立作答后，服务才可能更新掌握状态。"
+                    submitLabel="提交独立验证"
+                    onSubmit={() => submitContinuation("verification")}
+                  />
                 </>
-              ) : null}
+              ) : verificationGate.kind === "ready" ? <div className="continuation-boundary blocked" role="alert" data-testid="transfer-binding-error"><Info size={15} /><div><strong>迁移题绑定未通过</strong><p>服务返回的 item_id 或内容签名与本机真题投影不一致；为避免错题评分，本题已锁定。</p></div></div> : null}
             </div>
           )}
           {toolStage === "result" && runEvidence && (

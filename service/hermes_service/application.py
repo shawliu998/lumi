@@ -53,7 +53,7 @@ from hermes_runtime.schedule import (
 )
 from hermes_runtime.store import EventStore, TraceVersionConflict
 
-from .catalog import ScenarioCatalog
+from .catalog import ProductActivityCatalog, ScenarioCatalog
 from .dossier import project_misconception_dossier
 
 
@@ -76,11 +76,27 @@ class SidecarApplication:
         planning_timezone: tzinfo | None = None,
         study_pack_pdf_backend: PdfBackend | None = None,
         study_pack_attempt_evidence_origin: str = HUMAN_ATTEMPT_EVIDENCE_ORIGIN,
+        attempt_evidence_origin: str = "human_local_interactive",
+        product_activity_payload_path: str | Path | None = None,
+        product_activity_catalog: ProductActivityCatalog | None = None,
     ) -> None:
         if study_pack_attempt_evidence_origin not in ATTEMPT_EVIDENCE_ORIGINS:
             raise ValueError("unsupported Study Pack attempt evidence origin")
+        if attempt_evidence_origin not in {
+            "human_local_interactive",
+            "evaluation_fixture",
+            "synthetic_isolated",
+        }:
+            raise ValueError("unsupported learning attempt evidence origin")
         self.database = str(database)
         self.catalog = ScenarioCatalog()
+        if product_activity_catalog is not None and product_activity_payload_path is not None:
+            raise ValueError("provide either product activity catalog or payload path")
+        self.product_activities = product_activity_catalog or (
+            ProductActivityCatalog()
+            if product_activity_payload_path is None
+            else ProductActivityCatalog(product_activity_payload_path)
+        )
         self._continuation_lock = threading.Lock()
         self._today_provider = today_provider or date.today
         self._planning_timezone = (
@@ -92,6 +108,7 @@ class SidecarApplication:
         self._study_pack_attempt_evidence_origin = (
             study_pack_attempt_evidence_origin
         )
+        self._attempt_evidence_origin = attempt_evidence_origin
 
     def health(self) -> dict[str, Any]:
         store = EventStore(self.database)
@@ -110,14 +127,17 @@ class SidecarApplication:
 
     def capabilities(self) -> dict[str, Any]:
         scenarios = self.catalog.list()
+        product_activities = self.product_activities.list()
         return {
             "service_version": SERVICE_VERSION,
             "api_version": "v1",
             "local_only": True,
             "domains": sorted({item["domain"] for item in scenarios}),
             "scenario_count": len(scenarios),
+            "product_activity_count": len(product_activities),
             "features": [
                 "representative-scenario-catalog",
+                "local-product-activity-catalog-v1",
                 "domain-engine-runtime-loop",
                 "real-learner-attempt-v1",
                 "optimistic-attempt-continuation-v1",
@@ -134,6 +154,8 @@ class SidecarApplication:
                 "health": "GET /v1/health",
                 "capabilities": "GET /v1/capabilities",
                 "scenarios": "GET /v1/scenarios",
+                "product_activities": "GET /v1/product-activities",
+                "product_activity": "GET /v1/product-activities/{activity_id}",
                 "attempt": "POST /v1/attempts",
                 "attempt_response": "POST /v1/attempts/{run_id}/responses",
                 "assistance": "POST /v1/attempts/{run_id}/assistance",
@@ -387,6 +409,41 @@ class SidecarApplication:
         items = self.catalog.list(domain=domain, mode=mode)
         return {"count": len(items), "items": items}
 
+    def list_product_activities(
+        self,
+        release_id: str | None = None,
+        diagnostic_role: str | None = None,
+    ) -> dict[str, Any]:
+        for value, code, label in (
+            (release_id, "invalid_release_id", "release_id"),
+            (diagnostic_role, "invalid_diagnostic_role", "diagnostic_role"),
+        ):
+            if value is not None and (
+                not isinstance(value, str) or not value or len(value) > 200
+            ):
+                raise ServiceError(400, code, f"{label} must be non-empty text")
+        items = self.product_activities.list(
+            release_id=release_id,
+            diagnostic_role=diagnostic_role,
+        )
+        return {"count": len(items), "items": items}
+
+    def product_activity(self, activity_id: str) -> dict[str, Any]:
+        if not isinstance(activity_id, str) or not activity_id or len(activity_id) > 200:
+            raise ServiceError(
+                400,
+                "invalid_activity_id",
+                "activity_id must be a non-empty catalog identifier",
+            )
+        try:
+            return self.product_activities.get(activity_id)
+        except KeyError:
+            raise ServiceError(
+                404,
+                "product_activity_not_found",
+                "activity_id is not in the local product catalog",
+            ) from None
+
     def submit_attempt(
         self,
         fixture_id: str,
@@ -400,7 +457,14 @@ class SidecarApplication:
         try:
             fixture = self.catalog.resolve(fixture_id)
         except KeyError:
-            raise ServiceError(404, "fixture_not_found", "fixture_id is not in the 42-scenario catalog") from None
+            try:
+                fixture = self.product_activities.resolve_fixture(fixture_id)
+            except KeyError:
+                raise ServiceError(
+                    404,
+                    "fixture_not_found",
+                    "fixture_id is not in an available attempt catalog",
+                ) from None
         if not isinstance(response, str) or not response.strip():
             raise ServiceError(400, "invalid_response", "response must be non-empty text")
         if len(response) > 20_000:
@@ -428,6 +492,7 @@ class SidecarApplication:
                 float(response_time_seconds),
                 self.database,
                 run_id=public_run_id,
+                evidence_origin=self._attempt_evidence_origin,
             )
         except ValueError as exc:
             if "already exists" in str(exc):
@@ -587,6 +652,21 @@ class SidecarApplication:
             }
             if phase == "probe":
                 teaching = artifacts["teach"][-1]
+                transfer_item = teaching.get("independent_verification_item")
+                if transfer_item is not None:
+                    if _contains_product_answer_key(transfer_item):
+                        raise ServiceError(
+                            500,
+                            "unsafe_product_activity_projection",
+                            "independent verification item contains a private answer field",
+                        )
+                    provenance = fixture.get("provenance", {})
+                    if (
+                        isinstance(provenance, dict)
+                        and provenance.get("content_origin")
+                        == "local_versioned_export"
+                    ):
+                        _validate_public_transfer_item(transfer_item)
                 payload.update(
                     {
                         "teaching": teaching,
@@ -597,6 +677,11 @@ class SidecarApplication:
                             ],
                             "response_mode": teaching["independent_verification_response_mode"],
                             "status": "awaiting_learner_response",
+                            **(
+                                {"item": transfer_item}
+                                if transfer_item is not None
+                                else {}
+                            ),
                         },
                         "mastery_update": None,
                         "reflection": None,
@@ -1755,6 +1840,51 @@ def _contains_private_attempt_key(value: Any) -> bool:
         return any(_contains_private_attempt_key(item) for item in value.values())
     if isinstance(value, (list, tuple)):
         return any(_contains_private_attempt_key(item) for item in value)
+    return False
+
+
+def _validate_public_transfer_item(value: Any) -> None:
+    allowed = {"item_id", "content_signature", "novelty_status", "options"}
+    if not isinstance(value, dict) or set(value) != allowed:
+        raise ServiceError(
+            500,
+            "unsafe_product_activity_projection",
+            "independent verification item has an invalid public contract",
+        )
+    if not all(
+        isinstance(value[key], str) and bool(value[key])
+        for key in ("item_id", "content_signature", "novelty_status")
+    ):
+        raise ServiceError(
+            500,
+            "unsafe_product_activity_projection",
+            "independent verification item identifiers are invalid",
+        )
+    options = value["options"]
+    if not isinstance(options, (dict, list)) or not options:
+        raise ServiceError(
+            500,
+            "unsafe_product_activity_projection",
+            "independent verification item options are invalid",
+        )
+
+
+def _contains_product_answer_key(value: Any) -> bool:
+    forbidden = {
+        "answer",
+        "answer_labels",
+        "correct_answer",
+        "correct_option",
+        "explanation",
+        "explanation_text",
+        "is_correct",
+    }
+    if isinstance(value, dict):
+        return bool(forbidden.intersection(value)) or any(
+            _contains_product_answer_key(item) for item in value.values()
+        )
+    if isinstance(value, (list, tuple)):
+        return any(_contains_product_answer_key(item) for item in value)
     return False
 
 

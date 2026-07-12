@@ -28,8 +28,14 @@ import {
   studyPackPath,
   studyPackReceiptRequiresRefresh,
 } from "./studyPackAdapter.js";
+import {
+  normalizeProductActivityBundle,
+  productActivityListPath,
+} from "./productActivityAdapter.js";
 
 export { createRunId };
+
+export const PRODUCT_ACTIVITY_RELEASE_ID = "p031-data-analysis-v1";
 
 const DEFAULT_BASE_URL = "http://127.0.0.1:8765";
 const REQUEST_TIMEOUT_MS = 5000;
@@ -74,6 +80,24 @@ export async function fetchSkillReport() {
     });
   }
   return report;
+}
+
+export async function fetchProductActivityBundle({
+  releaseId = PRODUCT_ACTIVITY_RELEASE_ID,
+  requestImpl = request,
+} = {}) {
+  const [firstPayload, transferPayload] = await Promise.all([
+    requestImpl(productActivityListPath({ releaseId, diagnosticRole: "first_answer" })),
+    requestImpl(productActivityListPath({ releaseId, diagnosticRole: "independent_transfer" })),
+  ]);
+  try {
+    return normalizeProductActivityBundle(firstPayload, transferPayload, { releaseId });
+  } catch (error) {
+    throw new HermesApiError("真题活动格式与客户端不兼容。", {
+      kind: "contract",
+      code: "invalid_product_activity_contract",
+    });
+  }
 }
 
 export async function fetchStudyPackList() {

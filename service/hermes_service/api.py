@@ -44,6 +44,7 @@ STUDY_PACK_ITEM_LAUNCH_ROUTE = re.compile(
 STUDY_PACK_ITEM_ATTEMPT_ROUTE = re.compile(
     r"^/v1/study-pack-items/([^/]+)/attempts$"
 )
+PRODUCT_ACTIVITY_ROUTE = re.compile(r"^/v1/product-activities/([^/]+)$")
 
 
 class LocalThreadingHTTPServer(ThreadingHTTPServer):
@@ -368,6 +369,31 @@ def _handler_factory(application: SidecarApplication, allowed_origins: frozenset
                 if unknown:
                     raise ServiceError(400, "invalid_query", "unsupported scenario query parameter")
                 return application.scenarios(domain=domain, mode=mode)
+            if path == "/v1/product-activities":
+                release_id = _single_query(query, "release_id")
+                diagnostic_role = _single_query(query, "diagnostic_role")
+                unknown = set(query) - {"release_id", "diagnostic_role"}
+                if unknown:
+                    raise ServiceError(
+                        400,
+                        "invalid_query",
+                        "unsupported product activity query parameter",
+                    )
+                return application.list_product_activities(
+                    release_id=release_id,
+                    diagnostic_role=diagnostic_role,
+                )
+            product_activity_match = PRODUCT_ACTIVITY_ROUTE.fullmatch(path)
+            if product_activity_match:
+                if query:
+                    raise ServiceError(
+                        400,
+                        "invalid_query",
+                        "product activity does not accept query parameters",
+                    )
+                return application.product_activity(
+                    unquote(product_activity_match.group(1))
+                )
             if path == "/v1/skills/report":
                 if query:
                     raise ServiceError(400, "invalid_query", "skill report does not accept query parameters")

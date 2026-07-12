@@ -4,7 +4,10 @@
   "status": "internal_evaluation_only",
   "purpose": "p0.3.1-five-minute-learning-loop",
   "source_bundle": {
-    "name": "question-bank-local-primary-paper-rechecked-ocr-gkzhenti-verified-filtered-focus4-all-resolved-v2-local-refined2-final-filtered-old-risk-2010s-pruned-gkzhenti2026-docx-explanations-collecting-marked-pk-quality-cleaned17",
+    "name_parts": [
+      "question-bank-local-primary-paper-rechecked-ocr-gkzhenti-verified-filtered-focus4-all-resolved-v2-local-refined2-final-filtered-old-risk",
+      "2010s-pruned-gkzhenti2026-docx-explanations-collecting-marked-pk-quality-cleaned17"
+    ],
     "generated_at": "2026-06-17T08:25:28.867Z",
     "manifest_sha256": "543423a78122a614f779624b6b6ecfafddfb4c3c893b856c03d14fbeafd158a8"
   },

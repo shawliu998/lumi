@@ -51,6 +51,7 @@
                 "correct": false,
                 "evidence_features": {
                   "adapter_version": "deterministic-domain-adapters-v1",
+                  "content_signature": null,
                   "domain_observations": [
                     {
                       "evidence": "learner selection",
@@ -205,6 +206,7 @@
                 "correct": false,
                 "evidence_features": {
                   "adapter_version": "deterministic-domain-adapters-v1",
+                  "content_signature": null,
                   "domain_observations": [
                     {
                       "evidence": "learner selection",
@@ -415,6 +417,7 @@
                     "confidence": 0.74,
                     "features": {
                       "adapter_version": "deterministic-domain-adapters-v1",
+                      "content_signature": null,
                       "domain_observations": [
                         {
                           "evidence": "learner selection",
@@ -553,6 +556,7 @@
                     "confidence": 0.74,
                     "features": {
                       "adapter_version": "deterministic-domain-adapters-v1",
+                      "content_signature": null,
                       "domain_observations": [
                         {
                           "evidence": "learner selection",
@@ -633,6 +637,7 @@
                 "correct": false,
                 "evidence_features": {
                   "adapter_version": "deterministic-domain-adapters-v1",
+                  "content_signature": null,
                   "domain_observations": [
                     {
                       "evidence": "learner selection",
@@ -875,6 +880,7 @@
                     "confidence": 0.74,
                     "features": {
                       "adapter_version": "deterministic-domain-adapters-v1",
+                      "content_signature": null,
                       "domain_observations": [
                         {
                           "evidence": "learner selection",
@@ -955,6 +961,7 @@
                 "correct": false,
                 "evidence_features": {
                   "adapter_version": "deterministic-domain-adapters-v1",
+                  "content_signature": null,
                   "domain_observations": [
                     {
                       "evidence": "learner selection",
@@ -1139,6 +1146,17 @@
                 "semantics": "hypothesis_guided_instruction_not_causal_confirmation",
                 "top_hypothesis": "ratio-growth-confusion"
               },
+              "independent_verification_item": {
+                "content_signature": null,
+                "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
+                "novelty_status": "different_authored_prompt",
+                "options": {
+                  "A": "12%",
+                  "B": "13%",
+                  "C": "15%",
+                  "D": "115%"
+                }
+              },
               "independent_verification_prompt": "某指标由80升到92，增长率是多少？",
               "independent_verification_prompt_instance_id": "eval-integration-offline:verification:1",
               "independent_verification_response_mode": "single_choice",
@@ -1219,6 +1237,7 @@
                     "confidence": 0.74,
                     "features": {
                       "adapter_version": "deterministic-domain-adapters-v1",
+                      "content_signature": null,
                       "domain_observations": [
                         {
                           "evidence": "learner selection",
@@ -1299,6 +1318,7 @@
                 "correct": false,
                 "evidence_features": {
                   "adapter_version": "deterministic-domain-adapters-v1",
+                  "content_signature": null,
                   "domain_observations": [
                     {
                       "evidence": "learner selection",
@@ -1453,6 +1473,17 @@
                 "semantics": "hypothesis_guided_instruction_not_causal_confirmation",
                 "top_hypothesis": "ratio-growth-confusion"
               },
+              "independent_verification_item": {
+                "content_signature": null,
+                "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
+                "novelty_status": "different_authored_prompt",
+                "options": {
+                  "A": "12%",
+                  "B": "13%",
+                  "C": "15%",
+                  "D": "115%"
+                }
+              },
               "independent_verification_prompt": "某指标由80升到92，增长率是多少？",
               "independent_verification_prompt_instance_id": "eval-integration-offline:verification:1",
               "independent_verification_response_mode": "single_choice",
@@ -1502,7 +1533,7 @@
                 "evidence_count": 1,
                 "failures": 0.35,
                 "irt_theta": -0.04375,
-                "last_updated_at": "2026-07-12T01:51:23.690032+00:00",
+                "last_updated_at": "2026-07-12T04:02:20.158866+00:00",
                 "learner_id": "integration-learner",
                 "mastery": 0.3179550732662862,
                 "provenance": [
@@ -1512,6 +1543,7 @@
                       "confidence": 0.74,
                       "features": {
                         "adapter_version": "deterministic-domain-adapters-v1",
+                        "content_signature": null,
                         "domain_observations": [
                           {
                             "evidence": "learner selection",
@@ -1565,7 +1597,7 @@
                 "evidence_count": 2,
                 "failures": 0.35,
                 "irt_theta": 0.08398393893641105,
-                "last_updated_at": "2026-07-12T01:51:23.690144+00:00",
+                "last_updated_at": "2026-07-12T04:02:20.158980+00:00",
                 "learner_id": "integration-learner",
                 "mastery": 0.5473890567792533,
                 "provenance": [
@@ -1575,6 +1607,7 @@
                       "confidence": 0.74,
                       "features": {
                         "adapter_version": "deterministic-domain-adapters-v1",
+                        "content_signature": null,
                         "domain_observations": [
                           {
                             "evidence": "learner selection",
@@ -1628,8 +1661,11 @@
                           "hints_used": 0,
                           "policy_version": "assistance-evidence-policy.v1"
                         },
+                        "content_signature": null,
                         "different_prompt": true,
-                        "scoring": "exact_option_v1"
+                        "novelty_status": "different_authored_prompt",
+                        "scoring": "exact_option_v1",
+                        "source_item_id": "xingce.data-analysis.growth-rate.synthetic-01"
                       },
                       "hints_used": 0,
                       "independently_answered": true,
@@ -1688,8 +1724,11 @@
                         "hints_used": 0,
                         "policy_version": "assistance-evidence-policy.v1"
                       },
+                      "content_signature": null,
                       "different_prompt": true,
-                      "scoring": "exact_option_v1"
+                      "novelty_status": "different_authored_prompt",
+                      "scoring": "exact_option_v1",
+                      "source_item_id": "xingce.data-analysis.growth-rate.synthetic-01"
                     },
                     "hints_used": 0,
                     "independently_answered": true,
@@ -1713,8 +1752,11 @@
                     "hints_used": 0,
                     "policy_version": "assistance-evidence-policy.v1"
                   },
+                  "content_signature": null,
                   "different_prompt": true,
-                  "scoring": "exact_option_v1"
+                  "novelty_status": "different_authored_prompt",
+                  "scoring": "exact_option_v1",
+                  "source_item_id": "xingce.data-analysis.growth-rate.synthetic-01"
                 },
                 "hints_used": 0,
                 "independently_answered": true,
@@ -1799,6 +1841,7 @@
                     "confidence": 0.74,
                     "features": {
                       "adapter_version": "deterministic-domain-adapters-v1",
+                      "content_signature": null,
                       "domain_observations": [
                         {
                           "evidence": "learner selection",
@@ -1879,6 +1922,7 @@
                 "correct": false,
                 "evidence_features": {
                   "adapter_version": "deterministic-domain-adapters-v1",
+                  "content_signature": null,
                   "domain_observations": [
                     {
                       "evidence": "learner selection",
@@ -2033,6 +2077,17 @@
                 "semantics": "hypothesis_guided_instruction_not_causal_confirmation",
                 "top_hypothesis": "ratio-growth-confusion"
               },
+              "independent_verification_item": {
+                "content_signature": null,
+                "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
+                "novelty_status": "different_authored_prompt",
+                "options": {
+                  "A": "12%",
+                  "B": "13%",
+                  "C": "15%",
+                  "D": "115%"
+                }
+              },
               "independent_verification_prompt": "某指标由80升到92，增长率是多少？",
               "independent_verification_prompt_instance_id": "eval-integration-offline:verification:1",
               "independent_verification_response_mode": "single_choice",
@@ -2052,7 +2107,7 @@
                 "evidence_count": 1,
                 "failures": 0.35,
                 "irt_theta": -0.04375,
-                "last_updated_at": "2026-07-12T01:51:23.690032+00:00",
+                "last_updated_at": "2026-07-12T04:02:20.158866+00:00",
                 "learner_id": "integration-learner",
                 "mastery": 0.3179550732662862,
                 "provenance": [
@@ -2062,6 +2117,7 @@
                       "confidence": 0.74,
                       "features": {
                         "adapter_version": "deterministic-domain-adapters-v1",
+                        "content_signature": null,
                         "domain_observations": [
                           {
                             "evidence": "learner selection",
@@ -2115,7 +2171,7 @@
                 "evidence_count": 2,
                 "failures": 0.35,
                 "irt_theta": 0.08398393893641105,
-                "last_updated_at": "2026-07-12T01:51:23.690144+00:00",
+                "last_updated_at": "2026-07-12T04:02:20.158980+00:00",
                 "learner_id": "integration-learner",
                 "mastery": 0.5473890567792533,
                 "provenance": [
@@ -2125,6 +2181,7 @@
                       "confidence": 0.74,
                       "features": {
                         "adapter_version": "deterministic-domain-adapters-v1",
+                        "content_signature": null,
                         "domain_observations": [
                           {
                             "evidence": "learner selection",
@@ -2178,8 +2235,11 @@
                           "hints_used": 0,
                           "policy_version": "assistance-evidence-policy.v1"
                         },
+                        "content_signature": null,
                         "different_prompt": true,
-                        "scoring": "exact_option_v1"
+                        "novelty_status": "different_authored_prompt",
+                        "scoring": "exact_option_v1",
+                        "source_item_id": "xingce.data-analysis.growth-rate.synthetic-01"
                       },
                       "hints_used": 0,
                       "independently_answered": true,
@@ -2238,8 +2298,11 @@
                         "hints_used": 0,
                         "policy_version": "assistance-evidence-policy.v1"
                       },
+                      "content_signature": null,
                       "different_prompt": true,
-                      "scoring": "exact_option_v1"
+                      "novelty_status": "different_authored_prompt",
+                      "scoring": "exact_option_v1",
+                      "source_item_id": "xingce.data-analysis.growth-rate.synthetic-01"
                     },
                     "hints_used": 0,
                     "independently_answered": true,
@@ -2263,8 +2326,11 @@
                     "hints_used": 0,
                     "policy_version": "assistance-evidence-policy.v1"
                   },
+                  "content_signature": null,
                   "different_prompt": true,
-                  "scoring": "exact_option_v1"
+                  "novelty_status": "different_authored_prompt",
+                  "scoring": "exact_option_v1",
+                  "source_item_id": "xingce.data-analysis.growth-rate.synthetic-01"
                 },
                 "hints_used": 0,
                 "independently_answered": true,
@@ -2318,6 +2384,7 @@
                       "confidence": 0.74,
                       "features": {
                         "adapter_version": "deterministic-domain-adapters-v1",
+                        "content_signature": null,
                         "domain_observations": [
                           {
                             "evidence": "learner selection",
@@ -2371,8 +2438,11 @@
                           "hints_used": 0,
                           "policy_version": "assistance-evidence-policy.v1"
                         },
+                        "content_signature": null,
                         "different_prompt": true,
-                        "scoring": "exact_option_v1"
+                        "novelty_status": "different_authored_prompt",
+                        "scoring": "exact_option_v1",
+                        "source_item_id": "xingce.data-analysis.growth-rate.synthetic-01"
                       },
                       "hints_used": 0,
                       "independently_answered": true,
@@ -2487,6 +2557,7 @@
                     "confidence": 0.74,
                     "features": {
                       "adapter_version": "deterministic-domain-adapters-v1",
+                      "content_signature": null,
                       "domain_observations": [
                         {
                           "evidence": "learner selection",
@@ -2567,6 +2638,7 @@
                 "correct": false,
                 "evidence_features": {
                   "adapter_version": "deterministic-domain-adapters-v1",
+                  "content_signature": null,
                   "domain_observations": [
                     {
                       "evidence": "learner selection",
@@ -2721,6 +2793,17 @@
                 "semantics": "hypothesis_guided_instruction_not_causal_confirmation",
                 "top_hypothesis": "ratio-growth-confusion"
               },
+              "independent_verification_item": {
+                "content_signature": null,
+                "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
+                "novelty_status": "different_authored_prompt",
+                "options": {
+                  "A": "12%",
+                  "B": "13%",
+                  "C": "15%",
+                  "D": "115%"
+                }
+              },
               "independent_verification_prompt": "某指标由80升到92，增长率是多少？",
               "independent_verification_prompt_instance_id": "eval-integration-offline:verification:1",
               "independent_verification_response_mode": "single_choice",
@@ -2740,6 +2823,7 @@
                       "confidence": 0.74,
                       "features": {
                         "adapter_version": "deterministic-domain-adapters-v1",
+                        "content_signature": null,
                         "domain_observations": [
                           {
                             "evidence": "learner selection",
@@ -2793,8 +2877,11 @@
                           "hints_used": 0,
                           "policy_version": "assistance-evidence-policy.v1"
                         },
+                        "content_signature": null,
                         "different_prompt": true,
-                        "scoring": "exact_option_v1"
+                        "novelty_status": "different_authored_prompt",
+                        "scoring": "exact_option_v1",
+                        "source_item_id": "xingce.data-analysis.growth-rate.synthetic-01"
                       },
                       "hints_used": 0,
                       "independently_answered": true,
@@ -2848,7 +2935,7 @@
                 "evidence_count": 1,
                 "failures": 0.35,
                 "irt_theta": -0.04375,
-                "last_updated_at": "2026-07-12T01:51:23.690032+00:00",
+                "last_updated_at": "2026-07-12T04:02:20.158866+00:00",
                 "learner_id": "integration-learner",
                 "mastery": 0.3179550732662862,
                 "provenance": [
@@ -2858,6 +2945,7 @@
                       "confidence": 0.74,
                       "features": {
                         "adapter_version": "deterministic-domain-adapters-v1",
+                        "content_signature": null,
                         "domain_observations": [
                           {
                             "evidence": "learner selection",
@@ -2911,7 +2999,7 @@
                 "evidence_count": 2,
                 "failures": 0.35,
                 "irt_theta": 0.08398393893641105,
-                "last_updated_at": "2026-07-12T01:51:23.690144+00:00",
+                "last_updated_at": "2026-07-12T04:02:20.158980+00:00",
                 "learner_id": "integration-learner",
                 "mastery": 0.5473890567792533,
                 "provenance": [
@@ -2921,6 +3009,7 @@
                       "confidence": 0.74,
                       "features": {
                         "adapter_version": "deterministic-domain-adapters-v1",
+                        "content_signature": null,
                         "domain_observations": [
                           {
                             "evidence": "learner selection",
@@ -2974,8 +3063,11 @@
                           "hints_used": 0,
                           "policy_version": "assistance-evidence-policy.v1"
                         },
+                        "content_signature": null,
                         "different_prompt": true,
-                        "scoring": "exact_option_v1"
+                        "novelty_status": "different_authored_prompt",
+                        "scoring": "exact_option_v1",
+                        "source_item_id": "xingce.data-analysis.growth-rate.synthetic-01"
                       },
                       "hints_used": 0,
                       "independently_answered": true,
@@ -3034,8 +3126,11 @@
                         "hints_used": 0,
                         "policy_version": "assistance-evidence-policy.v1"
                       },
+                      "content_signature": null,
                       "different_prompt": true,
-                      "scoring": "exact_option_v1"
+                      "novelty_status": "different_authored_prompt",
+                      "scoring": "exact_option_v1",
+                      "source_item_id": "xingce.data-analysis.growth-rate.synthetic-01"
                     },
                     "hints_used": 0,
                     "independently_answered": true,
@@ -3059,8 +3154,11 @@
                     "hints_used": 0,
                     "policy_version": "assistance-evidence-policy.v1"
                   },
+                  "content_signature": null,
                   "different_prompt": true,
-                  "scoring": "exact_option_v1"
+                  "novelty_status": "different_authored_prompt",
+                  "scoring": "exact_option_v1",
+                  "source_item_id": "xingce.data-analysis.growth-rate.synthetic-01"
                 },
                 "hints_used": 0,
                 "independently_answered": true,
@@ -3190,6 +3288,7 @@
                     "confidence": 0.74,
                     "features": {
                       "adapter_version": "deterministic-domain-adapters-v1",
+                      "content_signature": null,
                       "domain_observations": [
                         {
                           "evidence": "learner selection",
@@ -3270,6 +3369,7 @@
                 "correct": false,
                 "evidence_features": {
                   "adapter_version": "deterministic-domain-adapters-v1",
+                  "content_signature": null,
                   "domain_observations": [
                     {
                       "evidence": "learner selection",
@@ -3433,6 +3533,17 @@
                 "semantics": "hypothesis_guided_instruction_not_causal_confirmation",
                 "top_hypothesis": "ratio-growth-confusion"
               },
+              "independent_verification_item": {
+                "content_signature": null,
+                "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
+                "novelty_status": "different_authored_prompt",
+                "options": {
+                  "A": "12%",
+                  "B": "13%",
+                  "C": "15%",
+                  "D": "115%"
+                }
+              },
               "independent_verification_prompt": "某指标由80升到92，增长率是多少？",
               "independent_verification_prompt_instance_id": "eval-integration-offline:verification:1",
               "independent_verification_response_mode": "single_choice",
@@ -3452,6 +3563,7 @@
                       "confidence": 0.74,
                       "features": {
                         "adapter_version": "deterministic-domain-adapters-v1",
+                        "content_signature": null,
                         "domain_observations": [
                           {
                             "evidence": "learner selection",
@@ -3505,8 +3617,11 @@
                           "hints_used": 0,
                           "policy_version": "assistance-evidence-policy.v1"
                         },
+                        "content_signature": null,
                         "different_prompt": true,
-                        "scoring": "exact_option_v1"
+                        "novelty_status": "different_authored_prompt",
+                        "scoring": "exact_option_v1",
+                        "source_item_id": "xingce.data-analysis.growth-rate.synthetic-01"
                       },
                       "hints_used": 0,
                       "independently_answered": true,
@@ -3560,7 +3675,7 @@
                 "evidence_count": 1,
                 "failures": 0.35,
                 "irt_theta": -0.04375,
-                "last_updated_at": "2026-07-12T01:51:23.690032+00:00",
+                "last_updated_at": "2026-07-12T04:02:20.158866+00:00",
                 "learner_id": "integration-learner",
                 "mastery": 0.3179550732662862,
                 "provenance": [
@@ -3570,6 +3685,7 @@
                       "confidence": 0.74,
                       "features": {
                         "adapter_version": "deterministic-domain-adapters-v1",
+                        "content_signature": null,
                         "domain_observations": [
                           {
                             "evidence": "learner selection",
@@ -3623,7 +3739,7 @@
                 "evidence_count": 2,
                 "failures": 0.35,
                 "irt_theta": 0.08398393893641105,
-                "last_updated_at": "2026-07-12T01:51:23.690144+00:00",
+                "last_updated_at": "2026-07-12T04:02:20.158980+00:00",
                 "learner_id": "integration-learner",
                 "mastery": 0.5473890567792533,
                 "provenance": [
@@ -3633,6 +3749,7 @@
                       "confidence": 0.74,
                       "features": {
                         "adapter_version": "deterministic-domain-adapters-v1",
+                        "content_signature": null,
                         "domain_observations": [
                           {
                             "evidence": "learner selection",
@@ -3686,8 +3803,11 @@
                           "hints_used": 0,
                           "policy_version": "assistance-evidence-policy.v1"
                         },
+                        "content_signature": null,
                         "different_prompt": true,
-                        "scoring": "exact_option_v1"
+                        "novelty_status": "different_authored_prompt",
+                        "scoring": "exact_option_v1",
+                        "source_item_id": "xingce.data-analysis.growth-rate.synthetic-01"
                       },
                       "hints_used": 0,
                       "independently_answered": true,
@@ -3746,8 +3866,11 @@
                         "hints_used": 0,
                         "policy_version": "assistance-evidence-policy.v1"
                       },
+                      "content_signature": null,
                       "different_prompt": true,
-                      "scoring": "exact_option_v1"
+                      "novelty_status": "different_authored_prompt",
+                      "scoring": "exact_option_v1",
+                      "source_item_id": "xingce.data-analysis.growth-rate.synthetic-01"
                     },
                     "hints_used": 0,
                     "independently_answered": true,
@@ -3771,8 +3894,11 @@
                     "hints_used": 0,
                     "policy_version": "assistance-evidence-policy.v1"
                   },
+                  "content_signature": null,
                   "different_prompt": true,
-                  "scoring": "exact_option_v1"
+                  "novelty_status": "different_authored_prompt",
+                  "scoring": "exact_option_v1",
+                  "source_item_id": "xingce.data-analysis.growth-rate.synthetic-01"
                 },
                 "hints_used": 0,
                 "independently_answered": true,

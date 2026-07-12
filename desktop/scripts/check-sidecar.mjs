@@ -19,6 +19,7 @@ const runtimeDirectory = checkBundledSidecar
   : resolve(desktopRoot, "src-tauri/resources/sidecar-runtime");
 const EXPECTED_SIDECAR_VERSION = "0.3.0";
 const EXPECTED_STUDY_PACK_FEATURE = "local-cited-study-pack-v1";
+const EXPECTED_PRODUCT_ACTIVITY_COUNT = 2;
 const TEST_INPUT = "LUMI_DESKTOP_TEST_INPUT_NON_LEARNER";
 const TEST_EVIDENCE = Object.freeze({
   test_input_non_learner: true,
@@ -570,7 +571,15 @@ try {
   assertCheck(capabilities.body.api_version === "v1", "api_version_mismatch");
   assertCheck(capabilities.body.local_only === true, "non_local_capability");
   assertCheck(capabilities.body.scenario_count === 42, "scenario_count_mismatch");
+  assertCheck(
+    capabilities.body.product_activity_count === EXPECTED_PRODUCT_ACTIVITY_COUNT,
+    "product_activity_count_mismatch",
+  );
   assertCheck(capabilities.body.features?.includes(EXPECTED_STUDY_PACK_FEATURE), "study_pack_capability_missing");
+  assertCheck(
+    capabilities.body.features?.includes("local-product-activity-catalog-v1"),
+    "product_activity_capability_missing",
+  );
   const advertisedEndpoints = capabilities.body.endpoints ?? {};
   assertCheck(advertisedEndpoints.study_pack_create === "POST /v1/study-packs", "study_pack_create_route_missing");
   assertCheck(advertisedEndpoints.study_pack_item_attempt === "POST /v1/study-pack-items/{artifact_id}/attempts", "study_pack_attempt_route_missing");

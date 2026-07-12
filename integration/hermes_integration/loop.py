@@ -11,6 +11,7 @@ from typing import Any, Mapping
 
 from hermes_domains.adapters import score_attempt, score_verification_response
 from hermes_domains.contract import validate_fixture
+from hermes_domains.product_activity import validate_product_activity_runtime
 from hermes_kt.tool_api import HermesKTTool
 from hermes_runtime.diff import state_diff
 from hermes_runtime.machine import AgentRuntime, RunResult
@@ -32,6 +33,17 @@ NO_ERROR_MODEL_VERSION = "deterministic-no-error-gate-v1"
 MASTERY_MODEL_VERSION = "bkt-pfa-rasch-ensemble-v1"
 VERIFY_MODEL_VERSION = "independent-transfer-check-v1"
 FIXTURE_ROOT = Path(__file__).resolve().parents[2] / "domains" / "fixtures"
+
+
+def validate_learning_activity(fixture: Mapping[str, Any]) -> None:
+    provenance = fixture.get("provenance")
+    if (
+        isinstance(provenance, Mapping)
+        and provenance.get("content_origin") == "local_versioned_export"
+    ):
+        validate_product_activity_runtime(fixture)
+        return
+    validate_fixture(fixture)
 
 
 @dataclass(frozen=True, slots=True)
@@ -101,7 +113,7 @@ class IntegrationSession:
         learner_id: str = "integration-learner",
         evidence_origin: str = "evaluation_fixture",
     ) -> None:
-        validate_fixture(fixture)
+        validate_learning_activity(fixture)
         self.fixture = dict(fixture)
         self.scenario = scenario
         self.store = store
@@ -582,14 +594,17 @@ def run_attempt(
     *,
     run_id: str | None = None,
     learner_id: str = "local-learner",
+    evidence_origin: str = "evaluation_fixture",
 ) -> tuple[IntegrationSession, RunResult]:
-    """Start one real learner session and interrupt after issuing the probe.
+    """Start one staged session and interrupt after issuing the probe.
 
     The response is scored in memory. Only a redacted evidence projection and a
     one-way digest enter the append-only trace. Later responses must arrive via
-    :func:`continue_attempt`; none are invented.
+    :func:`continue_attempt`; none are invented. Direct callers default to the
+    private evaluation namespace. The production sidecar must explicitly pass
+    ``human_local_interactive`` for a real learner submission.
     """
-    validate_fixture(fixture)
+    validate_learning_activity(fixture)
     if not isinstance(response, str) or not response.strip():
         raise ValueError("response must be non-empty text")
     if not 0 <= confidence <= 1:
@@ -617,7 +632,7 @@ def run_attempt(
             scenario,
             store,
             learner_id=learner_id,
-            evidence_origin="human_local_interactive",
+            evidence_origin=evidence_origin,
         )
         result = session.runtime.run(session.new_state(run_id), interrupt_after=3)
         transfer_store = True

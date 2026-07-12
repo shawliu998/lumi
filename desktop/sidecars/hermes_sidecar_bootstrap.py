@@ -12,8 +12,30 @@ import time
 # extraction directory without changing the shared service package.
 if getattr(sys, "frozen", False):
     from hermes_service import catalog
+    from hermes_domains import product_activity
 
     catalog.FIXTURE_ROOT = Path(sys._MEIPASS) / "domains" / "fixtures"
+    catalog.PRODUCT_ACTIVITY_PAYLOAD = (
+        Path(sys._MEIPASS)
+        / "domains"
+        / "local_content"
+        / "xingce"
+        / "p031-data-analysis-v1.json"
+    )
+    product_activity.DEFAULT_RELEASE_ROOT = (
+        Path(sys._MEIPASS)
+        / "domains"
+        / "content"
+        / "xingce"
+        / "p031-data-analysis-v1"
+    )
+    product_activity.DEFAULT_MANIFEST_PATH = (
+        product_activity.DEFAULT_RELEASE_ROOT / "manifest.json"
+    )
+    product_activity.DEFAULT_OVERLAY_PATH = (
+        product_activity.DEFAULT_RELEASE_ROOT / "pedagogical-overlay.json"
+    )
+    product_activity.DEFAULT_PAYLOAD_PATH = catalog.PRODUCT_ACTIVITY_PAYLOAD
 
 from hermes_service.cli import main
 

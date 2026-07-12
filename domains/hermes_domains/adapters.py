@@ -9,6 +9,21 @@ from .models import CauseCandidate, ScoreObservation, ScoreResult
 from .text_semantics import has_affirmed_alias
 
 
+def _validate_scoring_activity(fixture: Mapping[str, Any]) -> None:
+    provenance = fixture.get("provenance")
+    if (
+        isinstance(provenance, Mapping)
+        and provenance.get("content_origin") == "local_versioned_export"
+    ):
+        # Imported lazily to keep the representative synthetic contract and
+        # product-content contract separate without introducing an import cycle.
+        from .product_activity import validate_product_activity_runtime
+
+        validate_product_activity_runtime(fixture)
+        return
+    validate_fixture(fixture)
+
+
 def _contains(text: str, term: str) -> bool:
     return has_affirmed_alias(text, (term,))
 
@@ -121,7 +136,7 @@ def _result(
 def score_attempt(fixture: Mapping[str, Any], response: str) -> ScoreResult:
     """Score one response with the fixture-selected deterministic adapter."""
 
-    validate_fixture(fixture)
+    _validate_scoring_activity(fixture)
     adapter = fixture["scoring"]["adapter"]
     if adapter == "xingce_mcq_v1":
         return _score_xingce(fixture, response)
@@ -141,7 +156,7 @@ def score_verification_response(
     each transfer task remains inspectable, versionable, and domain specific.
     """
 
-    validate_fixture(fixture)
+    _validate_scoring_activity(fixture)
     condition = fixture["independent_verify"]["pass_condition"]
     scorer = str(condition["scorer"])
     folded = response.strip().casefold()

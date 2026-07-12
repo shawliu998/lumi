@@ -170,6 +170,13 @@ Gate:
   Shenlun repository remains untouched, and the Mac app is rebuilt only for the
   completed release candidate.
 
+Current bounded evidence (2026-07-12): the signed local content import,
+ProductActivity compiler, safe API, real-material desktop/narrow first-answer
+UI, release gates, and rebuilt debug Mac app pass. Browser QA intentionally
+stopped before submission. The acceptance script remains open until a real
+learner completes probe, teaching, the differently signed transfer item, KT
+commit, and review-task projection.
+
 ### P0.4 Shenlun process coach
 
 Deliver one owned representative path:

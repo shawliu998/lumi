@@ -148,13 +148,20 @@ def build_local_payload(manifest: dict[str, Any], source_root: Path) -> dict[str
 
 
 def default_source_root(manifest: dict[str, Any]) -> Path:
+    name_parts = manifest["source_bundle"].get("name_parts")
+    if (
+        not isinstance(name_parts, list)
+        or len(name_parts) < 2
+        or any(not isinstance(part, str) or not part for part in name_parts)
+    ):
+        raise ImportContractError("source bundle name_parts must contain non-empty path fragments")
     return (
         Path.home()
         / "Documents"
         / "xingcetiku"
         / "data"
         / "final"
-        / manifest["source_bundle"]["name"]
+        / "-".join(name_parts)
     )
 
 

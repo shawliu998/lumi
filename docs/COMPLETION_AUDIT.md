@@ -15,6 +15,11 @@ mean population learning efficacy or production distribution has been proved.
   active P0.3.1 gate must connect one real Xingce item through subtype-specific
   diagnosis, probe, targeted teaching, unseen parallel transfer, independent KT
   commit, and explainable review scheduling.
+- P0.3.1 now has one rights-gated local real-item activity: a signed first item
+  and different signed transfer item, an authored probe/teaching overlay, safe
+  activity API, real-material client, and Mac/browser evidence through the
+  unanswered first-answer screen. A real learner has not yet completed the
+  probe → teaching → transfer → KT → review path, so the milestone remains open.
 - P0.4 Shenlun, user-facing Interview, P1 durable agent infrastructure, and P2
   data/evaluation infrastructure remain unimplemented production work.
 - The current 42 representative synthetic contracts are backend coverage, not
@@ -34,6 +39,7 @@ and must not be combined into a claim that the end-to-end P0 product is complete
 | Loopback-only local service | complete | `service/` tests; health/capabilities/real-attempt/trace/replay/skill-report endpoints | public batch/demo run creation is disabled; internal evaluation traces remain separately auditable |
 | Real-attempt safety projection | complete | release `attempt_api` and `cohort_prior_guardrail` gates; redacted API evidence artifact | synthetic engineering priors are not real cohort evidence |
 | Stepwise learner continuation | complete for local v1 | release `attempt_continuation` gate; versioned probe/verification HTTP trace and replay | single local learner/session; no cross-device concurrency claim |
+| P0.3.1 real Xingce product activity | in progress | `domains/content/xingce/p031-data-analysis-v1`; ProductActivity/HTTP/client tests; `client/design-qa.md`; release cut `run-20260712T040331Z`; local debug `Lumi.app` tree `81b974da2f4caeaa9558fd2bc638c61fa720ad0b546c1a0a22f7c6835c5abc4d` | signed local content and unanswered browser state pass; real learner completion, KT commit, and review-task evidence remain required |
 | Progressive assistance and misconception dossier | complete for P0.1 | six authored levels; `progressive_assistance` and `misconception_dossier` gates; 42 resolved probe/teaching contracts | engineering policy is uncalibrated; synonym/ASR coverage is conservative |
 | Explainable TodayPlan and independent ReviewSchedule | complete for bounded P0.2 | `evals/reports/latest.json` → `today_plan_schedule`; closed schemas; schedule/API tests; `client/design-qa.md` | only completed human-local attempts seed tasks; one owned launchable fixture; +1/+3 and durations are uncalibrated; activity is a same-fixture retest; completion cannot write KT; no population-effect claim |
 | Khanmigo-grounded, non-AI-slop client | complete for P0.2 | `client/design-qa.md`; 28 dimension/hash-gated artifacts: 17 current P0.2 states/comparisons plus 11 retained P0.1 artifacts; `scripts/check_client_artifacts.py` | one launchable Xingce fixture; no broad usability or public design-system claim |

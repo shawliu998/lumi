@@ -473,3 +473,33 @@ scope. Broader scheduling, profile, target-setting, longitudinal knowledge
 tracking, and cohort products remain unavailable and are not simulated.
 
 final result: passed
+
+## P0.3.1 real Xingce activity recapture — 2026-07-12
+
+The connected client was recaptured against the current sidecar and the
+ignored, signature-checked `p031-data-analysis-v1` local payload. This pass did
+not submit or fabricate a learner answer.
+
+Verified visible states:
+
+- the preparation panel identifies a 2023 real-item source and the bound local
+  release before enabling `开始作答`;
+- the first-answer view renders the real material, stem, ordered A–D options,
+  confidence, elapsed time, and an optional private scratch area;
+- no answer, explanation, correct-option marker, scorer field, or synthetic
+  fallback is present before submission;
+- the desktop panel uses the existing restrained Khanmigo-derived shell,
+  neutral surfaces, one purple action accent, compact borders, and no
+  decorative gradients, chat bubbles, generated avatars, or inflated metric
+  cards;
+- at `640 × 800`, the page has `scrollWidth === clientWidth === 640`, answer
+  options become one column, the side navigation is removed, and the full
+  submit control remains reachable;
+- the desktop panel body is the only vertical overflow container
+  (`466px` client height / `545px` scroll height); the material region is also
+  bounded and scroll-safe for longer sources;
+- browser console warnings and errors are `[]`.
+
+The activity stopped at the unanswered first question. Probe, teaching,
+transfer submission, KT commit, and delayed review still require a real learner
+response and are not claimed by this visual pass.
