@@ -558,6 +558,8 @@ const environment = {
   PYTHONPYCACHEPREFIX: isolatedPycache,
   PYTHONNOUSERSITE: "1",
   LUMI_INTERNAL_STUDY_PACK_ATTEMPT_ORIGIN: EVALUATION_ATTEMPT_ORIGIN,
+  LUMI_INTERNAL_LEARNING_ATTEMPT_ORIGIN: EVALUATION_ATTEMPT_ORIGIN,
+  LUMI_INTERNAL_EVALUATION_PROJECTION: "1",
 };
 const bundleTreeBefore = checkBundledSidecar ? await bundleTreeDigest(appPath) : undefined;
 const bundleMtimeBefore = checkBundledSidecar ? (await lstat(appPath)).mtimeMs : undefined;

@@ -1,0 +1,442 @@
+{
+  "schema_version": "lumi.reasoning-domain-records.v0",
+  "pack_id": "lumi-conditional-reasoning-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "review_status": "release_ready",
+  "records": [
+    {
+      "record_id": "D01",
+      "role": "entry_diagnostic",
+      "title": "只有：从结果回推必要条件",
+      "prompt": "在本题设定中，园区严格执行规则（不考虑违规领取、记录错误或系统故障）：只有完成门禁登记，才能领取工作牌。小周已经领取工作牌。以下哪项一定为真？",
+      "response_mode": "single_choice",
+      "assessment_format": "conclusion_selection",
+      "options": {
+        "A": "小周已经完成门禁登记。",
+        "B": "任何完成门禁登记的人都已经领取工作牌。",
+        "C": "小周领取工作牌是因为他认识园区工作人员。",
+        "D": "小周无需完成门禁登记也能领取工作牌。"
+      },
+      "correct_option": "A",
+      "formalization": "badge_collected -> registration_completed; badge_collected; therefore registration_completed",
+      "answer_proof": "题设中的必要条件形式为领取工作牌→完成登记；已知前件成立，应用肯定前件式推出后件成立。",
+      "distractor_map": {
+        "B": "converse",
+        "C": "unsupported_premise",
+        "D": "contradicts_rule"
+      },
+      "target_skill_ids": [
+        "xingce.judgment.conditional.language_direction",
+        "xingce.judgment.conditional.necessary_sufficient_role"
+      ],
+      "candidate_misconception_ids": [
+        "M-DIR",
+        "M-ROLE",
+        "M-READ"
+      ],
+      "independence_group": "entry-direction-01",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "record_sha256": "05b6e22719cd7476a8f36763721fecdc899bc679f58a9f0e55c979b46c5c31b2"
+    },
+    {
+      "record_id": "D02",
+      "role": "routing_diagnostic",
+      "title": "只要：用逆否方向推理",
+      "prompt": "在本题设定的逻辑系统中，规则为：若设备完成校验，指示灯必亮（不考虑故障等其他因素）。现知某设备的指示灯没有亮。以下哪项可以必然推出？",
+      "response_mode": "single_choice",
+      "assessment_format": "conclusion_selection",
+      "options": {
+        "A": "该设备完成校验后也不一定会亮。",
+        "B": "该设备没有完成校验。",
+        "C": "该设备之前一定亮过。",
+        "D": "该设备不需要校验。"
+      },
+      "correct_option": "B",
+      "formalization": "validated -> light_on; not light_on; therefore not validated",
+      "answer_proof": "在题设的封闭规则中，这是否定后件的逆否推理：若完成校验必亮，而未亮，则未完成校验。",
+      "distractor_map": {
+        "A": "contradicts_rule",
+        "C": "unsupported_premise",
+        "D": "irrelevant_conclusion"
+      },
+      "target_skill_ids": [
+        "xingce.judgment.conditional.inference_validity"
+      ],
+      "candidate_misconception_ids": [
+        "M-INF",
+        "M-READ"
+      ],
+      "independence_group": "entry-inference-01",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "record_sha256": "bd3196ba99ccda989e7ddc6ee8edb69362c8bf5a2a49b880eb7d52d32b0e6e88"
+    },
+    {
+      "record_id": "P01",
+      "role": "probe",
+      "title": "最小探查：只有的箭头方向",
+      "prompt": "“只有通过身份核验，才能进入资料室”应写成哪一种关系？",
+      "response_mode": "single_choice",
+      "assessment_format": "relation_encoding",
+      "options": {
+        "A": "通过身份核验 → 进入资料室",
+        "B": "进入资料室与身份核验没有关系",
+        "C": "进入资料室 → 通过身份核验",
+        "D": "进入资料室 ↔ 通过身份核验"
+      },
+      "correct_option": "C",
+      "formalization": "enter_archive_room -> identity_verified",
+      "answer_proof": "“只有 A，才 B”把 A 设为 B 的必要条件，故 B→A。",
+      "distractor_map": {
+        "A": "reversed_implication",
+        "B": "ignores_condition",
+        "D": "upgrades_one_way_to_biconditional"
+      },
+      "target_skill_ids": [
+        "xingce.judgment.conditional.language_direction"
+      ],
+      "candidate_misconception_ids": [
+        "M-DIR",
+        "M-READ"
+      ],
+      "discriminates": [
+        "M-DIR",
+        "M-READ"
+      ],
+      "candidate_evidence_map": {
+        "A": {
+          "M-DIR": "support",
+          "M-READ": "insufficient"
+        },
+        "B": {
+          "M-DIR": "insufficient",
+          "M-READ": "insufficient"
+        },
+        "C": {
+          "M-DIR": "refute",
+          "M-READ": "refute"
+        },
+        "D": {
+          "M-DIR": "insufficient",
+          "M-READ": "insufficient"
+        }
+      },
+      "independence_group": "probe-direction-01",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "record_sha256": "b9386a78ff74f99f619c0dc356566efaae41965f4a356f084570e88f4ca400ab"
+    },
+    {
+      "record_id": "P02",
+      "role": "probe",
+      "title": "最小探查：必要不等于充分",
+      "prompt": "规则是“领取设备 → 已登记”。下列哪项判断最恰当地说明“已登记”不是“领取设备”的充分条件？",
+      "response_mode": "single_choice",
+      "assessment_format": "countermodel_selection",
+      "options": {
+        "A": "“已登记”是领取设备的必要条件，所以已登记的人一定已经领取设备。",
+        "B": "某人未登记，也没有领取设备，因此无法判断“已登记”是否充分。",
+        "C": "某人领取了设备，却没有登记，因此“已登记”不是充分条件。",
+        "D": "某人已登记，但未领取设备；这与规则相容，所以已登记不必推出领取设备。"
+      },
+      "correct_option": "D",
+      "formalization": "received -> registered; registered and not received is a compatible countermodel to registered -> received",
+      "answer_proof": "“已登记且未领取”不违反领取→登记，同时反驳登记→领取，因此说明登记不是充分条件。",
+      "distractor_map": {
+        "A": "necessary_as_sufficient",
+        "B": "compatible_but_non_discriminating",
+        "C": "violates_rule"
+      },
+      "target_skill_ids": [
+        "xingce.judgment.conditional.necessary_sufficient_role"
+      ],
+      "candidate_misconception_ids": [
+        "M-ROLE",
+        "M-READ"
+      ],
+      "discriminates": [
+        "M-ROLE",
+        "M-READ"
+      ],
+      "candidate_evidence_map": {
+        "A": {
+          "M-ROLE": "support",
+          "M-READ": "insufficient"
+        },
+        "B": {
+          "M-ROLE": "insufficient",
+          "M-READ": "insufficient"
+        },
+        "C": {
+          "M-ROLE": "insufficient",
+          "M-READ": "insufficient"
+        },
+        "D": {
+          "M-ROLE": "refute",
+          "M-READ": "refute"
+        }
+      },
+      "independence_group": "probe-role-01",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "record_sha256": "94eaa1cde70b06289987a7106f5316e7c7c8ca3bd5e7ebd044fce3487090b163"
+    },
+    {
+      "record_id": "P03",
+      "role": "probe",
+      "title": "最小探查：脱离语境的条件推理",
+      "prompt": "已知 P→Q，且 Q 为真。下列哪项能必然推出？",
+      "response_mode": "single_choice",
+      "assessment_format": "entailment_selection",
+      "options": {
+        "A": "P 为假。",
+        "B": "无法仅凭这些信息确定 P 的真假。",
+        "C": "P 为真。",
+        "D": "Q 为假。"
+      },
+      "correct_option": "B",
+      "formalization": "P -> Q; Q; P is undetermined",
+      "answer_proof": "Q 为真既可能来自 P，也可能由其他情况造成；由后件肯定前件属于无效推理。",
+      "distractor_map": {
+        "A": "unsupported_negation",
+        "C": "affirming_consequent",
+        "D": "contradicts_given_fact"
+      },
+      "target_skill_ids": [
+        "xingce.judgment.conditional.inference_validity"
+      ],
+      "candidate_misconception_ids": [
+        "M-INF",
+        "M-READ"
+      ],
+      "discriminates": [
+        "M-INF",
+        "M-READ"
+      ],
+      "candidate_evidence_map": {
+        "A": {
+          "M-INF": "insufficient",
+          "M-READ": "insufficient"
+        },
+        "B": {
+          "M-INF": "refute",
+          "M-READ": "refute"
+        },
+        "C": {
+          "M-INF": "support",
+          "M-READ": "insufficient"
+        },
+        "D": {
+          "M-INF": "insufficient",
+          "M-READ": "insufficient"
+        }
+      },
+      "independence_group": "probe-inference-01",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "record_sha256": "64355fa3870836a79c8bae3b4ff2b3243a57415407cff07239493c2c4781d086"
+    },
+    {
+      "record_id": "T01",
+      "role": "teaching_asset",
+      "title": "一条箭头和一个反例",
+      "teaching_strategy": "arrow_counterexample",
+      "logic_rule": "只有 A，才 B 等价于 B→A；A 不足以推出 B。",
+      "teaching_content": "把“只有完成登记，才能领取工作牌”先改写为“领取工作牌→完成登记”。再检验反向：完成登记的人可以暂时不领取工作牌，所以不能从登记推出领取。",
+      "target_skill_ids": [
+        "xingce.judgment.conditional.language_direction"
+      ],
+      "candidate_misconception_ids": [
+        "M-DIR"
+      ],
+      "selected_when": "P01 支持 M-DIR；若 P01 不足以区分，则不自动选择本资产。",
+      "independence_group": "teach-direction-01",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "record_sha256": "29841fe766976fd78aaeec66d8b440848c1a0519f1ee282d99f7e43b006d8625"
+    },
+    {
+      "record_id": "T02",
+      "role": "teaching_asset",
+      "title": "前提不是保证",
+      "teaching_strategy": "necessary_sufficient_contrast",
+      "logic_rule": "B→A 表示 A 是 B 的必要条件；A∧非B 与该规则相容，因此 A 不必充分。",
+      "teaching_content": "“登记”是“领取”的必要条件，只说明凡是领取设备的人都已登记；它并不说明凡是已登记者都领取了设备。检验反向时，只要找到“已登记但未领取”且不违背规则的情形，就能知道登记不是充分条件。",
+      "target_skill_ids": [
+        "xingce.judgment.conditional.necessary_sufficient_role"
+      ],
+      "candidate_misconception_ids": [
+        "M-ROLE"
+      ],
+      "selected_when": "P02 支持 M-ROLE；若 P02 不足以区分，则不自动选择本资产。",
+      "independence_group": "teach-role-01",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "record_sha256": "d442c759a1f8c65de8c07fa1e796b8fa7a2ec57da4240c37f845b7ef9c44524c"
+    },
+    {
+      "record_id": "T03",
+      "role": "teaching_asset",
+      "title": "条件推理四格",
+      "teaching_strategy": "validity_grid",
+      "logic_rule": "P→Q 允许 P→Q 与 非Q→非P，不允许 Q→P 或 非P→非Q。",
+      "teaching_content": "对 P→Q：P 为真可以推出 Q；Q 为真不能推出 P；Q 为假可以推出 P 为假；P 为假不能推出 Q 为假。先看已知事实位于箭头哪一侧，再决定能否顺着或逆否地走。",
+      "target_skill_ids": [
+        "xingce.judgment.conditional.inference_validity"
+      ],
+      "candidate_misconception_ids": [
+        "M-INF"
+      ],
+      "selected_when": "P03 支持 M-INF；若 P03 不足以区分，则不自动选择本资产。",
+      "independence_group": "teach-inference-01",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "record_sha256": "0e3ed43d11a0809b1c69e387a4406979ba6566d63a723ea27ad6c30ea2ab5a34"
+    },
+    {
+      "record_id": "V01",
+      "role": "independent_transfer",
+      "title": "独立迁移：安全授权",
+      "prompt": "在本题设定中，实验中心的授权规则被严格执行，不考虑违规操作或系统错误。未取得安全授权的人员不得启用操作台。以下哪组系统记录不可能同时为真？",
+      "response_mode": "single_choice",
+      "assessment_format": "state_compatibility",
+      "options": {
+        "A": "已取得安全授权，操作台未启用。",
+        "B": "已取得安全授权，操作台已启用。",
+        "C": "未取得安全授权，操作台未启用。",
+        "D": "未取得安全授权，操作台已启用。"
+      },
+      "correct_option": "D",
+      "formalization": "console_enabled -> safety_authorized; not safety_authorized and console_enabled is impossible",
+      "answer_proof": "规则等价于启用操作台→取得安全授权；“未授权且已启用”违反该单向条件，其他三组记录均与规则相容。",
+      "distractor_map": {
+        "A": "compatible_necessary_not_sufficient",
+        "B": "compatible_both_true",
+        "C": "compatible_no_action"
+      },
+      "target_skill_ids": [
+        "xingce.judgment.conditional.language_direction",
+        "xingce.judgment.conditional.necessary_sufficient_role"
+      ],
+      "candidate_misconception_ids": [
+        "M-DIR",
+        "M-ROLE"
+      ],
+      "requires_no_hints": true,
+      "independence_group": "transfer-direction-01",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "record_sha256": "50929a7385c9f14ba513abf3b648ecc8c7158bf12b7a1de4d7c410e3ef97ef0a"
+    },
+    {
+      "record_id": "V02",
+      "role": "independent_transfer",
+      "title": "独立迁移：附件齐备",
+      "prompt": "在本题设定的封闭逻辑系统中，只要申请通过终审，系统就会确认全部材料齐备，不考虑遗漏或故障。审查员看到某申请的材料未被确认为齐备，于是判断该申请没有通过终审。对这一推理的评价正确的是哪项？",
+      "response_mode": "single_choice",
+      "assessment_format": "argument_evaluation",
+      "options": {
+        "A": "推理无效，因为它否定了条件句的前件。",
+        "B": "推理有效，因为它使用了“终审通过 → 材料齐备”的逆否形式。",
+        "C": "推理无效，因为材料齐备只是终审通过的必要条件。",
+        "D": "推理有效，因为材料齐备能够推出终审通过。"
+      },
+      "correct_option": "B",
+      "formalization": "final_approved -> materials_complete; not materials_complete; therefore not final_approved",
+      "answer_proof": "“材料未被确认为齐备”是否定后件；由终审通过→材料齐备可按逆否推出未通过终审，因此审查员的推理有效。",
+      "distractor_map": {
+        "A": "mislabels_contrapositive",
+        "C": "necessary_condition_misread",
+        "D": "converse_reasoning"
+      },
+      "target_skill_ids": [
+        "xingce.judgment.conditional.inference_validity"
+      ],
+      "candidate_misconception_ids": [
+        "M-INF"
+      ],
+      "requires_no_hints": true,
+      "independence_group": "transfer-inference-01",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "record_sha256": "34c0d932ac44bf82bf2486296e6b16c65432728e1d2203b37998afebb38040b7"
+    },
+    {
+      "record_id": "R01",
+      "role": "delayed_review",
+      "title": "延迟复测：保密培训",
+      "prompt": "在本题设定中，档案查阅规则被严格执行，不考虑违规操作、记录错误或系统故障：查阅档案的人都完成过保密培训。以下哪组记录不可能同时为真？",
+      "response_mode": "single_choice",
+      "assessment_format": "state_compatibility",
+      "options": {
+        "A": "已完成保密培训，尚未查阅档案。",
+        "B": "未完成保密培训，尚未查阅档案。",
+        "C": "未完成保密培训，已经查阅档案。",
+        "D": "已完成保密培训，已经查阅档案。"
+      },
+      "correct_option": "C",
+      "formalization": "archive_read -> confidentiality_training; not confidentiality_training and archive_read is impossible",
+      "answer_proof": "规则等价于查阅档案→完成保密培训；“未培训且已查阅”违反规则，其他三组记录均与规则相容。",
+      "distractor_map": {
+        "A": "compatible_necessary_not_sufficient",
+        "B": "compatible_no_action",
+        "D": "compatible_both_true"
+      },
+      "target_skill_ids": [
+        "xingce.judgment.conditional.language_direction",
+        "xingce.judgment.conditional.necessary_sufficient_role"
+      ],
+      "candidate_misconception_ids": [
+        "M-DIR",
+        "M-ROLE"
+      ],
+      "eligible_after_transfer_ids": [
+        "V01"
+      ],
+      "scheduled_after": "P3D",
+      "requires_no_hints": true,
+      "independence_group": "delayed-direction-01",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "record_sha256": "a858009f54e447c193c026f493c86d4ca01f5be13dac5c72d0635e575b67d276"
+    },
+    {
+      "record_id": "R02",
+      "role": "delayed_review",
+      "title": "延迟复测：二次验证",
+      "prompt": "在本题设定的封闭逻辑系统中，只要账户完成二次验证，系统必显示已验证，不考虑系统故障等其他因素。下列哪项推理有效？",
+      "response_mode": "single_choice",
+      "assessment_format": "inference_evaluation",
+      "options": {
+        "A": "某账户没有显示已验证，所以它没有完成二次验证。",
+        "B": "某账户显示已验证，所以它完成了二次验证。",
+        "C": "某账户没有完成二次验证，所以它没有显示已验证。",
+        "D": "某账户完成二次验证，所以它没有显示已验证。"
+      },
+      "correct_option": "A",
+      "formalization": "two_factor_completed -> verified_displayed; not verified_displayed; therefore not two_factor_completed",
+      "answer_proof": "选项 A 是否定后件的逆否推理。B 由后件肯定前件，C 由前件否定后件，D 与题设规则矛盾。",
+      "distractor_map": {
+        "B": "affirming_consequent",
+        "C": "denying_antecedent",
+        "D": "contradicts_rule"
+      },
+      "target_skill_ids": [
+        "xingce.judgment.conditional.inference_validity"
+      ],
+      "candidate_misconception_ids": [
+        "M-INF"
+      ],
+      "eligible_after_transfer_ids": [
+        "V02"
+      ],
+      "scheduled_after": "P3D",
+      "requires_no_hints": true,
+      "independence_group": "delayed-inference-01",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "record_sha256": "f06050daa8e7e054dcbbe6b3f3104f8e7663ee2becc19048743af978663b93c3"
+    }
+  ]
+}

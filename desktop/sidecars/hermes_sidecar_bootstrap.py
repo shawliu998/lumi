@@ -36,6 +36,16 @@ if getattr(sys, "frozen", False):
         product_activity.DEFAULT_RELEASE_ROOT / "pedagogical-overlay.json"
     )
     product_activity.DEFAULT_PAYLOAD_PATH = catalog.PRODUCT_ACTIVITY_PAYLOAD
+    os.environ.setdefault(
+        "LUMI_JUDGMENT_PACK_ROOT",
+        str(
+            Path(sys._MEIPASS)
+            / "domains"
+            / "released"
+            / "judgment"
+            / "lumi-conditional-reasoning-v0-0.1.0-reviewed-local-20260713"
+        ),
+    )
 
 from hermes_service.cli import main
 

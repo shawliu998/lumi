@@ -45,6 +45,12 @@ def _sha256(path: Path) -> str:
 def _make_test_only_reviewed_copy(root: Path) -> None:
     """Construct a release-shaped copy that never mutates the authored draft."""
 
+    source_manifest = _read_json(root / "manifest.json")
+    source_records = _read_json(root / "records.json")
+    source_manifest_sha256 = _sha256(root / "manifest.json")
+    source_artifact_hashes = {artifact["path"]: artifact["sha256"] for artifact in source_manifest["artifacts"]}
+    source_record_hashes = {record["record_id"]: record["record_sha256"] for record in source_records["records"]}
+
     for name in ("skill-graph.json", "misconception-taxonomy.json"):
         document = _read_json(root / name)
         document["pack_version"] = QA_PACK_VERSION
@@ -71,6 +77,36 @@ def _make_test_only_reviewed_copy(root: Path) -> None:
         "policy": "QA-only synthetic attestations bind this disposable copy; no repository draft is approved.",
         "review_attestations": [],
     }
+    manifest["artifacts"].append({"path": "review-evidence.json", "sha256": ""})
+    _write_json(
+        root / "review-evidence.json",
+        {
+            "schema_version": "lumi.reasoning-review-evidence.v1",
+            "pack_id": manifest["pack_id"],
+            "source_pack_version": "0.1.0-draft",
+            "source_manifest_sha256": source_manifest_sha256,
+            "source_artifact_hashes": source_artifact_hashes,
+            "source_record_hashes": source_record_hashes,
+            "manual_review_workbook": {"name": "qa-test-only.xlsx", "sha256": "a" * 64},
+            "owner_release_authorization": {
+                "kind": "evaluation_fixture_test_only",
+                "recorded_at": "2026-07-13T00:00:00Z",
+                "scope": "evaluation_fixture_only",
+            },
+            "reviewer_transcriptions": [
+                {
+                    "review_kind": "logic", "reviewer_id": "qa-synthetic-logic-reviewer",
+                    "reviewed_at": "2026-07-13T00:00:00Z", "reviewed_at_precision": "instant",
+                    "decision": "test_only", "signature": "synthetic", "hash_confirmation": "test_only", "notes": "no_human_approval",
+                },
+                {
+                    "review_kind": "editorial_rights", "reviewer_id": "qa-synthetic-rights-reviewer",
+                    "reviewed_at": "2026-07-13T00:00:01Z", "reviewed_at_precision": "instant",
+                    "decision": "test_only", "signature": "synthetic", "hash_confirmation": "test_only", "notes": "no_human_approval",
+                },
+            ],
+        },
+    )
     for artifact in manifest["artifacts"]:
         artifact["sha256"] = _sha256(root / artifact["path"])
     _write_json(root / "manifest.json", manifest)
@@ -84,6 +120,7 @@ def _make_test_only_reviewed_copy(root: Path) -> None:
             "status": "approved",
             "reviewer_id": "qa-synthetic-logic-reviewer",
             "reviewed_at": "2026-07-13T00:00:00Z",
+            "reviewed_at_precision": "instant",
             "checklist": ["test_only", "no_human_approval"],
             "manifest_sha256": manifest_hash,
             "artifact_hashes": artifact_hashes,
@@ -94,6 +131,7 @@ def _make_test_only_reviewed_copy(root: Path) -> None:
             "status": "approved",
             "reviewer_id": "qa-synthetic-rights-reviewer",
             "reviewed_at": "2026-07-13T00:00:01Z",
+            "reviewed_at_precision": "instant",
             "checklist": ["test_only", "no_human_approval"],
             "manifest_sha256": manifest_hash,
             "artifact_hashes": artifact_hashes,
@@ -101,7 +139,7 @@ def _make_test_only_reviewed_copy(root: Path) -> None:
         },
     ]
     _write_json(root / "manifest.json", manifest)
-    validate_reviewed_reasoning_pack(root)
+    validate_reviewed_reasoning_pack(root, allow_test_only=True)
 
 
 def main() -> int:

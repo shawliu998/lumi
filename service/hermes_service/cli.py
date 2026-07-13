@@ -21,6 +21,13 @@ INTERNAL_ATTEMPT_ORIGIN_ENV = "LUMI_INTERNAL_STUDY_PACK_ATTEMPT_ORIGIN"
 INTERNAL_LEARNING_ATTEMPT_ORIGIN_ENV = "LUMI_INTERNAL_LEARNING_ATTEMPT_ORIGIN"
 INTERNAL_EVALUATION_PROJECTION_ENV = "LUMI_INTERNAL_EVALUATION_PROJECTION"
 JUDGMENT_PACK_ROOT_ENV = "LUMI_JUDGMENT_PACK_ROOT"
+DEFAULT_RELEASED_JUDGMENT_PACK_ROOT = (
+    Path(__file__).resolve().parents[2]
+    / "domains"
+    / "released"
+    / "judgment"
+    / "lumi-conditional-reasoning-v0-0.1.0-reviewed-local-20260713"
+)
 
 
 def configured_study_pack_attempt_origin() -> str:
@@ -59,9 +66,9 @@ def configured_judgment_pack_root() -> Path | None:
     """
 
     value = os.environ.get(JUDGMENT_PACK_ROOT_ENV)
-    if value is None:
+    root = DEFAULT_RELEASED_JUDGMENT_PACK_ROOT if value is None else Path(value).expanduser()
+    if value is None and not root.is_dir():
         return None
-    root = Path(value).expanduser()
     if not root.is_dir():
         raise SystemExit("configured judgment pack root is not a directory")
     return root

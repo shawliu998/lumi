@@ -82,7 +82,7 @@ class JudgmentSessionConfig:
             raise ValueError("judgment session learner_id must be a short non-empty string")
 
 
-def judgment_pack_status(pack_root: str | Path | None) -> dict[str, Any]:
+def judgment_pack_status(pack_root: str | Path | None, *, allow_test_only: bool = False) -> dict[str, Any]:
     """Return a fail-closed availability projection without exposing draft text."""
 
     if pack_root is None:
@@ -92,7 +92,9 @@ def judgment_pack_status(pack_root: str | Path | None) -> dict[str, Any]:
             "message": "判断推理题包尚未通过逻辑与编辑/权属审核，不能开始学习记录。",
         }
     try:
-        private = load_reviewed_reasoning_pack(Path(pack_root), projection="private")
+        private = load_reviewed_reasoning_pack(
+            Path(pack_root), projection="private", allow_test_only=allow_test_only
+        )
     except (OSError, ReasoningPackError, ValueError):
         return {
             "available": False,
@@ -124,12 +126,17 @@ class JudgmentSessionService:
         reviewed_pack_root: str | Path,
         config: JudgmentSessionConfig | None = None,
         today_provider: Callable[[], date] | None = None,
+        allow_test_only_reviewed_pack: bool = False,
     ) -> None:
         self.database = str(database)
         self.config = config or JudgmentSessionConfig()
         self._today_provider = today_provider or date.today
         try:
-            pack = load_reviewed_reasoning_pack(Path(reviewed_pack_root), projection="private")
+            pack = load_reviewed_reasoning_pack(
+                Path(reviewed_pack_root),
+                projection="private",
+                allow_test_only=allow_test_only_reviewed_pack,
+            )
         except (OSError, ReasoningPackError, ValueError) as exc:
             raise JudgmentContentUnavailable(
                 "content_review_required: a reviewed, hash-bound judgement pack is required"

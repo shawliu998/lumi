@@ -61,6 +61,7 @@ mkdir -p "$(dirname -- "$launcher")" "$runtime_root"
   --collect-all pypdf \
   --add-data "$workspace_root/domains/fixtures:domains/fixtures" \
   --add-data "$workspace_root/domains/content:domains/content" \
+  --add-data "$workspace_root/domains/released:domains/released" \
   --add-data "$workspace_root/domains/local_content:domains/local_content" \
   "$desktop_root/sidecars/hermes_sidecar_bootstrap.py"
 

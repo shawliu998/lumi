@@ -37,6 +37,11 @@ async function verify() {
 }
 
 if (!verifyOnly) {
+  // Tauri's copied app bundle can inherit Finder metadata and provenance
+  // extended attributes from the build directory.  macOS refuses to sign an
+  // otherwise valid Mach-O while that metadata is present, so remove it from
+  // the generated debug artifact before every fresh signature.
+  await execFile("xattr", ["-cr", appPath]);
   const codeFiles = [];
   for (const path of await filesUnder(resolve(appPath, "Contents"))) {
     if (await isMachO(path)) codeFiles.push(path);

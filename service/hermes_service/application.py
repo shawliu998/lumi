@@ -166,11 +166,14 @@ class SidecarApplication:
                         evidence_origin=evidence_origin,
                         learner_id="local-lumi",
                     ),
+                    allow_test_only_reviewed_pack=evidence_origin == "evaluation_fixture",
                 )
                 self._judgment_content_status = {"available": True}
             except JudgmentContentUnavailable:
                 self._judgment_sessions = None
-                self._judgment_content_status = judgment_pack_status(judgment_pack_root)
+                self._judgment_content_status = judgment_pack_status(
+                    judgment_pack_root, allow_test_only=evidence_origin == "evaluation_fixture"
+                )
         else:
             self._judgment_sessions = None
             self._judgment_content_status = judgment_pack_status(None)

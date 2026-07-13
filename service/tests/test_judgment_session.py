@@ -33,6 +33,15 @@ class JudgmentSessionTests(unittest.TestCase):
         self.temporary = tempfile.TemporaryDirectory()
         self.root = Path(self.temporary.name) / "reviewed-pack"
         shutil.copytree(DEFAULT_DRAFT_PACK_ROOT, self.root)
+        source_manifest = self.read("manifest.json")
+        source_records = self.read("records.json")
+        self.source_manifest_sha256 = hashlib.sha256((self.root / "manifest.json").read_bytes()).hexdigest()
+        self.source_artifact_hashes = {
+            item["path"]: item["sha256"] for item in source_manifest["artifacts"]
+        }
+        self.source_record_hashes = {
+            item["record_id"]: item["record_sha256"] for item in source_records["records"]
+        }
         self.database = Path(self.temporary.name) / "lumi.sqlite3"
         self._make_reviewed_release()
 
@@ -82,6 +91,36 @@ class JudgmentSessionTests(unittest.TestCase):
             "policy": "Temporary test-only reviewers bind this copied release. No repository draft is approved.",
             "review_attestations": [],
         }
+        manifest["artifacts"].append({"path": "review-evidence.json", "sha256": ""})
+        self.write(
+            "review-evidence.json",
+            {
+                "schema_version": "lumi.reasoning-review-evidence.v1",
+                "pack_id": manifest["pack_id"],
+                "source_pack_version": "0.1.0-draft",
+                "source_manifest_sha256": self.source_manifest_sha256,
+                "source_artifact_hashes": self.source_artifact_hashes,
+                "source_record_hashes": self.source_record_hashes,
+                "manual_review_workbook": {"name": "test-only.xlsx", "sha256": "a" * 64},
+                "owner_release_authorization": {
+                    "kind": "repository_owner_direct_release",
+                    "recorded_at": "2026-07-12T08:00:00Z",
+                    "scope": "local_controlled_release",
+                },
+                "reviewer_transcriptions": [
+                    {
+                        "review_kind": "logic", "reviewer_id": "test-logic-reviewer",
+                        "reviewed_at": "2026-07-12T10:00:00Z", "reviewed_at_precision": "instant",
+                        "decision": "approved", "signature": "test-only", "hash_confirmation": "exact", "notes": "test-only",
+                    },
+                    {
+                        "review_kind": "editorial_rights", "reviewer_id": "test-rights-reviewer",
+                        "reviewed_at": "2026-07-12T10:01:00Z", "reviewed_at_precision": "instant",
+                        "decision": "approved", "signature": "test-only", "hash_confirmation": "exact", "notes": "test-only",
+                    },
+                ],
+            },
+        )
         self.write("manifest.json", manifest)
         for artifact in manifest["artifacts"]:
             self._refresh_artifact(artifact["path"])
@@ -92,12 +131,12 @@ class JudgmentSessionTests(unittest.TestCase):
         manifest["human_review_gate"]["review_attestations"] = [
             {
                 "review_kind": "logic", "status": "approved", "reviewer_id": "test-logic-reviewer",
-                "reviewed_at": "2026-07-12T10:00:00Z", "checklist": ["unique_answer", "formalization"],
+                "reviewed_at": "2026-07-12T10:00:00Z", "reviewed_at_precision": "instant", "checklist": ["unique_answer", "formalization"],
                 "manifest_sha256": manifest_hash, "artifact_hashes": artifact_hashes, "record_hashes": record_hashes,
             },
             {
                 "review_kind": "editorial_rights", "status": "approved", "reviewer_id": "test-rights-reviewer",
-                "reviewed_at": "2026-07-12T10:01:00Z", "checklist": ["original_wording", "license_scope"],
+                "reviewed_at": "2026-07-12T10:01:00Z", "reviewed_at_precision": "instant", "checklist": ["original_wording", "license_scope"],
                 "manifest_sha256": manifest_hash, "artifact_hashes": artifact_hashes, "record_hashes": record_hashes,
             },
         ]

@@ -11,7 +11,7 @@ import copy
 import hashlib
 import json
 from pathlib import Path
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from typing import Any, Literal, Mapping
 
 from .contract import ContractError
@@ -51,6 +51,7 @@ EXPECTED_ROLE_COUNTS = {
     "delayed_review": 2,
 }
 _SHA256_HEX_LENGTH = 64
+_REVIEW_EVIDENCE_FILENAME = "review-evidence.json"
 
 # A release is deliberately a different contract from the authored draft above.
 # In particular, it is never enough to flip a draft's ``status`` field: a
@@ -96,12 +97,41 @@ _RELEASE_ATTESTATION_KEYS = frozenset(
         "status",
         "reviewer_id",
         "reviewed_at",
+        "reviewed_at_precision",
         "checklist",
         "manifest_sha256",
         "artifact_hashes",
         "record_hashes",
     }
 )
+_REVIEW_EVIDENCE_KEYS = frozenset(
+    {
+        "schema_version",
+        "pack_id",
+        "source_pack_version",
+        "source_manifest_sha256",
+        "source_artifact_hashes",
+        "source_record_hashes",
+        "manual_review_workbook",
+        "owner_release_authorization",
+        "reviewer_transcriptions",
+    }
+)
+_REVIEW_EVIDENCE_WORKBOOK_KEYS = frozenset({"name", "sha256"})
+_REVIEW_EVIDENCE_OWNER_KEYS = frozenset({"kind", "recorded_at", "scope"})
+_REVIEW_EVIDENCE_TRANSCRIPTION_KEYS = frozenset(
+    {
+        "review_kind",
+        "reviewer_id",
+        "reviewed_at",
+        "reviewed_at_precision",
+        "decision",
+        "signature",
+        "hash_confirmation",
+        "notes",
+    }
+)
+_REVIEW_TIMESTAMP_PRECISIONS = frozenset({"instant", "day"})
 _ARTIFACT_KEYS = frozenset({"path", "sha256"})
 _RELEASE_RECORD_DOCUMENT_KEYS = frozenset(
     {"schema_version", "pack_id", "pack_version", "review_status", "records"}
@@ -216,8 +246,18 @@ def _validate_lower_sha256(value: Any, label: str) -> str:
     return digest
 
 
-def _validate_reviewed_timestamp(value: Any) -> str:
+def _validate_reviewed_timestamp(value: Any, precision: Any) -> str:
     timestamp = _nonempty(value, "attestation reviewed_at")
+    if precision not in _REVIEW_TIMESTAMP_PRECISIONS:
+        raise ReasoningPackError("attestation reviewed_at_precision must be instant or day")
+    if precision == "day":
+        if len(timestamp) != 10 or timestamp[4:5] != "-" or timestamp[7:8] != "-":
+            raise ReasoningPackError("day-precision attestation reviewed_at must use YYYY-MM-DD")
+        try:
+            date.fromisoformat(timestamp)
+        except ValueError as exc:
+            raise ReasoningPackError("day-precision attestation reviewed_at must use YYYY-MM-DD") from exc
+        return timestamp
     if not timestamp.endswith("Z"):
         raise ReasoningPackError("attestation reviewed_at must be UTC RFC3339 ending in Z")
     try:
@@ -604,7 +644,7 @@ def _validate_release_artifacts(manifest: Mapping[str, Any], root: Path) -> dict
             raise ReasoningPackError("duplicate release artifact path")
         expected_hashes[relative_path] = _validate_lower_sha256(artifact.get("sha256"), "release artifact sha256")
 
-    required = {"skill-graph.json", "misconception-taxonomy.json", "records.json"}
+    required = {"skill-graph.json", "misconception-taxonomy.json", "records.json", _REVIEW_EVIDENCE_FILENAME}
     if not required.issubset(expected_hashes):
         raise ReasoningPackError("release manifest lacks required reasoning artifacts")
     for relative_path, expected in expected_hashes.items():
@@ -612,6 +652,84 @@ def _validate_release_artifacts(manifest: Mapping[str, Any], root: Path) -> dict
         if actual != expected:
             raise ReasoningPackError(f"release artifact checksum mismatch: {relative_path}")
     return dict(sorted(expected_hashes.items()))
+
+
+def _validate_review_evidence(
+    root: Path,
+    manifest: Mapping[str, Any],
+    artifact_hashes: Mapping[str, str],
+    *,
+    allow_test_only: bool,
+) -> dict[tuple[str, str], Mapping[str, Any]]:
+    """Validate the immutable provenance behind manually transcribed reviews.
+
+    A reviewer may choose a stable pseudonym and may only record a calendar
+    day.  The release preserves that precision instead of inventing a time of
+    day.  The reviewed workbook itself remains outside the Git payload; its
+    byte digest and the owner-authorized transcription are bound here.
+    """
+
+    if _REVIEW_EVIDENCE_FILENAME not in artifact_hashes:
+        raise ReasoningPackError("release manifest lacks review evidence artifact")
+    evidence = _read_json(root / _REVIEW_EVIDENCE_FILENAME, "review evidence")
+    _require_exact_keys(evidence, _REVIEW_EVIDENCE_KEYS, "review evidence")
+    if evidence.get("schema_version") != "lumi.reasoning-review-evidence.v1":
+        raise ReasoningPackError("unsupported review evidence schema")
+    if evidence.get("pack_id") != manifest["pack_id"]:
+        raise ReasoningPackError("review evidence pack id mismatch")
+    _nonempty(evidence.get("source_pack_version"), "review evidence source pack version")
+    _validate_lower_sha256(evidence.get("source_manifest_sha256"), "review evidence source manifest sha256")
+
+    for label, value in (
+        ("review evidence source artifact hashes", evidence.get("source_artifact_hashes")),
+        ("review evidence source record hashes", evidence.get("source_record_hashes")),
+    ):
+        if not isinstance(value, dict) or not value:
+            raise ReasoningPackError(f"{label} must be a non-empty object")
+        for identifier, digest in value.items():
+            if not isinstance(identifier, str) or not identifier.strip():
+                raise ReasoningPackError(f"{label} keys must be non-empty strings")
+            _validate_lower_sha256(digest, label)
+
+    workbook = _require(evidence, "manual_review_workbook", dict)
+    _require_exact_keys(workbook, _REVIEW_EVIDENCE_WORKBOOK_KEYS, "review evidence workbook")
+    _nonempty(workbook.get("name"), "review evidence workbook name")
+    _validate_lower_sha256(workbook.get("sha256"), "review evidence workbook sha256")
+
+    authorization = _require(evidence, "owner_release_authorization", dict)
+    _require_exact_keys(authorization, _REVIEW_EVIDENCE_OWNER_KEYS, "owner release authorization")
+    authorization_kind = authorization.get("kind")
+    if authorization_kind == "repository_owner_direct_release":
+        expected_scope = "local_controlled_release"
+    elif authorization_kind == "evaluation_fixture_test_only" and allow_test_only:
+        expected_scope = "evaluation_fixture_only"
+    else:
+        raise ReasoningPackError("review evidence requires repository-owner direct release authorization")
+    _validate_reviewed_timestamp(authorization.get("recorded_at"), "instant")
+    if authorization.get("scope") != expected_scope:
+        raise ReasoningPackError("review evidence authorization scope is invalid")
+
+    transcriptions = _require(evidence, "reviewer_transcriptions", list)
+    if len(transcriptions) != len(REVIEW_KINDS):
+        raise ReasoningPackError("review evidence requires exactly two reviewer transcriptions")
+    indexed: dict[tuple[str, str], Mapping[str, Any]] = {}
+    for transcription in transcriptions:
+        if not isinstance(transcription, Mapping):
+            raise ReasoningPackError("review evidence transcription must be an object")
+        _require_exact_keys(transcription, _REVIEW_EVIDENCE_TRANSCRIPTION_KEYS, "review evidence transcription")
+        kind = _nonempty(transcription.get("review_kind"), "review evidence review kind")
+        reviewer_id = _nonempty(transcription.get("reviewer_id"), "review evidence reviewer id")
+        if kind not in REVIEW_KINDS or (kind, reviewer_id) in indexed:
+            raise ReasoningPackError("review evidence must have one transcription per review kind")
+        _validate_reviewed_timestamp(
+            transcription.get("reviewed_at"), transcription.get("reviewed_at_precision")
+        )
+        for key in ("decision", "signature", "hash_confirmation", "notes"):
+            _nonempty(transcription.get(key), f"review evidence {key}")
+        indexed[(kind, reviewer_id)] = transcription
+    if {kind for kind, _ in indexed} != REVIEW_KINDS:
+        raise ReasoningPackError("review evidence requires logic and editorial_rights transcriptions")
+    return indexed
 
 
 def _validate_release_list(value: Any, label: str) -> list[str]:
@@ -847,7 +965,12 @@ def _validate_release_records(
 
 
 def _validate_review_attestations(
-    manifest: Mapping[str, Any], artifact_hashes: Mapping[str, str], records: list[Mapping[str, Any]]
+    root: Path,
+    manifest: Mapping[str, Any],
+    artifact_hashes: Mapping[str, str],
+    records: list[Mapping[str, Any]],
+    *,
+    allow_test_only: bool,
 ) -> list[Mapping[str, Any]]:
     gate = _require(manifest, "human_review_gate", dict)
     _require_exact_keys(gate, _RELEASE_GATE_KEYS, "release human review gate")
@@ -859,6 +982,9 @@ def _validate_review_attestations(
         raise ReasoningPackError("reviewed release requires exactly logic and editorial_rights attestations")
     expected_manifest_hash = reviewed_manifest_sha256(manifest)
     expected_record_hashes = {record["record_id"]: record["record_sha256"] for record in records}
+    transcriptions = _validate_review_evidence(
+        root, manifest, artifact_hashes, allow_test_only=allow_test_only
+    )
     seen_kinds: set[str] = set()
     reviewer_ids: set[str] = set()
     for attestation in attestations:
@@ -875,7 +1001,15 @@ def _validate_review_attestations(
         if reviewer_id in reviewer_ids:
             raise ReasoningPackError("logic and editorial_rights reviews require different reviewer_id values")
         reviewer_ids.add(reviewer_id)
-        _validate_reviewed_timestamp(attestation.get("reviewed_at"))
+        _validate_reviewed_timestamp(attestation.get("reviewed_at"), attestation.get("reviewed_at_precision"))
+        transcription = transcriptions.get((kind, reviewer_id))
+        if transcription is None:
+            raise ReasoningPackError("release attestation has no matching manual-review transcription")
+        if (
+            transcription.get("reviewed_at") != attestation.get("reviewed_at")
+            or transcription.get("reviewed_at_precision") != attestation.get("reviewed_at_precision")
+        ):
+            raise ReasoningPackError("release attestation timestamp does not match manual-review transcription")
         _validate_release_list(attestation.get("checklist"), "attestation checklist")
         if _validate_lower_sha256(attestation.get("manifest_sha256"), "attestation manifest sha256") != expected_manifest_hash:
             raise ReasoningPackError("review attestation manifest hash does not match reviewed manifest")
@@ -894,7 +1028,7 @@ def _validate_review_attestations(
     return list(attestations)
 
 
-def validate_reviewed_reasoning_pack(root: Path) -> dict[str, Any]:
+def validate_reviewed_reasoning_pack(root: Path, *, allow_test_only: bool = False) -> dict[str, Any]:
     """Fail closed unless a future pack is fully reviewed and hash-bound.
 
     This validator intentionally rejects the repository draft and never performs
@@ -912,7 +1046,9 @@ def validate_reviewed_reasoning_pack(root: Path) -> dict[str, Any]:
     records = _validate_release_records(
         _read_json(root / "records.json", "release records"), manifest, skill_ids, misconception_ids
     )
-    attestations = _validate_review_attestations(manifest, artifact_hashes, records)
+    attestations = _validate_review_attestations(
+        root, manifest, artifact_hashes, records, allow_test_only=allow_test_only
+    )
     return {
         "pack_id": manifest["pack_id"],
         "pack_version": manifest["pack_version"],
@@ -922,6 +1058,9 @@ def validate_reviewed_reasoning_pack(root: Path) -> dict[str, Any]:
         "reviewed_manifest_sha256": reviewed_manifest_sha256(manifest),
         "artifact_hashes": dict(artifact_hashes),
         "review_kinds": sorted(attestation["review_kind"] for attestation in attestations),
+        "review_timestamp_precisions": sorted(
+            {str(attestation["reviewed_at_precision"]) for attestation in attestations}
+        ),
     }
 
 
@@ -935,7 +1074,10 @@ def _project_reviewed_record(record: Mapping[str, Any], projection: Literal["pub
 
 
 def load_reviewed_reasoning_pack(
-    root: Path, *, projection: Literal["public", "private"] = "public"
+    root: Path,
+    *,
+    projection: Literal["public", "private"] = "public",
+    allow_test_only: bool = False,
 ) -> dict[str, Any]:
     """Load only a validated release into an explicit safe projection.
 
@@ -944,7 +1086,7 @@ def load_reviewed_reasoning_pack(
     not be returned directly to a learner-facing renderer.
     """
 
-    summary = validate_reviewed_reasoning_pack(root)
+    summary = validate_reviewed_reasoning_pack(root, allow_test_only=allow_test_only)
     document = _read_json(Path(root) / "records.json", "release records")
     return {
         "pack_id": summary["pack_id"],

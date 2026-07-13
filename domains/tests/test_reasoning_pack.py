@@ -20,11 +20,28 @@ from hermes_domains.reasoning_pack import (
 )
 
 
+CHECKED_IN_RELEASE_ROOT = (
+    Path(__file__).resolve().parents[1]
+    / "released"
+    / "judgment"
+    / "lumi-conditional-reasoning-v0-0.1.0-reviewed-local-20260713"
+)
+
+
 class ReasoningPackTests(unittest.TestCase):
     def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()
         self.root = Path(self.temporary.name) / "lumi-conditional-reasoning-v0"
         shutil.copytree(DEFAULT_DRAFT_PACK_ROOT, self.root)
+        source_manifest = self.read_json("manifest.json")
+        source_records = self.read_json("records.json")
+        self.source_manifest_sha256 = hashlib.sha256((self.root / "manifest.json").read_bytes()).hexdigest()
+        self.source_artifact_hashes = {
+            item["path"]: item["sha256"] for item in source_manifest["artifacts"]
+        }
+        self.source_record_hashes = {
+            item["record_id"]: item["record_sha256"] for item in source_records["records"]
+        }
 
     def tearDown(self) -> None:
         self.temporary.cleanup()
@@ -79,6 +96,49 @@ class ReasoningPackTests(unittest.TestCase):
             "policy": "Two independent humans review the exact hash-bound release payload before a future runtime registration step.",
             "review_attestations": [],
         }
+        manifest["artifacts"] = [
+            artifact for artifact in manifest["artifacts"] if artifact["path"] != "review-evidence.json"
+        ]
+        manifest["artifacts"].append({"path": "review-evidence.json", "sha256": ""})
+        self.write_json(
+            "review-evidence.json",
+            {
+                "schema_version": "lumi.reasoning-review-evidence.v1",
+                "pack_id": manifest["pack_id"],
+                "source_pack_version": "0.1.0-draft",
+                "source_manifest_sha256": self.source_manifest_sha256,
+                "source_artifact_hashes": self.source_artifact_hashes,
+                "source_record_hashes": self.source_record_hashes,
+                "manual_review_workbook": {"name": "test-only.xlsx", "sha256": "a" * 64},
+                "owner_release_authorization": {
+                    "kind": "repository_owner_direct_release",
+                    "recorded_at": "2026-07-12T08:00:00Z",
+                    "scope": "local_controlled_release",
+                },
+                "reviewer_transcriptions": [
+                    {
+                        "review_kind": "logic",
+                        "reviewer_id": "logic-reviewer-01",
+                        "reviewed_at": "2026-07-12T08:30:00Z",
+                        "reviewed_at_precision": "instant",
+                        "decision": "approved",
+                        "signature": "test-only",
+                        "hash_confirmation": "exact",
+                        "notes": "test-only",
+                    },
+                    {
+                        "review_kind": "editorial_rights",
+                        "reviewer_id": "rights-reviewer-02",
+                        "reviewed_at": "2026-07-12T08:45:00Z",
+                        "reviewed_at_precision": "instant",
+                        "decision": "approved",
+                        "signature": "test-only",
+                        "hash_confirmation": "exact",
+                        "notes": "test-only",
+                    },
+                ],
+            },
+        )
         self.write_json("manifest.json", manifest)
         for artifact in manifest["artifacts"]:
             self.refresh_artifact_checksum(artifact["path"])
@@ -93,6 +153,7 @@ class ReasoningPackTests(unittest.TestCase):
                 "status": "approved",
                 "reviewer_id": "logic-reviewer-01",
                 "reviewed_at": "2026-07-12T08:30:00Z",
+                "reviewed_at_precision": "instant",
                 "checklist": ["unique_answer", "formalization", "transfer_independence"],
                 "manifest_sha256": manifest_hash,
                 "artifact_hashes": artifact_hashes,
@@ -103,6 +164,7 @@ class ReasoningPackTests(unittest.TestCase):
                 "status": "approved",
                 "reviewer_id": "rights-reviewer-02",
                 "reviewed_at": "2026-07-12T08:45:00Z",
+                "reviewed_at_precision": "instant",
                 "checklist": ["original_wording", "clarity", "license_scope"],
                 "manifest_sha256": manifest_hash,
                 "artifact_hashes": artifact_hashes,
@@ -258,6 +320,65 @@ class ReasoningPackTests(unittest.TestCase):
         self.assertEqual(len(public["records"]), len(private["records"]))
         self.assertEqual(public["records"][0]["record_id"], "D01")
         self.assertEqual(private["records"][0]["correct_option"], "A")
+
+    def test_checked_in_controlled_release_binds_exact_third_draft_source(self) -> None:
+        summary = validate_reviewed_reasoning_pack(CHECKED_IN_RELEASE_ROOT)
+        self.assertTrue(summary["production_load_allowed"])
+        self.assertEqual(summary["review_timestamp_precisions"], ["day"])
+
+        source_manifest = self.read_json("manifest.json")
+        source_records = self.read_json("records.json")
+        evidence = json.loads((CHECKED_IN_RELEASE_ROOT / "review-evidence.json").read_text(encoding="utf-8"))
+        self.assertEqual(
+            evidence["source_manifest_sha256"],
+            hashlib.sha256((self.root / "manifest.json").read_bytes()).hexdigest(),
+        )
+        self.assertEqual(
+            evidence["source_artifact_hashes"],
+            {item["path"]: item["sha256"] for item in source_manifest["artifacts"]},
+        )
+        self.assertEqual(
+            evidence["source_record_hashes"],
+            {item["record_id"]: item["record_sha256"] for item in source_records["records"]},
+        )
+        self.assertEqual(
+            [(entry["review_kind"], entry["reviewer_id"], entry["reviewed_at_precision"])
+            for entry in evidence["reviewer_transcriptions"]
+            ],
+            [("logic", "1", "day"), ("editorial_rights", "2", "day")],
+        )
+
+    def test_reviewed_loader_rejects_day_precision_claimed_as_an_instant(self) -> None:
+        self.make_reviewed_release()
+        manifest = self.read_json("manifest.json")
+        manifest["human_review_gate"]["review_attestations"][0]["reviewed_at"] = "2026-07-12"
+        manifest["human_review_gate"]["review_attestations"][0]["reviewed_at_precision"] = "instant"
+        self.write_json("manifest.json", manifest)
+
+        with self.assertRaisesRegex(ReasoningPackError, "must be UTC RFC3339"):
+            validate_reviewed_reasoning_pack(self.root)
+
+    def test_test_only_review_evidence_cannot_load_in_a_human_context(self) -> None:
+        self.make_reviewed_release()
+        evidence = self.read_json("review-evidence.json")
+        evidence["owner_release_authorization"]["kind"] = "evaluation_fixture_test_only"
+        evidence["owner_release_authorization"]["scope"] = "evaluation_fixture_only"
+        self.write_json("review-evidence.json", evidence)
+
+        manifest = self.read_json("manifest.json")
+        for artifact in manifest["artifacts"]:
+            if artifact["path"] == "review-evidence.json":
+                artifact["sha256"] = hashlib.sha256((self.root / "review-evidence.json").read_bytes()).hexdigest()
+        artifact_hashes = {item["path"]: item["sha256"] for item in manifest["artifacts"]}
+        manifest_hash = reviewed_manifest_sha256(manifest)
+        for attestation in manifest["human_review_gate"]["review_attestations"]:
+            attestation["artifact_hashes"] = artifact_hashes
+            attestation["manifest_sha256"] = manifest_hash
+        self.write_json("manifest.json", manifest)
+
+        with self.assertRaisesRegex(ReasoningPackError, "repository-owner direct release"):
+            validate_reviewed_reasoning_pack(self.root)
+        self.assertTrue(validate_reviewed_reasoning_pack(self.root, allow_test_only=True)["production_load_allowed"])
 
     def test_reviewed_loader_rejects_artifact_hash_drift(self) -> None:
         self.make_reviewed_release()
