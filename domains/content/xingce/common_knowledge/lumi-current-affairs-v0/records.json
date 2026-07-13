@@ -1,0 +1,228 @@
+{
+  "schema_version": "lumi.xingce-adaptive-records.v1",
+  "pack_id": "lumi-current-affairs-v0",
+  "pack_version": "0.1.0-draft",
+  "review_status": "draft_unreviewed",
+  "records": [
+    {
+      "record_id": "D01",
+      "role": "entry_diagnostic",
+      "title": "时政常识：先锁定文件与会议",
+      "target_skill_ids": [
+        "xingce.common.current_affairs.date_attribution",
+        "xingce.common.current_affairs.policy_scope",
+        "xingce.common.current_affairs.fact_recall"
+      ],
+      "candidate_misconception_ids": [
+        "M-DATE",
+        "M-SCOPE"
+      ],
+      "independence_group": "current-entry-resolution",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "依据本题冻结的 2026 年 3 月 12 日决议，下列说法正确的是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "第十四届全国人民代表大会第四次会议决定批准政府工作报告"
+        },
+        {
+          "label": "B",
+          "text": "该决议是某一届会议尚未举行前的预告"
+        },
+        {
+          "label": "C",
+          "text": "该决议宣布所有后续政策效果已经逐项实现"
+        },
+        {
+          "label": "D",
+          "text": "该决议把会议届次改为第十四届全国人民代表大会第三次会议"
+        }
+      ],
+      "correct_option": "A",
+      "route_probe_ids": [
+        "P01"
+      ],
+      "record_sha256": "76ceeb24c59e14eedf2bb8fd97fd95220848e3400340db5af64bc93837a46643"
+    },
+    {
+      "record_id": "P01",
+      "role": "probe",
+      "title": "最小探查：通过文件不等于后续事实",
+      "target_skill_ids": [
+        "xingce.common.current_affairs.date_attribution",
+        "xingce.common.current_affairs.policy_scope",
+        "xingce.common.current_affairs.fact_recall"
+      ],
+      "candidate_misconception_ids": [
+        "M-DATE",
+        "M-SCOPE"
+      ],
+      "independence_group": "current-probe-report",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "对本题所列 2026 年政府工作报告及其决议，哪项表述最稳妥？",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "应按文件所给日期、届次和已批准的内容作答；未经题干提供的后续结果不能自行补充"
+        },
+        {
+          "label": "B",
+          "text": "只要知道主题，就不必核对年份和会议届次"
+        },
+        {
+          "label": "C",
+          "text": "文件提出的部署必然等同于已完成的具体结果"
+        },
+        {
+          "label": "D",
+          "text": "任何之后发生的新闻都自动成为这份冻结文件的一部分"
+        }
+      ],
+      "correct_option": "A",
+      "discriminates": [
+        "M-DATE",
+        "M-SCOPE"
+      ],
+      "candidate_evidence_map": {
+        "M-DATE": {
+          "A": "refute",
+          "B": "support",
+          "C": "insufficient",
+          "D": "insufficient"
+        },
+        "M-SCOPE": {
+          "A": "refute",
+          "B": "insufficient",
+          "C": "support",
+          "D": "support"
+        }
+      },
+      "record_sha256": "cc4361b3df214254ba03854eca9f5914bf2cdb83ff09cbf0d93a5ab4e98384b2"
+    },
+    {
+      "record_id": "T-DATE",
+      "role": "teaching_asset",
+      "title": "微课：事件卡片先记四格",
+      "target_skill_ids": [
+        "xingce.common.current_affairs.date_attribution",
+        "xingce.common.current_affairs.fact_recall"
+      ],
+      "candidate_misconception_ids": [
+        "M-DATE"
+      ],
+      "independence_group": "current-date-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-DATE"
+      ],
+      "teaching_content": "把时政来源写成四格：会议或机关、文件名称、通过或发布日期、题干问的动作。相近年份或届次最容易混淆，先回到版本化快照再排除选项。",
+      "record_sha256": "eb45399b3190cfda65f5cc64f5ace06fb92bced48d160fb1f2e54f8e7f43b0fa"
+    },
+    {
+      "record_id": "T-SCOPE",
+      "role": "teaching_asset",
+      "title": "微课：部署、批准与效果不是同一层",
+      "target_skill_ids": [
+        "xingce.common.current_affairs.policy_scope"
+      ],
+      "candidate_misconception_ids": [
+        "M-SCOPE"
+      ],
+      "independence_group": "current-scope-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-SCOPE"
+      ],
+      "teaching_content": "报告可以提出部署，决议可以批准文件；它们都不自动证明后来所有实施结果。题目没有给出结果数据时，只能回答文本明确说了什么，不能替来源补写结局。",
+      "record_sha256": "9e361d5e459d7d6ffdaa2f6557dfc02ef1caf46f7e31be726b9bd695b4759c5d"
+    },
+    {
+      "record_id": "V01",
+      "role": "independent_transfer",
+      "title": "独立迁移：冻结快照中的行动主体",
+      "target_skill_ids": [
+        "xingce.common.current_affairs.date_attribution",
+        "xingce.common.current_affairs.policy_scope"
+      ],
+      "candidate_misconception_ids": [
+        "M-DATE",
+        "M-SCOPE"
+      ],
+      "independence_group": "current-transfer-document",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "一则题目明确给出“某会议于某日通过一项文件”的来源快照。下列答题方式最合适的是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "核对会议、日期、文件和通过动作，只陈述快照能直接支持的事实"
+        },
+        {
+          "label": "B",
+          "text": "将文件通过直接改写为所有目标已经完成"
+        },
+        {
+          "label": "C",
+          "text": "忽略日期并用类似会议替代"
+        },
+        {
+          "label": "D",
+          "text": "默认后续新闻一定修改了该快照内容"
+        }
+      ],
+      "correct_option": "A",
+      "requires_no_hints": true,
+      "record_sha256": "8f542aab49eaeeba810d832294e9d418032757ade5b5abef4d440cc1fd678816"
+    },
+    {
+      "record_id": "R01",
+      "role": "delayed_review",
+      "title": "延迟复习：时政信息的可回放边界",
+      "target_skill_ids": [
+        "xingce.common.current_affairs.fact_recall",
+        "xingce.common.current_affairs.policy_scope"
+      ],
+      "candidate_misconception_ids": [
+        "M-DATE",
+        "M-SCOPE"
+      ],
+      "independence_group": "current-review-frozen",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "当一道时政题标有来源、发布日期和有效截点时，最可靠的依据是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "该版本化来源在截点内明确陈述的内容"
+        },
+        {
+          "label": "B",
+          "text": "不明日期的记忆或传闻"
+        },
+        {
+          "label": "C",
+          "text": "把计划性表述一律视为已实现结果"
+        },
+        {
+          "label": "D",
+          "text": "把不同文件的届次混合使用"
+        }
+      ],
+      "correct_option": "A",
+      "requires_no_hints": true,
+      "scheduled_after_days": 4,
+      "eligible_after_transfer_ids": [
+        "V01"
+      ],
+      "record_sha256": "e4fc1aa311992b08f7ae5a1a34316e367311a5b8d1207232aa415ebd6630e158"
+    }
+  ]
+}
