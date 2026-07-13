@@ -51,6 +51,11 @@ PRODUCT_ACTIVITY_ROUTE = re.compile(r"^/v1/product-activities/([^/]+)$")
 JUDGMENT_SESSION_PROBE_ROUTE = re.compile(r"^/v1/judgment/sessions/([^/]+)/probe$")
 JUDGMENT_SESSION_TRANSFER_ROUTE = re.compile(r"^/v1/judgment/sessions/([^/]+)/transfer$")
 JUDGMENT_SESSION_REPLAY_ROUTE = re.compile(r"^/v1/judgment/sessions/([^/]+)/replay$")
+XINGCE_ADAPTIVE_WORKSPACE_ROUTE = re.compile(r"^/v1/xingce/adaptive/([^/]+)/workspace$")
+XINGCE_ADAPTIVE_SESSION_ROUTE = re.compile(r"^/v1/xingce/adaptive/([^/]+)/sessions$")
+XINGCE_ADAPTIVE_PROBE_ROUTE = re.compile(r"^/v1/xingce/adaptive/([^/]+)/sessions/([^/]+)/probe$")
+XINGCE_ADAPTIVE_TRANSFER_ROUTE = re.compile(r"^/v1/xingce/adaptive/([^/]+)/sessions/([^/]+)/transfer$")
+XINGCE_ADAPTIVE_REPLAY_ROUTE = re.compile(r"^/v1/xingce/adaptive/([^/]+)/sessions/([^/]+)/replay$")
 
 
 class LocalThreadingHTTPServer(ThreadingHTTPServer):
@@ -173,6 +178,15 @@ def _handler_factory(application: SidecarApplication, allowed_origins: frozenset
                     )
                     self._send(201, payload, request_id, origin)
                     return
+                adaptive_start = XINGCE_ADAPTIVE_SESSION_ROUTE.fullmatch(parsed.path)
+                if method == "POST" and adaptive_start:
+                    body = self._read_json({"entry_record_id", "selected_response", "confidence", "elapsed_seconds", "rationale", "command_id"})
+                    required = {"entry_record_id", "selected_response", "confidence", "elapsed_seconds", "command_id"}
+                    if not required.issubset(body) or set(body) - (required | {"rationale"}):
+                        raise ServiceError(400, "invalid_body", "adaptive session body has unsupported or missing fields")
+                    payload = application.start_xingce_adaptive_session(unquote(adaptive_start.group(1)), **body)
+                    self._send(201, payload, request_id, origin)
+                    return
                 judgment_probe_match = JUDGMENT_SESSION_PROBE_ROUTE.fullmatch(parsed.path)
                 if method == "POST" and judgment_probe_match:
                     body = self._read_json(
@@ -202,6 +216,14 @@ def _handler_factory(application: SidecarApplication, allowed_origins: frozenset
                     )
                     self._send(200, payload, request_id, origin)
                     return
+                adaptive_probe = XINGCE_ADAPTIVE_PROBE_ROUTE.fullmatch(parsed.path)
+                if method == "POST" and adaptive_probe:
+                    body = self._read_json({"expected_version", "selected_response", "confidence", "elapsed_seconds", "command_id"})
+                    if set(body) != {"expected_version", "selected_response", "confidence", "elapsed_seconds", "command_id"}:
+                        raise ServiceError(400, "invalid_body", "adaptive probe body must contain every declared field")
+                    payload = application.answer_xingce_adaptive_probe(unquote(adaptive_probe.group(1)), unquote(adaptive_probe.group(2)), **body)
+                    self._send(200, payload, request_id, origin)
+                    return
                 judgment_transfer_match = JUDGMENT_SESSION_TRANSFER_ROUTE.fullmatch(parsed.path)
                 if method == "POST" and judgment_transfer_match:
                     body = self._read_json(
@@ -229,6 +251,14 @@ def _handler_factory(application: SidecarApplication, allowed_origins: frozenset
                         body["selected_option"], body["confidence"],
                         body["elapsed_seconds"], body["command_id"],
                     )
+                    self._send(200, payload, request_id, origin)
+                    return
+                adaptive_transfer = XINGCE_ADAPTIVE_TRANSFER_ROUTE.fullmatch(parsed.path)
+                if method == "POST" and adaptive_transfer:
+                    body = self._read_json({"expected_version", "selected_response", "confidence", "elapsed_seconds", "command_id"})
+                    if set(body) != {"expected_version", "selected_response", "confidence", "elapsed_seconds", "command_id"}:
+                        raise ServiceError(400, "invalid_body", "adaptive transfer body must contain every declared field")
+                    payload = application.answer_xingce_adaptive_transfer(unquote(adaptive_transfer.group(1)), unquote(adaptive_transfer.group(2)), **body)
                     self._send(200, payload, request_id, origin)
                     return
                 if method == "POST" and parsed.path == "/v1/study-packs":
@@ -482,6 +512,11 @@ def _handler_factory(application: SidecarApplication, allowed_origins: frozenset
                 if query:
                     raise ServiceError(400, "invalid_query", "judgment workspace does not accept query parameters")
                 return application.judgment_workspace()
+            adaptive_workspace = XINGCE_ADAPTIVE_WORKSPACE_ROUTE.fullmatch(path)
+            if adaptive_workspace:
+                if query:
+                    raise ServiceError(400, "invalid_query", "adaptive workspace does not accept query parameters")
+                return application.xingce_adaptive_workspace(unquote(adaptive_workspace.group(1)))
             judgment_replay_match = JUDGMENT_SESSION_REPLAY_ROUTE.fullmatch(path)
             if judgment_replay_match:
                 if query:
@@ -489,6 +524,11 @@ def _handler_factory(application: SidecarApplication, allowed_origins: frozenset
                 return application.judgment_session_replay(
                     unquote(judgment_replay_match.group(1))
                 )
+            adaptive_replay = XINGCE_ADAPTIVE_REPLAY_ROUTE.fullmatch(path)
+            if adaptive_replay:
+                if query:
+                    raise ServiceError(400, "invalid_query", "adaptive replay does not accept query parameters")
+                return application.xingce_adaptive_replay(unquote(adaptive_replay.group(1)), unquote(adaptive_replay.group(2)))
             if path == "/v1/scenarios":
                 domain = _single_query(query, "domain")
                 mode = _single_query(query, "mode")

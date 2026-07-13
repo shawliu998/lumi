@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 import secrets
 import threading
-from typing import Any, Callable
+from typing import Any, Callable, Mapping
 
 from lumi_study_pack import StudyPackError, StudyPackStore
 from lumi_study_pack.models import validate_command_id, validate_entity_id
@@ -65,6 +65,7 @@ from .judgment_session import (
     judgment_pack_status,
 )
 from .xingce_catalog import XingceCoverageCatalog
+from .xingce_adaptive_session import XingceAdaptiveSessionError, XingceAdaptiveSessionService
 
 
 SERVICE_VERSION = "0.3.0"
@@ -93,6 +94,7 @@ class SidecarApplication:
         evaluation_projection_enabled: bool = False,
         judgment_pack_root: str | Path | None = None,
         judgment_session_service: JudgmentSessionService | None = None,
+        xingce_adaptive_session_services: Mapping[str, XingceAdaptiveSessionService] | None = None,
     ) -> None:
         if study_pack_attempt_evidence_origin not in ATTEMPT_EVIDENCE_ORIGINS:
             raise ValueError("unsupported Study Pack attempt evidence origin")
@@ -179,6 +181,9 @@ class SidecarApplication:
         else:
             self._judgment_sessions = None
             self._judgment_content_status = judgment_pack_status(None)
+        self._xingce_adaptive_sessions = dict(xingce_adaptive_session_services or {})
+        if any(service.pack["subtype_id"] != subtype_id for subtype_id, service in self._xingce_adaptive_sessions.items()):
+            raise ValueError("adaptive session registry key must match its reviewed pack subtype")
 
     def health(self) -> dict[str, Any]:
         store = EventStore(self.database)
@@ -221,6 +226,7 @@ class SidecarApplication:
                 "skill-summary",
                 "judgment-reasoning-workspace-v1",
                 "xingce-coverage-catalog-v1",
+                "xingce-adaptive-session-v1",
             ],
             "endpoints": {
                 "health": "GET /v1/health",
@@ -256,11 +262,45 @@ class SidecarApplication:
                 "judgment_transfer": "POST /v1/judgment/sessions/{session_id}/transfer",
                 "judgment_replay": "GET /v1/judgment/sessions/{session_id}/replay",
                 "xingce_coverage": "GET /v1/xingce/coverage",
+                "xingce_adaptive_workspace": "GET /v1/xingce/adaptive/{subtype_id}/workspace",
+                "xingce_adaptive_session": "POST /v1/xingce/adaptive/{subtype_id}/sessions",
             },
         }
 
     def xingce_coverage_catalog(self) -> dict[str, Any]:
         return self.xingce_coverage.public_projection()
+
+    def xingce_adaptive_workspace(self, subtype_id: Any) -> dict[str, Any]:
+        return self._xingce_adaptive_service(subtype_id).workspace()
+
+    def start_xingce_adaptive_session(self, subtype_id: Any, **payload: Any) -> dict[str, Any]:
+        try:
+            return self._xingce_adaptive_service(subtype_id).start(**payload)
+        except XingceAdaptiveSessionError as exc:
+            raise _xingce_adaptive_service_error(exc) from None
+
+    def answer_xingce_adaptive_probe(self, subtype_id: Any, session_id: Any, **payload: Any) -> dict[str, Any]:
+        try:
+            return self._xingce_adaptive_service(subtype_id).answer_probe(session_id=session_id, **payload)
+        except XingceAdaptiveSessionError as exc:
+            raise _xingce_adaptive_service_error(exc) from None
+
+    def answer_xingce_adaptive_transfer(self, subtype_id: Any, session_id: Any, **payload: Any) -> dict[str, Any]:
+        try:
+            return self._xingce_adaptive_service(subtype_id).answer_transfer(session_id=session_id, **payload)
+        except XingceAdaptiveSessionError as exc:
+            raise _xingce_adaptive_service_error(exc) from None
+
+    def xingce_adaptive_replay(self, subtype_id: Any, session_id: Any) -> dict[str, Any]:
+        try:
+            return self._xingce_adaptive_service(subtype_id).replay(session_id)
+        except XingceAdaptiveSessionError as exc:
+            raise _xingce_adaptive_service_error(exc) from None
+
+    def _xingce_adaptive_service(self, subtype_id: Any) -> XingceAdaptiveSessionService:
+        if not isinstance(subtype_id, str) or subtype_id not in self._xingce_adaptive_sessions:
+            raise ServiceError(409, "content_review_required", "该行测子型尚无已审核的本地自适应题包。")
+        return self._xingce_adaptive_sessions[subtype_id]
 
     def judgment_workspace(self) -> dict[str, Any]:
         """Return the public workspace, or the review gate without draft text."""
@@ -2047,6 +2087,14 @@ def _judgment_service_error(error: JudgmentSessionError) -> ServiceError:
     if isinstance(error, JudgmentSessionConflict):
         return ServiceError(409, "judgment_session_conflict", str(error))
     return ServiceError(400, "invalid_judgment_session", str(error))
+
+
+def _xingce_adaptive_service_error(error: XingceAdaptiveSessionError) -> ServiceError:
+    if str(error) == "content_review_required":
+        return ServiceError(409, "content_review_required", "该行测子型尚无已审核的本地自适应题包。")
+    if "stale" in str(error) or "out-of-order" in str(error) or "bound" in str(error):
+        return ServiceError(409, "xingce_adaptive_session_conflict", str(error))
+    return ServiceError(400, "invalid_xingce_adaptive_session", str(error))
 
 
 def _schedule_service_error(error: ScheduleError) -> ServiceError:
