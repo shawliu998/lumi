@@ -194,6 +194,8 @@ def _validate_manifest(manifest: Mapping[str, Any]) -> Mapping[str, Any]:
         artifact_paths.add(path)
     if not _REQUIRED_ARTIFACTS.issubset(artifact_paths):
         raise XingceAdaptivePackError("pack artifacts must include records, skills, and misconceptions")
+    if status == RELEASE_STATUS and "review-evidence.json" not in artifact_paths:
+        raise XingceAdaptivePackError("release requires an immutable review-evidence artifact")
     return subtype
 
 
@@ -424,6 +426,21 @@ def load_xingce_adaptive_pack(root: str | Path, *, require_reviewed: bool = Fals
             raise XingceAdaptivePackError("adaptive pack artifact escapes its root")
         if not candidate.is_file() or _file_sha256(candidate) != expected:
             raise XingceAdaptivePackError("adaptive pack artifact checksum mismatch")
+    if manifest["status"] == RELEASE_STATUS:
+        evidence = _read_json(path, "review-evidence.json")
+        if evidence.get("schema_version") != "lumi.xingce-review-evidence.v1":
+            raise XingceAdaptivePackError("release review evidence schema is invalid")
+        workbook = evidence.get("manual_review_workbook")
+        rows = evidence.get("reviewer_attestations")
+        if not isinstance(workbook, Mapping) or not isinstance(rows, list) or len(rows) != 2:
+            raise XingceAdaptivePackError("release review evidence is incomplete")
+        if not isinstance(workbook.get("name"), str) or not workbook["name"].strip():
+            raise XingceAdaptivePackError("release review workbook name is invalid")
+        _sha256(workbook.get("sha256"), "review workbook sha256")
+        evidence_pairs = {(row.get("review_kind"), row.get("reviewer_id"), row.get("reviewed_at")) for row in rows if isinstance(row, Mapping)}
+        gate_pairs = {(row.get("review_kind"), row.get("reviewer_id"), row.get("reviewed_at")) for row in manifest["human_review_gate"]["review_attestations"]}
+        if evidence_pairs != gate_pairs or len(evidence_pairs) != 2:
+            raise XingceAdaptivePackError("release review evidence does not match its reviewer attestations")
     return {
         "pack_id": manifest["pack_id"],
         "pack_version": manifest["pack_version"],

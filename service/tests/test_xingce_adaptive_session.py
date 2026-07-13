@@ -19,8 +19,8 @@ def reviewed_root(root: Path) -> Path:
     manifest.update({"status": "release_ready", "release_ready": True, "runtime_registration": "allowed_after_human_review"})
     manifest["rights"]["distribution"] = "release_distribution_allowed"
     manifest["human_review_gate"] = {"required": True, "production_load_allowed": True, "review_attestations": [
-        {"review_kind": "logic", "status": "approved", "reviewer_id": "logic-reviewer", "manifest_sha256": "a" * 64},
-        {"review_kind": "editorial_rights", "status": "approved", "reviewer_id": "rights-reviewer", "manifest_sha256": "a" * 64},
+        {"review_kind": "logic", "status": "approved", "reviewer_id": "logic-reviewer", "reviewed_at": "2026-07-13", "manifest_sha256": "a" * 64},
+        {"review_kind": "editorial_rights", "status": "approved", "reviewer_id": "rights-reviewer", "reviewed_at": "2026-07-13", "manifest_sha256": "a" * 64},
     ]}
     for document in (records, skills, taxonomy): document["review_status"] = "release_ready"
     for record in records["records"]:
@@ -29,6 +29,10 @@ def reviewed_root(root: Path) -> Path:
         data = json.dumps(payload, ensure_ascii=False, sort_keys=True, indent=2).encode()
         (root / name).write_bytes(data)
         next(item for item in manifest["artifacts"] if item["path"] == name)["sha256"] = hashlib.sha256(data).hexdigest()
+    evidence = {"schema_version": "lumi.xingce-review-evidence.v1", "manual_review_workbook": {"name": "evaluation-fixture.xlsx", "sha256": "a" * 64}, "reviewer_attestations": manifest["human_review_gate"]["review_attestations"]}
+    data = json.dumps(evidence, ensure_ascii=False, sort_keys=True, indent=2).encode()
+    (root / "review-evidence.json").write_bytes(data)
+    manifest["artifacts"].append({"path": "review-evidence.json", "sha256": hashlib.sha256(data).hexdigest()})
     (root / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
     return root
 
