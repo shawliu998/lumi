@@ -46,6 +46,10 @@ if getattr(sys, "frozen", False):
             / "lumi-conditional-reasoning-v0-0.1.0-reviewed-local-20260713"
         ),
     )
+    os.environ.setdefault(
+        "LUMI_XINGCE_ADAPTIVE_PACK_ROOTS",
+        str(Path(sys._MEIPASS) / "domains" / "released" / "xingce"),
+    )
 
 from hermes_service.cli import main
 
