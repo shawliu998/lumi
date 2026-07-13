@@ -1,0 +1,23 @@
+{
+  "schema_version": "lumi.xingce-adaptive-skills.v1",
+  "pack_id": "lumi-science-geography-v0",
+  "pack_version": "0.1.0-draft",
+  "review_status": "draft_unreviewed",
+  "skills": [
+    {
+      "skill_id": "xingce.common.science_geography.time_scale",
+      "label": "区分天气与气候的时间尺度",
+      "mastery_claim": "能把短期、特定时空的大气状况与长期平均特征区分开；仅由无提示迁移更新。"
+    },
+    {
+      "skill_id": "xingce.common.science_geography.tectonic_mechanism",
+      "label": "识别板块与断层释放机制",
+      "mastery_claim": "能把板块缓慢运动、断层受阻与能量释放的因果链对应起来；仅由无提示迁移更新。"
+    },
+    {
+      "skill_id": "xingce.common.science_geography.location_term",
+      "label": "区分震源与震中的位置术语",
+      "mastery_claim": "能按地表与地下的位置关系使用震源和震中术语；仅由无提示迁移更新。"
+    }
+  ]
+}

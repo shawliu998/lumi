@@ -32,6 +32,7 @@ class XingceAuthoredDraftTests(unittest.TestCase):
             CONTENT_ROOT / "data_analysis" / "lumi-chart-material-v0",
             CONTENT_ROOT / "data_analysis" / "lumi-composite-material-v0",
             CONTENT_ROOT / "common_knowledge" / "lumi-management-v0",
+            CONTENT_ROOT / "common_knowledge" / "lumi-science-geography-v0",
         )
         for root in roots:
             with self.subTest(pack=root.name):
@@ -246,6 +247,24 @@ class XingceAuthoredDraftTests(unittest.TestCase):
             pack["records"], scorer=pack["scorer"], entry=entry, probe=probe, observation=Observation("B", "high", 16)
         )
         self.assertTrue(transfer["eligible"])
+
+    def test_science_geography_draft_keeps_candidate_causes_unconfirmed_before_weather_transfer(self) -> None:
+        pack = load_xingce_adaptive_pack(CONTENT_ROOT / "common_knowledge" / "lumi-science-geography-v0")
+        entry = diagnose_entry(
+            pack["records"], scorer=pack["scorer"], entry_record_id="D01", observation=Observation("B", "medium", 16)
+        )
+        self.assertFalse(entry.correct)
+        probe = resolve_probe(
+            pack["records"], scorer=pack["scorer"], entry=entry, observation=Observation("D", "low", 8)
+        )
+        self.assertEqual(probe.teaching_record_id, "T-TIME")
+        self.assertEqual(probe.transfer_record_id, "V01")
+        self.assertTrue(all(row["status"] == "unconfirmed" for row in probe.evidence_updates))
+        transfer = independent_transfer_proposal(
+            pack["records"], scorer=pack["scorer"], entry=entry, probe=probe, observation=Observation("B", "high", 13)
+        )
+        self.assertTrue(transfer["eligible"])
+        self.assertEqual(transfer["state_delta"]["candidate_status"], "unconfirmed")
 
 
 if __name__ == "__main__":
