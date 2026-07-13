@@ -1,0 +1,67 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-party-history-v0",
+  "pack_version": "0.1.0-draft",
+  "status": "draft_unreviewed",
+  "release_ready": false,
+  "runtime_registration": "forbidden_until_human_review",
+  "subtype_id": "xingce.political.party_history",
+  "module_id": "political_theory",
+  "form": "text_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "draft_no_distribution"
+  },
+  "content_evidence": {
+    "authoritative_source_snapshot": "共产党员网（来源：中央党史和文献研究院网站），《中国共产党第一次全国代表大会》，https://www.12371.cn/special/lcddh/ddh1/（accessed 2026-07-13）。",
+    "validity_cutoff": "2026-07-13; this draft is limited to the named source's account of the First National Congress, with no extension to unlisted historical claims."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": false,
+    "required_reviews": [
+      {
+        "review_kind": "logic",
+        "status": "pending",
+        "required_checks": [
+          "unique_answer",
+          "chronology_accuracy",
+          "institutional_scope",
+          "source_attribution",
+          "transfer_independence"
+        ]
+      },
+      {
+        "review_kind": "editorial_rights",
+        "status": "pending",
+        "required_checks": [
+          "authoritative_source",
+          "original_wording",
+          "date_labeling",
+          "license_scope"
+        ]
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "d78304e1f898af650c65bfffb7ee67f3dfc2bbcb1064cdca29a1892bbec98e92"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "400b0c34bb06066e88cb05944389e35c5adcc137eeb54f0099278ee28672478f"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "fb384544e077537695986e2735507862958400afccebc4cdfcf73f43ff547612"
+    }
+  ]
+}

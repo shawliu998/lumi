@@ -39,6 +39,8 @@ class XingceAuthoredDraftTests(unittest.TestCase):
             CONTENT_ROOT / "common_knowledge" / "lumi-current-affairs-v0",
             CONTENT_ROOT / "political_theory" / "lumi-xi-thought-v0",
             CONTENT_ROOT / "political_theory" / "lumi-marxism-v0",
+            CONTENT_ROOT / "political_theory" / "lumi-party-history-v0",
+            CONTENT_ROOT / "political_theory" / "lumi-theoretical-system-v0",
         )
         for root in roots:
             with self.subTest(pack=root.name):

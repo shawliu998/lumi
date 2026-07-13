@@ -1,0 +1,224 @@
+{
+  "schema_version": "lumi.xingce-adaptive-records.v1",
+  "pack_id": "lumi-party-history-v0",
+  "pack_version": "0.1.0-draft",
+  "review_status": "draft_unreviewed",
+  "records": [
+    {
+      "record_id": "D01",
+      "role": "entry_diagnostic",
+      "title": "党史党建：时间、地点和结果分开核对",
+      "target_skill_ids": [
+        "xingce.political.party_history.chronology",
+        "xingce.political.party_history.institution"
+      ],
+      "candidate_misconception_ids": [
+        "M-CHRON",
+        "M-INST"
+      ],
+      "independence_group": "party-entry-first-congress",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "依据本题所列《中国共产党第一次全国代表大会》来源，下列说法正确的是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "大会于1921年7月23日在上海开幕，最后一天转移到浙江嘉兴南湖游船举行"
+        },
+        {
+          "label": "B",
+          "text": "大会在二十一世纪举行，且从未改变会址"
+        },
+        {
+          "label": "C",
+          "text": "大会只是一项当代政府工作报告的发布仪式"
+        },
+        {
+          "label": "D",
+          "text": "大会的时间和地点可由其他无关会议任意替代"
+        }
+      ],
+      "correct_option": "A",
+      "route_probe_ids": [
+        "P01"
+      ],
+      "record_sha256": "c25de37a5f3cd997a0586a30464c10d586616ed169eebaf121fa8e9dc1962973"
+    },
+    {
+      "record_id": "P01",
+      "role": "probe",
+      "title": "最小探查：会议事实与成立结果不分离",
+      "target_skill_ids": [
+        "xingce.political.party_history.chronology",
+        "xingce.political.party_history.institution"
+      ],
+      "candidate_misconception_ids": [
+        "M-CHRON",
+        "M-INST"
+      ],
+      "independence_group": "party-probe-result",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "依据所列来源，对中国共产党第一次全国代表大会的表述最稳妥的是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "来源说明大会确定党的名称、通过第一个纲领和决议，并宣告中国共产党正式成立"
+        },
+        {
+          "label": "B",
+          "text": "只要记住某个地点，就不必核对大会时间和文件"
+        },
+        {
+          "label": "C",
+          "text": "大会结果可以改写为任何后来会议的决定"
+        },
+        {
+          "label": "D",
+          "text": "会议地点变化意味着来源不再能说明成立结果"
+        }
+      ],
+      "correct_option": "A",
+      "discriminates": [
+        "M-CHRON",
+        "M-INST"
+      ],
+      "candidate_evidence_map": {
+        "M-CHRON": {
+          "A": "refute",
+          "B": "support",
+          "C": "insufficient",
+          "D": "support"
+        },
+        "M-INST": {
+          "A": "refute",
+          "B": "insufficient",
+          "C": "support",
+          "D": "support"
+        }
+      },
+      "record_sha256": "e9966f85d9cc8ef949bf471d6d00a00d607b26536758ea0556460313eb310b85"
+    },
+    {
+      "record_id": "T-CHRON",
+      "role": "teaching_asset",
+      "title": "微课：把党史事件做成时间地点卡",
+      "target_skill_ids": [
+        "xingce.political.party_history.chronology"
+      ],
+      "candidate_misconception_ids": [
+        "M-CHRON"
+      ],
+      "independence_group": "party-chron-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-CHRON"
+      ],
+      "teaching_content": "先把来源事实拆成日期、开幕地点、会址变化三格。不要把相近会议或后来纪念日替换为事件发生的日期；题目问哪一格，就回到哪一格。",
+      "record_sha256": "11d11cd8efe38bf1fdcbab09bc90e0bb7e56c91a4b730dce7836f5d3121fc9d1"
+    },
+    {
+      "record_id": "T-INST",
+      "role": "teaching_asset",
+      "title": "微课：会议、文件与组织结果要连线",
+      "target_skill_ids": [
+        "xingce.political.party_history.institution"
+      ],
+      "candidate_misconception_ids": [
+        "M-INST"
+      ],
+      "independence_group": "party-inst-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-INST"
+      ],
+      "teaching_content": "来源可以同时陈述会议如何举行、通过什么文件和产生什么组织结果。作答时将这些事实按来源连线，不用无关事件或任意结果替代。",
+      "record_sha256": "37be72ed15ee28c5f195ded06dc1b2aa5c065fb5afbf86b7a4c11745973c1a63"
+    },
+    {
+      "record_id": "V01",
+      "role": "independent_transfer",
+      "title": "独立迁移：党史来源中的限定事实",
+      "target_skill_ids": [
+        "xingce.political.party_history.chronology",
+        "xingce.political.party_history.institution"
+      ],
+      "candidate_misconception_ids": [
+        "M-CHRON",
+        "M-INST"
+      ],
+      "independence_group": "party-transfer-source",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "题目给出一份党史来源并问事件的直接事实时，最合适的答法是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "只陈述来源明确给出的日期、地点、文件或结果，并保持其关系"
+        },
+        {
+          "label": "B",
+          "text": "用另一时代的会议替代事件"
+        },
+        {
+          "label": "C",
+          "text": "只凭一个地点推断所有细节"
+        },
+        {
+          "label": "D",
+          "text": "把来源未列出的结论补进答案"
+        }
+      ],
+      "correct_option": "A",
+      "requires_no_hints": true,
+      "record_sha256": "b5006ad700adb4ab8538f9ab65bbc70af4759dfc7f4b3a61b96da08f1174664e"
+    },
+    {
+      "record_id": "R01",
+      "role": "delayed_review",
+      "title": "延迟复习：党史事件的可核对性",
+      "target_skill_ids": [
+        "xingce.political.party_history.chronology"
+      ],
+      "candidate_misconception_ids": [
+        "M-CHRON",
+        "M-INST"
+      ],
+      "independence_group": "party-review-time",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "遇到党史事件题中相近的日期、地点和会议名称时，应优先：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "回到指定来源逐项核对，而不是凭相似印象替换"
+        },
+        {
+          "label": "B",
+          "text": "忽略来源中的时间限定"
+        },
+        {
+          "label": "C",
+          "text": "把不同会议合并为一个"
+        },
+        {
+          "label": "D",
+          "text": "只看选项长度"
+        }
+      ],
+      "correct_option": "A",
+      "requires_no_hints": true,
+      "scheduled_after_days": 4,
+      "eligible_after_transfer_ids": [
+        "V01"
+      ],
+      "record_sha256": "bb5df4f255981729b9af9a1b689f66a73c09ca6dce602353d1e26415768d3559"
+    }
+  ]
+}

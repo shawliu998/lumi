@@ -1,0 +1,224 @@
+{
+  "schema_version": "lumi.xingce-adaptive-records.v1",
+  "pack_id": "lumi-theoretical-system-v0",
+  "pack_version": "0.1.0-draft",
+  "review_status": "draft_unreviewed",
+  "records": [
+    {
+      "record_id": "D01",
+      "role": "entry_diagnostic",
+      "title": "理论体系：组成名称要按来源核对",
+      "target_skill_ids": [
+        "xingce.political.theoretical_system.formulation",
+        "xingce.political.theoretical_system.relation"
+      ],
+      "candidate_misconception_ids": [
+        "M-FORM",
+        "M-REL"
+      ],
+      "independence_group": "system-entry-composition",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "依据本题列出的学习资料，下列对中国特色社会主义理论体系的表述正确的是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "资料列举邓小平理论、“三个代表”重要思想和科学发展观等重大战略思想"
+        },
+        {
+          "label": "B",
+          "text": "资料把某一件文物列为理论体系组成部分"
+        },
+        {
+          "label": "C",
+          "text": "只要知道一届会议名称，就无需核对理论名称"
+        },
+        {
+          "label": "D",
+          "text": "理论体系中的名称可由任何未给出的概念替换"
+        }
+      ],
+      "correct_option": "A",
+      "route_probe_ids": [
+        "P01"
+      ],
+      "record_sha256": "5e89da8bb816177cefe74d6725688ce4526fd3b94be41ed77ff9612917bd2cb2"
+    },
+    {
+      "record_id": "P01",
+      "role": "probe",
+      "title": "最小探查：组成与背景分层读取",
+      "target_skill_ids": [
+        "xingce.political.theoretical_system.formulation",
+        "xingce.political.theoretical_system.relation"
+      ],
+      "candidate_misconception_ids": [
+        "M-FORM",
+        "M-REL"
+      ],
+      "independence_group": "system-probe-background",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "阅读所列资料时，下列做法最稳妥的是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "先回答来源明确列举了哪些理论，再将其与资料所述的发展背景分开核对"
+        },
+        {
+          "label": "B",
+          "text": "把会议日期直接当作理论体系组成"
+        },
+        {
+          "label": "C",
+          "text": "把未列出的名称加入体系以凑足选项"
+        },
+        {
+          "label": "D",
+          "text": "认为历史背景可以取代所有组成名称"
+        }
+      ],
+      "correct_option": "A",
+      "discriminates": [
+        "M-FORM",
+        "M-REL"
+      ],
+      "candidate_evidence_map": {
+        "M-FORM": {
+          "A": "refute",
+          "B": "insufficient",
+          "C": "support",
+          "D": "insufficient"
+        },
+        "M-REL": {
+          "A": "refute",
+          "B": "support",
+          "C": "insufficient",
+          "D": "support"
+        }
+      },
+      "record_sha256": "8d5d5a46e56e1a6d61c0d01a1cdf5995d8a9f82497b4c76db6f139ed1e8dd607"
+    },
+    {
+      "record_id": "T-FORM",
+      "role": "teaching_asset",
+      "title": "微课：组成清单只认来源",
+      "target_skill_ids": [
+        "xingce.political.theoretical_system.formulation"
+      ],
+      "candidate_misconception_ids": [
+        "M-FORM"
+      ],
+      "independence_group": "system-form-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-FORM"
+      ],
+      "teaching_content": "先抄下来源明示的名称，再看选项是否逐字对应。不要因概念相关就补入未列名称；题目考查的是这份来源如何概括。",
+      "record_sha256": "00216e25d9705457819a83a95bfef33bc238c0bc254ed57579736f9c0f265d08"
+    },
+    {
+      "record_id": "T-REL",
+      "role": "teaching_asset",
+      "title": "微课：列表与叙述不互相替代",
+      "target_skill_ids": [
+        "xingce.political.theoretical_system.relation"
+      ],
+      "candidate_misconception_ids": [
+        "M-REL"
+      ],
+      "independence_group": "system-rel-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-REL"
+      ],
+      "teaching_content": "资料可先列组成，再叙述其提出、发展和历史背景。作答时先分栏：名单回答“有哪些”，背景回答“何时何故”；不要让后一栏替换前一栏。",
+      "record_sha256": "af2ff04009c7d7cba1a9d47ae1cd737b1b04e4062c7b8f247214f89ff5d4b292"
+    },
+    {
+      "record_id": "V01",
+      "role": "independent_transfer",
+      "title": "独立迁移：理论表述的来源边界",
+      "target_skill_ids": [
+        "xingce.political.theoretical_system.formulation",
+        "xingce.political.theoretical_system.relation"
+      ],
+      "candidate_misconception_ids": [
+        "M-FORM",
+        "M-REL"
+      ],
+      "independence_group": "system-transfer-source",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "题目给出一份理论学习材料并问“该材料列举哪些组成”时，应：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "仅依据材料中的列举作答，并将发展背景另行理解"
+        },
+        {
+          "label": "B",
+          "text": "将任何相近概念都加入"
+        },
+        {
+          "label": "C",
+          "text": "把一个会议日期当作组成名称"
+        },
+        {
+          "label": "D",
+          "text": "忽略材料文本"
+        }
+      ],
+      "correct_option": "A",
+      "requires_no_hints": true,
+      "record_sha256": "287d7d4ec24cf607b8259575ad3de4102ed11d352071da7fa3d760cb5c14d8c0"
+    },
+    {
+      "record_id": "R01",
+      "role": "delayed_review",
+      "title": "延迟复习：名称与关系",
+      "target_skill_ids": [
+        "xingce.political.theoretical_system.relation"
+      ],
+      "candidate_misconception_ids": [
+        "M-FORM",
+        "M-REL"
+      ],
+      "independence_group": "system-review-relation",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "当选项把“理论组成”与“历史背景”混为一谈时，最可靠的依据是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "来源中各自的明确表述和问题所问层次"
+        },
+        {
+          "label": "B",
+          "text": "概念字面相似程度"
+        },
+        {
+          "label": "C",
+          "text": "任意补充的名单"
+        },
+        {
+          "label": "D",
+          "text": "不核对来源"
+        }
+      ],
+      "correct_option": "A",
+      "requires_no_hints": true,
+      "scheduled_after_days": 4,
+      "eligible_after_transfer_ids": [
+        "V01"
+      ],
+      "record_sha256": "e3e42a6bf8561ba3abcfc26c486e47ee18115c29576b33cafbbd88293465b87a"
+    }
+  ]
+}
