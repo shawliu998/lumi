@@ -1,0 +1,224 @@
+{
+  "schema_version": "lumi.xingce-adaptive-records.v1",
+  "pack_id": "lumi-marxism-v0",
+  "pack_version": "0.1.0-draft",
+  "review_status": "draft_unreviewed",
+  "records": [
+    {
+      "record_id": "D01",
+      "role": "entry_diagnostic",
+      "title": "基本原理：检验不能停在主张内部",
+      "target_skill_ids": [
+        "xingce.political.marxism.practice_truth",
+        "xingce.political.marxism.application_boundary"
+      ],
+      "candidate_misconception_ids": [
+        "M-PRAXIS",
+        "M-SCOPE"
+      ],
+      "independence_group": "marx-entry-practice",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "依据本题列出的马克思主义认识论学习资料，下列说法正确的是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "实践是检验真理的唯一标准，主观确信不能单独充当检验"
+        },
+        {
+          "label": "B",
+          "text": "只要某种说法被反复陈述，就无需实践检验"
+        },
+        {
+          "label": "C",
+          "text": "理论能否正确只由提出者的意愿决定"
+        },
+        {
+          "label": "D",
+          "text": "一次局部观察必然无需条件地证明全部情境"
+        }
+      ],
+      "correct_option": "A",
+      "route_probe_ids": [
+        "P01"
+      ],
+      "record_sha256": "0fa1ee1ca12c200c64ef42aaa2f71543480fecd6ed44eb1548494f69e0e68bd0"
+    },
+    {
+      "record_id": "P01",
+      "role": "probe",
+      "title": "最小探查：证据与外推的边界",
+      "target_skill_ids": [
+        "xingce.political.marxism.practice_truth",
+        "xingce.political.marxism.application_boundary"
+      ],
+      "candidate_misconception_ids": [
+        "M-PRAXIS",
+        "M-SCOPE"
+      ],
+      "independence_group": "marx-probe-evidence",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "某方案在一个明确场景中得到一次结果。依据所列资料，最稳妥的态度是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "把结果作为实践材料，同时核对条件和范围，不把它直接扩成所有情境的结论"
+        },
+        {
+          "label": "B",
+          "text": "完全不需要实践材料，只看提出者是否自信"
+        },
+        {
+          "label": "C",
+          "text": "一次结果自动排除继续检验的必要"
+        },
+        {
+          "label": "D",
+          "text": "任何理论都可以用自身的断言证明自身"
+        }
+      ],
+      "correct_option": "A",
+      "discriminates": [
+        "M-PRAXIS",
+        "M-SCOPE"
+      ],
+      "candidate_evidence_map": {
+        "M-PRAXIS": {
+          "A": "refute",
+          "B": "support",
+          "C": "insufficient",
+          "D": "support"
+        },
+        "M-SCOPE": {
+          "A": "refute",
+          "B": "insufficient",
+          "C": "support",
+          "D": "insufficient"
+        }
+      },
+      "record_sha256": "1c475da0ebb700c03c9777d9ab89ef0e2165d4492b846228931a4787122cfd52"
+    },
+    {
+      "record_id": "T-PRAXIS",
+      "role": "teaching_asset",
+      "title": "微课：主张不是检验本身",
+      "target_skill_ids": [
+        "xingce.political.marxism.practice_truth"
+      ],
+      "candidate_misconception_ids": [
+        "M-PRAXIS"
+      ],
+      "independence_group": "marx-practice-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-PRAXIS"
+      ],
+      "teaching_content": "先分开“谁提出了什么”和“凭什么检验”。资料强调实践是检验真理的唯一标准；声望、重复表述或主观感受都不能替代实践检验。",
+      "record_sha256": "ede79ec009a6e8e508c791fabae2a9206a3d4e57f5d0af1c73bc2550f09440a0"
+    },
+    {
+      "record_id": "T-SCOPE",
+      "role": "teaching_asset",
+      "title": "微课：实践材料也有条件边界",
+      "target_skill_ids": [
+        "xingce.political.marxism.application_boundary"
+      ],
+      "candidate_misconception_ids": [
+        "M-SCOPE"
+      ],
+      "independence_group": "marx-scope-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-SCOPE"
+      ],
+      "teaching_content": "实践检验不是“有一次结果就可无限外推”。答题时保留对象、条件和范围；题干没有给出跨情境证据，就不能把局部材料写成无条件结论。",
+      "record_sha256": "78f22c2cedb1c9c48d95f80bf210642a8d2fc4ca7c9fcff295b149e543b58b04"
+    },
+    {
+      "record_id": "V01",
+      "role": "independent_transfer",
+      "title": "独立迁移：检验与范围",
+      "target_skill_ids": [
+        "xingce.political.marxism.practice_truth",
+        "xingce.political.marxism.application_boundary"
+      ],
+      "candidate_misconception_ids": [
+        "M-PRAXIS",
+        "M-SCOPE"
+      ],
+      "independence_group": "marx-transfer-test",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "某个判断被提出后，若要考察其是否符合客观实际，最合适的下一步是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "在明确条件下用相关实践材料检验，并说明结论范围"
+        },
+        {
+          "label": "B",
+          "text": "只因提出者相信就认定正确"
+        },
+        {
+          "label": "C",
+          "text": "拒绝任何外部实践材料"
+        },
+        {
+          "label": "D",
+          "text": "将一个局部结果自动改写为所有对象的结论"
+        }
+      ],
+      "correct_option": "A",
+      "requires_no_hints": true,
+      "record_sha256": "47728785f7bd556118258bc213cd5016f5d2388855daed417ca9c6a64e81c94c"
+    },
+    {
+      "record_id": "R01",
+      "role": "delayed_review",
+      "title": "延迟复习：不要让理论自证",
+      "target_skill_ids": [
+        "xingce.political.marxism.practice_truth"
+      ],
+      "candidate_misconception_ids": [
+        "M-PRAXIS",
+        "M-SCOPE"
+      ],
+      "independence_group": "marx-review-practice",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "下列哪项最符合所列资料关于真理检验的表述？",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "应当以实践检验真理，而不以理论自身或主观意愿作最终标准"
+        },
+        {
+          "label": "B",
+          "text": "任何结论都无需面对实践"
+        },
+        {
+          "label": "C",
+          "text": "范围条件不影响结论表达"
+        },
+        {
+          "label": "D",
+          "text": "主观确信就是唯一标准"
+        }
+      ],
+      "correct_option": "A",
+      "requires_no_hints": true,
+      "scheduled_after_days": 4,
+      "eligible_after_transfer_ids": [
+        "V01"
+      ],
+      "record_sha256": "f7307a438f943027eaabdd920f259cc75f0e14debd96539fd05b8203c8852ade"
+    }
+  ]
+}
