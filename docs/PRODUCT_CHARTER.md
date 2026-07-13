@@ -10,18 +10,23 @@ next. Its central claim is deliberately narrower than “AI teacher”: an agent
 should identify competing explanations for an error, choose an action that
 reduces uncertainty, and verify the result before it changes learner state.
 
-## First product domain
+## Product domain and release order
 
-The application version focuses on **Xingce judgement reasoning**, initially
-conditional logic: sufficient conditions, necessary conditions, direction
-conversion, and bounded natural-language symbolization. Each item is compact,
-auditable, and bundled in the repository with a clear authoring and licence
-record. The first demo does not depend on an external question bank.
+The application domain is now **all Xingce question types**. Lumi expands
+through independently auditable Domain Packs rather than a generic chat layer:
+every subtype receives its own scoring semantics, candidate error tree,
+discriminating probe, teaching policy, unseen transfer, state receipt and
+review schedule.
 
-Shenlun, Interview, complete Xingce coverage, generic K12 tutoring, social or
-marketplace features, rankings, payments, and broad AI chat are explicitly out
-of scope. They may become future Domain Packs only after the first domain is
-validated.
+Conditional logic (sufficient/necessary conditions, direction conversion and
+bounded symbolization) is the first released pack and remains the reference
+implementation. The canonical 31-subtype coverage boundary, including
+material, visual and freshness requirements, lives in
+[XINGCE_COVERAGE_V1.md](XINGCE_COVERAGE_V1.md). A planned row is not an
+available product capability.
+
+Shenlun, Interview, generic K12 tutoring, social or marketplace features,
+rankings, payments, and broad AI chat remain out of scope for this delivery.
 
 ## Non-negotiable learner loop
 
@@ -74,7 +79,7 @@ skills, causes, mastery, or scheduling.
 
 ## Five-minute demonstration standard
 
-1. A learner mistakes a judgement-reasoning item with confidence.
+1. A learner mistakes an item from a reviewed Xingce subtype with confidence.
 2. Lumi displays two or more candidate causes and asks one discriminating
    question.
 3. The answer changes the teaching policy and Lumi explains why.

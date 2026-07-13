@@ -1,12 +1,12 @@
 # Lumi v0 evaluation plan
 
-> **Scope note — 2026-07-12.** The active application evaluation is the
-> in-repository `xingce.judgment` adaptive-demo path in
-> [ADAPTIVE_DEMO_SCOPE.md](ADAPTIVE_DEMO_SCOPE.md). References below to broad
-> Xingce, Shenlun, Interview, the 42 representative fixtures, or the earlier
-> data-analysis activity are historical mechanism coverage, not evidence that
-> those are current user-facing domains. The active demo has no learning-effect
-> claim until a declared comparison protocol and appropriate evidence exist.
+> **Scope note — 2026-07-13.** The active application programme is the 31-row
+> Xingce coverage contract in [XINGCE_COVERAGE_V1.md](XINGCE_COVERAGE_V1.md).
+> Conditional logic is the only released row. References below to the 42
+> representative fixtures, Shenlun, Interview, or the earlier data-analysis
+> activity are historical mechanism coverage, not evidence that another
+> learner-facing subtype exists. Each new row needs its own deterministic and
+> human-local acceptance evidence; no learning-effect claim is in scope.
 
 ## Evaluation philosophy
 

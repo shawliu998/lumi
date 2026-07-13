@@ -1,8 +1,11 @@
 # Judgment-reasoning adaptive-demo scope
 
-This is the active implementation scope for the Lumi application version. It
-replaces the earlier multi-domain/data-analysis product scope; historical
-mechanisms and traces remain immutable compatibility evidence.
+This is the released conditional-logic component scope for the Lumi application
+version. It replaces the earlier multi-domain/data-analysis product scope for
+this pack, but no longer defines the application's full Xingce scope. The
+active 31-subtype expansion boundary is
+[XINGCE_COVERAGE_V1.md](XINGCE_COVERAGE_V1.md); historical mechanisms and
+traces remain immutable compatibility evidence.
 
 ## One demonstrable claim
 

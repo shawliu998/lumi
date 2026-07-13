@@ -4,23 +4,20 @@ This is the live requirement-to-evidence audit for the local Lumi objective.
 `complete` means the stated scope has direct reproducible evidence; it does not
 mean population learning efficacy or production distribution has been proved.
 
-> **Scope correction — 2026-07-12.** The application target is now the
-> judgement-reasoning-first [Inspectable Adaptive Learning Agent
-> charter](PRODUCT_CHARTER.md), with its active acceptance scope in
-> [ADAPTIVE_DEMO_SCOPE.md](ADAPTIVE_DEMO_SCOPE.md). The P0.1–P0.3.1 material
-> below is retained as a **historical infrastructure audit**: it documents
-> reusable local event, verification, replay, and scheduling mechanisms, not
-> the current product release. In particular, a data-analysis run, a Study
-> Pack, synthetic fixture coverage, or the old 42-path matrix cannot satisfy
-> the new judgement-reasoning learner-workspace acceptance.
+> **Scope correction — 2026-07-13.** The application target is the all-Xingce
+> [Inspectable Adaptive Learning Agent charter](PRODUCT_CHARTER.md), whose
+> active acceptance boundary is [XINGCE_COVERAGE_V1.md](XINGCE_COVERAGE_V1.md).
+> The P0.1–P0.3.1 material below is a **historical infrastructure audit**:
+> reusable local event, verification, replay and scheduling mechanisms, not a
+> substitute for a type-specific release. A data-analysis run, Study Pack,
+> synthetic fixture coverage or the old 42-path matrix cannot complete a row.
 
-> **Current release status:** not ready. The new scope needs (1) a
-> human-reviewed, rights-cleared in-repository judgement-reasoning pack, (2)
-> a human-local cross-run learner-state/decision projection, (3) a connected
-> workspace for observe → diagnose → probe → teach → verify → update →
-> reflect, (4) deterministic replay/evaluation evidence, and (5) one voluntary
-> human walkthrough. No automated answer may be used to fill item (5), and no
-> learning-effect claim is permitted from the resulting demo.
+> **Current release status:** partial — exactly 1/31 rows is released
+> (conditional logic). The other 30 require type-specific reviewed immutable
+> content, a connected observe → diagnose → probe → teach → verify → update →
+> reflect workspace, deterministic replay/evaluation and a voluntary
+> human-local walkthrough. No automated answer may be used for that walkthrough,
+> and no learning-effect claim follows from it.
 
 ## Current judgment-reasoning implementation slice
 

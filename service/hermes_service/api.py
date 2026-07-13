@@ -474,6 +474,10 @@ def _handler_factory(application: SidecarApplication, allowed_origins: frozenset
                 return application.health()
             if path == "/v1/capabilities":
                 return application.capabilities()
+            if path == "/v1/xingce/coverage":
+                if query:
+                    raise ServiceError(400, "invalid_query", "Xingce coverage does not accept query parameters")
+                return application.xingce_coverage_catalog()
             if path == "/v1/judgment/workspace":
                 if query:
                     raise ServiceError(400, "invalid_query", "judgment workspace does not accept query parameters")

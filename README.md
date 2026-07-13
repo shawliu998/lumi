@@ -9,9 +9,13 @@ It is not a question-bank wrapper or a chat-first AI tutor.
 observe -> diagnose -> probe -> teach -> verify -> update -> reflect
 ```
 
-The first application domain is **Xingce judgement reasoning**, beginning with
-conditional logic. Shenlun, Interview, full Xingce coverage, communities, and
-generic tutoring are future Domain Packs, not current product claims.
+The active application domain is **all Xingce question types**. Conditional
+logic is the first released, human-reviewed component; the remaining 30 rows
+of the versioned 31-subtype coverage matrix are still planned, not implied by
+the historical fixture catalogue. See
+[the coverage contract](docs/XINGCE_COVERAGE_V1.md). Shenlun, Interview,
+communities, and generic tutoring are future Domain Packs, not current product
+claims.
 
 The repository is intentionally separate from the shared production Shenlun
 website. That repository is a read-only reference and is never a dependency or
@@ -58,13 +62,13 @@ with the repository. Bulk question-bank data remains an optional, bounded
 reference input; the product must not require it for reviewer reproducibility.
 
 Current evidence proves bounded assistance/diagnosis, scheduling, Study Pack,
-and local agent-loop mechanics. The active product milestone is a five-minute
-judgement-reasoning path: real learner evidence → competing diagnosis hypotheses
-→ discriminating probe → targeted teaching action → unseen transfer → explicit
-state update or withholding → delayed review. Until that passes, Lumi does not
-claim a complete multi-domain product, delayed-retention efficacy, calibrated
-population effects, or production macOS distribution. See
-[the product charter](docs/PRODUCT_CHARTER.md).
+and local agent-loop mechanics. The active product programme is one such
+five-minute path for each coverage-matrix subtype: real learner evidence →
+competing diagnosis hypotheses → discriminating probe → targeted teaching action
+→ unseen transfer → explicit state update or withholding → delayed review. Until
+all 31 rows meet that bar, Lumi does not claim complete Xingce coverage,
+delayed-retention efficacy, calibrated population effects, or production macOS
+distribution. See [the product charter](docs/PRODUCT_CHARTER.md).
 
 ## Safety boundary
 

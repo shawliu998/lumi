@@ -64,6 +64,7 @@ from .judgment_session import (
     JudgmentSessionService,
     judgment_pack_status,
 )
+from .xingce_catalog import XingceCoverageCatalog
 
 
 SERVICE_VERSION = "0.3.0"
@@ -111,6 +112,7 @@ class SidecarApplication:
             )
         self.database = str(database)
         self.catalog = ScenarioCatalog()
+        self.xingce_coverage = XingceCoverageCatalog()
         if product_activity_catalog is not None and product_activity_payload_path is not None:
             raise ValueError("provide either product activity catalog or payload path")
         self.product_activities = product_activity_catalog or (
@@ -218,6 +220,7 @@ class SidecarApplication:
                 "hash-verified-replay",
                 "skill-summary",
                 "judgment-reasoning-workspace-v1",
+                "xingce-coverage-catalog-v1",
             ],
             "endpoints": {
                 "health": "GET /v1/health",
@@ -252,8 +255,12 @@ class SidecarApplication:
                 "judgment_probe": "POST /v1/judgment/sessions/{session_id}/probe",
                 "judgment_transfer": "POST /v1/judgment/sessions/{session_id}/transfer",
                 "judgment_replay": "GET /v1/judgment/sessions/{session_id}/replay",
+                "xingce_coverage": "GET /v1/xingce/coverage",
             },
         }
+
+    def xingce_coverage_catalog(self) -> dict[str, Any]:
+        return self.xingce_coverage.public_projection()
 
     def judgment_workspace(self) -> dict[str, Any]:
         """Return the public workspace, or the review gate without draft text."""
