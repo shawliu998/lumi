@@ -23,7 +23,7 @@
       "independence_group": "fill-seating-entry",
       "content_origin": "original_lumi",
       "review_status": "draft_unreviewed",
-      "prompt": "公共座椅的数量增加，并不必然改善使用体验。若座椅遮雨不足、阻断通行，或与等候区域脱节，使用者仍可能绕开它们。____。\n\nA. 因此，公共设施的设置还要结合具体使用情境\nB. 这些座椅一定会成为城市中最受欢迎的设施\nC. 座椅的颜色与所有城市的道路完全相同\nD. 因此，应当取消所有公共座椅",
+      "prompt": "公共座椅的数量增加，并不必然改善使用体验。若座椅遮雨不足、阻断通行，或与等候区域脱节，使用者仍可能绕开它们。____。",
       "response_mode": "single_choice",
       "options": [
         {
@@ -47,7 +47,7 @@
       "route_probe_ids": [
         "P01"
       ],
-      "record_sha256": "30d0c92609a7c252f133f1e6ea63c5dc30f60cdd12fc09a700344a0546f1d60b"
+      "record_sha256": "89c4ae8034f50eab9ef15d92a801bd6d809f9093550bf2b6f659571996377040"
     },
     {
       "record_id": "P01",
@@ -68,7 +68,7 @@
       "independence_group": "fill-data-probe",
       "content_origin": "original_lumi",
       "review_status": "draft_unreviewed",
-      "prompt": "公开数据的价值不只在于把文件放到网站上。若字段缺少口径说明，使用者可能把不同范围的数据直接比较。____。\n\nA. 因此，数据发布还应提供必要的说明和更新信息\nB. 这些说明已经证明所有数据都没有问题\nC. 数据文件的数量与本段讨论无关，所以无需阅读\nD. 因此，任何人都不应使用公开数据",
+      "prompt": "公开数据的价值不只在于把文件放到网站上。若字段缺少口径说明，使用者可能把不同范围的数据直接比较。____。",
       "response_mode": "single_choice",
       "options": [
         {
@@ -121,7 +121,7 @@
           "D": "support"
         }
       },
-      "record_sha256": "e722853eac9bb43c9549b456e6490ed3ada8493c65bffd47692375118b0d6c20"
+      "record_sha256": "b3c352236dcef762ac7680851f5c301419141749a177b7186d5e221892edf40d"
     },
     {
       "record_id": "T-REL",
@@ -217,7 +217,7 @@
       "independence_group": "fill-reading-transfer",
       "content_origin": "original_lumi",
       "review_status": "draft_unreviewed",
-      "prompt": "有些公共阅读角建成后使用率不高，原因不一定是书架太少，也可能是它与附近学校、休息区和活动安排没有连接。____。\n\nA. 因此，阅读角需要结合日常活动持续调整\nB. 阅读角中的书籍一定不值得阅读\nC. 所有阅读角都应只设置在学校里\nD. 因此，应停止提供公共阅读服务",
+      "prompt": "有些公共阅读角建成后使用率不高，原因不一定是书架太少，也可能是它与附近学校、休息区和活动安排没有连接。____。",
       "response_mode": "single_choice",
       "options": [
         {
@@ -239,7 +239,7 @@
       ],
       "correct_option": "A",
       "requires_no_hints": true,
-      "record_sha256": "53ce3a3157928cc65780b28fbad6cc7ec86e2179a1795e5d243a880cf9d12c6d"
+      "record_sha256": "cae9d6a681479f69d766f73539078785811bded5083719931211b5e263dc7c26"
     },
     {
       "record_id": "R01",
@@ -258,7 +258,7 @@
       "independence_group": "fill-wayfinding-review",
       "content_origin": "original_lumi",
       "review_status": "draft_unreviewed",
-      "prompt": "步行指引若只在起点给出信息，陌生使用者到路口时仍需反复判断。____。\n\nA. 因此，可在关键转向处提供连续且一致的提示\nB. 这些提示说明所有道路都完全相同\nC. 路口从来不需要任何信息\nD. 因此，应取消步行路线",
+      "prompt": "步行指引若只在起点给出信息，陌生使用者到路口时仍需反复判断。____。",
       "response_mode": "single_choice",
       "options": [
         {
@@ -284,7 +284,7 @@
       "eligible_after_transfer_ids": [
         "V01"
       ],
-      "record_sha256": "b2df6dbe2fe6d9d8c0770ed110b4d384381dc6096d878c4fa460fb65855a219c"
+      "record_sha256": "beab1dc96b4cbb93cc91b075065e66f22344748f54f5ee343122707eab7d1f1b"
     }
   ]
 }

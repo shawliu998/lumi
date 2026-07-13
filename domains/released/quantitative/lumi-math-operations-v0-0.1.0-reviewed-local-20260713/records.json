@@ -1,0 +1,241 @@
+{
+  "schema_version": "lumi.xingce-adaptive-records.v1",
+  "pack_id": "lumi-math-operations-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "review_status": "release_ready",
+  "exact_numeric_scoring": "所有数值题均为整数、容差为 0；不接受近似值。",
+  "solution_notes": {
+    "D01": "原单位率为 480 ÷ 6 = 80 个/小时。维护后为 80 × 1.25 = 100 个/小时。5 小时产量为 100 × 5 = 500。",
+    "P01": "原速率为 30 升/分钟。提高 20% 后为 30 × 1.2 = 36 升/分钟。目标是接下来 5 分钟，所以为 36 × 5 = 180 升。",
+    "V01": "原单位率为 72 ÷ (3 × 6) = 4 份/小时。新单位率为 4 × 1.25 = 5 份/小时。新总时长为 4 × 5 = 20 小时，产量为 5 × 20 = 100。",
+    "R01": "原单位率为 45 ÷ 3 = 15 单位/小时。提高 20% 后为 18 单位/小时。4 小时读数为 18 × 4 = 72。"
+  },
+  "records": [
+    {
+      "record_id": "D01",
+      "role": "entry_diagnostic",
+      "title": "数学运算：效率提高后的产量",
+      "target_skill_ids": [
+        "xingce.quantitative.math_operations.rate_model",
+        "xingce.quantitative.math_operations.rate_change",
+        "xingce.quantitative.math_operations.unit_scope"
+      ],
+      "candidate_misconception_ids": [
+        "M-MODEL",
+        "M-BASE",
+        "M-SCOPE",
+        "M-CALC"
+      ],
+      "independence_group": "math-operations-efficiency-entry",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "prompt": "一条生产线 6 小时生产 480 个零件，原效率恒定。维护后每小时效率提高 25%，按新效率连续生产 5 小时，可生产多少个零件？请直接填写数字。",
+      "response_mode": "numeric",
+      "answer_spec": {
+        "target": 500,
+        "tolerance": 0
+      },
+      "route_probe_ids": [
+        "P01"
+      ],
+      "record_sha256": "4029f7b45966e8db90d1f375d294be8a25ea0aec7f18913ac840ecf8afcaead2"
+    },
+    {
+      "record_id": "P01",
+      "role": "probe",
+      "title": "最小探查：单位率与目标时段",
+      "target_skill_ids": [
+        "xingce.quantitative.math_operations.rate_model",
+        "xingce.quantitative.math_operations.rate_change",
+        "xingce.quantitative.math_operations.unit_scope"
+      ],
+      "candidate_misconception_ids": [
+        "M-MODEL",
+        "M-BASE",
+        "M-SCOPE",
+        "M-CALC"
+      ],
+      "independence_group": "math-operations-rate-probe",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "prompt": "某容器原来每分钟注入 30 升液体。注入速度提高 20% 后，接下来 5 分钟共注入多少升？请直接填写数字。",
+      "response_mode": "numeric",
+      "answer_spec": {
+        "target": 180,
+        "tolerance": 0
+      },
+      "discriminates": [
+        "M-MODEL",
+        "M-BASE",
+        "M-SCOPE",
+        "M-CALC"
+      ],
+      "candidate_evidence_map": {
+        "M-MODEL": {
+          "36": "support",
+          "180": "refute",
+          "150": "insufficient",
+          "288": "insufficient",
+          "200": "insufficient"
+        },
+        "M-BASE": {
+          "150": "support",
+          "180": "refute",
+          "36": "insufficient",
+          "288": "insufficient",
+          "200": "insufficient"
+        },
+        "M-SCOPE": {
+          "288": "support",
+          "180": "refute",
+          "36": "insufficient",
+          "150": "insufficient",
+          "200": "insufficient"
+        },
+        "M-CALC": {
+          "200": "support",
+          "180": "refute",
+          "36": "insufficient",
+          "150": "insufficient",
+          "288": "insufficient"
+        }
+      },
+      "record_sha256": "347fab3de41f528a1ebf13096e4a4e207338701d60d3704c93960d8af553da7d"
+    },
+    {
+      "record_id": "T-MODEL",
+      "role": "teaching_asset",
+      "title": "微课：先写“单位率 × 目标时长”",
+      "target_skill_ids": [
+        "xingce.quantitative.math_operations.rate_model"
+      ],
+      "candidate_misconception_ids": [
+        "M-MODEL"
+      ],
+      "independence_group": "math-operations-model-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "target_candidate_ids": [
+        "M-MODEL"
+      ],
+      "teaching_content": "先把题目翻成两个量：每单位时间完成多少，以及目标时间有多长。速度提高后得到的仍是“每分钟（或每小时）的量”，不能直接当成总量；最后一步必须再乘目标时长。",
+      "record_sha256": "9cc51b78e4dbc46f612b7107d14e11371a1b7cc11edcaf81e23109a183910406"
+    },
+    {
+      "record_id": "T-BASE",
+      "role": "teaching_asset",
+      "title": "微课：提高百分比要乘在原单位率上",
+      "target_skill_ids": [
+        "xingce.quantitative.math_operations.rate_change"
+      ],
+      "candidate_misconception_ids": [
+        "M-BASE"
+      ],
+      "independence_group": "math-operations-base-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "target_candidate_ids": [
+        "M-BASE"
+      ],
+      "teaching_content": "“提高 20%”不是把总时间或总量随意加 20%，而是将原单位率乘以 1.2。先保留原单位率及其单位，再写出变化后的单位率，最后代入目标时间范围。",
+      "record_sha256": "3962e3cde1e0a68e94d88e77c0a47b4997f261ab87335709427610e6b3c521d7"
+    },
+    {
+      "record_id": "T-SCOPE",
+      "role": "teaching_asset",
+      "title": "微课：只计算题目指定的时间窗口",
+      "target_skill_ids": [
+        "xingce.quantitative.math_operations.unit_scope"
+      ],
+      "candidate_misconception_ids": [
+        "M-SCOPE"
+      ],
+      "independence_group": "math-operations-scope-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "target_candidate_ids": [
+        "M-SCOPE"
+      ],
+      "teaching_content": "题干给出的原时间常用于说明原速率，不自动加入新阶段。圈出“接下来”“新效率下”“目标几小时”等词，只用它们指定的时间窗口与变化后的单位率相乘。",
+      "record_sha256": "2a51d6b613aacd78ce01e5b78b19348ee84b26ace0c77c766bdd2a36255487b4"
+    },
+    {
+      "record_id": "T-CALC",
+      "role": "teaching_asset",
+      "title": "微课：把倍率与时间分两步计算",
+      "target_skill_ids": [
+        "xingce.quantitative.math_operations.rate_model",
+        "xingce.quantitative.math_operations.rate_change"
+      ],
+      "candidate_misconception_ids": [
+        "M-CALC"
+      ],
+      "independence_group": "math-operations-calculation-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "target_candidate_ids": [
+        "M-CALC"
+      ],
+      "teaching_content": "模型已确定时，不要把所有数字压在一行。先算变化后的单位率，再乘目标时长；每步都带上单位并做一次量级检查。这样能区分“关系没建对”和“算术没算对”。",
+      "record_sha256": "3e707e79f5a5e657804b5b7eba05e2aec74b9b4c89697afd8238a9613bd5dc92"
+    },
+    {
+      "record_id": "V01",
+      "role": "independent_transfer",
+      "title": "独立迁移：效率与工作时间同时改变",
+      "target_skill_ids": [
+        "xingce.quantitative.math_operations.rate_model",
+        "xingce.quantitative.math_operations.rate_change",
+        "xingce.quantitative.math_operations.unit_scope"
+      ],
+      "candidate_misconception_ids": [
+        "M-MODEL",
+        "M-BASE",
+        "M-SCOPE",
+        "M-CALC"
+      ],
+      "independence_group": "math-operations-time-efficiency-transfer",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "prompt": "一组人员原来 3 天、每天 6 小时共处理 72 份文件。新系统使每小时处理量提高 25%，同时每天工作时间改为 5 小时。按新方式工作 4 天，可处理多少份文件？请在不查看提示的情况下直接填写数字。",
+      "response_mode": "numeric",
+      "answer_spec": {
+        "target": 100,
+        "tolerance": 0
+      },
+      "requires_no_hints": true,
+      "record_sha256": "8475b93216dc894987c686e5965e364aebad31dd032674ae1fbcc37ca999b787"
+    },
+    {
+      "record_id": "R01",
+      "role": "delayed_review",
+      "title": "延迟复习：单位率变化",
+      "target_skill_ids": [
+        "xingce.quantitative.math_operations.rate_model",
+        "xingce.quantitative.math_operations.rate_change",
+        "xingce.quantitative.math_operations.unit_scope"
+      ],
+      "candidate_misconception_ids": [
+        "M-MODEL",
+        "M-BASE",
+        "M-SCOPE",
+        "M-CALC"
+      ],
+      "independence_group": "math-operations-meter-review",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "prompt": "某仪表 3 小时记录 45 个单位，记录速度提高 20% 后，接下来 4 小时记录多少个单位？请直接填写数字。",
+      "response_mode": "numeric",
+      "answer_spec": {
+        "target": 72,
+        "tolerance": 0
+      },
+      "requires_no_hints": true,
+      "scheduled_after_days": 4,
+      "eligible_after_transfer_ids": [
+        "V01"
+      ],
+      "record_sha256": "f6ee5dcb622227989de96e526f6d4b2119811074474ae8ad93d99887abfda73f"
+    }
+  ]
+}

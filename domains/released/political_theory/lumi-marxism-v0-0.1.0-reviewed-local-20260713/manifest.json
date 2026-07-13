@@ -1,0 +1,64 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-marxism-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "status": "release_ready",
+  "release_ready": true,
+  "runtime_registration": "allowed_after_human_review",
+  "subtype_id": "xingce.political.marxism",
+  "module_id": "political_theory",
+  "form": "text_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "release_distribution_allowed"
+  },
+  "content_evidence": {
+    "authoritative_source_snapshot": "共产党员网，《坚持和发展对真理标准的科学认识》（2018-11-13），https://www.12371.cn/2018/11/13/ARTI1542101837805784.shtml；《真理的检验标准》（2020-04-30），https://www.12371.cn/2020/04/30/VIDE1588241161444831.shtml（accessed 2026-07-13）。",
+    "validity_cutoff": "2026-07-13; this draft uses only the named source's bounded statement about practice and truth, not an open-ended philosophical adjudication."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": true,
+    "review_attestations": [
+      {
+        "review_kind": "logic",
+        "reviewer_id": "1",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "146a1f11e09de20bb265f12ee2b943c2ef895a3af74a45d05a9738543ca98143"
+      },
+      {
+        "review_kind": "editorial_rights",
+        "reviewer_id": "2",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "146a1f11e09de20bb265f12ee2b943c2ef895a3af74a45d05a9738543ca98143"
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "c901ca8c88e303270d63fedd2b24fc04f2e330f5151bcbf700670235c8a4f50e"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "698c38641676fd7209b161850dd26b9cf2781bac6ebbfd8a703886623d4af7cc"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "5c9fdd78a607cef1747c1addc390f4d546b48709e49bb6f97d5b7ed23054e775"
+    },
+    {
+      "path": "review-evidence.json",
+      "sha256": "353553b9f4a1e2f9d0250bad7928ce7a521700b61eb126fa82bef66b319ae08f"
+    }
+  ]
+}

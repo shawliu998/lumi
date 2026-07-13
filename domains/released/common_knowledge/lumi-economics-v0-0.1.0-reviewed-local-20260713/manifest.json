@@ -1,0 +1,64 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-economics-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "status": "release_ready",
+  "release_ready": true,
+  "runtime_registration": "allowed_after_human_review",
+  "subtype_id": "xingce.common.economics",
+  "module_id": "common_knowledge",
+  "form": "text_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "release_distribution_allowed"
+  },
+  "content_evidence": {
+    "fact_source_snapshot": "Original Lumi economic scenarios: every item defines its own ceteris-paribus condition, comparison group, and requested variable in records.json; no live market figure, policy rate, or forecast is asserted.",
+    "validity_cutoff": "2026-07-13; this draft evaluates reading of explicitly stated economic relations, not current market conditions or investment advice."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": true,
+    "review_attestations": [
+      {
+        "review_kind": "logic",
+        "reviewer_id": "1",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "b9216e797ed0f7dd51e87f3c011295ede0c7b93a1113c4e6f270c9ea7f398414"
+      },
+      {
+        "review_kind": "editorial_rights",
+        "reviewer_id": "2",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "b9216e797ed0f7dd51e87f3c011295ede0c7b93a1113c4e6f270c9ea7f398414"
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "2c2b6bb5e4d92cdca4a5182da7ee674eedf4cf98da3a81a5d57ba1cb306edd18"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "fcffc304fca95827a6574e08de3e7c6a3012b75636df8bc94e67ca9f24f5568b"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "c5b9120b96a56e022709b7ae3da0b5ee778ed5fb06e831aa73ef044eac5641af"
+    },
+    {
+      "path": "review-evidence.json",
+      "sha256": "d4d0cad02303d87087a4b5858c62e125637106646d0de5e7c045ca9034dd8a2a"
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "schema_version": "lumi.xingce-adaptive-misconceptions.v1",
+  "pack_id": "lumi-constraint-reasoning-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "review_status": "release_ready",
+  "candidate_misconceptions": [
+    {
+      "cause_id": "M-OMIT",
+      "label": "候选：遗漏一条安排约束",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": [
+        "xingce.judgment.constraint.rule_capture",
+        "xingce.judgment.constraint.consistency"
+      ]
+    },
+    {
+      "cause_id": "M-QUANT",
+      "label": "候选：将“可能/必须/不可能”按同一标准处理",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": [
+        "xingce.judgment.constraint.quantifier"
+      ]
+    },
+    {
+      "cause_id": "M-CASE",
+      "label": "候选：未检查必要分支或过早停止枚举",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": [
+        "xingce.judgment.constraint.case_exhaustion"
+      ]
+    },
+    {
+      "cause_id": "M-LOCAL",
+      "label": "候选：只验证局部相邻规则而未复核整体安排",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": [
+        "xingce.judgment.constraint.consistency"
+      ]
+    }
+  ]
+}

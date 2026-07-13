@@ -9,7 +9,7 @@ import zipfile
 
 from hermes_domains.xingce_adaptive_pack import load_xingce_adaptive_pack
 from tools.create_reviewed_xingce_release import create
-from tools.verify_xingce_review_workbook import WorkbookReviewError, verify
+from tools.verify_xingce_review_workbook import WorkbookReviewError, _expected_review_content, _normalized_signing_date, _require_iso_date, _review_content_matches, verify
 
 
 DOMAIN_ROOT = Path(__file__).resolve().parents[1]
@@ -42,11 +42,20 @@ def _worksheet_xml(rows: dict[int, list[str]]) -> str:
 def _write_review_workbook(path: Path, *, logic_status: str = "Approved") -> None:
     pack = load_xingce_adaptive_pack(PACK_ROOT)
     sign_headers = ["题包", "逻辑审核人 ID", "逻辑审核日期（YYYY-MM-DD）", "编辑/权属审核人 ID", "编辑/权属审核日期（YYYY-MM-DD）"]
-    item_headers = ["题包", "记录 ID", "逻辑结论", "逻辑审核人", "逻辑审核日期", "编辑/权属结论", "编辑审核人", "编辑审核日期"]
+    item_headers = [
+        "题包", "记录 ID", "题干 / 微课内容", "选项", "标准答案（审核可见）",
+        "候选错因（未确认）", "路由 / 目标", "无提示", "逻辑结论", "逻辑审核人",
+        "逻辑审核日期", "编辑/权属结论", "编辑审核人", "编辑审核日期",
+    ]
     sign_rows = {5: sign_headers, 7: [pack["pack_id"], "logic-r1", "2026-07-13", "rights-r2", "2026-07-14"]}
     item_rows: dict[int, list[str]] = {5: item_headers}
     for row_number, record in enumerate(pack["records"], 7):
-        item_rows[row_number] = [pack["pack_id"], record["record_id"], logic_status, "logic-r1", "2026-07-13", "Approved", "rights-r2", "2026-07-14"]
+        expected = _expected_review_content(record)
+        item_rows[row_number] = [
+            pack["pack_id"], record["record_id"], expected["题干 / 微课内容"], expected["选项"],
+            expected["标准答案（审核可见）"], expected["候选错因（未确认）"], expected["路由 / 目标"],
+            expected["无提示"], logic_status, "logic-r1", "2026-07-13", "Approved", "rights-r2", "2026-07-14",
+        ]
     workbook_xml = (
         '<?xml version="1.0" encoding="UTF-8"?>'
         '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" '
@@ -87,6 +96,18 @@ class VerifyXingceReviewWorkbookTests(unittest.TestCase):
             _write_review_workbook(workbook, logic_status="Needs revision")
             with self.assertRaisesRegex(WorkbookReviewError, "requires Approved"):
                 verify(PACK_ROOT, workbook, "0.1.0-reviewed-local-20260713")
+
+    def test_normalizes_an_excel_serial_date_only_in_a_plausible_range(self) -> None:
+        self.assertEqual(_require_iso_date("46216", "review date"), "2026-07-13")
+        self.assertEqual(_normalized_signing_date("7.13", {"2026-07-13"}, "signing date"), "2026-07-13")
+        with self.assertRaisesRegex(WorkbookReviewError, "YYYY-MM-DD"):
+            _require_iso_date("1", "review date")
+
+    def test_source_material_review_text_must_preserve_the_literal_source_prompt(self) -> None:
+        record = {"prompt": "根据材料，正确的是：", "source_material": {"kind": "table"}}
+        self.assertTrue(_review_content_matches(record, "题干 / 微课内容", "表格材料：甲为 10。\n\n根据材料，正确的是："))
+        self.assertFalse(_review_content_matches(record, "题干 / 微课内容", "表格材料：甲为 10。"))
+        self.assertFalse(_review_content_matches(record, "题干 / 微课内容", "根据材料，正确的是："))
 
     def test_release_builder_accepts_only_the_workbook_derived_attestation(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

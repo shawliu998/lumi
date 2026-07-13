@@ -1,0 +1,63 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-analogy-reasoning-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "status": "release_ready",
+  "release_ready": true,
+  "runtime_registration": "allowed_after_human_review",
+  "subtype_id": "xingce.judgment.analogy",
+  "module_id": "judgment",
+  "form": "text_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "release_distribution_allowed"
+  },
+  "content_evidence": {
+    "relation_proof": "records.json#/relation_proofs"
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": true,
+    "review_attestations": [
+      {
+        "review_kind": "logic",
+        "reviewer_id": "1",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "9ed45fb0f131c9c760ce7063c93e216458e6e6d88ac7de1ea8899a46ea71202e"
+      },
+      {
+        "review_kind": "editorial_rights",
+        "reviewer_id": "2",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "9ed45fb0f131c9c760ce7063c93e216458e6e6d88ac7de1ea8899a46ea71202e"
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "731cfd3697055b141ea03b7385776f98a7d8646bad1c7cb7ce8001e83de32b6f"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "063c8ea6256105d45392bae7da9af28daf475057ea758ec26cbe0a66f7e59066"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "9c4d70b565b1d02100c9c3321844988936a1def69024e415cfce1a250a30780a"
+    },
+    {
+      "path": "review-evidence.json",
+      "sha256": "103844750456c80a46da2cdb3b4dfd4ef8ac4df67975d468fc23134a1e9f42bf"
+    }
+  ]
+}

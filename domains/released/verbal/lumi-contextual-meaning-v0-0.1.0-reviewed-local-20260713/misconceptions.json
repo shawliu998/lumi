@@ -1,0 +1,35 @@
+{
+  "schema_version": "lumi.xingce-adaptive-misconceptions.v1",
+  "pack_id": "lumi-contextual-meaning-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "review_status": "release_ready",
+  "candidate_misconceptions": [
+    {
+      "cause_id": "M-LIT",
+      "label": "候选：按字面孤立理解而忽略上下文限定",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": [
+        "xingce.verbal.contextual_meaning.relation"
+      ]
+    },
+    {
+      "cause_id": "M-REF",
+      "label": "候选：将指代对象扩大或缩小",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": [
+        "xingce.verbal.contextual_meaning.referent"
+      ]
+    },
+    {
+      "cause_id": "M-SUB",
+      "label": "候选：以近义替换改变原句关系或力度",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": [
+        "xingce.verbal.contextual_meaning.paraphrase"
+      ]
+    }
+  ]
+}

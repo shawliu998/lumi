@@ -1,0 +1,382 @@
+{
+  "schema_version": "lumi.xingce-adaptive-records.v1",
+  "pack_id": "lumi-table-material-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "review_status": "release_ready",
+  "records": [
+    {
+      "record_id": "D01",
+      "role": "entry_diagnostic",
+      "title": "表格材料：目标列占比",
+      "target_skill_ids": [
+        "xingce.data.table_material.target_series",
+        "xingce.data.table_material.legend_unit",
+        "xingce.data.table_material.denominator"
+      ],
+      "candidate_misconception_ids": [
+        "M-ROWCOL",
+        "M-UNIT",
+        "M-DEN",
+        "M-ROUND"
+      ],
+      "independence_group": "table-clinic-entry",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "source_material": {
+        "kind": "table",
+        "title": "社区卫生服务站季度就诊记录",
+        "columns": [
+          "季度",
+          "总就诊人次（万人次）",
+          "其中老年就诊人次（万人次）"
+        ],
+        "rows": [
+          [
+            "一季度",
+            40,
+            16
+          ],
+          [
+            "二季度",
+            50,
+            20
+          ],
+          [
+            "三季度",
+            60,
+            24
+          ]
+        ],
+        "scope_note": "单位：万人次；范围：同一服务站2025年前三个季度。"
+      },
+      "prompt": "三季度老年就诊人次约占该季度总就诊人次的：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "24%"
+        },
+        {
+          "label": "B",
+          "text": "40%"
+        },
+        {
+          "label": "C",
+          "text": "60%"
+        },
+        {
+          "label": "D",
+          "text": "250%"
+        }
+      ],
+      "correct_option": "B",
+      "route_probe_ids": [
+        "P01"
+      ],
+      "record_sha256": "ffb35b3900013b47233e59b2bceb5a8e14b444e3e06f21330833bbc75586c45f"
+    },
+    {
+      "record_id": "P01",
+      "role": "probe",
+      "title": "最小探查：同列比例与单位",
+      "target_skill_ids": [
+        "xingce.data.table_material.target_series",
+        "xingce.data.table_material.legend_unit",
+        "xingce.data.table_material.denominator",
+        "xingce.data.table_material.intermediate_rounding"
+      ],
+      "candidate_misconception_ids": [
+        "M-ROWCOL",
+        "M-UNIT",
+        "M-DEN",
+        "M-ROUND"
+      ],
+      "independence_group": "table-operation-probe",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "source_material": {
+        "kind": "table",
+        "title": "运营中心季度收支表",
+        "columns": [
+          "季度",
+          "收入（万元）",
+          "成本（万元）"
+        ],
+        "rows": [
+          [
+            "一季度",
+            80,
+            48
+          ],
+          [
+            "二季度",
+            100,
+            55
+          ]
+        ],
+        "scope_note": "单位：万元；范围：同一运营中心两个完整季度。"
+      },
+      "prompt": "二季度成本约占二季度收入的：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "45%"
+        },
+        {
+          "label": "B",
+          "text": "55%"
+        },
+        {
+          "label": "C",
+          "text": "68.75%"
+        },
+        {
+          "label": "D",
+          "text": "181.8%"
+        }
+      ],
+      "correct_option": "B",
+      "discriminates": [
+        "M-ROWCOL",
+        "M-UNIT",
+        "M-DEN",
+        "M-ROUND"
+      ],
+      "candidate_evidence_map": {
+        "M-ROWCOL": {
+          "A": "support",
+          "B": "refute",
+          "C": "support",
+          "D": "insufficient"
+        },
+        "M-UNIT": {
+          "A": "insufficient",
+          "B": "refute",
+          "C": "support",
+          "D": "insufficient"
+        },
+        "M-DEN": {
+          "A": "support",
+          "B": "refute",
+          "C": "insufficient",
+          "D": "support"
+        },
+        "M-ROUND": {
+          "A": "support",
+          "B": "refute",
+          "C": "support",
+          "D": "insufficient"
+        }
+      },
+      "record_sha256": "60828678651a8ed1d6f227669b212f6c54a4c6f0838df643b6f2e3dc6abb8ad8"
+    },
+    {
+      "record_id": "T-ROWCOL",
+      "role": "teaching_asset",
+      "title": "微课：先定位交叉单元格",
+      "target_skill_ids": [
+        "xingce.data.table_material.target_series"
+      ],
+      "candidate_misconception_ids": [
+        "M-ROWCOL"
+      ],
+      "independence_group": "table-rowcol-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "target_candidate_ids": [
+        "M-ROWCOL"
+      ],
+      "teaching_content": "先读题干中的时间、对象和指标，再在表内依次找到那一行与那一列。写下两个交叉单元格后才计算；不要因为相邻一行或同名指标更显眼就代入。",
+      "record_sha256": "8e12d5a5b471e8a04f2faf62e61c96987c1cc03409a1425b9e9f7cff7f3816c6"
+    },
+    {
+      "record_id": "T-UNIT",
+      "role": "teaching_asset",
+      "title": "微课：表头和单位先于计算",
+      "target_skill_ids": [
+        "xingce.data.table_material.legend_unit"
+      ],
+      "candidate_misconception_ids": [
+        "M-UNIT"
+      ],
+      "independence_group": "table-unit-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "target_candidate_ids": [
+        "M-UNIT"
+      ],
+      "teaching_content": "数字本身不带意思，表头才说明它是收入、成本还是人次，单位才说明量级。先用一句话复述“二季度成本55万元、收入100万元”，再判断谁除以谁。",
+      "record_sha256": "5587f19e9ae4e8e8c6918e699f0ecbc994bcfe2883490e273979b6af3742b55e"
+    },
+    {
+      "record_id": "T-DEN",
+      "role": "teaching_asset",
+      "title": "微课：把“占收入”写成成本÷收入",
+      "target_skill_ids": [
+        "xingce.data.table_material.denominator"
+      ],
+      "candidate_misconception_ids": [
+        "M-DEN"
+      ],
+      "independence_group": "table-denominator-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "target_candidate_ids": [
+        "M-DEN"
+      ],
+      "teaching_content": "问题说“成本占收入”，就固定写成成本÷收入。若结果超过100%，而题目描述的是一个部分占整体，优先检查是否把分子分母颠倒。",
+      "record_sha256": "687f7d88e22f2376673d367b3afa46a2655b8e5a5dfdd68440802b4114107789"
+    },
+    {
+      "record_id": "T-ROUND",
+      "role": "teaching_asset",
+      "title": "微课：中间不截断，最后再看近似",
+      "target_skill_ids": [
+        "xingce.data.table_material.intermediate_rounding"
+      ],
+      "candidate_misconception_ids": [
+        "M-ROUND"
+      ],
+      "independence_group": "table-rounding-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "target_candidate_ids": [
+        "M-ROUND"
+      ],
+      "teaching_content": "先保留完整除法或至少一位额外小数，最后按照“约为”“保留一位小数”等要求选择选项。不能把另一个季度的比值或差额当作同一个近似值。",
+      "record_sha256": "e2f7f62e9394fefc9bda5a217c1ec69864c0606a54bfa4c311dd275765a9761d"
+    },
+    {
+      "record_id": "V01",
+      "role": "independent_transfer",
+      "title": "独立迁移：按时办结比例",
+      "target_skill_ids": [
+        "xingce.data.table_material.target_series",
+        "xingce.data.table_material.denominator",
+        "xingce.data.table_material.intermediate_rounding"
+      ],
+      "candidate_misconception_ids": [
+        "M-ROWCOL",
+        "M-UNIT",
+        "M-DEN",
+        "M-ROUND"
+      ],
+      "independence_group": "table-case-transfer",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "source_material": {
+        "kind": "table",
+        "title": "政务服务事项办理记录",
+        "columns": [
+          "季度",
+          "新办事项（件）",
+          "按时办结（件）"
+        ],
+        "rows": [
+          [
+            "一季度",
+            120,
+            90
+          ],
+          [
+            "二季度",
+            150,
+            120
+          ]
+        ],
+        "scope_note": "单位：件；范围：同一服务大厅2025年上半年新办事项。"
+      },
+      "prompt": "二季度按时办结事项约占二季度新办事项的：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "75%"
+        },
+        {
+          "label": "B",
+          "text": "80%"
+        },
+        {
+          "label": "C",
+          "text": "83.3%"
+        },
+        {
+          "label": "D",
+          "text": "125%"
+        }
+      ],
+      "correct_option": "B",
+      "requires_no_hints": true,
+      "record_sha256": "3192aa949c47cc815e41278d63fdfbcd9a7325c646b70d02c082171aa18328ae"
+    },
+    {
+      "record_id": "R01",
+      "role": "delayed_review",
+      "title": "延迟复习：材料利用率",
+      "target_skill_ids": [
+        "xingce.data.table_material.target_series",
+        "xingce.data.table_material.denominator"
+      ],
+      "candidate_misconception_ids": [
+        "M-ROWCOL",
+        "M-UNIT",
+        "M-DEN",
+        "M-ROUND"
+      ],
+      "independence_group": "table-recycling-review",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "source_material": {
+        "kind": "table",
+        "title": "社区回收站月度记录",
+        "columns": [
+          "月份",
+          "收集材料（吨）",
+          "再利用材料（吨）"
+        ],
+        "rows": [
+          [
+            "四月",
+            60,
+            45
+          ],
+          [
+            "五月",
+            72,
+            54
+          ]
+        ],
+        "scope_note": "单位：吨；范围：同一回收站连续两个月。"
+      },
+      "prompt": "五月再利用材料约占五月收集材料的：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "54%"
+        },
+        {
+          "label": "B",
+          "text": "75%"
+        },
+        {
+          "label": "C",
+          "text": "80%"
+        },
+        {
+          "label": "D",
+          "text": "133.3%"
+        }
+      ],
+      "correct_option": "B",
+      "requires_no_hints": true,
+      "scheduled_after_days": 4,
+      "eligible_after_transfer_ids": [
+        "V01"
+      ],
+      "record_sha256": "0fefc821cdaba6787006a7b0247c2869bfa96e1e893411291aa3f6a93b9f772b"
+    }
+  ]
+}

@@ -1,0 +1,290 @@
+{
+  "schema_version": "lumi.xingce-adaptive-records.v1",
+  "pack_id": "lumi-detail-inference-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "review_status": "release_ready",
+  "records": [
+    {
+      "record_id": "D01",
+      "role": "entry_diagnostic",
+      "title": "细节判断：证据范围不能扩大",
+      "target_skill_ids": [
+        "xingce.verbal.detail_inference.textual_support",
+        "xingce.verbal.detail_inference.scope",
+        "xingce.verbal.detail_inference.causality",
+        "xingce.verbal.detail_inference.strength"
+      ],
+      "candidate_misconception_ids": [
+        "M-UNSTATED",
+        "M-SCOPE",
+        "M-CAUSE",
+        "M-ABS"
+      ],
+      "independence_group": "detail-garden-entry",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "prompt": "某社区在两处背阴空地试种耐阴植物，并记录一年内的成活情况。记录显示，这两处空地在夏季浇水频率较低时，耐阴植物仍保持较高成活率。项目组据此计划在相似条件的空地继续观察，但没有比较其他植物，也没有改变土壤条件。根据这段文字，可以推出的是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "耐阴植物在所有社区空地都比其他植物更易成活"
+        },
+        {
+          "label": "B",
+          "text": "在已观察的两处背阴空地，耐阴植物表现出较高成活率"
+        },
+        {
+          "label": "C",
+          "text": "降低浇水频率必然提高耐阴植物成活率"
+        },
+        {
+          "label": "D",
+          "text": "土壤条件不会影响任何植物的成活率"
+        }
+      ],
+      "correct_option": "B",
+      "route_probe_ids": [
+        "P01"
+      ],
+      "record_sha256": "d52b4cb261f1ee5cbdcb34d9e8ae4f356ee7aaba0ff519ef31e9d72f8ee989f0"
+    },
+    {
+      "record_id": "P01",
+      "role": "probe",
+      "title": "最小探查：把“观察到”与“导致”分开",
+      "target_skill_ids": [
+        "xingce.verbal.detail_inference.textual_support",
+        "xingce.verbal.detail_inference.scope",
+        "xingce.verbal.detail_inference.causality",
+        "xingce.verbal.detail_inference.strength"
+      ],
+      "candidate_misconception_ids": [
+        "M-UNSTATED",
+        "M-SCOPE",
+        "M-CAUSE",
+        "M-ABS"
+      ],
+      "independence_group": "detail-library-probe",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "prompt": "一所图书馆在周末增加了亲子阅读活动。同一季度，亲子借阅卡的使用次数比上季度多。馆员指出，活动期间还同时调整了开放时段，因此尚不能仅凭这些记录判定哪项改变造成了使用次数上升。由此可知：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "亲子活动一定是使用次数上升的唯一原因"
+        },
+        {
+          "label": "B",
+          "text": "开放时段调整必然无效"
+        },
+        {
+          "label": "C",
+          "text": "使用次数上升与两项改变同时出现，但原因仍需进一步判断"
+        },
+        {
+          "label": "D",
+          "text": "所有图书馆增加亲子活动都会提高借阅卡使用次数"
+        }
+      ],
+      "correct_option": "C",
+      "discriminates": [
+        "M-UNSTATED",
+        "M-SCOPE",
+        "M-CAUSE",
+        "M-ABS"
+      ],
+      "candidate_evidence_map": {
+        "M-UNSTATED": {
+          "A": "support",
+          "B": "support",
+          "C": "refute",
+          "D": "support"
+        },
+        "M-SCOPE": {
+          "A": "insufficient",
+          "B": "insufficient",
+          "C": "refute",
+          "D": "support"
+        },
+        "M-CAUSE": {
+          "A": "support",
+          "B": "support",
+          "C": "refute",
+          "D": "support"
+        },
+        "M-ABS": {
+          "A": "support",
+          "B": "support",
+          "C": "refute",
+          "D": "support"
+        }
+      },
+      "record_sha256": "530b3583fc8df55aa8e221d6d64823c43e3a4bb30629fead8d57dbd91fe75505"
+    },
+    {
+      "record_id": "T-UNSTATED",
+      "role": "teaching_asset",
+      "title": "微课：给每个选项找一句原文依据",
+      "target_skill_ids": [
+        "xingce.verbal.detail_inference.textual_support"
+      ],
+      "candidate_misconception_ids": [
+        "M-UNSTATED"
+      ],
+      "independence_group": "detail-support-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "target_candidate_ids": [
+        "M-UNSTATED"
+      ],
+      "teaching_content": "选项中的每个关键关系都要能在原文找到对应句。原文只说“继续观察”，就没有比较其他植物；没有比较，就不能补出“更易成活”。",
+      "record_sha256": "83d5fbdc5f4f0bf3bc24db4508a34a1c57d64c6d49a0744b7320b7434dfc62b3"
+    },
+    {
+      "record_id": "T-SCOPE",
+      "role": "teaching_asset",
+      "title": "微课：量词和地点是推断的边界",
+      "target_skill_ids": [
+        "xingce.verbal.detail_inference.scope"
+      ],
+      "candidate_misconception_ids": [
+        "M-SCOPE"
+      ],
+      "independence_group": "detail-scope-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "target_candidate_ids": [
+        "M-SCOPE"
+      ],
+      "teaching_content": "把“两处背阴空地”“相似条件”等限定词标出来。局部记录能支持局部表述，不能自动换成“所有社区空地”或任何不同条件。",
+      "record_sha256": "e5408a99556e903d9f8d210050df1252f6f8ff85936a8c6ad927f6bb4194af5e"
+    },
+    {
+      "record_id": "T-CAUSE",
+      "role": "teaching_asset",
+      "title": "微课：同时出现不等于单一原因",
+      "target_skill_ids": [
+        "xingce.verbal.detail_inference.causality"
+      ],
+      "candidate_misconception_ids": [
+        "M-CAUSE"
+      ],
+      "independence_group": "detail-cause-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "target_candidate_ids": [
+        "M-CAUSE"
+      ],
+      "teaching_content": "看到两个变化和一个结果同时出现，只能先说它们共同出现。若文本没有比较、控制或明确因果说明，不能把其中一项写成“唯一原因”或“必然导致”。",
+      "record_sha256": "d9a8f222a636a77ec6e0ddc02f1f27ff78c2f1f99b033425f14ebdf83d69623c"
+    },
+    {
+      "record_id": "T-ABS",
+      "role": "teaching_asset",
+      "title": "微课：把“必然、所有、唯一”逐个核对",
+      "target_skill_ids": [
+        "xingce.verbal.detail_inference.strength"
+      ],
+      "candidate_misconception_ids": [
+        "M-ABS"
+      ],
+      "independence_group": "detail-strength-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "target_candidate_ids": [
+        "M-ABS"
+      ],
+      "teaching_content": "强词需要强证据。原文只报告一次观察或保留判断时，出现“必然”“所有”“唯一”的选项通常已经超过了文本允许的力度。",
+      "record_sha256": "0b614e99d491357e52a790f6433b7964d9e0bda4ca214f5cab24882c1e94cb0b"
+    },
+    {
+      "record_id": "V01",
+      "role": "independent_transfer",
+      "title": "独立迁移：观察结论保持边界",
+      "target_skill_ids": [
+        "xingce.verbal.detail_inference.textual_support",
+        "xingce.verbal.detail_inference.scope",
+        "xingce.verbal.detail_inference.strength"
+      ],
+      "candidate_misconception_ids": [
+        "M-UNSTATED",
+        "M-SCOPE",
+        "M-CAUSE",
+        "M-ABS"
+      ],
+      "independence_group": "detail-route-transfer",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "prompt": "某步行路线在三个周末试行增加夜间照明。试行记录显示，三个周末傍晚使用该路线的人数均高于此前相邻周末。记录未比较其他路线，也未排除天气和活动安排的影响。下列说法最符合原文的是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "夜间照明已被证明适合所有步行路线"
+        },
+        {
+          "label": "B",
+          "text": "在试行的三个周末，该路线傍晚使用人数较此前相邻周末更多"
+        },
+        {
+          "label": "C",
+          "text": "天气对步行人数没有影响"
+        },
+        {
+          "label": "D",
+          "text": "增加照明必然是人数上升的唯一原因"
+        }
+      ],
+      "correct_option": "B",
+      "requires_no_hints": true,
+      "record_sha256": "355f20344663cd94eb75a89788d9d2904c1557f5f0e9bb7543bd0897c6e10e0f"
+    },
+    {
+      "record_id": "R01",
+      "role": "delayed_review",
+      "title": "延迟复习：不超出材料的推断",
+      "target_skill_ids": [
+        "xingce.verbal.detail_inference.textual_support",
+        "xingce.verbal.detail_inference.causality"
+      ],
+      "candidate_misconception_ids": [
+        "M-UNSTATED",
+        "M-SCOPE",
+        "M-CAUSE",
+        "M-ABS"
+      ],
+      "independence_group": "detail-waste-review",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "prompt": "一个学校在两个班级开展分类投放提示试验。试验期间，这两个班级的可回收物投放量增加。研究者说明，尚需在更多班级和更长时间内观察。根据文字，可以推出的是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "提示试验已在全校证明有效"
+        },
+        {
+          "label": "B",
+          "text": "两个试验班级在试验期间可回收物投放量增加"
+        },
+        {
+          "label": "C",
+          "text": "只有提示试验影响了投放量"
+        },
+        {
+          "label": "D",
+          "text": "其他班级的投放量一定没有变化"
+        }
+      ],
+      "correct_option": "B",
+      "requires_no_hints": true,
+      "scheduled_after_days": 4,
+      "eligible_after_transfer_ids": [
+        "V01"
+      ],
+      "record_sha256": "d1c4ee2d3446dc1c4310a30fe9fb62786c5a003ca4c1e9e10325896b6cc27f36"
+    }
+  ]
+}

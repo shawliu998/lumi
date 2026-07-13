@@ -29,7 +29,7 @@
       "independence_group": "constraint-three-entry",
       "content_origin": "original_lumi",
       "review_status": "draft_unreviewed",
-      "prompt": "甲、乙、丙三项展示分别安排在周一、周二、周三各一天。已知：甲早于乙；丙不安排在周一。下列哪项安排是可能的？\n\nA. 周一乙、周二甲、周三丙\nB. 周一甲、周二丙、周三乙\nC. 周一丙、周二乙、周三甲\nD. 周一甲、周二乙、周三丙",
+      "prompt": "甲、乙、丙三项展示分别安排在周一、周二、周三各一天。已知：甲早于乙；丙不安排在周一。下列哪项安排是可能的？",
       "response_mode": "single_choice",
       "options": [
         {
@@ -46,14 +46,14 @@
         },
         {
           "label": "D",
-          "text": "甲—乙—丙"
+          "text": "丙—甲—乙"
         }
       ],
       "correct_option": "B",
       "route_probe_ids": [
         "P01"
       ],
-      "record_sha256": "861f997b70715a53331905b9fb5416a24ec1977bdaf22e059dad701122321eef"
+      "record_sha256": "c2027e31b53d88daae95ae6a88c4b42ff1ac963936429ad74cf67d3db906baec"
     },
     {
       "record_id": "P01",
@@ -74,7 +74,7 @@
       "independence_group": "constraint-four-probe",
       "content_origin": "original_lumi",
       "review_status": "draft_unreviewed",
-      "prompt": "甲、乙、丙、丁四人分别在一至四号各值班一天。甲与乙相邻；丙早于丁；甲不在一号。下列哪项安排可能为真？\n\nA. 一甲、二乙、三丙、四丁\nB. 一丙、二甲、三乙、四丁\nC. 一乙、二甲、三丁、四丙\nD. 一丙、二丁、三甲、四乙",
+      "prompt": "甲、乙、丙、丁四人分别在一至四号各值班一天。甲与乙相邻；丙早于丁；甲不在一号。下列哪项安排可能为真？",
       "response_mode": "single_choice",
       "options": [
         {
@@ -91,7 +91,7 @@
         },
         {
           "label": "D",
-          "text": "丙、丁、甲、乙"
+          "text": "丁、丙、甲、乙"
         }
       ],
       "correct_option": "B",
@@ -127,7 +127,7 @@
           "D": "support"
         }
       },
-      "record_sha256": "e3e8dd55e35178e33d7b9ed37b89f6efd7486ff21b93de7575167e93b1fecf0c"
+      "record_sha256": "0b1d0758dbb63f714ea8361948a5ffc632ee19621fe70906f3905eabf5992e4d"
     },
     {
       "record_id": "T-OMIT",
@@ -224,7 +224,7 @@
       "independence_group": "constraint-session-transfer",
       "content_origin": "original_lumi",
       "review_status": "draft_unreviewed",
-      "prompt": "甲、乙、丙三场说明会分别安排在上午、午后、傍晚。甲早于乙；丙不在上午。下列哪项安排可能为真？\n\nA. 上午乙、午后甲、傍晚丙\nB. 上午甲、午后丙、傍晚乙\nC. 上午丙、午后乙、傍晚甲\nD. 上午甲、午后乙、傍晚丙",
+      "prompt": "甲、乙、丙三场说明会分别安排在上午、午后、傍晚。甲早于乙；丙不在上午。下列哪项安排可能为真？",
       "response_mode": "single_choice",
       "options": [
         {
@@ -241,12 +241,12 @@
         },
         {
           "label": "D",
-          "text": "甲—乙—丙"
+          "text": "丙—甲—乙"
         }
       ],
       "correct_option": "B",
       "requires_no_hints": true,
-      "record_sha256": "9eeee2b0471098f687f06a41c0a342fb0f2d8691fa77c3abd37a9ac4848c05ba"
+      "record_sha256": "1b2fdcb4c5481f0ad767744a982022f4bcc96d9c2d03c8b4ae5994b3e9e40333"
     },
     {
       "record_id": "R01",
@@ -265,7 +265,7 @@
       "independence_group": "constraint-group-review",
       "content_origin": "original_lumi",
       "review_status": "draft_unreviewed",
-      "prompt": "甲、乙、丙三人分别分在一、二、三组。乙不在一组；甲早于丙。下列哪项安排可能为真？\n\nA. 一乙、二甲、三丙\nB. 一甲、二乙、三丙\nC. 一丙、二乙、三甲\nD. 一甲、二丙、三乙",
+      "prompt": "甲、乙、丙三人分别分在一、二、三组。乙不在一组；甲早于丙。下列哪项安排可能为真？",
       "response_mode": "single_choice",
       "options": [
         {
@@ -282,7 +282,7 @@
         },
         {
           "label": "D",
-          "text": "甲、丙、乙"
+          "text": "丙、甲、乙"
         }
       ],
       "correct_option": "B",
@@ -291,7 +291,7 @@
       "eligible_after_transfer_ids": [
         "V01"
       ],
-      "record_sha256": "191d391970c33a25f08f271195f6a4b9723a3ed287e462bc8e64aa36bad5fa23"
+      "record_sha256": "9e170985436c3f07617c59611c80a246943d2644cc9c8abe7e3355d1f394efb4"
     }
   ]
 }

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+import re
 from pathlib import Path
 import unittest
 
@@ -50,6 +52,40 @@ class XingceAuthoredDraftTests(unittest.TestCase):
                 self.assertEqual(pack["status"], "draft_unreviewed")
                 with self.assertRaisesRegex(XingceAdaptivePackError, "content_review_required"):
                     load_xingce_adaptive_pack(root, require_reviewed=True)
+
+    def test_choice_prompts_do_not_duplicate_the_rendered_options(self) -> None:
+        option_marker = re.compile(r"(?m)^\s*A[.．、]")
+        for manifest_path in CONTENT_ROOT.rglob("manifest.json"):
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            if manifest.get("schema_version") != "lumi.xingce-adaptive-pack.v1":
+                continue
+            pack = load_xingce_adaptive_pack(manifest_path.parent)
+            for record in pack["records"]:
+                if record.get("options"):
+                    with self.subTest(pack=pack["pack_id"], record=record["record_id"]):
+                        self.assertIsNone(option_marker.search(record.get("prompt", "")))
+
+    def test_constraint_reviewed_options_have_exactly_one_valid_answer(self) -> None:
+        pack = load_xingce_adaptive_pack(CONTENT_ROOT / "judgment" / "lumi-constraint-reasoning-v0")
+        records = {record["record_id"]: record for record in pack["records"]}
+
+        def option_texts(record_id: str) -> list[str]:
+            return [row["text"] for row in records[record_id]["options"]]
+
+        def only_correct(record_id: str, predicate) -> None:
+            valid_labels = [
+                row["label"] for row in records[record_id]["options"]
+                if predicate(row["text"].replace("—", "").replace("、", ""))
+            ]
+            self.assertEqual(valid_labels, [records[record_id]["correct_option"]])
+            self.assertEqual(records[record_id]["correct_option"], "B")
+
+        self.assertEqual(option_texts("D01"), ["乙—甲—丙", "甲—丙—乙", "丙—乙—甲", "丙—甲—乙"])
+        self.assertEqual(option_texts("V01"), ["乙—甲—丙", "甲—丙—乙", "丙—乙—甲", "丙—甲—乙"])
+        for record_id in ("D01", "V01"):
+            only_correct(record_id, lambda order: order.index("甲") < order.index("乙") and order.index("丙") != 0)
+        only_correct("P01", lambda order: order.index("甲") + 1 == order.index("乙") and order.index("丙") < order.index("丁") and order.index("甲") != 0)
+        only_correct("R01", lambda order: order.index("乙") != 0 and order.index("甲") < order.index("丙"))
 
     def test_logical_cloze_draft_reaches_candidate_specific_teaching_then_unseen_transfer(self) -> None:
         pack = load_xingce_adaptive_pack(CONTENT_ROOT / "verbal" / "lumi-logical-cloze-v0")

@@ -1,0 +1,63 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-event-ordering-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "status": "release_ready",
+  "release_ready": true,
+  "runtime_registration": "allowed_after_human_review",
+  "subtype_id": "xingce.judgment.event_ordering",
+  "module_id": "judgment",
+  "form": "text_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "release_distribution_allowed"
+  },
+  "content_evidence": {
+    "ordering_constraints": "records.json#ordering_proofs: every item binds trigger, prerequisite, response, and completion order."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": true,
+    "review_attestations": [
+      {
+        "review_kind": "logic",
+        "reviewer_id": "1",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "3e6ffc822c563ca185659651bcbe8f2f7c8927f2fe39dfd6eeca399aab73efc9"
+      },
+      {
+        "review_kind": "editorial_rights",
+        "reviewer_id": "2",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "3e6ffc822c563ca185659651bcbe8f2f7c8927f2fe39dfd6eeca399aab73efc9"
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "f8b2977f248aa44e5bef8fb3d1408a7959e3a7b015913838ddb474f35a275f84"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "1bc53554eaa65cb647dc269f23604fd6db1b99a4ec4e682fd6055fdf9cfd8b17"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "e3f20c6b4f801a3ca5bc195d688d8541ee025b9da74a0eb5e029c7b03d5e2e5a"
+    },
+    {
+      "path": "review-evidence.json",
+      "sha256": "46100cc8f40cb97baf6e06160062d10ce2b5bd9a40832f2afbbeec319c390f28"
+    }
+  ]
+}

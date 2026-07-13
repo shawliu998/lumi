@@ -1,0 +1,27 @@
+{
+  "schema_version": "lumi.xingce-adaptive-misconceptions.v1",
+  "pack_id": "lumi-history-humanity-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "review_status": "release_ready",
+  "candidate_misconceptions": [
+    {
+      "cause_id": "M-ATTR",
+      "label": "候选：将来源限定的器物名称、时代或属性张冠李戴",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": [
+        "xingce.common.history_humanity.source_attribution",
+        "xingce.common.history_humanity.concept_boundary"
+      ]
+    },
+    {
+      "cause_id": "M-CHRON",
+      "label": "候选：将历史时代与名录登记年份混为同一时间信息",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": [
+        "xingce.common.history_humanity.chronology"
+      ]
+    }
+  ]
+}

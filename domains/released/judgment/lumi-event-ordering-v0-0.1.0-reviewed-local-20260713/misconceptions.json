@@ -1,0 +1,35 @@
+{
+  "schema_version": "lumi.xingce-adaptive-misconceptions.v1",
+  "pack_id": "lumi-event-ordering-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "review_status": "release_ready",
+  "candidate_misconceptions": [
+    {
+      "cause_id": "M-CAUSE",
+      "label": "候选：将原因与结果的方向倒置",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": [
+        "xingce.judgment.event_ordering.causality"
+      ]
+    },
+    {
+      "cause_id": "M-PRE",
+      "label": "候选：遗漏必须先发生的准备或触发事件",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": [
+        "xingce.judgment.event_ordering.prerequisite"
+      ]
+    },
+    {
+      "cause_id": "M-RESP",
+      "label": "候选：将回应、处理或评估排在触发之前",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": [
+        "xingce.judgment.event_ordering.response"
+      ]
+    }
+  ]
+}

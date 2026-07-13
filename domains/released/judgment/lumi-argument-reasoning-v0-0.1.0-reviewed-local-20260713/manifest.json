@@ -1,0 +1,63 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-argument-reasoning-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "status": "release_ready",
+  "release_ready": true,
+  "runtime_registration": "allowed_after_human_review",
+  "subtype_id": "xingce.judgment.argument",
+  "module_id": "judgment",
+  "form": "text_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "release_distribution_allowed"
+  },
+  "content_evidence": {
+    "argument_map": "records.json#D01,P01,V01,R01: observation → causal conclusion; a synchronous competing change is the critical alternative explanation."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": true,
+    "review_attestations": [
+      {
+        "review_kind": "logic",
+        "reviewer_id": "1",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "ecc8ba3c567e1965d6faf504e8dfd0dc0752147f83343d6e3aaec94240f1f829"
+      },
+      {
+        "review_kind": "editorial_rights",
+        "reviewer_id": "2",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "ecc8ba3c567e1965d6faf504e8dfd0dc0752147f83343d6e3aaec94240f1f829"
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "9df7f895b7fdd91b2bf651e1e23db917d29957343bf3ddc7f429b24d98412d6b"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "097b1be02791f1409a94c923c291334d46f2e21b84601ff2fa6056c6721fb5a0"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "9f8b99a5e75b38d997767a764a2c5e16955c6986bfc971a8a2aed272521498f9"
+    },
+    {
+      "path": "review-evidence.json",
+      "sha256": "6c2d66ea6b331acee8675bf5e1ec3b7686c21977ab6debfcc58f3a9a7c38105a"
+    }
+  ]
+}

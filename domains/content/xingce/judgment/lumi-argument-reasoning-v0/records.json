@@ -23,7 +23,7 @@
       "independence_group": "argument-sign-entry",
       "content_origin": "original_lumi",
       "review_status": "draft_unreviewed",
-      "prompt": "某服务大厅在入口增加了流程提示牌后，一个月内填错表格的次数下降。负责人据此认为，提示牌是填错次数下降的原因。下列哪项如果为真，最能削弱该结论？\n\nA. 同月该大厅启用了自动校验系统，会在提交前提示缺项\nB. 提示牌使用了较大的字体\nC. 有些使用者表示愿意阅读提示牌\nD. 该大厅的入口比以前更整洁",
+      "prompt": "某服务大厅在入口增加了流程提示牌后，一个月内填错表格的次数下降。负责人据此认为，提示牌是填错次数下降的原因。下列哪项如果为真，最能削弱该结论？",
       "response_mode": "single_choice",
       "options": [
         {
@@ -47,7 +47,7 @@
       "route_probe_ids": [
         "P01"
       ],
-      "record_sha256": "7d81536556a7257925fe4bb3e36a9f4b9118163030074934c3ac89c5f909a614"
+      "record_sha256": "8a690aaf8de3a668d68d5e757b00e77fa6ad9e7b060526fbe3a03f9029d6d19a"
     },
     {
       "record_id": "P01",
@@ -68,7 +68,7 @@
       "independence_group": "argument-reading-probe",
       "content_origin": "original_lumi",
       "review_status": "draft_unreviewed",
-      "prompt": "一所学校在阅览区新增安静提示后，晚间停留的学生人数增加。管理者认为，安静提示使更多学生愿意停留。下列哪项最能削弱这一判断？\n\nA. 同期学校将晚间闭馆时间延后了一小时\nB. 安静提示采用了蓝色底板\nC. 有学生认为安静环境更适合阅读\nD. 阅览区的桌椅数量没有变化",
+      "prompt": "一所学校在阅览区新增安静提示后，晚间停留的学生人数增加。管理者认为，安静提示使更多学生愿意停留。下列哪项最能削弱这一判断？",
       "response_mode": "single_choice",
       "options": [
         {
@@ -121,7 +121,7 @@
           "D": "support"
         }
       },
-      "record_sha256": "7354f6042611c748df41ad99ee383535d8d510294eecda01c2a6f7e5b5179f81"
+      "record_sha256": "e19de59449b580e8ccdd84fd2fd9b6dbeb75c002c7e87cbdc3fc12f382b9d8a1"
     },
     {
       "record_id": "T-CONCL",
@@ -217,7 +217,7 @@
       "independence_group": "argument-route-transfer",
       "content_origin": "original_lumi",
       "review_status": "draft_unreviewed",
-      "prompt": "某路线增设连续路标后，迷路求助次数下降。管理者认为，连续路标导致了求助次数下降。下列哪项最能削弱该判断？\n\nA. 同期地图应用更新了该路线的步行导航\nB. 路标采用统一的字体\nC. 有游客喜欢新的路标颜色\nD. 路线两侧新种了一些树",
+      "prompt": "某路线增设连续路标后，迷路求助次数下降。管理者认为，连续路标导致了求助次数下降。下列哪项最能削弱该判断？",
       "response_mode": "single_choice",
       "options": [
         {
@@ -239,7 +239,7 @@
       ],
       "correct_option": "A",
       "requires_no_hints": true,
-      "record_sha256": "190b26c87c981b48c0d57ce640262518833c7450f1f9d93ba4a4fc491f453a7a"
+      "record_sha256": "c445f754dcaa2fd5b639b8639d52d6c48671e67f8ddd0ee3501396aec3500523"
     },
     {
       "record_id": "R01",
@@ -258,7 +258,7 @@
       "independence_group": "argument-workshop-review",
       "content_origin": "original_lumi",
       "review_status": "draft_unreviewed",
-      "prompt": "某工作坊发送报名提醒后，到场率提高。组织者认为，提醒短信导致到场率提高。下列哪项最能削弱该判断？\n\nA. 同期工作坊将活动改到周末举行\nB. 短信包含活动名称\nC. 有人收藏了短信\nD. 工作坊的海报仍放在原处",
+      "prompt": "某工作坊发送报名提醒后，到场率提高。组织者认为，提醒短信导致到场率提高。下列哪项最能削弱该判断？",
       "response_mode": "single_choice",
       "options": [
         {
@@ -284,7 +284,7 @@
       "eligible_after_transfer_ids": [
         "V01"
       ],
-      "record_sha256": "7879dacc0fc4c74fe8ae0b4a819085501eb88cf04005be6fcd8fdcff20d798f6"
+      "record_sha256": "86d5465734bf0587fab8763a8b1e16cc4d081c86c141a828ce4678aca2a1b2ae"
     }
   ]
 }

@@ -20,7 +20,9 @@ class XingceCoverageTests(unittest.TestCase):
         summary = coverage_summary(DEFAULT_COVERAGE_MATRIX)
         self.assertEqual(summary["total_subtypes"], 31)
         self.assertEqual(summary["released_subtypes"], 1)
-        self.assertEqual(summary["planned_subtypes"], 30)
+        self.assertEqual(summary["reviewed_release_ready_subtypes"], 30)
+        self.assertEqual(summary["planned_subtypes"], 0)
+        self.assertTrue(summary["content_release_ready"])
         self.assertFalse(summary["is_complete"])
         self.assertEqual(
             set(summary["modules"]),

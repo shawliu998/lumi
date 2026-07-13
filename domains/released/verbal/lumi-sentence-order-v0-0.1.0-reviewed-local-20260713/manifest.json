@@ -1,0 +1,61 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-sentence-order-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "status": "release_ready",
+  "release_ready": true,
+  "runtime_registration": "allowed_after_human_review",
+  "subtype_id": "xingce.verbal.sentence_order",
+  "module_id": "verbal",
+  "form": "text_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "release_distribution_allowed"
+  },
+  "content_evidence": {},
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": true,
+    "review_attestations": [
+      {
+        "review_kind": "logic",
+        "reviewer_id": "1",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "1dc0d1ba19dc9d6c648272f3ae6b13b1b648a49863206843d9e664f908cf5eb3"
+      },
+      {
+        "review_kind": "editorial_rights",
+        "reviewer_id": "2",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "1dc0d1ba19dc9d6c648272f3ae6b13b1b648a49863206843d9e664f908cf5eb3"
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "d182ebff9211e56f768489d9a74f0f92659654ab52a5e68cba46a7347e5121d8"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "4f39e6823508c0d9b549f39a72229e1718d8b5350542c2b98f1e46796de6d2d4"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "6f3256a712835c4b8a13abe64f1008a2ae65b6adefa25dbd34eed26ef026b79e"
+    },
+    {
+      "path": "review-evidence.json",
+      "sha256": "fbaa06081ea5800227158c2a18dd627d1f358de78d90b93493f7518bacfb9577"
+    }
+  ]
+}

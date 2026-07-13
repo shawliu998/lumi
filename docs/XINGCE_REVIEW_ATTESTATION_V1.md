@@ -33,6 +33,13 @@ columns.
 The workbook is evidence of a review decision, not a batch permission to claim
 that all 31 types are released. Review and release one concrete pack at a time.
 
+The filename is immutable provenance, not reviewer identity evidence. A legacy
+filename may mention an AI pre-check even when the completed row-level review
+was performed by people. Release evidence preserves the original filename and
+hash; the two stable reviewer IDs and their row-level decisions are the
+attestation fields. Do not infer a reviewer identity from the filename, and do
+not replace the original file merely to make its name look cleaner.
+
 ## 2. Mechanically derive the reviewer attestation JSON
 
 Do not hand-write a release attestation. After the two real reviewers have

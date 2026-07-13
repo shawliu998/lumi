@@ -7,7 +7,7 @@ import unittest
 
 from hermes_domains.xingce_adaptive_pack import DRAFT_STATUS, load_xingce_adaptive_pack
 from hermes_domains.xingce_adaptive_policy import Observation, diagnose_entry, independent_transfer_proposal, resolve_probe
-from hermes_domains.xingce_coverage import load_coverage_matrix
+from hermes_domains.xingce_coverage import coverage_summary, load_coverage_matrix
 
 
 DOMAIN_ROOT = Path(__file__).resolve().parents[1]
@@ -18,6 +18,15 @@ RELEASE_ROOT = DOMAIN_ROOT / "released"
 def _adaptive_draft_roots() -> list[Path]:
     roots: list[Path] = []
     for manifest_path in CONTENT_ROOT.rglob("manifest.json"):
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if manifest.get("schema_version") == "lumi.xingce-adaptive-pack.v1":
+            roots.append(manifest_path.parent)
+    return sorted(roots)
+
+
+def _adaptive_release_roots() -> list[Path]:
+    roots: list[Path] = []
+    for manifest_path in RELEASE_ROOT.rglob("manifest.json"):
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         if manifest.get("schema_version") == "lumi.xingce-adaptive-pack.v1":
             roots.append(manifest_path.parent)
@@ -35,7 +44,7 @@ def _response_for(record: dict, *, correct: bool) -> str:
 
 
 class XingceAllTypeCoverageTests(unittest.TestCase):
-    def test_every_coverage_row_has_exactly_one_pack_or_released_pack(self) -> None:
+    def test_every_coverage_row_binds_the_authoring_draft_or_a_reviewed_release(self) -> None:
         matrix = load_coverage_matrix()
         rows = {row["id"]: row for row in matrix["subtypes"]}
         drafts = [load_xingce_adaptive_pack(root) for root in _adaptive_draft_roots()]
@@ -44,16 +53,38 @@ class XingceAllTypeCoverageTests(unittest.TestCase):
 
         released = [row for row in matrix["subtypes"] if row.get("release", {}).get("state") == "released"]
         released_ids = [row["id"] for row in released]
+        reviewed = [row for row in matrix["subtypes"] if row.get("release", {}).get("state") == "reviewed_release_ready"]
+        reviewed_ids = [row["id"] for row in reviewed]
         self.assertEqual(set(rows), set(draft_ids).union(released_ids))
-        self.assertEqual(set(draft_ids).intersection(released_ids), set())
+        self.assertEqual(set(draft_ids), set(reviewed_ids))
+        self.assertEqual(set(reviewed_ids).intersection(released_ids), set())
         self.assertEqual(len(drafts), 30)
+        self.assertEqual(len(reviewed), 30)
         self.assertEqual(released_ids, ["xingce.judgment.conditional_logic"])
 
         release = released[0]["release"]
-        release_manifest = next(RELEASE_ROOT.rglob("manifest.json"))
+        release_manifest = RELEASE_ROOT / "judgment" / "lumi-conditional-reasoning-v0-0.1.0-reviewed-local-20260713" / "manifest.json"
         release_document = json.loads(release_manifest.read_text(encoding="utf-8"))
         self.assertEqual(release_document["pack_id"], release["pack_id"])
         self.assertEqual(release_document["pack_version"], release["pack_version"])
+
+        adaptive_releases = [load_xingce_adaptive_pack(root, require_reviewed=True) for root in _adaptive_release_roots()]
+        self.assertEqual(len(adaptive_releases), 30)
+        release_by_id = {pack["pack_id"]: pack for pack in adaptive_releases}
+        self.assertEqual(len(release_by_id), 30)
+        for row in reviewed:
+            with self.subTest(subtype=row["id"]):
+                declaration = row["release"]
+                pack = release_by_id[declaration["pack_id"]]
+                self.assertEqual(pack["pack_version"], declaration["pack_version"])
+                self.assertEqual(pack["subtype_id"], row["id"])
+
+        summary = coverage_summary()
+        self.assertEqual(summary["released_subtypes"], 1)
+        self.assertEqual(summary["reviewed_release_ready_subtypes"], 30)
+        self.assertEqual(summary["planned_subtypes"], 0)
+        self.assertTrue(summary["content_release_ready"])
+        self.assertFalse(summary["is_complete"])
 
     def test_every_draft_has_a_deterministic_unconfirmed_path_to_independent_transfer(self) -> None:
         for root in _adaptive_draft_roots():

@@ -1,0 +1,64 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-mao-thought-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "status": "release_ready",
+  "release_ready": true,
+  "runtime_registration": "allowed_after_human_review",
+  "subtype_id": "xingce.political.mao_thought",
+  "module_id": "political_theory",
+  "form": "text_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "release_distribution_allowed"
+  },
+  "content_evidence": {
+    "authoritative_source_snapshot": "共产党员网，《毛泽东思想的含义和主要内容是什么？》（2012-06-18），https://fuwu.12371.cn/2012/06/18/ARTI1340016435951404.shtml；《坚持和运用好毛泽东思想活的灵魂》（2014-02-01），https://news.12371.cn/2014/02/01/ARTI1391224895354878.shtml（accessed 2026-07-13）。",
+    "validity_cutoff": "2026-07-13; the draft uses only the named sources' bounded formulation of the living soul and its three aspects."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": true,
+    "review_attestations": [
+      {
+        "review_kind": "logic",
+        "reviewer_id": "1",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "577cad3b78869fc95a329fcd730c7c386b20d77566633b0d2c54de737d62f0cf"
+      },
+      {
+        "review_kind": "editorial_rights",
+        "reviewer_id": "2",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "577cad3b78869fc95a329fcd730c7c386b20d77566633b0d2c54de737d62f0cf"
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "54c6a219d95bf2d2932c2233c4639b6fafab6bb1d364ce0ae3ccebf8811fb05a"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "bed7a1bf80e9d152b7e498283c040a7f4dd01b4dbec30858c82cab2b29d32e1b"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "18be0efad6d0c083cb4b5924e7a92fe9c0cfc0291843e28d2dadecb6158910a3"
+    },
+    {
+      "path": "review-evidence.json",
+      "sha256": "86cbc600420e98ec95f400d62043ef8bd6b99a612a07e9f424e89837a7b396ac"
+    }
+  ]
+}

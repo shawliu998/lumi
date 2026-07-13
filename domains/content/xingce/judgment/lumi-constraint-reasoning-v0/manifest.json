@@ -53,7 +53,7 @@
   "artifacts": [
     {
       "path": "records.json",
-      "sha256": "f87a4bc669240b36683021f93f3a58dc63fdbb391fe3e504b72d4bbe31865270"
+      "sha256": "3d82ed76673636436e38c2f99cdd3e329f92e839db23b8c724657654edf2c1b3"
     },
     {
       "path": "skill-graph.json",

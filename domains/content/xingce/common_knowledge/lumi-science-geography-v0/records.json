@@ -21,31 +21,31 @@
       "independence_group": "science-entry-weather",
       "content_origin": "original_lumi",
       "review_status": "draft_unreviewed",
-      "prompt": "某地今天有强降雨。下列说法中，最准确的是：",
+      "prompt": "下列关于天气、气候和地震的说法，正确的是：",
       "response_mode": "single_choice",
       "options": [
         {
           "label": "A",
-          "text": "这是该地当日的天气状况；判断气候需看较长时期的统计特征"
+          "text": "某地今天出现强降雨，描述的是短期天气；判断气候需查看较长时期的统计特征"
         },
         {
           "label": "B",
-          "text": "这已足以证明该地的气候类型发生改变"
+          "text": "板块边界受摩擦阻滞时不会积累应力"
         },
         {
           "label": "C",
-          "text": "天气和气候都只描述同一天的降水"
+          "text": "震中是地下岩块开始突然错动的位置"
         },
         {
           "label": "D",
-          "text": "气候只由一次强降雨决定"
+          "text": "一次强降雨足以证明该地气候类型已经改变"
         }
       ],
       "correct_option": "A",
       "route_probe_ids": [
         "P01"
       ],
-      "record_sha256": "76987d6c3979ee5e779fa1a73b94e180db3a11f954283f8b3ab51c636271dd15"
+      "record_sha256": "438a6a0ac2cd871d4dba48eb14652f26cc4681b7c2aaba3d9ae963223fa1c94e"
     },
     {
       "record_id": "P01",
@@ -178,9 +178,7 @@
         "xingce.common.science_geography.tectonic_mechanism"
       ],
       "candidate_misconception_ids": [
-        "M-TIME",
-        "M-MECH",
-        "M-LOC"
+        "M-TIME"
       ],
       "independence_group": "science-transfer-coast",
       "content_origin": "original_lumi",
@@ -207,7 +205,7 @@
       ],
       "correct_option": "B",
       "requires_no_hints": true,
-      "record_sha256": "29c72511533bd0519c69e858f92c7a6b24c5d0146ef5c2b84381155d781d8d68"
+      "record_sha256": "802f93c440dd5281bdf79052ad1c3890099b67ec1f9b9c5d47f503639e61427e"
     },
     {
       "record_id": "R01",
@@ -218,8 +216,6 @@
         "xingce.common.science_geography.tectonic_mechanism"
       ],
       "candidate_misconception_ids": [
-        "M-TIME",
-        "M-MECH",
         "M-LOC"
       ],
       "independence_group": "science-review-location",
@@ -251,7 +247,7 @@
       "eligible_after_transfer_ids": [
         "V01"
       ],
-      "record_sha256": "1c20c6de4826b13f2632ae8fc051563d5bce70fb95a0bd99ae03a65c15d00414"
+      "record_sha256": "2edb23138284dcf3cb11a57f50461f8c03feda9482f7c1b69869c1ae80c6d9b2"
     }
   ]
 }

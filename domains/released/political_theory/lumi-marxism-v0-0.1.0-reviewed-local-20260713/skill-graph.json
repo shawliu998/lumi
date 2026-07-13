@@ -1,0 +1,18 @@
+{
+  "schema_version": "lumi.xingce-adaptive-skills.v1",
+  "pack_id": "lumi-marxism-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "review_status": "release_ready",
+  "skills": [
+    {
+      "skill_id": "xingce.political.marxism.practice_truth",
+      "label": "识别实践检验真理的来源表述",
+      "mastery_claim": "能在指定来源内识别实践作为检验真理的标准；仅由无提示迁移更新。"
+    },
+    {
+      "skill_id": "xingce.political.marxism.application_boundary",
+      "label": "不以主观断言代替实践检验",
+      "mastery_claim": "能区分一个主张、其论证与实践检验之间的关系；仅由无提示迁移更新。"
+    }
+  ]
+}

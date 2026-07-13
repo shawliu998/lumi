@@ -1,0 +1,44 @@
+{
+  "schema_version": "lumi.xingce-adaptive-misconceptions.v1",
+  "pack_id": "lumi-sentence-order-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "review_status": "release_ready",
+  "candidate_misconceptions": [
+    {
+      "cause_id": "M-REF",
+      "label": "候选：将指代句置于对象出现之前",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": [
+        "xingce.verbal.sentence_order.reference"
+      ]
+    },
+    {
+      "cause_id": "M-CONN",
+      "label": "候选：忽略因果、转折或承接连接词",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": [
+        "xingce.verbal.sentence_order.connection"
+      ]
+    },
+    {
+      "cause_id": "M-PROG",
+      "label": "候选：把结果或对策置于问题提出之前",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": [
+        "xingce.verbal.sentence_order.progression"
+      ]
+    },
+    {
+      "cause_id": "M-COH",
+      "label": "候选：只按关键词相近而未检查整体连贯",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": [
+        "xingce.verbal.sentence_order.coherence"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,297 @@
+{
+  "schema_version": "lumi.xingce-adaptive-records.v1",
+  "pack_id": "lumi-constraint-reasoning-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "review_status": "release_ready",
+  "constraint_proofs": {
+    "D01": "甲、乙、丙分别安排在周一至周三各一天；甲早于乙，丙不在周一。唯一可行顺序为甲、丙、乙。",
+    "P01": "甲、乙、丙、丁分别安排在一至四号各一天；甲紧邻乙，丙早于丁，甲不在一号。选项B为可行安排。",
+    "V01": "甲、乙、丙分别安排在上午、午后、傍晚各一场；甲早于乙，丙不在上午。唯一可行顺序甲、丙、乙。",
+    "R01": "甲、乙、丙分别安排在一、二、三组；乙不在一组，甲早于丙。可行顺序甲、乙、丙。"
+  },
+  "records": [
+    {
+      "record_id": "D01",
+      "role": "entry_diagnostic",
+      "title": "分析推理：先固定强约束",
+      "target_skill_ids": [
+        "xingce.judgment.constraint.rule_capture",
+        "xingce.judgment.constraint.quantifier",
+        "xingce.judgment.constraint.case_exhaustion",
+        "xingce.judgment.constraint.consistency"
+      ],
+      "candidate_misconception_ids": [
+        "M-OMIT",
+        "M-QUANT",
+        "M-CASE",
+        "M-LOCAL"
+      ],
+      "independence_group": "constraint-three-entry",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "prompt": "甲、乙、丙三项展示分别安排在周一、周二、周三各一天。已知：甲早于乙；丙不安排在周一。下列哪项安排是可能的？",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "乙—甲—丙"
+        },
+        {
+          "label": "B",
+          "text": "甲—丙—乙"
+        },
+        {
+          "label": "C",
+          "text": "丙—乙—甲"
+        },
+        {
+          "label": "D",
+          "text": "丙—甲—乙"
+        }
+      ],
+      "correct_option": "B",
+      "route_probe_ids": [
+        "P01"
+      ],
+      "record_sha256": "6a119105ca27505ec2f7a03e640847ace8dd6641c3460de2867f79fe3fd2a915"
+    },
+    {
+      "record_id": "P01",
+      "role": "probe",
+      "title": "最小探查：可能题只需找到一组完整可行安排",
+      "target_skill_ids": [
+        "xingce.judgment.constraint.rule_capture",
+        "xingce.judgment.constraint.quantifier",
+        "xingce.judgment.constraint.case_exhaustion",
+        "xingce.judgment.constraint.consistency"
+      ],
+      "candidate_misconception_ids": [
+        "M-OMIT",
+        "M-QUANT",
+        "M-CASE",
+        "M-LOCAL"
+      ],
+      "independence_group": "constraint-four-probe",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "prompt": "甲、乙、丙、丁四人分别在一至四号各值班一天。甲与乙相邻；丙早于丁；甲不在一号。下列哪项安排可能为真？",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "甲、乙、丙、丁"
+        },
+        {
+          "label": "B",
+          "text": "丙、甲、乙、丁"
+        },
+        {
+          "label": "C",
+          "text": "乙、甲、丁、丙"
+        },
+        {
+          "label": "D",
+          "text": "丁、丙、甲、乙"
+        }
+      ],
+      "correct_option": "B",
+      "discriminates": [
+        "M-OMIT",
+        "M-QUANT",
+        "M-CASE",
+        "M-LOCAL"
+      ],
+      "candidate_evidence_map": {
+        "M-OMIT": {
+          "A": "support",
+          "B": "refute",
+          "C": "support",
+          "D": "support"
+        },
+        "M-QUANT": {
+          "A": "support",
+          "B": "refute",
+          "C": "insufficient",
+          "D": "insufficient"
+        },
+        "M-CASE": {
+          "A": "support",
+          "B": "refute",
+          "C": "support",
+          "D": "support"
+        },
+        "M-LOCAL": {
+          "A": "support",
+          "B": "refute",
+          "C": "support",
+          "D": "support"
+        }
+      },
+      "record_sha256": "7f6ab203188a4d25295209ceac0a3659a57b0f6d12b0103fc99b72add5a8d33c"
+    },
+    {
+      "record_id": "T-OMIT",
+      "role": "teaching_asset",
+      "title": "微课：每条规则都要有一个检查位",
+      "target_skill_ids": [
+        "xingce.judgment.constraint.rule_capture"
+      ],
+      "candidate_misconception_ids": [
+        "M-OMIT"
+      ],
+      "independence_group": "constraint-rules-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "target_candidate_ids": [
+        "M-OMIT"
+      ],
+      "teaching_content": "把规则列成短表：甲在乙前、丙不在周一、每项一天。检查选项时逐条打勾；只要漏掉一条，局部看似顺序正确也不能算可行。",
+      "record_sha256": "9d86a426f0478318708c9366b1626966ccb994e3770c1967c7e772fc0d19c977"
+    },
+    {
+      "record_id": "T-QUANT",
+      "role": "teaching_asset",
+      "title": "微课：可能题找一例，必须题找不到反例",
+      "target_skill_ids": [
+        "xingce.judgment.constraint.quantifier"
+      ],
+      "candidate_misconception_ids": [
+        "M-QUANT"
+      ],
+      "independence_group": "constraint-quantifier-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "target_candidate_ids": [
+        "M-QUANT"
+      ],
+      "teaching_content": "题目问“可能”为真，只要构造一组满足全部规则的安排；问“必须”为真，要检查是否存在反例；问“不可能”，找到冲突规则即可排除。",
+      "record_sha256": "02f88a490524c042f2313a1a223b5f16198dfcc999f2bcc510ed05ade48d0d60"
+    },
+    {
+      "record_id": "T-CASE",
+      "role": "teaching_asset",
+      "title": "微课：先安排限制最多的对象",
+      "target_skill_ids": [
+        "xingce.judgment.constraint.case_exhaustion"
+      ],
+      "candidate_misconception_ids": [
+        "M-CASE"
+      ],
+      "independence_group": "constraint-case-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "target_candidate_ids": [
+        "M-CASE"
+      ],
+      "teaching_content": "先放不能在某位置、必须相邻或有先后关系的对象。限制最多的对象确定后，剩余位置和分支会明显减少；不要只凭第一眼顺序停止检查。",
+      "record_sha256": "838ee9141d80f7d835a7cce55d87258af1a31cceb6d897af5c0c24fa9bd1de94"
+    },
+    {
+      "record_id": "T-LOCAL",
+      "role": "teaching_asset",
+      "title": "微课：最后从头复核全局安排",
+      "target_skill_ids": [
+        "xingce.judgment.constraint.consistency"
+      ],
+      "candidate_misconception_ids": [
+        "M-LOCAL"
+      ],
+      "independence_group": "constraint-consistency-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "target_candidate_ids": [
+        "M-LOCAL"
+      ],
+      "teaching_content": "得到候选安排后从第一条规则重新检查到最后一条。相邻成立不代表先后成立，先后成立也不代表禁位满足；全局复核是最后一步。",
+      "record_sha256": "a3dc95a088ab6e2f05e35ae4e5eca8e450ac105e885537f51115c1f73971f1c7"
+    },
+    {
+      "record_id": "V01",
+      "role": "independent_transfer",
+      "title": "独立迁移：不同时间段的完整安排",
+      "target_skill_ids": [
+        "xingce.judgment.constraint.rule_capture",
+        "xingce.judgment.constraint.quantifier",
+        "xingce.judgment.constraint.case_exhaustion",
+        "xingce.judgment.constraint.consistency"
+      ],
+      "candidate_misconception_ids": [
+        "M-OMIT",
+        "M-QUANT",
+        "M-CASE",
+        "M-LOCAL"
+      ],
+      "independence_group": "constraint-session-transfer",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "prompt": "甲、乙、丙三场说明会分别安排在上午、午后、傍晚。甲早于乙；丙不在上午。下列哪项安排可能为真？",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "乙—甲—丙"
+        },
+        {
+          "label": "B",
+          "text": "甲—丙—乙"
+        },
+        {
+          "label": "C",
+          "text": "丙—乙—甲"
+        },
+        {
+          "label": "D",
+          "text": "丙—甲—乙"
+        }
+      ],
+      "correct_option": "B",
+      "requires_no_hints": true,
+      "record_sha256": "c91a24a3df637bdc35786abd5bbc13efd556c72675b3e2ed771468f0ef3b2248"
+    },
+    {
+      "record_id": "R01",
+      "role": "delayed_review",
+      "title": "延迟复习：安排规则的全局核对",
+      "target_skill_ids": [
+        "xingce.judgment.constraint.rule_capture",
+        "xingce.judgment.constraint.consistency"
+      ],
+      "candidate_misconception_ids": [
+        "M-OMIT",
+        "M-QUANT",
+        "M-CASE",
+        "M-LOCAL"
+      ],
+      "independence_group": "constraint-group-review",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "prompt": "甲、乙、丙三人分别分在一、二、三组。乙不在一组；甲早于丙。下列哪项安排可能为真？",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "乙、甲、丙"
+        },
+        {
+          "label": "B",
+          "text": "甲、乙、丙"
+        },
+        {
+          "label": "C",
+          "text": "丙、乙、甲"
+        },
+        {
+          "label": "D",
+          "text": "丙、甲、乙"
+        }
+      ],
+      "correct_option": "B",
+      "requires_no_hints": true,
+      "scheduled_after_days": 4,
+      "eligible_after_transfer_ids": [
+        "V01"
+      ],
+      "record_sha256": "fedd86347bbaac33567acd25b33caaa46c0f7f9e70c4c021c810eb8681f4f4c6"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "schema_version": "lumi.xingce-review-evidence.v1",
+  "source_pack_id": "lumi-definition-reasoning-v0",
+  "source_pack_version": "0.1.0-draft",
+  "manual_review_workbook": {
+    "name": "lumi_行测题包_AI预审核对版.xlsx",
+    "sha256": "95542fe27672ce44aecb770675a34537c3285e47c7a1fcb9e8c41df5b1dca6a1"
+  },
+  "reviewer_attestations": [
+    {
+      "review_kind": "logic",
+      "reviewer_id": "1",
+      "reviewed_at": "2026-07-13",
+      "status": "approved"
+    },
+    {
+      "review_kind": "editorial_rights",
+      "reviewer_id": "2",
+      "reviewed_at": "2026-07-13",
+      "status": "approved"
+    }
+  ]
+}

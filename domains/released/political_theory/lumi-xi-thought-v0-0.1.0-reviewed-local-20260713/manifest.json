@@ -1,0 +1,64 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-xi-thought-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "status": "release_ready",
+  "release_ready": true,
+  "runtime_registration": "allowed_after_human_review",
+  "subtype_id": "xingce.political.xi_thought",
+  "module_id": "political_theory",
+  "form": "text_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "release_distribution_allowed"
+  },
+  "content_evidence": {
+    "authoritative_source_snapshot": "共产党员网，《习近平新时代中国特色社会主义思想的主要内容》（2023-11-28），https://www.12371.cn/2023/11/28/STUD1701138144512885.shtml；国家发展改革委，《党的二十大报告学习辅导百问》（2023-02-24），https://www.ndrc.gov.cn/fggz/gbzj/xxyd/202302/t20230224_1349573.html（accessed 2026-07-13）。",
+    "validity_cutoff": "2026-07-13; the draft tests only the named source's framework labels and stated relation, not an open-ended political commentary."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": true,
+    "review_attestations": [
+      {
+        "review_kind": "logic",
+        "reviewer_id": "1",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "a8999bfbe3c576c5468f4a502e168a8d924724466ebc486f3fcd0fc967f03264"
+      },
+      {
+        "review_kind": "editorial_rights",
+        "reviewer_id": "2",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "a8999bfbe3c576c5468f4a502e168a8d924724466ebc486f3fcd0fc967f03264"
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "832136e05bf41e84a9bf5cff498adb5ff365ea4f648e361533932b4626115c21"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "b2f0adeebb11d5a32fa16b4e5c98792276a63db97574b105d6d9208831af711f"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "33c7f5a42bc2704d168161754e30fbfb12d80cbc94aaafcb6d7b5cd988c759be"
+    },
+    {
+      "path": "review-evidence.json",
+      "sha256": "87770b554e263d7e4c51c2d7f1e23ea5a1d25904c930fd1ac29bb013248d0889"
+    }
+  ]
+}

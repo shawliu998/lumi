@@ -1,0 +1,18 @@
+{
+  "schema_version": "lumi.xingce-adaptive-skills.v1",
+  "pack_id": "lumi-theoretical-system-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "review_status": "release_ready",
+  "skills": [
+    {
+      "skill_id": "xingce.political.theoretical_system.formulation",
+      "label": "核对理论体系的来源表述",
+      "mastery_claim": "能按指定来源识别理论体系中列举的理论与思想；仅由无提示迁移更新。"
+    },
+    {
+      "skill_id": "xingce.political.theoretical_system.relation",
+      "label": "区分组成关系与历史叙述",
+      "mastery_claim": "能区分“包括哪些理论”与其发展背景或会议叙述；仅由无提示迁移更新。"
+    }
+  ]
+}

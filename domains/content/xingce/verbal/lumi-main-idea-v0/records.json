@@ -45,7 +45,7 @@
       "independence_group": "mainidea-community-entry",
       "content_origin": "original_lumi",
       "review_status": "draft_unreviewed",
-      "prompt": "一些社区改造把注意力放在统一外观上，完工后却发现遮雨、休息和通行等日常需求仍未被解决。较有效的微更新通常先观察居民怎样使用空间，再用小尺度调整补足这些环节，并让使用者参与反馈。由此可见，社区微更新更应：\n\nA. 以统一外观作为改造首要标准\nB. 在理解日常使用的基础上改进公共空间\nC. 通过增加座椅保证所有居民满意\nD. 以一次性大规模施工取代持续调整",
+      "prompt": "一些社区改造把注意力放在统一外观上，完工后却发现遮雨、休息和通行等日常需求仍未被解决。较有效的微更新通常先观察居民怎样使用空间，再用小尺度调整补足这些环节，并让使用者参与反馈。由此可见，社区微更新更应：",
       "response_mode": "single_choice",
       "options": [
         {
@@ -69,7 +69,7 @@
       "route_probe_ids": [
         "P01"
       ],
-      "record_sha256": "218b4e491b298eb74e63a0fe5012ac975a7df72d9c43e9c4280f82e78b074349"
+      "record_sha256": "9023b9f86de16e220b1017ad6cb448f5dd9e551f34eab73245d3af487f4d2b62"
     },
     {
       "record_id": "P01",
@@ -90,7 +90,7 @@
       "independence_group": "mainidea-data-probe",
       "content_origin": "original_lumi",
       "review_status": "draft_unreviewed",
-      "prompt": "公开数据若只有大量表格，普通使用者仍难以判断字段含义和适用范围。为此，有些部门在发布数据时补充检索入口、口径说明和更新提示。这样做并非只为增加数据数量，而是为了让公开信息更容易被正确使用。该段意在说明：\n\nA. 数据公开只要增加表格数量即可\nB. 检索入口是公开数据最重要的内容\nC. 数据公开还需要改善信息的可理解和可使用性\nD. 所有数据都应由普通使用者自行解释",
+      "prompt": "公开数据若只有大量表格，普通使用者仍难以判断字段含义和适用范围。为此，有些部门在发布数据时补充检索入口、口径说明和更新提示。这样做并非只为增加数据数量，而是为了让公开信息更容易被正确使用。该段意在说明：",
       "response_mode": "single_choice",
       "options": [
         {
@@ -143,7 +143,7 @@
           "D": "support"
         }
       },
-      "record_sha256": "12231ee85edf622acb3177a4b34f7eaf3f8f152d5579d7f146dd0b0b79ce57e8"
+      "record_sha256": "6ee85983444e893dec21c4f41f3f390a291e42ea3633499a7b3cf1609b4cc5d1"
     },
     {
       "record_id": "T-EXAMPLE",
@@ -223,7 +223,7 @@
       "independence_group": "mainidea-reading-transfer",
       "content_origin": "original_lumi",
       "review_status": "draft_unreviewed",
-      "prompt": "有些公共阅读角布置完成后很少被使用，原因不一定在于书架数量，而在于它与附近学校、休息区和活动安排缺少连接。把阅读角纳入日常活动，并根据借阅和停留情况调整内容，才可能形成稳定使用。该段主要强调：\n\nA. 阅读角应尽量增加书架数量\nB. 借阅率是评价阅读角的唯一标准\nC. 阅读角需要与日常活动连接并持续调整\nD. 所有公共阅读角都应设置在学校附近",
+      "prompt": "有些公共阅读角布置完成后很少被使用，原因不一定在于书架数量，而在于它与附近学校、休息区和活动安排缺少连接。把阅读角纳入日常活动，并根据借阅和停留情况调整内容，才可能形成稳定使用。该段主要强调：",
       "response_mode": "single_choice",
       "options": [
         {
@@ -245,7 +245,7 @@
       ],
       "correct_option": "C",
       "requires_no_hints": true,
-      "record_sha256": "22bdf91ba1d91f04fabd4ca5afcc305fa3d7af2c329be6962713ee986d60944c"
+      "record_sha256": "ef1caaca1e4e56c15a233c5995326b48e769a8bbeb1da98162b400948681ca5b"
     },
     {
       "record_id": "R01",
@@ -264,7 +264,7 @@
       "independence_group": "mainidea-wayfinding-review",
       "content_origin": "original_lumi",
       "review_status": "draft_unreviewed",
-      "prompt": "步行指引不只是多放几个箭头。对陌生使用者而言，连续且一致的路标能减少在路口反复判断的成本；必要时还应补充到达时间和无障碍信息。因此，步行指引的关键在于：\n\nA. 尽可能增加装饰性标志\nB. 降低使用者辨认路径的信息成本\nC. 只为熟悉道路的居民服务\nD. 保证每个路口都有相同的箭头",
+      "prompt": "步行指引不只是多放几个箭头。对陌生使用者而言，连续且一致的路标能减少在路口反复判断的成本；必要时还应补充到达时间和无障碍信息。因此，步行指引的关键在于：",
       "response_mode": "single_choice",
       "options": [
         {
@@ -290,7 +290,7 @@
       "eligible_after_transfer_ids": [
         "V01"
       ],
-      "record_sha256": "ac72cbb842dd46e13b3ebe1ed3031ee3d14307db1b72ded8956bad14e5e91fb4"
+      "record_sha256": "eafd1843aa9cdfecffcdd35f6cc013bb42dd719a762b68389df645a486e0f64f"
     }
   ]
 }

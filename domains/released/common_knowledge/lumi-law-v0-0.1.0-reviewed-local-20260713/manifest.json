@@ -1,0 +1,65 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-law-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "status": "release_ready",
+  "release_ready": true,
+  "runtime_registration": "allowed_after_human_review",
+  "subtype_id": "xingce.common.law",
+  "module_id": "common_knowledge",
+  "form": "text_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "release_distribution_allowed"
+  },
+  "content_evidence": {
+    "authoritative_source_snapshot": "全国人大网，《中华人民共和国行政处罚法》（2021-01-22），https://www.npc.gov.cn/npc/c2/c30834/202101/t20210122_309857.html, 第36、37条；全国人大常委会法工委国家法律法规数据库，《中华人民共和国民法典》，https://wb.flk.npc.gov.cn/flfg/PDF/bd53dd912c1048f2aecbaa229238334b.pdf, 第13、16、17、18条（accessed 2026-07-13）。",
+    "validity_cutoff": "2026-07-13; this draft is a bounded statutory-reading exercise, not legal advice and not a substitute for checking current law and facts.",
+    "jurisdiction": "中华人民共和国；仅限所列法律文本及条款，不延展到个案结论、地方规则或未列明特别法。"
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": true,
+    "review_attestations": [
+      {
+        "review_kind": "logic",
+        "reviewer_id": "1",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "ad0d630730a189f049d6723a540c1b803d84ad75dc084ee9ea713e5bee36810f"
+      },
+      {
+        "review_kind": "editorial_rights",
+        "reviewer_id": "2",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "ad0d630730a189f049d6723a540c1b803d84ad75dc084ee9ea713e5bee36810f"
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "cc95be5aa46614fbc0dce6bac59cb008e94bcea38043115e486962576f92b214"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "0900d7580a1a1cd716d10633eebad42857ace0e84c3066196e3b1ed85dbd6df5"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "9f5a3c27184ab2f28362df73c4dac8a5ee6c119005ac1ff3bb2efcfe8132543f"
+    },
+    {
+      "path": "review-evidence.json",
+      "sha256": "2c834db49733b2595ca06c3afb695982b68906581c6d4d54c3c17557669e76ab"
+    }
+  ]
+}

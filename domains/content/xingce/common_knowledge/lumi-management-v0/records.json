@@ -126,10 +126,12 @@
       "content_origin": "original_lumi",
       "review_status": "draft_unreviewed",
       "target_candidate_ids": [
-        "M-ORDER"
+        "M-BOUND",
+        "M-ORDER",
+        "M-ROLE"
       ],
-      "teaching_content": "先界定要改善什么，再选择措施并执行；有了记录才能检查效果，检查后才决定保留或调整。每一步都不能用后一步代替前一步。",
-      "record_sha256": "e40847bd52b1c991df10f129c6ddb279b306fc14bdcad04751cd2ec62382ce1f"
+      "teaching_content": "先把管理过程拆成四类：目标是希望达到的结果指标，方案与执行是行动，记录与检查是证据，反馈用于后续调整。通常先界定目标，再制定和执行方案；执行人员记录现场信息，协调者依据记录检查并调整。不要把措施当目标、把记录当结论，或让检查早于执行。",
+      "record_sha256": "9d0352a8b6d8edeb62270868569a2740f7538ff542c0bebe7eab13233b51f158"
     },
     {
       "record_id": "V01",

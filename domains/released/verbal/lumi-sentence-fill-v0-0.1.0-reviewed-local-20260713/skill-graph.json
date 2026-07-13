@@ -1,0 +1,28 @@
+{
+  "schema_version": "lumi.xingce-adaptive-skills.v1",
+  "pack_id": "lumi-sentence-fill-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "review_status": "release_ready",
+  "skills": [
+    {
+      "skill_id": "xingce.verbal.sentence_fill.relation",
+      "label": "识别上下文逻辑关系",
+      "mastery_claim": "能根据转折、因果、递进等关系选择衔接句；仅由无提示迁移更新。"
+    },
+    {
+      "skill_id": "xingce.verbal.sentence_fill.reference",
+      "label": "保持指代对象一致",
+      "mastery_claim": "能让填入句中的指代对象在上下文可追溯；仅由无提示迁移更新。"
+    },
+    {
+      "skill_id": "xingce.verbal.sentence_fill.topic",
+      "label": "维持话题与范围一致",
+      "mastery_claim": "能选择与段落主题和范围相符的句子；仅由无提示迁移更新。"
+    },
+    {
+      "skill_id": "xingce.verbal.sentence_fill.style",
+      "label": "保持语体与句法衔接",
+      "mastery_claim": "能让填入句与前后文语气、句法和信息密度协调；仅由无提示迁移更新。"
+    }
+  ]
+}

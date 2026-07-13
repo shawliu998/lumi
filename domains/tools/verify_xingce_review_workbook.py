@@ -15,7 +15,7 @@ import json
 import posixpath
 import re
 import zipfile
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 from typing import Any
 from xml.etree import ElementTree as ET
@@ -128,6 +128,11 @@ def _require_text(value: str, label: str) -> str:
 
 def _require_iso_date(value: str, label: str) -> str:
     candidate = _require_text(value, label)
+    if re.fullmatch(r"[0-9]+(?:\.0+)?", candidate):
+        serial = int(float(candidate))
+        converted = date(1899, 12, 30) + timedelta(days=serial)
+        if 2000 <= converted.year <= 2100:
+            return converted.isoformat()
     try:
         parsed = date.fromisoformat(candidate)
     except ValueError as exc:
@@ -135,6 +140,57 @@ def _require_iso_date(value: str, label: str) -> str:
     if parsed.isoformat() != candidate:
         raise WorkbookReviewError(f"{label} must use YYYY-MM-DD")
     return candidate
+
+
+def _normalized_signing_date(value: str, item_dates: set[str], label: str) -> str:
+    try:
+        return _require_iso_date(value, label)
+    except WorkbookReviewError as original_error:
+        match = re.fullmatch(r"(0?[1-9]|1[0-2])[./-](0?[1-9]|[12][0-9]|3[01])", value.strip())
+        if len(item_dates) != 1 or not match:
+            raise original_error
+        item_date = next(iter(item_dates))
+        month, day = (int(part) for part in match.groups())
+        if (date.fromisoformat(item_date).month, date.fromisoformat(item_date).day) != (month, day):
+            raise WorkbookReviewError(f"{label} must match every row-level review date")
+        return item_date
+
+
+def _normalized(value: str) -> str:
+    return value.replace("\r\n", "\n").strip()
+
+
+def _expected_review_content(record: dict[str, Any]) -> dict[str, str]:
+    options = "\n".join(f"{row['label']}. {row['text']}" for row in record.get("options", []))
+    answer = record.get("correct_option") or record.get("answer_spec", {}).get("target") or "—"
+    routing = record.get("route_probe_ids") or record.get("target_candidate_ids") or []
+    return {
+        "题干 / 微课内容": str(record.get("prompt") or record.get("teaching_content") or ""),
+        "选项": options,
+        "标准答案（审核可见）": str(answer),
+        "候选错因（未确认）": "\n".join(record.get("candidate_misconception_ids", [])),
+        "路由 / 目标": ", ".join(routing) if routing else "—",
+        "无提示": "是（无提示）" if record.get("requires_no_hints") else "—",
+    }
+
+
+def _review_content_matches(record: dict[str, Any], field: str, reviewed_value: str) -> bool:
+    """Bind review-sheet text to source without flattening structured materials.
+
+    Source-material records deliberately keep their table/chart/visual payload out
+    of ``prompt`` so the desktop client can render it structurally.  The review
+    workbook presents that material inline for a human reviewer, followed by the
+    literal source prompt.  For that one field, require the reviewed text to end
+    with the source prompt and to include a non-empty material prefix; all other
+    review fields remain exact bindings.
+    """
+
+    expected = _expected_review_content(record)[field]
+    actual = _normalized(reviewed_value)
+    if field == "题干 / 微课内容" and record.get("source_material") is not None:
+        normalized_expected = _normalized(expected)
+        return bool(normalized_expected) and actual.endswith(normalized_expected) and actual != normalized_expected
+    return actual == _normalized(expected)
 
 
 def _values_for_pack(sheet: dict[int, dict[int, str]], *, header_row: int, columns: dict[str, int], pack_id: str) -> list[dict[str, str]]:
@@ -183,30 +239,43 @@ def verify(source: str | Path, review_workbook: str | Path, release_version: str
         raise WorkbookReviewError(f"题包签署 must contain exactly one row for {pack_id}")
     signing = signing_rows[0]
     logic_reviewer = _require_text(signing["逻辑审核人 ID"], "signing logic reviewer ID")
-    logic_date = _require_iso_date(signing["逻辑审核日期（YYYY-MM-DD）"], "signing logic review date")
     editorial_reviewer = _require_text(signing["编辑/权属审核人 ID"], "signing editorial/rights reviewer ID")
-    editorial_date = _require_iso_date(signing["编辑/权属审核日期（YYYY-MM-DD）"], "signing editorial/rights review date")
     if logic_reviewer == editorial_reviewer:
         raise WorkbookReviewError("logic and editorial/rights reviewers must be different people")
 
-    item_headers = {"题包", "记录 ID", "逻辑结论", "逻辑审核人", "逻辑审核日期", "编辑/权属结论", "编辑审核人", "编辑审核日期"}
+    item_headers = {
+        "题包", "记录 ID", "题干 / 微课内容", "选项", "标准答案（审核可见）",
+        "候选错因（未确认）", "路由 / 目标", "无提示", "逻辑结论", "逻辑审核人",
+        "逻辑审核日期", "编辑/权属结论", "编辑审核人", "编辑审核日期",
+    }
     item_header_row, item_columns = _find_header_row(item_sheet, item_headers, "逐题审核")
     item_rows = _values_for_pack(item_sheet, header_row=item_header_row, columns=item_columns, pack_id=pack_id)
     item_ids = [row["记录 ID"] for row in item_rows]
     if len(item_ids) != len(set(item_ids)) or set(item_ids) != expected_record_ids:
         raise WorkbookReviewError(f"逐题审核 must cover every record of {pack_id} exactly once")
+    record_by_id = {record["record_id"]: record for record in pack["records"]}
+    logic_item_dates: set[str] = set()
+    editorial_item_dates: set[str] = set()
     for row in item_rows:
         location = f"逐题审核 row {row['__row__']} ({pack_id}/{row['记录 ID']})"
+        record = record_by_id[row["记录 ID"]]
+        for field in _expected_review_content(record):
+            if not _review_content_matches(record, field, row[field]):
+                raise WorkbookReviewError(f"{location} {field} does not bind the current source record")
         if row["逻辑结论"] != "Approved" or row["编辑/权属结论"] != "Approved":
             raise WorkbookReviewError(f"{location} requires Approved from both reviewers")
         if _require_text(row["逻辑审核人"], f"{location} logic reviewer") != logic_reviewer:
             raise WorkbookReviewError(f"{location} logic reviewer must match the signing row")
-        if _require_iso_date(row["逻辑审核日期"], f"{location} logic review date") != logic_date:
-            raise WorkbookReviewError(f"{location} logic review date must match the signing row")
+        logic_item_dates.add(_require_iso_date(row["逻辑审核日期"], f"{location} logic review date"))
         if _require_text(row["编辑审核人"], f"{location} editorial reviewer") != editorial_reviewer:
             raise WorkbookReviewError(f"{location} editorial reviewer must match the signing row")
-        if _require_iso_date(row["编辑审核日期"], f"{location} editorial review date") != editorial_date:
-            raise WorkbookReviewError(f"{location} editorial review date must match the signing row")
+        editorial_item_dates.add(_require_iso_date(row["编辑审核日期"], f"{location} editorial review date"))
+    logic_date = _normalized_signing_date(signing["逻辑审核日期（YYYY-MM-DD）"], logic_item_dates, "signing logic review date")
+    editorial_date = _normalized_signing_date(signing["编辑/权属审核日期（YYYY-MM-DD）"], editorial_item_dates, "signing editorial/rights review date")
+    if logic_item_dates != {logic_date}:
+        raise WorkbookReviewError("every logic review date must match the signing row")
+    if editorial_item_dates != {editorial_date}:
+        raise WorkbookReviewError("every editorial/rights review date must match the signing row")
 
     return {
         "schema_version": ATTESTATION_SCHEMA,

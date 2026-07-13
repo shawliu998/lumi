@@ -22,7 +22,7 @@ _EXPECTED_MODULE_IDS = frozenset(
 _EXPECTED_LOOP_EVIDENCE = frozenset({"selected_response", "confidence", "elapsed_seconds", "optional_rationale"})
 _ALLOWED_FORMS = frozenset({"text_mcq", "numeric_or_mcq", "visual_mcq", "material_mcq"})
 _ALLOWED_SCORERS = frozenset({"exact_option_v1", "authored_numeric_v1"})
-_ALLOWED_RELEASE_STATES = frozenset({"released", "planned"})
+_ALLOWED_RELEASE_STATES = frozenset({"released", "reviewed_release_ready", "planned"})
 
 
 class XingceCoverageError(ContractError):
@@ -132,12 +132,12 @@ def validate_coverage_matrix(document: Mapping[str, Any]) -> None:
                 raise XingceCoverageError("material subtype lacks frozen material and scope requirements")
         release = subtype.get("release", {"state": "planned"})
         if not isinstance(release, Mapping) or release.get("state") not in _ALLOWED_RELEASE_STATES:
-            raise XingceCoverageError("subtype release state must be released or planned")
-        if release["state"] == "released":
+            raise XingceCoverageError("subtype release state must be released, reviewed_release_ready, or planned")
+        if release["state"] in {"released", "reviewed_release_ready"}:
             if not isinstance(release.get("pack_id"), str) or not release["pack_id"].strip():
-                raise XingceCoverageError("released subtype must bind a reviewed pack id")
+                raise XingceCoverageError("reviewed subtype must bind a reviewed pack id")
             if not isinstance(release.get("pack_version"), str) or not release["pack_version"].strip():
-                raise XingceCoverageError("released subtype must bind a reviewed pack version")
+                raise XingceCoverageError("reviewed subtype must bind a reviewed pack version")
         elif "pack_id" in release or "pack_version" in release:
             raise XingceCoverageError("planned subtype cannot pretend it has a released pack")
     if seen_modules != _EXPECTED_MODULE_IDS:
@@ -148,12 +148,18 @@ def coverage_summary(path: str | Path = DEFAULT_COVERAGE_MATRIX) -> dict[str, An
     matrix = load_coverage_matrix(path)
     subtypes = matrix["subtypes"]
     released = [item for item in subtypes if item.get("release", {}).get("state") == "released"]
+    reviewed_release_ready = [item for item in subtypes if item.get("release", {}).get("state") == "reviewed_release_ready"]
+    planned = [item for item in subtypes if item.get("release", {}).get("state", "planned") == "planned"]
     modules = {
         module["id"]: {
             "label": module["label"],
             "total": sum(item["module_id"] == module["id"] for item in subtypes),
             "released": sum(
                 item["module_id"] == module["id"] and item.get("release", {}).get("state") == "released"
+                for item in subtypes
+            ),
+            "reviewed_release_ready": sum(
+                item["module_id"] == module["id"] and item.get("release", {}).get("state") == "reviewed_release_ready"
                 for item in subtypes
             ),
         }
@@ -164,7 +170,9 @@ def coverage_summary(path: str | Path = DEFAULT_COVERAGE_MATRIX) -> dict[str, An
         "taxonomy_version": matrix["taxonomy_version"],
         "total_subtypes": len(subtypes),
         "released_subtypes": len(released),
-        "planned_subtypes": len(subtypes) - len(released),
+        "reviewed_release_ready_subtypes": len(reviewed_release_ready),
+        "planned_subtypes": len(planned),
+        "content_release_ready": len(released) + len(reviewed_release_ready) == len(subtypes),
         "is_complete": len(released) == len(subtypes),
         "modules": modules,
     }

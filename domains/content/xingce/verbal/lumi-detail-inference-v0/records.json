@@ -23,7 +23,7 @@
       "independence_group": "detail-garden-entry",
       "content_origin": "original_lumi",
       "review_status": "draft_unreviewed",
-      "prompt": "某社区在两处背阴空地试种耐阴植物，并记录一年内的成活情况。记录显示，这两处空地在夏季浇水频率较低时，耐阴植物仍保持较高成活率。项目组据此计划在相似条件的空地继续观察，但没有比较其他植物，也没有改变土壤条件。根据这段文字，可以推出的是：\n\nA. 耐阴植物在所有社区空地都比其他植物更易成活\nB. 在已观察的两处背阴空地，耐阴植物表现出较高成活率\nC. 降低浇水频率必然提高耐阴植物成活率\nD. 土壤条件不会影响任何植物的成活率",
+      "prompt": "某社区在两处背阴空地试种耐阴植物，并记录一年内的成活情况。记录显示，这两处空地在夏季浇水频率较低时，耐阴植物仍保持较高成活率。项目组据此计划在相似条件的空地继续观察，但没有比较其他植物，也没有改变土壤条件。根据这段文字，可以推出的是：",
       "response_mode": "single_choice",
       "options": [
         {
@@ -47,7 +47,7 @@
       "route_probe_ids": [
         "P01"
       ],
-      "record_sha256": "7a14aa335203e3cf0353afbd91614b92dcd12b962c8f7483d1f72d056e84872c"
+      "record_sha256": "b18fe350fc47eea1bcab75720202a3495369bb9a18e14731c57d0a0faa4e17fa"
     },
     {
       "record_id": "P01",
@@ -68,7 +68,7 @@
       "independence_group": "detail-library-probe",
       "content_origin": "original_lumi",
       "review_status": "draft_unreviewed",
-      "prompt": "一所图书馆在周末增加了亲子阅读活动。同一季度，亲子借阅卡的使用次数比上季度多。馆员指出，活动期间还同时调整了开放时段，因此尚不能仅凭这些记录判定哪项改变造成了使用次数上升。由此可知：\n\nA. 亲子活动一定是使用次数上升的唯一原因\nB. 开放时段调整必然无效\nC. 使用次数上升与两项改变同时出现，但原因仍需进一步判断\nD. 所有图书馆增加亲子活动都会提高借阅卡使用次数",
+      "prompt": "一所图书馆在周末增加了亲子阅读活动。同一季度，亲子借阅卡的使用次数比上季度多。馆员指出，活动期间还同时调整了开放时段，因此尚不能仅凭这些记录判定哪项改变造成了使用次数上升。由此可知：",
       "response_mode": "single_choice",
       "options": [
         {
@@ -121,7 +121,7 @@
           "D": "support"
         }
       },
-      "record_sha256": "7fc8e073bf6b31da59c3588929df02064c5f754e352017e9029391ffe73172a9"
+      "record_sha256": "b2397676826646b590ed6ba46d66a0972d86854b02bd00c18bcec4522cbe0a64"
     },
     {
       "record_id": "T-UNSTATED",
@@ -217,7 +217,7 @@
       "independence_group": "detail-route-transfer",
       "content_origin": "original_lumi",
       "review_status": "draft_unreviewed",
-      "prompt": "某步行路线在三个周末试行增加夜间照明。试行记录显示，三个周末傍晚使用该路线的人数均高于此前相邻周末。记录未比较其他路线，也未排除天气和活动安排的影响。下列说法最符合原文的是：\n\nA. 夜间照明已被证明适合所有步行路线\nB. 在试行的三个周末，该路线傍晚使用人数较此前相邻周末更多\nC. 天气对步行人数没有影响\nD. 增加照明必然是人数上升的唯一原因",
+      "prompt": "某步行路线在三个周末试行增加夜间照明。试行记录显示，三个周末傍晚使用该路线的人数均高于此前相邻周末。记录未比较其他路线，也未排除天气和活动安排的影响。下列说法最符合原文的是：",
       "response_mode": "single_choice",
       "options": [
         {
@@ -239,7 +239,7 @@
       ],
       "correct_option": "B",
       "requires_no_hints": true,
-      "record_sha256": "ff182e736e0a011c2dfdec852dafb235d4f9337fadf2cce6eaaaf8854152fee3"
+      "record_sha256": "3f1426092fee77551bfa2a9b10b50f8e442126cae40d20142cbf86398a6e5d64"
     },
     {
       "record_id": "R01",
@@ -258,7 +258,7 @@
       "independence_group": "detail-waste-review",
       "content_origin": "original_lumi",
       "review_status": "draft_unreviewed",
-      "prompt": "一个学校在两个班级开展分类投放提示试验。试验期间，这两个班级的可回收物投放量增加。研究者说明，尚需在更多班级和更长时间内观察。根据文字，可以推出的是：\n\nA. 提示试验已在全校证明有效\nB. 两个试验班级在试验期间可回收物投放量增加\nC. 只有提示试验影响了投放量\nD. 其他班级的投放量一定没有变化",
+      "prompt": "一个学校在两个班级开展分类投放提示试验。试验期间，这两个班级的可回收物投放量增加。研究者说明，尚需在更多班级和更长时间内观察。根据文字，可以推出的是：",
       "response_mode": "single_choice",
       "options": [
         {
@@ -284,7 +284,7 @@
       "eligible_after_transfer_ids": [
         "V01"
       ],
-      "record_sha256": "6c09a8f51ac4df1bf0f401ba36e984337ec4064a78d475ff2715b5735252b808"
+      "record_sha256": "011b6ccc435d2cbe210be9ad3b9fe946c4f52f1de05e333be6f76d64dbd193b0"
     }
   ]
 }

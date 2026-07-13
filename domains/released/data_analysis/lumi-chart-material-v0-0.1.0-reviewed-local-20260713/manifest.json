@@ -1,0 +1,66 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-chart-material-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "status": "release_ready",
+  "release_ready": true,
+  "runtime_registration": "allowed_after_human_review",
+  "subtype_id": "xingce.data.chart_material",
+  "module_id": "data_analysis",
+  "form": "material_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "release_distribution_allowed"
+  },
+  "content_evidence": {
+    "immutable_visual_asset": "records.json#source_material; chart values and accessible description are immutable record payloads",
+    "asset_checksum": "7c911e9ae69f372c6918958c377a67b9f243cc612ee20ea036a323e4409d2db3",
+    "meaningful_alt_text": "Every chart includes a concise textual description of series, direction, unit and scope.",
+    "unit_and_scope_metadata": "Every chart displays its unit and population/time scope."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": true,
+    "review_attestations": [
+      {
+        "review_kind": "logic",
+        "reviewer_id": "1",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "428e1dee52fa48d7bb12a0d932dfbd63b3e8dbc44758445be83839432c150d3d"
+      },
+      {
+        "review_kind": "editorial_rights",
+        "reviewer_id": "2",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "428e1dee52fa48d7bb12a0d932dfbd63b3e8dbc44758445be83839432c150d3d"
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "b111855311f498295d4c6a63bd03dba1e950297e633797d674484f20ce4c3706"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "6deffa8a6796870846e181e4423ff048d043e17c56142bae07cdd1f083833ff4"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "6e8a888bcb5c8b30bf61c99f017d610e26029291c749e1f698570478f7a843a7"
+    },
+    {
+      "path": "review-evidence.json",
+      "sha256": "9c6af2e34bad79e0a47b2a298d54e526efc6179445f3216f0469478366000a41"
+    }
+  ]
+}
