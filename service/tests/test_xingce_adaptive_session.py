@@ -80,6 +80,11 @@ class XingceAdaptiveSessionTests(unittest.TestCase):
         self.assertTrue(application.xingce_adaptive_workspace("xingce.verbal.logical_cloze")["available"])
         with self.assertRaises(Exception):
             application.xingce_adaptive_workspace("xingce.judgment.definition")
+        with self.assertRaisesRegex(ValueError, "released coverage row"):
+            SidecarApplication(
+                Path(self.temp.name) / "production.sqlite3",
+                xingce_adaptive_session_services={"xingce.verbal.logical_cloze": self.service},
+            )
 
     def test_http_contract_runs_the_evaluation_fixture_without_accepting_judgment_only_fields(self) -> None:
         """HTTP checks use an isolated eval namespace, never a product learner."""

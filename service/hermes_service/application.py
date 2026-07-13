@@ -52,6 +52,7 @@ from hermes_runtime.schedule import (
     valid_stored_run_identifier,
 )
 from hermes_runtime.store import EventStore, TraceVersionConflict
+from hermes_domains.xingce_coverage import load_coverage_matrix
 
 from .catalog import ProductActivityCatalog, ScenarioCatalog
 from .dossier import project_misconception_dossier
@@ -184,6 +185,16 @@ class SidecarApplication:
         self._xingce_adaptive_sessions = dict(xingce_adaptive_session_services or {})
         if any(service.pack["subtype_id"] != subtype_id for subtype_id, service in self._xingce_adaptive_sessions.items()):
             raise ValueError("adaptive session registry key must match its reviewed pack subtype")
+        if not self._evaluation_projection_enabled:
+            released = {
+                row["id"]: row["release"]
+                for row in load_coverage_matrix()["subtypes"]
+                if row.get("release", {}).get("state") == "released"
+            }
+            for subtype_id, service in self._xingce_adaptive_sessions.items():
+                release = released.get(subtype_id)
+                if release is None or release["pack_id"] != service.pack["pack_id"] or release["pack_version"] != service.pack["pack_version"]:
+                    raise ValueError("production Xingce adaptive pack must exactly match a released coverage row")
 
     def health(self) -> dict[str, Any]:
         store = EventStore(self.database)

@@ -33,7 +33,11 @@ class XingceCoverageCatalog:
                 "label": subtype["label"],
                 "form": subtype["form"],
                 "availability": "available" if available else "planned",
-                "launch": "/v1/judgment/workspace" if subtype["id"] == "xingce.judgment.conditional_logic" and available else None,
+                "launch": (
+                    "/v1/judgment/workspace"
+                    if subtype["id"] == "xingce.judgment.conditional_logic" and available
+                    else f"/v1/xingce/adaptive/{subtype['id']}/workspace" if available else None
+                ),
                 "unavailable_reason": None if available else "reviewed_type_specific_pack_required",
             }
             if available:

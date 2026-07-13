@@ -15,18 +15,26 @@ from lumi_study_pack.store import (
 
 from .api import create_server
 from .application import SidecarApplication
+from .xingce_adaptive_session import XingceAdaptiveSessionConfig, XingceAdaptiveSessionService
 
 
 INTERNAL_ATTEMPT_ORIGIN_ENV = "LUMI_INTERNAL_STUDY_PACK_ATTEMPT_ORIGIN"
 INTERNAL_LEARNING_ATTEMPT_ORIGIN_ENV = "LUMI_INTERNAL_LEARNING_ATTEMPT_ORIGIN"
 INTERNAL_EVALUATION_PROJECTION_ENV = "LUMI_INTERNAL_EVALUATION_PROJECTION"
 JUDGMENT_PACK_ROOT_ENV = "LUMI_JUDGMENT_PACK_ROOT"
+XINGCE_ADAPTIVE_PACK_ROOTS_ENV = "LUMI_XINGCE_ADAPTIVE_PACK_ROOTS"
 DEFAULT_RELEASED_JUDGMENT_PACK_ROOT = (
     Path(__file__).resolve().parents[2]
     / "domains"
     / "released"
     / "judgment"
     / "lumi-conditional-reasoning-v0-0.1.0-reviewed-local-20260713"
+)
+DEFAULT_RELEASED_XINGCE_ADAPTIVE_PACKS_ROOT = (
+    Path(__file__).resolve().parents[2]
+    / "domains"
+    / "released"
+    / "xingce"
 )
 
 
@@ -74,6 +82,37 @@ def configured_judgment_pack_root() -> Path | None:
     return root
 
 
+def configured_xingce_adaptive_session_services(
+    database: Path,
+    *,
+    evidence_origin: str,
+) -> dict[str, XingceAdaptiveSessionService]:
+    """Discover only reviewed local generic packs from declared release roots.
+
+    A missing default root means no generic subtype is registered. An explicit
+    root must exist so packaging failures cannot silently fall back to a draft
+    or a mutable question-bank directory.
+    """
+    configured = os.environ.get(XINGCE_ADAPTIVE_PACK_ROOTS_ENV)
+    roots = [Path(part).expanduser() for part in configured.split(os.pathsep)] if configured else [DEFAULT_RELEASED_XINGCE_ADAPTIVE_PACKS_ROOT]
+    if configured and any(not root.is_dir() for root in roots):
+        raise SystemExit("configured Xingce adaptive pack root is not a directory")
+    namespace_id = "eval:local-lumi" if evidence_origin == EVALUATION_ATTEMPT_EVIDENCE_ORIGIN else "human:local-lumi"
+    config = XingceAdaptiveSessionConfig(namespace_id=namespace_id, evidence_origin=evidence_origin)
+    services: dict[str, XingceAdaptiveSessionService] = {}
+    for root in roots:
+        if not root.is_dir():
+            continue
+        candidates = [root] if (root / "manifest.json").is_file() else sorted(item.parent for item in root.glob("**/manifest.json"))
+        for pack_root in candidates:
+            service = XingceAdaptiveSessionService(database, reviewed_pack_root=pack_root, config=config)
+            subtype_id = service.pack["subtype_id"]
+            if subtype_id in services:
+                raise SystemExit("multiple reviewed Xingce adaptive packs declare the same subtype")
+            services[subtype_id] = service
+    return services
+
+
 def parser() -> argparse.ArgumentParser:
     result = argparse.ArgumentParser(description="Lumi loopback-only local sidecar")
     result.add_argument("--db", default=str(Path.home() / ".hermes" / "sidecar.sqlite3"))
@@ -108,6 +147,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         ),
         evaluation_projection_enabled=evaluation_projection_enabled,
         judgment_pack_root=configured_judgment_pack_root(),
+        xingce_adaptive_session_services=configured_xingce_adaptive_session_services(
+            database,
+            evidence_origin=attempt_origin,
+        ),
     )
     if args.command == "capabilities":
         print(json.dumps(application.capabilities(), ensure_ascii=False, indent=2))
