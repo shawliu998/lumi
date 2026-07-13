@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from hermes_domains.xingce_adaptive_pack import record_sha256
+from hermes_domains.xingce_adaptive_pack import canonical_json_sha256, record_sha256
 
 
 def _finalize(records: list[dict]) -> dict:
@@ -88,6 +88,31 @@ def documents_for(subtype: dict) -> tuple[dict, dict, dict, dict]:
             "review_status": "draft_unreviewed",
             "prompt": "这是经过作者审核前的占位题干。",
         }
+        if subtype["form"] == "material_mcq":
+            if subtype["id"] == "xingce.data.chart_material":
+                base["source_material"] = {
+                    "kind": "chart", "title": "评测图形材料", "alt_text": "甲、乙两期的示例数据图。",
+                    "unit_scope": "单位：件；范围：评测样例。", "categories": ["甲期", "乙期"],
+                    "series": [{"label": "样例值", "values": [12, 18]}],
+                }
+            elif subtype["id"] == "xingce.data.table_material":
+                base["source_material"] = {
+                    "kind": "table", "title": "评测表格材料", "columns": ["项目", "数量"],
+                    "rows": [["甲", 12], ["乙", 18]], "scope_note": "单位：件；范围：评测样例。",
+                }
+            elif subtype["id"] == "xingce.data.composite_material":
+                base["source_material"] = {
+                    "kind": "composite", "title": "评测综合材料", "scope_note": "单位：件；范围：评测样例。",
+                    "parts": [
+                        {"kind": "text", "title": "说明", "body": "甲、乙为两个评测期。", "scope_note": "范围：评测样例。"},
+                        {"kind": "table", "title": "数据", "columns": ["期间", "数量"], "rows": [["甲", 12], ["乙", 18]], "scope_note": "单位：件。"},
+                    ],
+                }
+            else:
+                base["source_material"] = {
+                    "kind": "text", "title": "评测文字材料", "body": "甲期为12件，乙期为18件。",
+                    "scope_note": "单位：件；范围：评测样例。",
+                }
         if subtype["scorer"] == "authored_numeric_v1" and role != "probe":
             return {**base, "response_mode": "numeric", "answer_spec": {"target": 12, "tolerance": 0}}
         return {
@@ -123,4 +148,16 @@ def documents_for(subtype: dict) -> tuple[dict, dict, dict, dict]:
     review["requires_no_hints"] = True
     review["scheduled_after_days"] = 3
     review["eligible_after_transfer_ids"] = ["V01"]
-    return manifest, _finalize([entry, probe, teaching, transfer, review]), skills, taxonomy
+    records = _finalize([entry, probe, teaching, transfer, review])
+    assessment_records = [record for record in records["records"] if record["role"] != "teaching_asset"]
+    if "material_checksum" in evidence:
+        evidence["material_checksum"] = canonical_json_sha256([
+            {"record_id": record["record_id"], "source_material": record["source_material"]}
+            for record in assessment_records
+        ])
+    if "asset_checksum" in evidence and subtype["form"] == "material_mcq":
+        evidence["asset_checksum"] = canonical_json_sha256([
+            {"record_id": record["record_id"], "source_material": record["source_material"]}
+            for record in assessment_records if record["source_material"]["kind"] == "chart"
+        ])
+    return manifest, records, skills, taxonomy

@@ -5872,6 +5872,31 @@ button.connection-status:hover {
 .adaptive-question-meta strong { color: #5b55d8; font-size: 9px; }
 .adaptive-question-meta > span { display: inline-flex; align-items: center; gap: 4px; color: #676a72; font-size: 9px; }
 .adaptive-question h1 { margin: 8px 0 11px; color: #2d2f36; font-size: 13px; line-height: 20px; letter-spacing: -0.01em; }
+.adaptive-material { margin-top: 10px; border: 1px solid #dedfe5; border-radius: 5px; background: #fcfcfd; color: #454850; }
+.adaptive-material > header,
+.adaptive-material figcaption { padding: 8px 9px; border-bottom: 1px solid #e5e6eb; display: grid; gap: 2px; background: #f7f7f9; }
+.adaptive-material small { color: #777a83; font-size: 8px; line-height: 11px; }
+.adaptive-material strong { color: #454850; font-size: 9px; line-height: 13px; }
+.adaptive-material > p { margin: 0; padding: 9px; color: #4d5058; font-size: 9px; line-height: 15px; white-space: pre-line; }
+.adaptive-material > footer { padding: 6px 9px; border-top: 1px solid #e5e6eb; color: #757880; font-size: 8px; line-height: 12px; }
+.adaptive-material-scroll { max-width: 100%; overflow: auto; }
+.adaptive-material table { width: 100%; min-width: 280px; border-collapse: collapse; color: #4d5058; font-size: 8.5px; line-height: 13px; }
+.adaptive-material caption { padding: 6px 9px; color: #747780; caption-side: bottom; text-align: left; font-size: 8px; }
+.adaptive-material th, .adaptive-material td { padding: 6px 8px; border-bottom: 1px solid #e6e7eb; text-align: left; vertical-align: top; }
+.adaptive-material th { color: #575a62; background: #fafafc; font-weight: 600; }
+.adaptive-material tbody tr:last-child td { border-bottom: 0; }
+.adaptive-material-chart { margin: 10px 0 0; }
+.adaptive-material-chart figcaption span { color: #757880; font-size: 8px; line-height: 12px; }
+.adaptive-chart-values { padding: 8px 9px 4px; display: grid; gap: 7px; }
+.adaptive-chart-row { display: grid; grid-template-columns: 47px minmax(0, 1fr); gap: 7px; align-items: start; }
+.adaptive-chart-row > b { padding-top: 2px; color: #5a5d65; font-size: 8px; line-height: 12px; font-weight: 600; }
+.adaptive-chart-row > div { display: grid; gap: 4px; }
+.adaptive-chart-row span { min-width: 0; min-height: 14px; display: grid; grid-template-columns: minmax(20px, 1fr) auto; align-items: center; gap: 6px; }
+.adaptive-chart-row i { height: 7px; border-radius: 1px; background: #7772df; }
+.adaptive-chart-row em { color: #656871; font-size: 7.8px; font-style: normal; white-space: nowrap; }
+.adaptive-material-composite { padding-bottom: 9px; }
+.adaptive-material-composite > p { padding-bottom: 0; }
+.adaptive-material-composite .adaptive-material { margin: 9px 9px 0; background: #fff; }
 .adaptive-question fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
 .adaptive-question fieldset > legend { margin-bottom: 9px; color: #40434b; font-size: 10px; line-height: 15px; }
 .adaptive-options { display: grid; gap: 6px; }

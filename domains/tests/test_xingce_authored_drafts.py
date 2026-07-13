@@ -18,6 +18,10 @@ class XingceAuthoredDraftTests(unittest.TestCase):
             CONTENT_ROOT / "quantitative" / "lumi-number-sequence-v0",
             CONTENT_ROOT / "quantitative" / "lumi-math-operations-v0",
             CONTENT_ROOT / "judgment" / "lumi-analogy-reasoning-v0",
+            CONTENT_ROOT / "data_analysis" / "lumi-text-material-v0",
+            CONTENT_ROOT / "data_analysis" / "lumi-table-material-v0",
+            CONTENT_ROOT / "data_analysis" / "lumi-chart-material-v0",
+            CONTENT_ROOT / "data_analysis" / "lumi-composite-material-v0",
         )
         for root in roots:
             with self.subTest(pack=root.name):
@@ -108,6 +112,69 @@ class XingceAuthoredDraftTests(unittest.TestCase):
         )
         self.assertTrue(transfer["eligible"])
         self.assertEqual(transfer["state_delta"]["candidate_status"], "unconfirmed")
+
+    def test_text_material_draft_keeps_material_visible_and_teaches_before_an_unseen_transfer(self) -> None:
+        pack = load_xingce_adaptive_pack(CONTENT_ROOT / "data_analysis" / "lumi-text-material-v0")
+        entry = diagnose_entry(
+            pack["records"], scorer=pack["scorer"], entry_record_id="D01", observation=Observation("A", "medium", 20)
+        )
+        self.assertFalse(entry.correct)
+        probe = resolve_probe(
+            pack["records"], scorer=pack["scorer"], entry=entry, observation=Observation("A", "medium", 9)
+        )
+        self.assertEqual(probe.teaching_record_id, "T-SER")
+        self.assertEqual(probe.transfer_record_id, "V01")
+        self.assertTrue(all(row["status"] == "unconfirmed" for row in probe.evidence_updates))
+        transfer = independent_transfer_proposal(
+            pack["records"], scorer=pack["scorer"], entry=entry, probe=probe, observation=Observation("B", "high", 18)
+        )
+        self.assertTrue(transfer["eligible"])
+        self.assertEqual(transfer["state_delta"]["candidate_status"], "unconfirmed")
+
+    def test_table_material_draft_uses_a_scoped_accessible_table_before_unseen_transfer(self) -> None:
+        pack = load_xingce_adaptive_pack(CONTENT_ROOT / "data_analysis" / "lumi-table-material-v0")
+        entry = diagnose_entry(
+            pack["records"], scorer=pack["scorer"], entry_record_id="D01", observation=Observation("A", "medium", 17)
+        )
+        probe = resolve_probe(
+            pack["records"], scorer=pack["scorer"], entry=entry, observation=Observation("A", "low", 8)
+        )
+        self.assertEqual(probe.teaching_record_id, "T-ROWCOL")
+        self.assertEqual(probe.transfer_record_id, "V01")
+        transfer = independent_transfer_proposal(
+            pack["records"], scorer=pack["scorer"], entry=entry, probe=probe, observation=Observation("B", "high", 14)
+        )
+        self.assertTrue(transfer["eligible"])
+
+    def test_chart_material_draft_binds_accessible_chart_data_to_a_transfer(self) -> None:
+        pack = load_xingce_adaptive_pack(CONTENT_ROOT / "data_analysis" / "lumi-chart-material-v0")
+        entry = diagnose_entry(
+            pack["records"], scorer=pack["scorer"], entry_record_id="D01", observation=Observation("A", "medium", 16)
+        )
+        probe = resolve_probe(
+            pack["records"], scorer=pack["scorer"], entry=entry, observation=Observation("A", "low", 7)
+        )
+        self.assertEqual(probe.teaching_record_id, "T-SER")
+        self.assertEqual(probe.transfer_record_id, "V01")
+        transfer = independent_transfer_proposal(
+            pack["records"], scorer=pack["scorer"], entry=entry, probe=probe, observation=Observation("B", "high", 12)
+        )
+        self.assertTrue(transfer["eligible"])
+
+    def test_composite_material_draft_aligns_narrative_scope_with_table_before_transfer(self) -> None:
+        pack = load_xingce_adaptive_pack(CONTENT_ROOT / "data_analysis" / "lumi-composite-material-v0")
+        entry = diagnose_entry(
+            pack["records"], scorer=pack["scorer"], entry_record_id="D01", observation=Observation("A", "medium", 19)
+        )
+        probe = resolve_probe(
+            pack["records"], scorer=pack["scorer"], entry=entry, observation=Observation("A", "low", 8)
+        )
+        self.assertEqual(probe.teaching_record_id, "T-ALIGN")
+        self.assertEqual(probe.transfer_record_id, "V01")
+        transfer = independent_transfer_proposal(
+            pack["records"], scorer=pack["scorer"], entry=entry, probe=probe, observation=Observation("B", "high", 13)
+        )
+        self.assertTrue(transfer["eligible"])
 
 
 if __name__ == "__main__":

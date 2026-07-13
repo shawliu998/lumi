@@ -1,0 +1,399 @@
+{
+  "schema_version": "lumi.xingce-adaptive-records.v1",
+  "pack_id": "lumi-chart-material-v0",
+  "pack_version": "0.1.0-draft",
+  "review_status": "draft_unreviewed",
+  "records": [
+    {
+      "record_id": "D01",
+      "role": "entry_diagnostic",
+      "title": "图形材料：图例与同期结构",
+      "target_skill_ids": [
+        "xingce.data.chart_material.target_series",
+        "xingce.data.chart_material.legend_unit",
+        "xingce.data.chart_material.visual_scale"
+      ],
+      "candidate_misconception_ids": [
+        "M-SER",
+        "M-UNIT",
+        "M-BASE",
+        "M-SCALE"
+      ],
+      "independence_group": "chart-service-entry",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "source_material": {
+        "kind": "chart",
+        "title": "市民服务两类办理量",
+        "alt_text": "柱形数据：一至三季度，甲类办理量为30、45、60万件，乙类办理量为20、30、40万件；两类均逐季增长。",
+        "unit_scope": "单位：万件；范围：同一服务中心2025年前三个季度。",
+        "categories": [
+          "一季度",
+          "二季度",
+          "三季度"
+        ],
+        "series": [
+          {
+            "label": "甲类办理量",
+            "values": [
+              30,
+              45,
+              60
+            ]
+          },
+          {
+            "label": "乙类办理量",
+            "values": [
+              20,
+              30,
+              40
+            ]
+          }
+        ]
+      },
+      "prompt": "三季度甲类办理量约占两类办理量合计的：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "40%"
+        },
+        {
+          "label": "B",
+          "text": "50%"
+        },
+        {
+          "label": "C",
+          "text": "60%"
+        },
+        {
+          "label": "D",
+          "text": "150%"
+        }
+      ],
+      "correct_option": "C",
+      "route_probe_ids": [
+        "P01"
+      ],
+      "record_sha256": "7496b1fd34f9bf3adbf23ea3dd8d9b0d38f77bf966590faac548460f687b0258"
+    },
+    {
+      "record_id": "P01",
+      "role": "probe",
+      "title": "最小探查：增长基期与序列",
+      "target_skill_ids": [
+        "xingce.data.chart_material.target_series",
+        "xingce.data.chart_material.legend_unit",
+        "xingce.data.chart_material.base_comparison",
+        "xingce.data.chart_material.visual_scale"
+      ],
+      "candidate_misconception_ids": [
+        "M-SER",
+        "M-UNIT",
+        "M-BASE",
+        "M-SCALE"
+      ],
+      "independence_group": "chart-visit-probe",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "source_material": {
+        "kind": "chart",
+        "title": "两类展览月度参观量",
+        "alt_text": "柱形数据：四月到六月，常设展参观量为40、50、60万人次，专题展参观量为20、25、30万人次。",
+        "unit_scope": "单位：万人次；范围：同一展馆连续三个月。",
+        "categories": [
+          "四月",
+          "五月",
+          "六月"
+        ],
+        "series": [
+          {
+            "label": "常设展",
+            "values": [
+              40,
+              50,
+              60
+            ]
+          },
+          {
+            "label": "专题展",
+            "values": [
+              20,
+              25,
+              30
+            ]
+          }
+        ]
+      },
+      "prompt": "常设展六月参观量比四月增长约：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "20%"
+        },
+        {
+          "label": "B",
+          "text": "33.3%"
+        },
+        {
+          "label": "C",
+          "text": "50%"
+        },
+        {
+          "label": "D",
+          "text": "150%"
+        }
+      ],
+      "correct_option": "C",
+      "discriminates": [
+        "M-SER",
+        "M-UNIT",
+        "M-BASE",
+        "M-SCALE"
+      ],
+      "candidate_evidence_map": {
+        "M-SER": {
+          "A": "support",
+          "B": "insufficient",
+          "C": "refute",
+          "D": "support"
+        },
+        "M-UNIT": {
+          "A": "insufficient",
+          "B": "support",
+          "C": "refute",
+          "D": "insufficient"
+        },
+        "M-BASE": {
+          "A": "support",
+          "B": "support",
+          "C": "refute",
+          "D": "support"
+        },
+        "M-SCALE": {
+          "A": "support",
+          "B": "insufficient",
+          "C": "refute",
+          "D": "support"
+        }
+      },
+      "record_sha256": "7f1b5181e61d713542be73041c0152f88607c6d6f515e6df80f0b5b29a35d046"
+    },
+    {
+      "record_id": "T-SER",
+      "role": "teaching_asset",
+      "title": "微课：先说出图例对应的序列",
+      "target_skill_ids": [
+        "xingce.data.chart_material.target_series"
+      ],
+      "candidate_misconception_ids": [
+        "M-SER"
+      ],
+      "independence_group": "chart-series-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-SER"
+      ],
+      "teaching_content": "图形题先把题干对象和图例标签连起来：问甲类就只读甲类，问常设展就只读常设展。先写出两个相关柱/点的数值，再做比较。",
+      "record_sha256": "100663e82163c017d4440a2024a0e4226279380e85fa8ddf86088455fbd2c521"
+    },
+    {
+      "record_id": "T-UNIT",
+      "role": "teaching_asset",
+      "title": "微课：图例、单位、范围三件事一起读",
+      "target_skill_ids": [
+        "xingce.data.chart_material.legend_unit"
+      ],
+      "candidate_misconception_ids": [
+        "M-UNIT"
+      ],
+      "independence_group": "chart-unit-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-UNIT"
+      ],
+      "teaching_content": "看见柱条前先读标题下的单位与范围，再读图例。数值可能是人次、件数或金额，比较也只能在同一图、同一统计范围内进行。",
+      "record_sha256": "e69d049b7c30dd08a79eccd9c4e4497a3c413e94086fccefed36c0553cc5dc4e"
+    },
+    {
+      "record_id": "T-BASE",
+      "role": "teaching_asset",
+      "title": "微课：增长率要以上期数值为基期",
+      "target_skill_ids": [
+        "xingce.data.chart_material.base_comparison"
+      ],
+      "candidate_misconception_ids": [
+        "M-BASE"
+      ],
+      "independence_group": "chart-base-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-BASE"
+      ],
+      "teaching_content": "“六月比四月增长”先写差额60−40，再除以基期四月的40。用终点60作分母或直接把差额20写成20%都会改变问题。",
+      "record_sha256": "9ffdecf8e4dbac1c73b38d67b140a15f4164c804cc10e402f1132c92658dafb7"
+    },
+    {
+      "record_id": "T-SCALE",
+      "role": "teaching_asset",
+      "title": "微课：视觉长度只作提示，数值才可核算",
+      "target_skill_ids": [
+        "xingce.data.chart_material.visual_scale"
+      ],
+      "candidate_misconception_ids": [
+        "M-SCALE"
+      ],
+      "independence_group": "chart-scale-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-SCALE"
+      ],
+      "teaching_content": "柱条看起来“多一半”不是答案。读取材料给出的数值或刻度，列出算式并检查量级；图形的作用是帮助定位，不替代计算。",
+      "record_sha256": "3ba466961d30523492077d8bf0e23547dc77629a53a69d4c929070f1460411fe"
+    },
+    {
+      "record_id": "V01",
+      "role": "independent_transfer",
+      "title": "独立迁移：另一张图的增长率",
+      "target_skill_ids": [
+        "xingce.data.chart_material.target_series",
+        "xingce.data.chart_material.base_comparison",
+        "xingce.data.chart_material.visual_scale"
+      ],
+      "candidate_misconception_ids": [
+        "M-SER",
+        "M-UNIT",
+        "M-BASE",
+        "M-SCALE"
+      ],
+      "independence_group": "chart-recycling-transfer",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "source_material": {
+        "kind": "chart",
+        "title": "社区回收两类材料量",
+        "alt_text": "柱形数据：上半年和下半年，纸类回收量为80、100吨，塑料类回收量为40、50吨。",
+        "unit_scope": "单位：吨；范围：同一社区2025年上下半年。",
+        "categories": [
+          "上半年",
+          "下半年"
+        ],
+        "series": [
+          {
+            "label": "纸类",
+            "values": [
+              80,
+              100
+            ]
+          },
+          {
+            "label": "塑料类",
+            "values": [
+              40,
+              50
+            ]
+          }
+        ]
+      },
+      "prompt": "纸类下半年回收量比上半年增长约：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "20%"
+        },
+        {
+          "label": "B",
+          "text": "25%"
+        },
+        {
+          "label": "C",
+          "text": "40%"
+        },
+        {
+          "label": "D",
+          "text": "125%"
+        }
+      ],
+      "correct_option": "B",
+      "requires_no_hints": true,
+      "record_sha256": "578fd6df4e98df611a47c1b74774570a4bcd6d279a7edac292a6b44a47eff37c"
+    },
+    {
+      "record_id": "R01",
+      "role": "delayed_review",
+      "title": "延迟复习：图形中的同期占比",
+      "target_skill_ids": [
+        "xingce.data.chart_material.target_series",
+        "xingce.data.chart_material.legend_unit"
+      ],
+      "candidate_misconception_ids": [
+        "M-SER",
+        "M-UNIT",
+        "M-BASE",
+        "M-SCALE"
+      ],
+      "independence_group": "chart-course-review",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "source_material": {
+        "kind": "chart",
+        "title": "课程报名方式统计",
+        "alt_text": "柱形数据：春季和秋季，线上报名分别为45、60人，线下报名分别为15、20人。",
+        "unit_scope": "单位：人；范围：同一培训中心两个学期。",
+        "categories": [
+          "春季",
+          "秋季"
+        ],
+        "series": [
+          {
+            "label": "线上报名",
+            "values": [
+              45,
+              60
+            ]
+          },
+          {
+            "label": "线下报名",
+            "values": [
+              15,
+              20
+            ]
+          }
+        ]
+      },
+      "prompt": "秋季线上报名人数约占秋季报名总人数的：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "60%"
+        },
+        {
+          "label": "B",
+          "text": "70%"
+        },
+        {
+          "label": "C",
+          "text": "75%"
+        },
+        {
+          "label": "D",
+          "text": "80%"
+        }
+      ],
+      "correct_option": "C",
+      "requires_no_hints": true,
+      "scheduled_after_days": 4,
+      "eligible_after_transfer_ids": [
+        "V01"
+      ],
+      "record_sha256": "8e5e74179aa470760cb91625b411c2807cdb918e34ea4b44ede1d8cffefd37ba"
+    }
+  ]
+}

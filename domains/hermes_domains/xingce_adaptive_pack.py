@@ -39,6 +39,7 @@ _OUTCOMES = frozenset({"support", "refute", "insufficient"})
 _FORMS = frozenset({"text_mcq", "numeric_or_mcq", "visual_mcq", "material_mcq"})
 _SCORERS = frozenset({"exact_option_v1", "authored_numeric_v1"})
 _REQUIRED_ARTIFACTS = frozenset({"records.json", "skill-graph.json", "misconceptions.json"})
+_MATERIAL_KINDS = frozenset({"text", "table", "chart", "composite"})
 
 
 class XingceAdaptivePackError(ContractError):
@@ -283,6 +284,88 @@ def _validate_options(record: Mapping[str, Any]) -> set[str]:
     return labels
 
 
+def _validate_material_source(value: Any, *, nested: bool = False) -> None:
+    """Validate the small, learner-visible material vocabulary.
+
+    Materials deliberately live inside the immutable record rather than behind
+    a mutable URL or a local path.  They contain only presentation data; answer
+    keys, scoring fields, and candidate-routing fields remain record-private.
+    """
+
+    if not isinstance(value, Mapping):
+        raise XingceAdaptivePackError("source_material must be an object")
+    kind = value.get("kind")
+    if kind not in _MATERIAL_KINDS:
+        raise XingceAdaptivePackError("source_material kind is unsupported")
+
+    if kind == "text":
+        if set(value) != {"kind", "title", "body", "scope_note"}:
+            raise XingceAdaptivePackError("text source_material has unsupported fields")
+        _nonempty(value.get("title"), "material title")
+        _nonempty(value.get("body"), "material body")
+        _nonempty(value.get("scope_note"), "material scope note")
+        return
+
+    if kind == "table":
+        if set(value) != {"kind", "title", "columns", "rows", "scope_note"}:
+            raise XingceAdaptivePackError("table source_material has unsupported fields")
+        _nonempty(value.get("title"), "material title")
+        _nonempty(value.get("scope_note"), "material scope note")
+        columns = value.get("columns")
+        rows = value.get("rows")
+        if not isinstance(columns, list) or not 2 <= len(columns) <= 8 or any(not isinstance(item, str) or not item.strip() for item in columns):
+            raise XingceAdaptivePackError("material table columns are invalid")
+        if not isinstance(rows, list) or not 1 <= len(rows) <= 30:
+            raise XingceAdaptivePackError("material table rows are invalid")
+        for row in rows:
+            if not isinstance(row, list) or len(row) != len(columns):
+                raise XingceAdaptivePackError("material table row width is invalid")
+            for cell in row:
+                if isinstance(cell, bool) or not isinstance(cell, (str, int, float)) or (isinstance(cell, str) and not cell.strip()):
+                    raise XingceAdaptivePackError("material table cell is invalid")
+        return
+
+    if kind == "chart":
+        if set(value) != {"kind", "title", "alt_text", "unit_scope", "categories", "series"}:
+            raise XingceAdaptivePackError("chart source_material has unsupported fields")
+        _nonempty(value.get("title"), "chart title")
+        _nonempty(value.get("alt_text"), "chart alt text")
+        _nonempty(value.get("unit_scope"), "chart unit and scope")
+        categories = value.get("categories")
+        series = value.get("series")
+        if not isinstance(categories, list) or not 2 <= len(categories) <= 12 or any(not isinstance(item, str) or not item.strip() for item in categories):
+            raise XingceAdaptivePackError("chart categories are invalid")
+        if not isinstance(series, list) or not 1 <= len(series) <= 4:
+            raise XingceAdaptivePackError("chart series are invalid")
+        for item in series:
+            if not isinstance(item, Mapping) or set(item) != {"label", "values"} or not isinstance(item.get("label"), str) or not item["label"].strip():
+                raise XingceAdaptivePackError("chart series are invalid")
+            values = item.get("values")
+            if not isinstance(values, list) or len(values) != len(categories) or any(isinstance(number, bool) or not isinstance(number, (int, float)) for number in values):
+                raise XingceAdaptivePackError("chart values are invalid")
+        return
+
+    if nested or set(value) != {"kind", "title", "scope_note", "parts"}:
+        raise XingceAdaptivePackError("composite source_material has unsupported fields")
+    _nonempty(value.get("title"), "material title")
+    _nonempty(value.get("scope_note"), "material scope note")
+    parts = value.get("parts")
+    if not isinstance(parts, list) or not 2 <= len(parts) <= 4:
+        raise XingceAdaptivePackError("composite material parts are invalid")
+    for part in parts:
+        _validate_material_source(part, nested=True)
+
+
+def _material_checksum(records: Sequence[Mapping[str, Any]], *, kinds: set[str] | None = None) -> str:
+    payload = []
+    for record in records:
+        material = record.get("source_material")
+        if not isinstance(material, Mapping) or (kinds is not None and material.get("kind") not in kinds):
+            continue
+        payload.append({"record_id": record["record_id"], "source_material": material})
+    return canonical_json_sha256(payload)
+
+
 def _validate_records(
     document: Mapping[str, Any], manifest: Mapping[str, Any], status: str, skill_ids: set[str], cause_ids: set[str]
 ) -> None:
@@ -337,6 +420,10 @@ def _validate_records(
             _as_string_list(record.get("eligible_after_transfer_ids"), "review eligible transfer ids")
         if role in _ASSESSMENT_ROLES:
             _nonempty(record.get("prompt"), "assessment prompt")
+            if manifest["form"] == "material_mcq":
+                _validate_material_source(record.get("source_material"))
+            elif "source_material" in record:
+                raise XingceAdaptivePackError("source_material is reserved for material_mcq records")
             scorer = manifest["scorer"]
             if scorer == "exact_option_v1":
                 if record.get("response_mode") != "single_choice":
@@ -401,6 +488,15 @@ def validate_xingce_adaptive_documents(
     skill_ids = _validate_skills(skills, manifest, status)
     cause_ids = _validate_taxonomy(taxonomy, manifest, status, skill_ids)
     _validate_records(records, manifest, status, skill_ids, cause_ids)
+    if manifest["form"] == "material_mcq":
+        assessment_records = [record for record in records["records"] if record["role"] in _ASSESSMENT_ROLES]
+        evidence = manifest["content_evidence"]
+        if "material_checksum" in evidence and evidence["material_checksum"] != _material_checksum(assessment_records):
+            raise XingceAdaptivePackError("material checksum does not bind the authored source materials")
+        if "asset_checksum" in evidence:
+            chart_checksum = _material_checksum(assessment_records, kinds={"chart"})
+            if not any(record["source_material"]["kind"] == "chart" for record in assessment_records) or evidence["asset_checksum"] != chart_checksum:
+                raise XingceAdaptivePackError("asset checksum does not bind the authored chart materials")
     # The matrix query is intentionally at the end as a cheap assertion that
     # the records did not replace the type-specific requirements with generic
     # conditional-logic metadata.
@@ -482,4 +578,6 @@ def public_record_projection(record: Mapping[str, Any]) -> dict[str, Any]:
     result = {**base, "prompt": record["prompt"], "response_mode": record["response_mode"]}
     if record["response_mode"] == "single_choice":
         result["options"] = [dict(option) for option in record["options"]]
+    if "source_material" in record:
+        result["source_material"] = copy.deepcopy(record["source_material"])
     return result

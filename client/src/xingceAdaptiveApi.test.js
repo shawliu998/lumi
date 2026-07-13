@@ -34,6 +34,10 @@ const transfer = {
   response_mode: "single_choice",
   options: [{ label: "A", text: "然后" }, { label: "B", text: "即使" }],
 };
+const tableMaterial = {
+  kind: "table", title: "季度服务量", columns: ["季度", "服务量（件）"],
+  rows: [["一季度", 120], ["二季度", 180]], scope_note: "单位：件；范围：本市样例。",
+};
 const causes = [
   { cause_id: "M-SC", label: "候选：忽略词义或搭配约束", status: "unconfirmed", rank: 1 },
   { cause_id: "M-CR", label: "候选：误判上下文逻辑关系", status: "unconfirmed", rank: 2 },
@@ -56,6 +60,8 @@ test("generic records support both public choice and numeric forms but never sco
   assert.equal(isValidXingceAdaptiveRecord(entry, ["entry_diagnostic"]), true);
   assert.equal(isValidXingceAdaptiveRecord({ record_id: "D02", role: "entry_diagnostic", title: "数字推理", prompt: "1，2，3，____", response_mode: "numeric" }, ["entry_diagnostic"]), true);
   assert.equal(isValidXingceAdaptiveRecord({ ...entry, answer_spec: { target: 12 } }, ["entry_diagnostic"]), false);
+  assert.equal(isValidXingceAdaptiveRecord({ ...entry, source_material: tableMaterial }, ["entry_diagnostic"]), true);
+  assert.equal(isValidXingceAdaptiveRecord({ ...entry, source_material: { ...tableMaterial, answer_key: "A" } }, ["entry_diagnostic"]), false);
 });
 
 test("candidate labels are learner-visible hypotheses while internal routing remains rejected", () => {

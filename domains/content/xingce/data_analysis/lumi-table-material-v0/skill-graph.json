@@ -1,0 +1,6 @@
+{"schema_version":"lumi.xingce-adaptive-skills.v1","pack_id":"lumi-table-material-v0","pack_version":"0.1.0-draft","review_status":"draft_unreviewed","skills":[
+  {"skill_id":"xingce.data.table_material.target_series","label":"定位表格中的目标行列","mastery_claim":"能按题干锁定正确行、列和指标；仅由无提示迁移更新。"},
+  {"skill_id":"xingce.data.table_material.legend_unit","label":"读取表头与单位","mastery_claim":"能先读取表头、单位和统计口径再计算；仅由无提示迁移更新。"},
+  {"skill_id":"xingce.data.table_material.denominator","label":"按问题所求确定比例分母","mastery_claim":"能保持部分与总体、成本与收入等比例方向；仅由无提示迁移更新。"},
+  {"skill_id":"xingce.data.table_material.intermediate_rounding","label":"在最后一步才按要求取近似值","mastery_claim":"能保留中间值并按题干精度完成最后一步；仅由无提示迁移更新。"}
+]}

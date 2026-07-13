@@ -116,9 +116,11 @@ export function isValidXingceAdaptiveRecord(record, expectedRoles = RECORD_ROLES
   if (record.role === "teaching_asset") {
     return exactKeys(record, ["record_id", "role", "title", "teaching_content"]) && nonempty(record.teaching_content);
   }
-  if (!exactKeys(record, record.response_mode === "single_choice"
+  const baseKeys = record.response_mode === "single_choice"
     ? ["record_id", "role", "title", "prompt", "response_mode", "options"]
-    : ["record_id", "role", "title", "prompt", "response_mode"])) return false;
+    : ["record_id", "role", "title", "prompt", "response_mode"];
+  const keys = record.source_material === undefined ? baseKeys : [...baseKeys, "source_material"];
+  if (!exactKeys(record, keys) || (record.source_material !== undefined && !validSourceMaterial(record.source_material))) return false;
   if (!nonempty(record.prompt) || !["single_choice", "numeric"].includes(record.response_mode)) return false;
   if (record.response_mode === "numeric") return record.options === undefined;
   return Array.isArray(record.options)
@@ -170,6 +172,7 @@ function isObservedRecord(record, roles) {
   const baseKeys = record.response_mode === "single_choice"
     ? ["record_id", "role", "title", "prompt", "response_mode", "options"]
     : ["record_id", "role", "title", "prompt", "response_mode"];
+  if (record.source_material !== undefined) baseKeys.push("source_material");
   const observedKeys = [...baseKeys, "selected_response", "correct"];
   if (record.role === "entry_diagnostic" || record.role === "routing_diagnostic") observedKeys.push("confidence", "elapsed_seconds");
   if (record.role === "probe") observedKeys.push("evidence_updates");
@@ -273,6 +276,32 @@ function isSafePack(pack) {
     && isSubtypeId(pack.subtype_id)
     && ["verbal", "quantitative", "judgment", "data_analysis", "common_knowledge", "political_theory"].includes(pack.module_id)
     && ["text_mcq", "numeric_or_mcq", "visual_mcq", "material_mcq"].includes(pack.form);
+}
+
+function validSourceMaterial(material, nested = false) {
+  if (!material || typeof material !== "object" || !isSafe(material)) return false;
+  if (material.kind === "text") {
+    return exactKeys(material, ["kind", "title", "body", "scope_note"])
+      && nonempty(material.title) && nonempty(material.body) && nonempty(material.scope_note);
+  }
+  if (material.kind === "table") {
+    return exactKeys(material, ["kind", "title", "columns", "rows", "scope_note"])
+      && nonempty(material.title) && nonempty(material.scope_note)
+      && Array.isArray(material.columns) && material.columns.length >= 2 && material.columns.every(nonempty)
+      && Array.isArray(material.rows) && material.rows.length >= 1
+      && material.rows.every((row) => Array.isArray(row) && row.length === material.columns.length && row.every((cell) => (typeof cell === "string" && cell.trim()) || (typeof cell === "number" && Number.isFinite(cell))));
+  }
+  if (material.kind === "chart") {
+    return exactKeys(material, ["kind", "title", "alt_text", "unit_scope", "categories", "series"])
+      && nonempty(material.title) && nonempty(material.alt_text) && nonempty(material.unit_scope)
+      && Array.isArray(material.categories) && material.categories.length >= 2 && material.categories.every(nonempty)
+      && Array.isArray(material.series) && material.series.length >= 1
+      && material.series.every((series) => series && exactKeys(series, ["label", "values"]) && nonempty(series.label)
+        && Array.isArray(series.values) && series.values.length === material.categories.length && series.values.every((value) => typeof value === "number" && Number.isFinite(value)));
+  }
+  return !nested && material.kind === "composite" && exactKeys(material, ["kind", "title", "scope_note", "parts"])
+    && nonempty(material.title) && nonempty(material.scope_note) && Array.isArray(material.parts)
+    && material.parts.length >= 2 && material.parts.every((part) => validSourceMaterial(part, true));
 }
 
 function isSubtypeId(value) { return typeof value === "string" && SUBTYPE_ID.test(value); }

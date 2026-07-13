@@ -1,0 +1,6 @@
+{"schema_version":"lumi.xingce-adaptive-skills.v1","pack_id":"lumi-chart-material-v0","pack_version":"0.1.0-draft","review_status":"draft_unreviewed","skills":[
+ {"skill_id":"xingce.data.chart_material.target_series","label":"定位图形中的目标序列","mastery_claim":"能根据图例和题干锁定正确序列；仅由无提示迁移更新。"},
+ {"skill_id":"xingce.data.chart_material.legend_unit","label":"读懂图例与单位","mastery_claim":"能先核对图例、单位和统计口径再计算；仅由无提示迁移更新。"},
+ {"skill_id":"xingce.data.chart_material.base_comparison","label":"保持图形比较的基期与对象","mastery_claim":"能在增长、比重和差额问题中保持比较对象；仅由无提示迁移更新。"},
+ {"skill_id":"xingce.data.chart_material.visual_scale","label":"用刻度与数值进行可核算读取","mastery_claim":"能用给定数值与刻度判断量级，避免凭柱长印象作答；仅由无提示迁移更新。"}
+]}

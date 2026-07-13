@@ -106,6 +106,27 @@ function TeachingPanel({ teaching }) {
   </section>;
 }
 
+function SourceMaterial({ material, nested = false }) {
+  if (!material) return null;
+  if (material.kind === "text") return <section className="adaptive-material adaptive-material-text" aria-label={material.title}>
+    <header><small>{nested ? "材料节选" : "题目材料"}</small><strong>{material.title}</strong></header>
+    <p>{material.body}</p><footer>{material.scope_note}</footer>
+  </section>;
+  if (material.kind === "table") return <section className="adaptive-material adaptive-material-table" aria-label={material.title}>
+    <header><small>{nested ? "材料表格" : "题目材料"}</small><strong>{material.title}</strong></header>
+    <div className="adaptive-material-scroll"><table><caption>{material.scope_note}</caption><thead><tr>{material.columns.map((column) => <th key={column} scope="col">{column}</th>)}</tr></thead><tbody>{material.rows.map((row, index) => <tr key={`${row.join("-")}-${index}`}>{row.map((cell, cellIndex) => <td key={`${index}-${cellIndex}`}>{cell}</td>)}</tr>)}</tbody></table></div>
+  </section>;
+  if (material.kind === "chart") {
+    const values = material.series.flatMap((series) => series.values);
+    const maximum = Math.max(1, ...values);
+    return <figure className="adaptive-material adaptive-material-chart" aria-label={material.alt_text}>
+      <figcaption><small>{nested ? "材料图形" : "题目材料"}</small><strong>{material.title}</strong><span>{material.unit_scope}</span></figcaption>
+      <div className="adaptive-chart-values" role="img" aria-label={material.alt_text}>{material.categories.map((category, index) => <div key={category} className="adaptive-chart-row"><b>{category}</b><div>{material.series.map((series) => <span key={series.label}><i style={{ width: `${Math.max(4, (series.values[index] / maximum) * 100)}%` }} /><em>{series.label} {series.values[index]}</em></span>)}</div></div>)}</div>
+    </figure>;
+  }
+  return <section className="adaptive-material adaptive-material-composite" aria-label={material.title}><header><small>综合材料</small><strong>{material.title}</strong></header><p>{material.scope_note}</p>{material.parts.map((part, index) => <SourceMaterial key={`${part.title}-${index}`} material={part} nested />)}</section>;
+}
+
 function RecordForm({ record, kind, draft, setDraft, elapsed, disabled, onSubmit, pending, error }) {
   const numeric = record.response_mode === "numeric";
   const ready = formReadiness(record, draft, kind);
@@ -113,6 +134,7 @@ function RecordForm({ record, kind, draft, setDraft, elapsed, disabled, onSubmit
   const action = kind === "entry" ? "提交首答" : kind === "probe" ? "提交探查作答" : "提交独立迁移";
   return <section className="adaptive-question" aria-labelledby="adaptive-question-heading">
     <header className="adaptive-question-meta"><div><span>{title}</span><strong>{record.title}</strong></div><span><Clock size={14} /> {elapsedCopy(elapsed)}</span></header>
+    <SourceMaterial material={record.source_material} />
     <h1 id="adaptive-question-heading">{record.prompt}</h1>
     <fieldset disabled={disabled}>
       <legend>{numeric ? "填写你的答案" : "选择一个答案"}</legend>

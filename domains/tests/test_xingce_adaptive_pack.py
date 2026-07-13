@@ -93,6 +93,18 @@ class XingceAdaptivePackTests(unittest.TestCase):
         self.assertNotIn("candidate_misconception_ids", projection)
         self.assertNotIn("route_probe_ids", projection)
 
+    def test_material_pack_binds_public_source_material_to_its_checksum(self) -> None:
+        subtype = next(row for row in self.matrix["subtypes"] if row["id"] == "xingce.data.table_material")
+        manifest, records, skills, taxonomy = documents_for(subtype)
+        validate_xingce_adaptive_documents(manifest, records, skills, taxonomy)
+        projection = public_record_projection(records["records"][0])
+        self.assertEqual(projection["source_material"]["kind"], "table")
+        self.assertNotIn("correct_option", projection)
+        records["records"][0]["source_material"]["rows"][0][1] = 99
+        records["records"][0]["record_sha256"] = record_sha256(records["records"][0])
+        with self.assertRaisesRegex(XingceAdaptivePackError, "material checksum"):
+            validate_xingce_adaptive_documents(manifest, records, skills, taxonomy)
+
     def test_original_definition_draft_is_complete_but_cannot_be_registered(self) -> None:
         root = Path(__file__).resolve().parents[1] / "content" / "xingce" / "judgment" / "lumi-definition-reasoning-v0"
         pack = load_xingce_adaptive_pack(root)

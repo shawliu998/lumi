@@ -1,0 +1,12 @@
+{
+  "schema_version": "lumi.xingce-adaptive-misconceptions.v1",
+  "pack_id": "lumi-text-material-v0",
+  "pack_version": "0.1.0-draft",
+  "review_status": "draft_unreviewed",
+  "candidate_misconceptions": [
+    {"cause_id": "M-SER", "label": "候选：把总量、子群体或另一项指标当成题目目标序列", "status": "unconfirmed", "is_ground_truth": false, "target_skill_ids": ["xingce.data.text_material.target_series"]},
+    {"cause_id": "M-SCOPE", "label": "候选：把不同年份或不同范围的数据放在同一式子里", "status": "unconfirmed", "is_ground_truth": false, "target_skill_ids": ["xingce.data.text_material.time_range"]},
+    {"cause_id": "M-DEN", "label": "候选：未按问题所求选取分母或将比例倒置", "status": "unconfirmed", "is_ground_truth": false, "target_skill_ids": ["xingce.data.text_material.denominator"]},
+    {"cause_id": "M-BASE", "label": "候选：比较时误用基期或把差额当作比率", "status": "unconfirmed", "is_ground_truth": false, "target_skill_ids": ["xingce.data.text_material.base_comparison"]}
+  ]
+}
