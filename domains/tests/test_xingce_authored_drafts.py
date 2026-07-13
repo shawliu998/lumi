@@ -17,6 +17,7 @@ class XingceAuthoredDraftTests(unittest.TestCase):
             CONTENT_ROOT / "verbal" / "lumi-logical-cloze-v0",
             CONTENT_ROOT / "quantitative" / "lumi-number-sequence-v0",
             CONTENT_ROOT / "quantitative" / "lumi-math-operations-v0",
+            CONTENT_ROOT / "judgment" / "lumi-analogy-reasoning-v0",
         )
         for root in roots:
             with self.subTest(pack=root.name):
@@ -51,6 +52,16 @@ class XingceAuthoredDraftTests(unittest.TestCase):
         )
         self.assertTrue(transfer["eligible"])
         self.assertEqual(transfer["state_delta"]["candidate_status"], "unconfirmed")
+
+    def test_analogy_draft_uses_relation_proof_and_an_unseen_tool_transfer(self) -> None:
+        pack = load_xingce_adaptive_pack(CONTENT_ROOT / "judgment" / "lumi-analogy-reasoning-v0")
+        entry = diagnose_entry(pack["records"], scorer=pack["scorer"], entry_record_id="D01", observation=Observation("C", "low", 15))
+        probe = resolve_probe(pack["records"], scorer=pack["scorer"], entry=entry, observation=Observation("B", "medium", 8))
+        self.assertEqual(probe.teaching_record_id, "T-LVL")
+        self.assertEqual(probe.transfer_record_id, "V01")
+        self.assertTrue(all(row["status"] == "unconfirmed" for row in probe.evidence_updates))
+        transfer = independent_transfer_proposal(pack["records"], scorer=pack["scorer"], entry=entry, probe=probe, observation=Observation("A", "high", 10))
+        self.assertTrue(transfer["eligible"])
 
     def test_math_operations_draft_separates_rate_base_scope_and_calculation_candidates(self) -> None:
         pack = load_xingce_adaptive_pack(CONTENT_ROOT / "quantitative" / "lumi-math-operations-v0")

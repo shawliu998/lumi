@@ -1,0 +1,8 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1", "pack_id": "lumi-analogy-reasoning-v0", "pack_version": "0.1.0-draft", "status": "draft_unreviewed", "release_ready": false, "runtime_registration": "forbidden_until_human_review",
+  "subtype_id": "xingce.judgment.analogy", "module_id": "judgment", "form": "text_mcq", "scorer": "exact_option_v1",
+  "policy": {"policy_id": "lumi.xingce-type-policy", "policy_version": "1.0.0", "candidate_status": "unconfirmed", "state_commit_rule": "independent_unassisted_transfer_only"},
+  "rights": {"content_origin": "original_lumi", "distribution": "draft_no_distribution"}, "content_evidence": {"relation_proof": "records.json#/relation_proofs"},
+  "human_review_gate": {"required": true, "production_load_allowed": false, "required_reviews": [{"review_kind": "logic", "status": "pending", "required_checks": ["unique_answer", "relation_proof", "directionality", "probe_discrimination", "transfer_independence"]}, {"review_kind": "editorial_rights", "status": "pending", "required_checks": ["original_wording", "clarity", "neutral_context", "license_scope"]}]},
+  "artifacts": [{"path": "records.json", "sha256": "9d9ff74bfa030bdcf63d742ea0e22d22d9f7b97cdb7f0c9799918a7cc822e281"}, {"path": "skill-graph.json", "sha256": "8ffb99b63997e59c950341bcb9e2b9df9d06cf4dae2a1cab9cd5487556a86ce4"}, {"path": "misconceptions.json", "sha256": "0bcba7866cc5bbcb8ed48fc9a3a77a4f9feefa2730c0f4a9146ab596b0f16e33"}]
+}
