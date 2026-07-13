@@ -24,6 +24,7 @@ class XingceAuthoredDraftTests(unittest.TestCase):
             CONTENT_ROOT / "judgment" / "lumi-analogy-reasoning-v0",
             CONTENT_ROOT / "judgment" / "lumi-graphic-reasoning-v0",
             CONTENT_ROOT / "judgment" / "lumi-argument-reasoning-v0",
+            CONTENT_ROOT / "judgment" / "lumi-constraint-reasoning-v0",
             CONTENT_ROOT / "data_analysis" / "lumi-text-material-v0",
             CONTENT_ROOT / "data_analysis" / "lumi-table-material-v0",
             CONTENT_ROOT / "data_analysis" / "lumi-chart-material-v0",
