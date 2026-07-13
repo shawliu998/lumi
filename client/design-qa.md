@@ -513,6 +513,28 @@ tracking, and cohort products remain unavailable and are not simulated.
 
 final result: passed
 
+## All-Xingce range status — 2026-07-13
+
+The current product deliberately exposes scope rather than presenting a broad
+question-bank claim.  A real local sidecar returned the public-only
+`/v1/xingce/coverage` projection: one of 31 canonical Xingce subtypes was
+reviewed and launchable (conditional logic); the other 30 remained explicitly
+unavailable pending their own immutable pack, content review, and browser
+acceptance.  The projection does not contain question text, answer keys,
+misconception dimensions, or content requirements.
+
+Browser QA used a disposable local database without entering or submitting any
+learner answer.  At the desktop preview the range card appeared between the
+capability map and current-step card, retained the existing neutral surface,
+single-pixel dividers, restrained violet counts, and did not introduce a
+dashboard metric treatment.  At `640 × 900`, all six module rows remained
+visible, the collapsed navigation did not overlap the rail, and
+`documentElement.scrollWidth === documentElement.clientWidth === 640`.
+The range-card labels and availability copy are set to a 10px/14px floor rather
+than inheriting the older compact 8px treatment.  This is an engineering
+inspection record only; it does not turn an unanswered browser page into a
+learner acceptance or release claim.
+
 ## P0.3.1 real Xingce activity recapture — 2026-07-12
 
 The connected client was recaptured against the current sidecar and the

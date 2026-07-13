@@ -14,6 +14,7 @@ import {
 import {
   answerJudgmentProbe,
   answerJudgmentTransfer,
+  fetchXingceCoverage,
   fetchJudgmentReplay,
   fetchJudgmentWorkspace,
   latestJudgmentSessionFromReplay,
@@ -105,6 +106,34 @@ function LearningMap({ stage }) {
         ))}
       </ol>
       <p className="learning-map-note">这里不是掌握度仪表盘。只有无提示、未见过的迁移作答才会产生状态收据。</p>
+    </section>
+  );
+}
+
+function XingceCoverageSummary() {
+  const [state, setState] = useState({ phase: "loading", coverage: null, error: null });
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchXingceCoverage()
+      .then((coverage) => { if (!cancelled) setState({ phase: "ready", coverage, error: null }); })
+      .catch((error) => { if (!cancelled) setState({ phase: "unavailable", coverage: null, error }); });
+    return () => { cancelled = true; };
+  }, []);
+
+  if (state.phase === "loading") {
+    return <section className="judgment-panel xingce-coverage" aria-label="行测题型范围"><header><div><MapTrifold size={16} /><h2>行测题型范围</h2></div><small>正在读取</small></header><p className="xingce-coverage-note">只显示已审核、可开始的本机题型。</p></section>;
+  }
+  if (state.phase === "unavailable") {
+    return <section className="judgment-panel xingce-coverage" aria-label="行测题型范围"><header><div><MapTrifold size={16} /><h2>行测题型范围</h2></div><small>暂不可读</small></header><p className="xingce-coverage-note">未确认本机范围时，不把历史题库或 fixture 当作可学题型。</p></section>;
+  }
+  const { summary } = state.coverage;
+  return (
+    <section className="judgment-panel xingce-coverage" aria-labelledby="xingce-coverage-heading">
+      <header><div><MapTrifold size={16} /><h2 id="xingce-coverage-heading">行测题型范围</h2></div><small>本机题包</small></header>
+      <div className="xingce-coverage-total"><strong>{summary.released_subtypes}<span> / {summary.total_subtypes}</span></strong><p>个子型已审核，可开始学习</p></div>
+      <ul>{Object.entries(summary.modules).map(([id, module]) => <li key={id}><span>{module.label}</span><strong>{module.released} / {module.total}</strong></li>)}</ul>
+      <p className="xingce-coverage-note">其余题型需先通过题型专属内容、审核与真人验收，Lumi 不会提前开放。</p>
     </section>
   );
 }
@@ -519,7 +548,7 @@ export function JudgmentWorkspace({ onServiceReachable = undefined }) {
       </div>
 
       <div className="judgment-layout">
-        <aside className="judgment-rail"><LearningMap stage={currentStage} /><section className="judgment-panel current-step"><header><div><CheckCircle size={16} /><h2>当前步骤</h2></div></header><strong>{stageCopy(currentStage)}</strong><p>{showingEntry ? "选择一个答案、标记信心，并可补充自己的判断过程。" : showingProbe ? "用最小探查支持或反驳候选，不作最终归因。" : showingTransfer ? "不提供提示；这次作答才有资格进入状态收据。" : "查看收据和后续复习要求。"}</p></section>{showingEntry && <RecentSessions sessions={workspace.data?.recent_sessions} onOpen={openRecentSession} openingSessionId={openingSessionId} />}<SavedReviewPlan tasks={workspace.data?.review_plan} /></aside>
+        <aside className="judgment-rail"><LearningMap stage={currentStage} /><XingceCoverageSummary /><section className="judgment-panel current-step"><header><div><CheckCircle size={16} /><h2>当前步骤</h2></div></header><strong>{stageCopy(currentStage)}</strong><p>{showingEntry ? "选择一个答案、标记信心，并可补充自己的判断过程。" : showingProbe ? "用最小探查支持或反驳候选，不作最终归因。" : showingTransfer ? "不提供提示；这次作答才有资格进入状态收据。" : "查看收据和后续复习要求。"}</p></section>{showingEntry && <RecentSessions sessions={workspace.data?.recent_sessions} onOpen={openRecentSession} openingSessionId={openingSessionId} />}<SavedReviewPlan tasks={workspace.data?.review_plan} /></aside>
         <main className="judgment-main">
           {showingEntry && entryItems.length > 1 && <section className="entry-selector" aria-labelledby="entry-selector-heading"><div><h2 id="entry-selector-heading">选择本轮起点</h2><p>从一个未完成的条件推理诊断开始；两条路径都遵守相同的证据与验证规则。</p></div><div role="list" aria-label="可选判断推理起点">{entryItems.map((item) => <button key={item.record_id} className={entry?.record_id === item.record_id ? "selected" : ""} type="button" role="listitem" aria-pressed={entry?.record_id === item.record_id} onClick={() => { setSelectedEntryId(item.record_id); setEntryDraft(EMPTY_DRAFT); setStartedAt(Date.now()); setElapsed(0); }} disabled={submission.inFlight}><strong>{item.role === "routing_diagnostic" ? "推理有效性" : "条件方向"}</strong><span>{item.title}</span></button>)}</div></section>}
           {showingEntry && activeRecord && <JudgmentQuestion record={activeRecord} draft={entryDraft} onDraft={setEntryDraft} elapsed={elapsed} label="第一步 · 首答" boundary="请先独立判断。提交后才会创建本机记录并计算候选错因。" submitLabel="提交首答并创建本机记录" onSubmit={submitEntry} inFlight={submission.inFlight} showRationale />}

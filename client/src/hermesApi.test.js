@@ -1,7 +1,70 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { createRunId, isValidMisconceptionDossierContract, submitAttempt } from "./hermesApi.js";
+import {
+  createRunId,
+  isValidMisconceptionDossierContract,
+  isValidXingceCoverageContract,
+  submitAttempt,
+} from "./hermesApi.js";
+
+function xingceCoverageContract() {
+  const modules = {
+    verbal: { label: "言语理解与表达", total: 6, released: 0 },
+    quantitative: { label: "数量关系", total: 2, released: 0 },
+    judgment: { label: "判断推理", total: 7, released: 1 },
+    data_analysis: { label: "资料分析", total: 4, released: 0 },
+    common_knowledge: { label: "常识判断", total: 6, released: 0 },
+    political_theory: { label: "政治理论", total: 6, released: 0 },
+  };
+  const planned = Object.entries(modules).flatMap(([moduleId, module]) => Array.from({ length: module.total - module.released }, (_, index) => ({
+    subtype_id: `xingce.${moduleId}.planned_${index}`,
+    module_id: moduleId,
+    module_label: module.label,
+    label: `待审核子型 ${index + 1}`,
+    form: "text_mcq",
+    availability: "planned",
+    launch: null,
+    unavailable_reason: "reviewed_type_specific_pack_required",
+  })));
+  return {
+    schema_version: "lumi.xingce-coverage-catalog.v1",
+    local_only: true,
+    summary: {
+      schema_version: "lumi.xingce-coverage-summary.v1",
+      taxonomy_version: "lumi.xingce-taxonomy.v1",
+      total_subtypes: 31,
+      released_subtypes: 1,
+      planned_subtypes: 30,
+      is_complete: false,
+      modules,
+    },
+    items: [
+      {
+        subtype_id: "xingce.judgment.conditional_logic",
+        module_id: "judgment",
+        module_label: "判断推理",
+        label: "逻辑判断·条件关系",
+        form: "text_mcq",
+        availability: "available",
+        launch: "/v1/judgment/workspace",
+        unavailable_reason: null,
+        pack: { pack_id: "lumi-conditional-reasoning-v0", pack_version: "0.1.0-reviewed-local-20260713" },
+      },
+      ...planned,
+    ],
+  };
+}
+
+test("Xingce coverage accepts released and planned states without leaking draft content", () => {
+  assert.equal(isValidXingceCoverageContract(xingceCoverageContract()), true);
+  const leaked = xingceCoverageContract();
+  leaked.items[0].options = [{ label: "A", text: "leak" }];
+  assert.equal(isValidXingceCoverageContract(leaked), false);
+  const overclaimed = xingceCoverageContract();
+  overclaimed.summary.is_complete = true;
+  assert.equal(isValidXingceCoverageContract(overclaimed), false);
+});
 
 function dossierContract(claimStatus) {
   return {

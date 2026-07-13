@@ -72,6 +72,99 @@ export async function fetchHealth() {
   return health;
 }
 
+const XINGCE_COVERAGE_UNSAFE_KEYS = new Set([
+  "prompt",
+  "options",
+  "correct_option",
+  "answer_labels",
+  "answer_proof",
+  "explanation_text",
+  "misconception_dimensions",
+  "content_requirements",
+]);
+const XINGCE_COVERAGE_MODULES = new Set([
+  "verbal",
+  "quantitative",
+  "judgment",
+  "data_analysis",
+  "common_knowledge",
+  "political_theory",
+]);
+const XINGCE_COVERAGE_FORMS = new Set(["text_mcq", "numeric_or_mcq", "visual_mcq", "material_mcq"]);
+
+export async function fetchXingceCoverage() {
+  const coverage = await request("/v1/xingce/coverage");
+  if (!isValidXingceCoverageContract(coverage)) {
+    throw new HermesApiError("行测范围状态格式不完整，未展示不可信的题型进度。", {
+      kind: "contract",
+      code: "invalid_xingce_coverage_contract",
+    });
+  }
+  return coverage;
+}
+
+export function isValidXingceCoverageContract(coverage) {
+  if (!coverage || typeof coverage !== "object" || containsUnsafeXingceCoverageKey(coverage)) return false;
+  if (
+    coverage.schema_version !== "lumi.xingce-coverage-catalog.v1"
+    || coverage.local_only !== true
+    || !coverage.summary
+    || !Array.isArray(coverage.items)
+  ) return false;
+  const summary = coverage.summary;
+  if (
+    summary.schema_version !== "lumi.xingce-coverage-summary.v1"
+    || typeof summary.taxonomy_version !== "string"
+    || !Number.isInteger(summary.total_subtypes)
+    || !Number.isInteger(summary.released_subtypes)
+    || !Number.isInteger(summary.planned_subtypes)
+    || typeof summary.is_complete !== "boolean"
+    || !summary.modules
+    || summary.total_subtypes !== coverage.items.length
+    || summary.total_subtypes < 1
+    || summary.released_subtypes + summary.planned_subtypes !== summary.total_subtypes
+    || summary.is_complete !== (summary.released_subtypes === summary.total_subtypes)
+  ) return false;
+  const moduleEntries = Object.entries(summary.modules);
+  if (moduleEntries.length !== XINGCE_COVERAGE_MODULES.size || moduleEntries.some(([id, module]) => (
+    !XINGCE_COVERAGE_MODULES.has(id)
+    || !module
+    || typeof module.label !== "string"
+    || !Number.isInteger(module.total)
+    || !Number.isInteger(module.released)
+    || module.total < 1
+    || module.released < 0
+    || module.released > module.total
+  ))) return false;
+  const seen = new Set();
+  let released = 0;
+  for (const item of coverage.items) {
+    if (!item || typeof item !== "object" || seen.has(item.subtype_id)) return false;
+    seen.add(item.subtype_id);
+    if (
+      typeof item.subtype_id !== "string"
+      || !item.subtype_id.startsWith("xingce.")
+      || !XINGCE_COVERAGE_MODULES.has(item.module_id)
+      || typeof item.module_label !== "string"
+      || typeof item.label !== "string"
+      || !XINGCE_COVERAGE_FORMS.has(item.form)
+      || !["available", "planned"].includes(item.availability)
+      || !(item.launch === null || (typeof item.launch === "string" && item.launch.startsWith("/v1/")))
+    ) return false;
+    if (item.availability === "available") {
+      released += 1;
+      if (item.unavailable_reason !== null || !item.pack || typeof item.pack.pack_id !== "string" || typeof item.pack.pack_version !== "string" || item.launch === null) return false;
+    } else if (item.launch !== null || item.unavailable_reason !== "reviewed_type_specific_pack_required" || "pack" in item) return false;
+  }
+  return released === summary.released_subtypes;
+}
+
+function containsUnsafeXingceCoverageKey(value) {
+  if (!value || typeof value !== "object") return false;
+  if (Array.isArray(value)) return value.some(containsUnsafeXingceCoverageKey);
+  return Object.entries(value).some(([key, child]) => XINGCE_COVERAGE_UNSAFE_KEYS.has(key) || containsUnsafeXingceCoverageKey(child));
+}
+
 export async function fetchSkillReport() {
   const report = await request("/v1/skills/report");
   if (report?.policy !== "trace-summary-v1" || !Array.isArray(report?.items)) {
