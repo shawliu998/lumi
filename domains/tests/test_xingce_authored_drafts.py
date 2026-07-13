@@ -16,6 +16,7 @@ class XingceAuthoredDraftTests(unittest.TestCase):
             CONTENT_ROOT / "judgment" / "lumi-definition-reasoning-v0",
             CONTENT_ROOT / "verbal" / "lumi-logical-cloze-v0",
             CONTENT_ROOT / "verbal" / "lumi-main-idea-v0",
+            CONTENT_ROOT / "verbal" / "lumi-detail-inference-v0",
             CONTENT_ROOT / "quantitative" / "lumi-number-sequence-v0",
             CONTENT_ROOT / "quantitative" / "lumi-math-operations-v0",
             CONTENT_ROOT / "judgment" / "lumi-analogy-reasoning-v0",
@@ -206,6 +207,21 @@ class XingceAuthoredDraftTests(unittest.TestCase):
         self.assertEqual(probe.transfer_record_id, "V01")
         transfer = independent_transfer_proposal(
             pack["records"], scorer=pack["scorer"], entry=entry, probe=probe, observation=Observation("C", "high", 15)
+        )
+        self.assertTrue(transfer["eligible"])
+
+    def test_detail_inference_draft_withholds_causal_and_scope_leaps_before_transfer(self) -> None:
+        pack = load_xingce_adaptive_pack(CONTENT_ROOT / "verbal" / "lumi-detail-inference-v0")
+        entry = diagnose_entry(
+            pack["records"], scorer=pack["scorer"], entry_record_id="D01", observation=Observation("A", "medium", 22)
+        )
+        probe = resolve_probe(
+            pack["records"], scorer=pack["scorer"], entry=entry, observation=Observation("A", "low", 9)
+        )
+        self.assertEqual(probe.teaching_record_id, "T-UNSTATED")
+        self.assertEqual(probe.transfer_record_id, "V01")
+        transfer = independent_transfer_proposal(
+            pack["records"], scorer=pack["scorer"], entry=entry, probe=probe, observation=Observation("B", "high", 14)
         )
         self.assertTrue(transfer["eligible"])
 

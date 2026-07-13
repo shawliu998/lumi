@@ -1,0 +1,6 @@
+{"schema_version":"lumi.xingce-adaptive-skills.v1","pack_id":"lumi-detail-inference-v0","pack_version":"0.1.0-draft","review_status":"draft_unreviewed","skills":[
+ {"skill_id":"xingce.verbal.detail_inference.textual_support","label":"把选项与文本证据逐项对应","mastery_claim":"能区分文本明确支持与未被支持的信息；仅由无提示迁移更新。"},
+ {"skill_id":"xingce.verbal.detail_inference.scope","label":"保持证据的对象与范围","mastery_claim":"能避免将局部样本或限定情形扩展到全部对象；仅由无提示迁移更新。"},
+ {"skill_id":"xingce.verbal.detail_inference.causality","label":"区分同时出现与因果结论","mastery_claim":"能不把相关观察擅自改写为因果或必然关系；仅由无提示迁移更新。"},
+ {"skill_id":"xingce.verbal.detail_inference.strength","label":"控制推断力度","mastery_claim":"能排除绝对化和超出文本的信息；仅由无提示迁移更新。"}
+]}
