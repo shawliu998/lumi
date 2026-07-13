@@ -1,0 +1,228 @@
+{
+  "schema_version": "lumi.xingce-adaptive-records.v1",
+  "pack_id": "lumi-law-v0",
+  "pack_version": "0.1.0-draft",
+  "review_status": "draft_unreviewed",
+  "records": [
+    {
+      "record_id": "D01",
+      "role": "entry_diagnostic",
+      "title": "法律常识：一般规则要保留条件",
+      "target_skill_ids": [
+        "xingce.common.law.rule_scope",
+        "xingce.common.law.legal_subject",
+        "xingce.common.law.exception"
+      ],
+      "candidate_misconception_ids": [
+        "M-SCOPE",
+        "M-SUBJECT"
+      ],
+      "independence_group": "law-entry-limitation",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "在本题所列《行政处罚法》第36条的范围内，关于未被发现的违法行为，下列概括正确的是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "通常二年未被发现的不再给予行政处罚；涉及公民生命健康安全、金融安全且有危害后果的，期限延长至五年，法律另有规定的除外"
+        },
+        {
+          "label": "B",
+          "text": "所有违法行为一律五年后才可以处罚"
+        },
+        {
+          "label": "C",
+          "text": "所有违法行为一律二年内必须处罚，法律不得另作规定"
+        },
+        {
+          "label": "D",
+          "text": "该条只是在定义自然人的民事权利能力"
+        }
+      ],
+      "correct_option": "A",
+      "route_probe_ids": [
+        "P01"
+      ],
+      "record_sha256": "3c508f5fc8161978e69446f42baf4113288a67409bd1fb153d13c3560edee3e3"
+    },
+    {
+      "record_id": "P01",
+      "role": "probe",
+      "title": "最小探查：不要把一般规则读成绝对规则",
+      "target_skill_ids": [
+        "xingce.common.law.rule_scope",
+        "xingce.common.law.legal_subject",
+        "xingce.common.law.exception"
+      ],
+      "candidate_misconception_ids": [
+        "M-SCOPE",
+        "M-SUBJECT"
+      ],
+      "independence_group": "law-probe-civil",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "在本题所列《民法典》第13、16条范围内，下列说法正确的是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "自然人的民事权利能力通常自出生起至死亡止；涉及遗产继承、接受赠与等胎儿利益保护时，条文另有特别规定"
+        },
+        {
+          "label": "B",
+          "text": "民事权利能力只在年满十八周岁后才开始"
+        },
+        {
+          "label": "C",
+          "text": "胎儿利益保护使所有条文中的年龄规则都不再适用"
+        },
+        {
+          "label": "D",
+          "text": "行政处罚的一般期限可直接替代民事权利能力规则"
+        }
+      ],
+      "correct_option": "A",
+      "discriminates": [
+        "M-SCOPE",
+        "M-SUBJECT"
+      ],
+      "candidate_evidence_map": {
+        "M-SCOPE": {
+          "A": "refute",
+          "B": "insufficient",
+          "C": "support",
+          "D": "support"
+        },
+        "M-SUBJECT": {
+          "A": "refute",
+          "B": "support",
+          "C": "support",
+          "D": "insufficient"
+        }
+      },
+      "record_sha256": "71f3a23ef76484011dae796777b8bf8cd5a9acb017c833ecbcb9d0a1d2642cea"
+    },
+    {
+      "record_id": "T-SCOPE",
+      "role": "teaching_asset",
+      "title": "微课：把“通常、且、除外”逐一保留",
+      "target_skill_ids": [
+        "xingce.common.law.rule_scope",
+        "xingce.common.law.exception"
+      ],
+      "candidate_misconception_ids": [
+        "M-SCOPE"
+      ],
+      "independence_group": "law-scope-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-SCOPE"
+      ],
+      "teaching_content": "法条题先圈条件：适用对象、一般规则、附加条件、例外和法律另有规定。选项若删去“且有危害后果”这类限制，或把一般期限夸大为绝对结论，就不能仅凭该条支持。",
+      "record_sha256": "12cdd62458cbae8a2ce360e42114812938a1d43d9b0cc50a92749d8bf2eaa52a"
+    },
+    {
+      "record_id": "T-SUBJECT",
+      "role": "teaching_asset",
+      "title": "微课：权利能力、行为能力和特别保护不是一件事",
+      "target_skill_ids": [
+        "xingce.common.law.legal_subject"
+      ],
+      "candidate_misconception_ids": [
+        "M-SUBJECT"
+      ],
+      "independence_group": "law-subject-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-SUBJECT"
+      ],
+      "teaching_content": "先问题目在问哪一层：第13条说自然人民事权利能力的通常起止；第17、18条涉及成年与行为能力；第16条是胎儿利益保护的限定特别规则。不要用一个层次代替另一个层次。",
+      "record_sha256": "e138bb24a44e1cfc3af043589ca76b8ce3b4e93a4b32e1bf131f3a24c0292544"
+    },
+    {
+      "record_id": "V01",
+      "role": "independent_transfer",
+      "title": "独立迁移：条件未满足不能自行补全",
+      "target_skill_ids": [
+        "xingce.common.law.rule_scope",
+        "xingce.common.law.exception"
+      ],
+      "candidate_misconception_ids": [
+        "M-SCOPE",
+        "M-SUBJECT"
+      ],
+      "independence_group": "law-transfer-conditions",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "阅读一项写有“在甲、乙条件同时满足时适用，另有规定的除外”的规则。下列做法最稳妥的是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "只要满足甲，就把规则当作必然适用"
+        },
+        {
+          "label": "B",
+          "text": "核对甲、乙是否同时满足，并检查是否存在明示的另有规定"
+        },
+        {
+          "label": "C",
+          "text": "把规则改写成对所有主体永久适用"
+        },
+        {
+          "label": "D",
+          "text": "忽略规则的法域和事实边界"
+        }
+      ],
+      "correct_option": "B",
+      "requires_no_hints": true,
+      "record_sha256": "e879209bc7a272a3a80b5bedbe784e83a239494ec19b88b74fcc36ef710a9199"
+    },
+    {
+      "record_id": "R01",
+      "role": "delayed_review",
+      "title": "延迟复习：法律文本的适用边界",
+      "target_skill_ids": [
+        "xingce.common.law.rule_scope",
+        "xingce.common.law.legal_subject"
+      ],
+      "candidate_misconception_ids": [
+        "M-SCOPE",
+        "M-SUBJECT"
+      ],
+      "independence_group": "law-review-boundary",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "做一题基于指定法条的选择题时，下列哪项最符合审题原则？",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "只在题目列出的法条、法域与事实范围内比较选项"
+        },
+        {
+          "label": "B",
+          "text": "把题目理解为对任何个案的法律意见"
+        },
+        {
+          "label": "C",
+          "text": "省略条文中的例外和限定词"
+        },
+        {
+          "label": "D",
+          "text": "用另一部法律的术语替代指定条文"
+        }
+      ],
+      "correct_option": "A",
+      "requires_no_hints": true,
+      "scheduled_after_days": 4,
+      "eligible_after_transfer_ids": [
+        "V01"
+      ],
+      "record_sha256": "b33f72b9e8d61a99c1565dc2decefd16efc665c901a75e4d016ab6d4ca107ca2"
+    }
+  ]
+}

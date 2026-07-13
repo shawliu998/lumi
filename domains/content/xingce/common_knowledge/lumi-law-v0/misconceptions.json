@@ -1,0 +1,10 @@
+{
+  "schema_version": "lumi.xingce-adaptive-misconceptions.v1",
+  "pack_id": "lumi-law-v0",
+  "pack_version": "0.1.0-draft",
+  "review_status": "draft_unreviewed",
+  "candidate_misconceptions": [
+    {"cause_id": "M-SCOPE", "label": "候选：遗漏条文的条件、法域或行为范围", "status": "unconfirmed", "is_ground_truth": false, "target_skill_ids": ["xingce.common.law.rule_scope", "xingce.common.law.exception"]},
+    {"cause_id": "M-SUBJECT", "label": "候选：把民事权利能力、行为能力与胎儿利益保护混同", "status": "unconfirmed", "is_ground_truth": false, "target_skill_ids": ["xingce.common.law.legal_subject"]}
+  ]
+}
