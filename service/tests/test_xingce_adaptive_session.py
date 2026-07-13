@@ -50,6 +50,10 @@ class XingceAdaptiveSessionTests(unittest.TestCase):
         self.assertTrue(completed["state_update"]["eligible"])
         self.assertEqual(completed["state_update"]["receipts"][0]["state_delta"]["commit_status"], "committed")
         self.assertEqual(completed["review_task"]["kind"], "delayed_retention")
+        self.assertEqual(
+            self.service.answer_transfer(session_id=entry["session_id"], expected_version=2, selected_response="A", confidence="high", elapsed_seconds=9, command_id="c_xingce_transfer"),
+            completed,
+        )
         self.assertTrue(self.service.replay(entry["session_id"])["trace_verified"])
 
     def test_sidecar_registers_only_the_bound_reviewed_subtype(self) -> None:

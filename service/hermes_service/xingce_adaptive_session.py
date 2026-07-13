@@ -77,7 +77,13 @@ class XingceAdaptiveSessionService:
     def answer_probe(self, *, session_id: str, expected_version: int, selected_response: str, confidence: str, elapsed_seconds: float, command_id: str) -> dict[str, Any]:
         store, learner = EventStore(self.database), LearnerStateStore(self.database)
         try:
-            events = self._events(store, session_id); self._state(events, expected_version, "awaiting_probe")
+            events = self._events(store, session_id)
+            if len(events) >= 2 and events[1].kind == "xingce_adaptive_probe":
+                payload = events[1].payload
+                if payload.get("command_id") != command_id or payload.get("selected_response") != selected_response or payload.get("confidence") != confidence or payload.get("elapsed_seconds") != elapsed_seconds:
+                    raise XingceAdaptiveSessionError("command id is already bound to a different probe")
+                return payload["public_result"]
+            self._state(events, expected_version, "awaiting_probe")
             entry_event = events[0]; entry_id = str(entry_event.payload["entry_record_id"])
             entry_decision = diagnose_entry(self.records, scorer=self.pack["scorer"], entry_record_id=entry_id, observation=Observation(str(entry_event.payload["selected_response"]), str(entry_event.payload["confidence"]), float(entry_event.payload["elapsed_seconds"])))
             observation = Observation(selected_response, confidence, elapsed_seconds)
@@ -95,7 +101,13 @@ class XingceAdaptiveSessionService:
     def answer_transfer(self, *, session_id: str, expected_version: int, selected_response: str, confidence: str, elapsed_seconds: float, command_id: str) -> dict[str, Any]:
         store, learner = EventStore(self.database), LearnerStateStore(self.database)
         try:
-            events = self._events(store, session_id); self._state(events, expected_version, "awaiting_transfer")
+            events = self._events(store, session_id)
+            if len(events) >= 4 and events[-1].kind == "xingce_adaptive_receipt":
+                transfer_event, receipt = events[-2], events[-1].payload
+                if transfer_event.payload.get("command_id") != command_id or transfer_event.payload.get("selected_response") != selected_response or transfer_event.payload.get("confidence") != confidence or transfer_event.payload.get("elapsed_seconds") != elapsed_seconds:
+                    raise XingceAdaptiveSessionError("command id is already bound to a different transfer")
+                return receipt["public_result"]
+            self._state(events, expected_version, "awaiting_transfer")
             entry_event, probe_event = events[0], events[1]; entry_id = str(entry_event.payload["entry_record_id"])
             entry_decision = diagnose_entry(self.records, scorer=self.pack["scorer"], entry_record_id=entry_id, observation=Observation(str(entry_event.payload["selected_response"]), str(entry_event.payload["confidence"]), float(entry_event.payload["elapsed_seconds"])))
             probe_decision = resolve_probe(self.records, scorer=self.pack["scorer"], entry=entry_decision, observation=Observation(str(probe_event.payload["selected_response"]), str(probe_event.payload["confidence"]), float(probe_event.payload["elapsed_seconds"])))
