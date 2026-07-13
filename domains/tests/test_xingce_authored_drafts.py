@@ -35,6 +35,7 @@ class XingceAuthoredDraftTests(unittest.TestCase):
             CONTENT_ROOT / "common_knowledge" / "lumi-science-geography-v0",
             CONTENT_ROOT / "common_knowledge" / "lumi-history-humanity-v0",
             CONTENT_ROOT / "common_knowledge" / "lumi-law-v0",
+            CONTENT_ROOT / "common_knowledge" / "lumi-economics-v0",
         )
         for root in roots:
             with self.subTest(pack=root.name):
@@ -295,6 +296,21 @@ class XingceAuthoredDraftTests(unittest.TestCase):
         self.assertTrue(all(row["status"] == "unconfirmed" for row in probe.evidence_updates))
         transfer = independent_transfer_proposal(
             pack["records"], scorer=pack["scorer"], entry=entry, probe=probe, observation=Observation("B", "high", 15)
+        )
+        self.assertTrue(transfer["eligible"])
+
+    def test_economics_draft_separates_direction_from_macro_overreach_before_transfer(self) -> None:
+        pack = load_xingce_adaptive_pack(CONTENT_ROOT / "common_knowledge" / "lumi-economics-v0")
+        entry = diagnose_entry(
+            pack["records"], scorer=pack["scorer"], entry_record_id="D01", observation=Observation("B", "medium", 19)
+        )
+        probe = resolve_probe(
+            pack["records"], scorer=pack["scorer"], entry=entry, observation=Observation("D", "low", 9)
+        )
+        self.assertEqual(probe.teaching_record_id, "T-INDICATOR")
+        self.assertTrue(all(row["status"] == "unconfirmed" for row in probe.evidence_updates))
+        transfer = independent_transfer_proposal(
+            pack["records"], scorer=pack["scorer"], entry=entry, probe=probe, observation=Observation("A", "high", 14)
         )
         self.assertTrue(transfer["eligible"])
 
