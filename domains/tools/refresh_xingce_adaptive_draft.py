@@ -62,8 +62,9 @@ def refresh(root: Path) -> dict[str, Any]:
         raise ValueError("manifest content_evidence must be an object")
     if "material_checksum" in evidence:
         evidence["material_checksum"] = _material_digest(rows)
-    if "asset_checksum" in evidence and manifest.get("form") == "material_mcq":
-        evidence["asset_checksum"] = _material_digest(rows, kinds={"chart"})
+    if "asset_checksum" in evidence and manifest.get("form") in {"material_mcq", "visual_mcq"}:
+        asset_kind = "diagram" if manifest.get("form") == "visual_mcq" else "chart"
+        evidence["asset_checksum"] = _material_digest(rows, kinds={asset_kind})
     _write(root / "records.json", records)
     for document in (skills, taxonomy):
         if document.get("review_status") != DRAFT_STATUS:

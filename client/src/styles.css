@@ -5894,6 +5894,11 @@ button.connection-status:hover {
 .adaptive-chart-row span { min-width: 0; min-height: 14px; display: grid; grid-template-columns: minmax(20px, 1fr) auto; align-items: center; gap: 6px; }
 .adaptive-chart-row i { height: 7px; border-radius: 1px; background: #7772df; }
 .adaptive-chart-row em { color: #656871; font-size: 7.8px; font-style: normal; white-space: nowrap; }
+.adaptive-material-diagram figcaption span { color: #757880; font-size: 8px; line-height: 12px; }
+.adaptive-diagram-panels { padding: 9px; display: flex; flex-wrap: wrap; gap: 7px; }
+.adaptive-diagram-panel { min-width: 76px; min-height: 62px; padding: 6px; border: 1px solid #e1e2e7; background: #fff; display: grid; gap: 5px; }
+.adaptive-diagram-panel > small { color: #747780; font-size: 7.5px; }
+.adaptive-diagram-panel > div { min-height: 30px; display: flex; flex-wrap: wrap; align-content: center; gap: 4px; color: #3e4149; font-size: 17px; line-height: 22px; }
 .adaptive-material-composite { padding-bottom: 9px; }
 .adaptive-material-composite > p { padding-bottom: 0; }
 .adaptive-material-composite .adaptive-material { margin: 9px 9px 0; background: #fff; }

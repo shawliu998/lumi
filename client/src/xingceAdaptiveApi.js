@@ -104,9 +104,11 @@ export function isValidXingceAdaptiveWorkspace(workspace, { subtypeId } = {}) {
   if (!isSubtypeId(subtypeId) || !isSafe(workspace) || workspace?.schema_version !== SCHEMA || workspace?.available !== true || workspace?.local_only !== true) return false;
   const pack = workspace.pack;
   if (!pack || Object.keys(pack).length !== 5 || pack.subtype_id !== subtypeId || !isSafePack(pack)) return false;
+  const needsMaterial = ["material_mcq", "visual_mcq"].includes(pack.form);
   return Array.isArray(workspace.entry_items)
     && workspace.entry_items.length > 0
-    && workspace.entry_items.every((record) => isValidXingceAdaptiveRecord(record, ["entry_diagnostic", "routing_diagnostic"]));
+    && workspace.entry_items.every((record) => isValidXingceAdaptiveRecord(record, ["entry_diagnostic", "routing_diagnostic"])
+      && (!needsMaterial || record.source_material !== undefined));
 }
 
 export function isValidXingceAdaptiveRecord(record, expectedRoles = RECORD_ROLES) {
@@ -298,6 +300,12 @@ function validSourceMaterial(material, nested = false) {
       && Array.isArray(material.series) && material.series.length >= 1
       && material.series.every((series) => series && exactKeys(series, ["label", "values"]) && nonempty(series.label)
         && Array.isArray(series.values) && series.values.length === material.categories.length && series.values.every((value) => typeof value === "number" && Number.isFinite(value)));
+  }
+  if (material.kind === "diagram") {
+    return exactKeys(material, ["kind", "title", "alt_text", "panels"])
+      && nonempty(material.title) && nonempty(material.alt_text) && Array.isArray(material.panels)
+      && material.panels.length >= 2 && material.panels.every((panel) => panel && exactKeys(panel, ["label", "tokens"])
+        && nonempty(panel.label) && Array.isArray(panel.tokens) && panel.tokens.length >= 1 && panel.tokens.every(nonempty));
   }
   return !nested && material.kind === "composite" && exactKeys(material, ["kind", "title", "scope_note", "parts"])
     && nonempty(material.title) && nonempty(material.scope_note) && Array.isArray(material.parts)

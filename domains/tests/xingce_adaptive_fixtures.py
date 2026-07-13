@@ -88,7 +88,12 @@ def documents_for(subtype: dict) -> tuple[dict, dict, dict, dict]:
             "review_status": "draft_unreviewed",
             "prompt": "这是经过作者审核前的占位题干。",
         }
-        if subtype["form"] == "material_mcq":
+        if subtype["form"] == "visual_mcq":
+            base["source_material"] = {
+                "kind": "diagram", "title": "评测图形材料", "alt_text": "两个图形面板的评测序列。",
+                "panels": [{"label": "图一", "tokens": ["●"]}, {"label": "图二", "tokens": ["●", "●"]}],
+            }
+        elif subtype["form"] == "material_mcq":
             if subtype["id"] == "xingce.data.chart_material":
                 base["source_material"] = {
                     "kind": "chart", "title": "评测图形材料", "alt_text": "甲、乙两期的示例数据图。",
@@ -155,9 +160,10 @@ def documents_for(subtype: dict) -> tuple[dict, dict, dict, dict]:
             {"record_id": record["record_id"], "source_material": record["source_material"]}
             for record in assessment_records
         ])
-    if "asset_checksum" in evidence and subtype["form"] == "material_mcq":
+    if "asset_checksum" in evidence and subtype["form"] in {"material_mcq", "visual_mcq"}:
+        asset_kind = "diagram" if subtype["form"] == "visual_mcq" else "chart"
         evidence["asset_checksum"] = canonical_json_sha256([
             {"record_id": record["record_id"], "source_material": record["source_material"]}
-            for record in assessment_records if record["source_material"]["kind"] == "chart"
+            for record in assessment_records if record["source_material"]["kind"] == asset_kind
         ])
     return manifest, records, skills, taxonomy

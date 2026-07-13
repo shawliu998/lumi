@@ -1,0 +1,6 @@
+{"schema_version":"lumi.xingce-adaptive-misconceptions.v1","pack_id":"lumi-graphic-reasoning-v0","pack_version":"0.1.0-draft","review_status":"draft_unreviewed","candidate_misconceptions":[
+ {"cause_id":"M-FEATURE","label":"候选：只看数量而忽略形状/填充等属性", "status":"unconfirmed","is_ground_truth":false,"target_skill_ids":["xingce.judgment.graphic_reasoning.feature_selection"]},
+ {"cause_id":"M-DIR","label":"候选：识别到变化却把顺序或方向读反", "status":"unconfirmed","is_ground_truth":false,"target_skill_ids":["xingce.judgment.graphic_reasoning.transform_direction"]},
+ {"cause_id":"M-OP","label":"候选：把添加、替换或交替的组成操作混淆", "status":"unconfirmed","is_ground_truth":false,"target_skill_ids":["xingce.judgment.graphic_reasoning.composition_operator"]},
+ {"cause_id":"M-COUNT","label":"候选：未核对元素与属性的数量", "status":"unconfirmed","is_ground_truth":false,"target_skill_ids":["xingce.judgment.graphic_reasoning.attribute_count"]}
+]}

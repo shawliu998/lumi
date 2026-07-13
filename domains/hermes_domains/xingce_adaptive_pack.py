@@ -39,7 +39,7 @@ _OUTCOMES = frozenset({"support", "refute", "insufficient"})
 _FORMS = frozenset({"text_mcq", "numeric_or_mcq", "visual_mcq", "material_mcq"})
 _SCORERS = frozenset({"exact_option_v1", "authored_numeric_v1"})
 _REQUIRED_ARTIFACTS = frozenset({"records.json", "skill-graph.json", "misconceptions.json"})
-_MATERIAL_KINDS = frozenset({"text", "table", "chart", "composite"})
+_MATERIAL_KINDS = frozenset({"text", "table", "chart", "diagram", "composite"})
 
 
 class XingceAdaptivePackError(ContractError):
@@ -345,6 +345,27 @@ def _validate_material_source(value: Any, *, nested: bool = False) -> None:
                 raise XingceAdaptivePackError("chart values are invalid")
         return
 
+    if kind == "diagram":
+        if set(value) != {"kind", "title", "alt_text", "panels"}:
+            raise XingceAdaptivePackError("diagram source_material has unsupported fields")
+        _nonempty(value.get("title"), "diagram title")
+        _nonempty(value.get("alt_text"), "diagram alt text")
+        panels = value.get("panels")
+        if not isinstance(panels, list) or not 2 <= len(panels) <= 8:
+            raise XingceAdaptivePackError("diagram panels are invalid")
+        labels: set[str] = set()
+        for panel in panels:
+            if not isinstance(panel, Mapping) or set(panel) != {"label", "tokens"}:
+                raise XingceAdaptivePackError("diagram panel has unsupported fields")
+            label = _nonempty(panel.get("label"), "diagram panel label")
+            tokens = panel.get("tokens")
+            if label in labels or not isinstance(tokens, list) or not 1 <= len(tokens) <= 12:
+                raise XingceAdaptivePackError("diagram panels are invalid")
+            if any(not isinstance(token, str) or not token.strip() or len(token) > 8 for token in tokens):
+                raise XingceAdaptivePackError("diagram token is invalid")
+            labels.add(label)
+        return
+
     if nested or set(value) != {"kind", "title", "scope_note", "parts"}:
         raise XingceAdaptivePackError("composite source_material has unsupported fields")
     _nonempty(value.get("title"), "material title")
@@ -420,7 +441,7 @@ def _validate_records(
             _as_string_list(record.get("eligible_after_transfer_ids"), "review eligible transfer ids")
         if role in _ASSESSMENT_ROLES:
             _nonempty(record.get("prompt"), "assessment prompt")
-            if manifest["form"] == "material_mcq":
+            if manifest["form"] in {"material_mcq", "visual_mcq"}:
                 _validate_material_source(record.get("source_material"))
             elif "source_material" in record:
                 raise XingceAdaptivePackError("source_material is reserved for material_mcq records")
@@ -488,15 +509,16 @@ def validate_xingce_adaptive_documents(
     skill_ids = _validate_skills(skills, manifest, status)
     cause_ids = _validate_taxonomy(taxonomy, manifest, status, skill_ids)
     _validate_records(records, manifest, status, skill_ids, cause_ids)
-    if manifest["form"] == "material_mcq":
+    if manifest["form"] in {"material_mcq", "visual_mcq"}:
         assessment_records = [record for record in records["records"] if record["role"] in _ASSESSMENT_ROLES]
         evidence = manifest["content_evidence"]
         if "material_checksum" in evidence and evidence["material_checksum"] != _material_checksum(assessment_records):
             raise XingceAdaptivePackError("material checksum does not bind the authored source materials")
         if "asset_checksum" in evidence:
-            chart_checksum = _material_checksum(assessment_records, kinds={"chart"})
-            if not any(record["source_material"]["kind"] == "chart" for record in assessment_records) or evidence["asset_checksum"] != chart_checksum:
-                raise XingceAdaptivePackError("asset checksum does not bind the authored chart materials")
+            asset_kind = "diagram" if manifest["form"] == "visual_mcq" else "chart"
+            asset_checksum = _material_checksum(assessment_records, kinds={asset_kind})
+            if not any(record["source_material"]["kind"] == asset_kind for record in assessment_records) or evidence["asset_checksum"] != asset_checksum:
+                raise XingceAdaptivePackError("asset checksum does not bind the authored visual materials")
     # The matrix query is intentionally at the end as a cheap assertion that
     # the records did not replace the type-specific requirements with generic
     # conditional-logic metadata.

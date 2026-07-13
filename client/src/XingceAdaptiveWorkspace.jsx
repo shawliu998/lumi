@@ -124,6 +124,10 @@ function SourceMaterial({ material, nested = false }) {
       <div className="adaptive-chart-values" role="img" aria-label={material.alt_text}>{material.categories.map((category, index) => <div key={category} className="adaptive-chart-row"><b>{category}</b><div>{material.series.map((series) => <span key={series.label}><i style={{ width: `${Math.max(4, (series.values[index] / maximum) * 100)}%` }} /><em>{series.label} {series.values[index]}</em></span>)}</div></div>)}</div>
     </figure>;
   }
+  if (material.kind === "diagram") return <figure className="adaptive-material adaptive-material-diagram" aria-label={material.alt_text}>
+    <figcaption><small>{nested ? "图形节选" : "题目图形"}</small><strong>{material.title}</strong><span>{material.alt_text}</span></figcaption>
+    <div className="adaptive-diagram-panels">{material.panels.map((panel) => <div key={panel.label} className="adaptive-diagram-panel"><small>{panel.label}</small><div>{panel.tokens.map((token, index) => <span key={`${token}-${index}`}>{token}</span>)}</div></div>)}</div>
+  </figure>;
   return <section className="adaptive-material adaptive-material-composite" aria-label={material.title}><header><small>综合材料</small><strong>{material.title}</strong></header><p>{material.scope_note}</p>{material.parts.map((part, index) => <SourceMaterial key={`${part.title}-${index}`} material={part} nested />)}</section>;
 }
 
