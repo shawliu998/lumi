@@ -8,11 +8,11 @@ immutable source into a new release directory.
 """
 from __future__ import annotations
 
-import argparse, hashlib, json, shutil
+import argparse, copy, hashlib, json, shutil
 from pathlib import Path
 from typing import Any
 
-from hermes_domains.xingce_adaptive_pack import load_xingce_adaptive_pack, record_sha256
+from hermes_domains.xingce_adaptive_pack import canonical_json_sha256, load_xingce_adaptive_pack, record_sha256
 
 
 def read(path: Path) -> dict[str, Any]:
@@ -48,9 +48,11 @@ def create(source: Path, output: Path, workbook: Path, attestations: Path) -> di
     write(output / "review-evidence.json", evidence)
     manifest.update({"pack_version":version,"status":"release_ready","release_ready":True,"runtime_registration":"allowed_after_human_review"})
     manifest["rights"]["distribution"]="release_distribution_allowed"
-    manifest["human_review_gate"]={"required":True,"production_load_allowed":True,"review_attestations":[{**row,"manifest_sha256":"0"*64} for row in rows]}
+    manifest["human_review_gate"]={"required":True,"production_load_allowed":True,"review_attestations":[]}
     artifacts=[item for item in manifest["artifacts"] if item["path"] != "review-evidence.json"]+[{"path":"review-evidence.json","sha256":""}]
     manifest["artifacts"]=[{"path":item["path"],"sha256":sha(output/item["path"])} for item in artifacts]
+    signed_manifest=copy.deepcopy(manifest); signed_manifest["human_review_gate"].pop("review_attestations",None)
+    manifest["human_review_gate"]["review_attestations"]=[{**row,"manifest_sha256":canonical_json_sha256(signed_manifest)} for row in rows]
     write(output / "manifest.json", manifest)
     return load_xingce_adaptive_pack(output, require_reviewed=True)
 
