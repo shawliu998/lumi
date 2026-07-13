@@ -5813,6 +5813,48 @@ button.connection-status:hover {
   list-style: none;
 }
 
+.recent-sessions ul {
+  margin: 0;
+  padding: 0 10px 8px;
+  list-style: none;
+}
+
+.recent-sessions li {
+  padding: 8px 0;
+  border-top: 1px solid #ececf0;
+}
+
+.recent-sessions li:first-child {
+  border-top: 0;
+}
+
+.recent-sessions strong,
+.recent-sessions p {
+  display: block;
+}
+
+.recent-sessions strong {
+  color: #50535b;
+  font-size: 8px;
+}
+
+.recent-sessions p {
+  margin: 3px 0 5px;
+  color: #777a82;
+  font-size: 7px;
+  line-height: 10px;
+}
+
+.recent-sessions .button {
+  min-height: 20px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: #5753bb;
+  font-size: 7.5px;
+}
+
 .saved-review-plan li {
   padding: 7px 0;
   border-top: 1px solid #ececf0;

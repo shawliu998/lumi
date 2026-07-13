@@ -54,6 +54,23 @@ _PUBLIC_TEACHING_FIELDS = frozenset(
 _LEARNER_VISIBLE_ENTRY_FACT_KINDS = frozenset(
     {"selected_option", "correctness", "confidence", "elapsed_seconds", "hint_count"}
 )
+_RECENT_SESSION_LIMIT = 6
+_RECENT_SESSION_EVENT_SEQUENCES = {
+    "awaiting_probe": ("judgment_entry_submitted",),
+    "completed_no_error": ("judgment_entry_submitted",),
+    "awaiting_transfer": ("judgment_entry_submitted", "judgment_probe_submitted"),
+    "committing_transfer": (
+        "judgment_entry_submitted",
+        "judgment_probe_submitted",
+        "judgment_transfer_observed",
+    ),
+    "completed": (
+        "judgment_entry_submitted",
+        "judgment_probe_submitted",
+        "judgment_transfer_observed",
+        "judgment_transfer_receipt",
+    ),
+}
 
 
 class JudgmentSessionError(RuntimeError):
@@ -160,6 +177,7 @@ class JudgmentSessionService:
         if not entries:
             raise JudgmentContentUnavailable("reviewed judgement pack has no entry diagnostic")
         learner_store = LearnerStateStore(self.database)
+        store = EventStore(self.database)
         try:
             decisions = learner_store.replay_policy_decisions(
                 namespace_id=self.config.namespace_id,
@@ -178,10 +196,15 @@ class JudgmentSessionService:
                 "pack": {"pack_id": self.pack_id, "pack_version": self.pack_version},
                 "entry_items": entries,
                 "review_plan": review_plan,
+                # This deliberately contains a compact session index rather
+                # than serialized past projections.  The learner must choose
+                # a row to retrieve its separately hash-verified replay.
+                "recent_sessions": self._recent_session_summaries(store),
                 "next_step": "answer_entry",
                 "privacy": "local_only",
             }
         finally:
+            store.close()
             learner_store.close()
 
     def start(
@@ -1004,9 +1027,63 @@ class JudgmentSessionService:
         if not events:
             raise JudgmentSessionError("judgment session is unavailable")
         for event in events:
-            if event.payload.get("namespace_id") != self.config.namespace_id or event.payload.get("evidence_origin") != self.config.evidence_origin:
+            if (
+                event.payload.get("namespace_id") != self.config.namespace_id
+                or event.payload.get("evidence_origin") != self.config.evidence_origin
+                or event.payload.get("learner_id") != self.config.learner_id
+            ):
                 raise JudgmentSessionError("session belongs to a different evidence namespace")
         return events
+
+    def _recent_session_summaries(self, store: EventStore) -> list[dict[str, Any]]:
+        """Return only this learner's compact, replay-addressable session rows.
+
+        The workspace must not quietly rehydrate arbitrary historical result
+        objects: those can contain the learner's answers and a full public
+        activity projection.  The index therefore exposes no option, answer,
+        proof, candidate rationale, or state receipt.  A learner deliberately
+        opens a row to retrieve the existing hash-verified replay.
+        """
+
+        summaries: list[dict[str, Any]] = []
+        for run_id in store.run_ids():
+            if not run_id.startswith("jr_"):
+                continue
+            try:
+                events = self._owned_events(store, run_id)
+                if not store.verify(run_id):
+                    continue
+                summaries.append(self._recent_session_summary(events))
+            except JudgmentSessionError:
+                # Other learners, other origins, and incomplete/tampered
+                # local rows must never become visible in this workspace.
+                continue
+        return sorted(
+            summaries,
+            key=lambda item: (str(item["updated_at"]), str(item["session_id"])),
+            reverse=True,
+        )[:_RECENT_SESSION_LIMIT]
+
+    def _recent_session_summary(self, events: list[TraceEvent]) -> dict[str, Any]:
+        entry_event = _require_event(events, "judgment_entry_submitted")
+        entry = self._entry_assessment_record(
+            _short_public_id(entry_event.payload.get("entry_record_id"), "entry record id")
+        )
+        stage = events[-1].payload.get("stage_after")
+        if not isinstance(stage, str):
+            raise JudgmentSessionError("judgment session history has an invalid stage")
+        expected_kinds = _RECENT_SESSION_EVENT_SEQUENCES.get(stage)
+        if expected_kinds is None or tuple(event.kind for event in events) != expected_kinds:
+            raise JudgmentSessionError("judgment session history has an unsupported event sequence")
+        return {
+            "session_id": entry_event.run_id,
+            "stage": stage,
+            "updated_at": events[-1].occurred_at,
+            "event_count": len(events),
+            "entry": {"record_id": str(entry["record_id"]), "title": str(entry["title"])},
+            "replay_available": True,
+            "resume_available": stage in {"awaiting_probe", "awaiting_transfer"},
+        }
 
     def _assert_state(self, events: list[TraceEvent], expected_version: int, expected_stage: str, stage: str) -> None:
         if not isinstance(expected_version, int) or expected_version < 1:

@@ -142,11 +142,17 @@ class JudgmentSessionTests(unittest.TestCase):
         ]
         self.write("manifest.json", manifest)
 
-    def service(self, *, origin: str = "evaluation_fixture", namespace: str = "eval:judgment:test") -> JudgmentSessionService:
+    def service(
+        self,
+        *,
+        origin: str = "evaluation_fixture",
+        namespace: str = "eval:judgment:test",
+        learner_id: str = "test-learner",
+    ) -> JudgmentSessionService:
         return JudgmentSessionService(
             self.database,
             reviewed_pack_root=self.root,
-            config=JudgmentSessionConfig(namespace_id=namespace, evidence_origin=origin, learner_id="test-learner"),
+            config=JudgmentSessionConfig(namespace_id=namespace, evidence_origin=origin, learner_id=learner_id),
             today_provider=lambda: __import__("datetime").date(2026, 7, 12),
         )
 
@@ -225,6 +231,64 @@ class JudgmentSessionTests(unittest.TestCase):
                 elapsed_seconds=12,
                 command_id="c_entry_retry_0001",
             )
+
+    def test_workspace_exposes_only_a_safe_owned_recent_session_index(self) -> None:
+        service = self.service()
+        completed_without_error = service.start(
+            entry_record_id="D01",
+            selected_option="A",
+            confidence="high",
+            elapsed_seconds=7,
+            command_id="c_recent_owner_entry_0001",
+        )
+        self.assertEqual(completed_without_error["stage"], "completed_no_error")
+
+        other_learner = self.service(learner_id="other-local-learner")
+        other_learner.start(
+            entry_record_id="D01",
+            selected_option="A",
+            confidence="high",
+            elapsed_seconds=8,
+            command_id="c_recent_other_entry_0001",
+        )
+
+        workspace = service.workspace()
+        self.assertEqual(len(workspace["recent_sessions"]), 1)
+        recent = workspace["recent_sessions"][0]
+        self.assertEqual(recent["session_id"], completed_without_error["session_id"])
+        self.assertEqual(recent["stage"], "completed_no_error")
+        self.assertEqual(recent["entry"], {"record_id": "D01", "title": "只有：从结果回推必要条件"})
+        self.assertTrue(recent["replay_available"])
+        self.assertFalse(recent["resume_available"])
+        self.assertEqual(recent["event_count"], 1)
+        rendered = json.dumps(workspace, ensure_ascii=False)
+        for private_or_response_key in (
+            "correct_option",
+            "answer_proof",
+            "distractor_map",
+            "formalization",
+            "selected_option",
+            "candidate_causes",
+            "state_receipts",
+        ):
+            self.assertNotIn(private_or_response_key, rendered)
+
+    def test_workspace_marks_an_interrupted_owned_session_resumable(self) -> None:
+        service = self.service()
+        started = service.start(
+            entry_record_id="D01",
+            selected_option="B",
+            confidence="low",
+            elapsed_seconds=12,
+            command_id="c_recent_resume_entry_0001",
+        )
+        self.assertEqual(started["stage"], "awaiting_probe")
+
+        recent = service.workspace()["recent_sessions"]
+        self.assertEqual(len(recent), 1)
+        self.assertEqual(recent[0]["session_id"], started["session_id"])
+        self.assertEqual(recent[0]["stage"], "awaiting_probe")
+        self.assertTrue(recent[0]["resume_available"])
 
     def test_routing_diagnostic_reaches_the_inference_path(self) -> None:
         service = self.service()

@@ -32,9 +32,9 @@
       },
       "error": null,
       "trace_status": 200,
-      "trace_sha256": "fb89e49c552c3eda0d65a676dbe7fb64868b7ec8dc918aa929869077c76ae9a7",
+      "trace_sha256": "d59aa225c5aaeaa02da93139ac31dec201bddd0d5cde6ed508a1b51411890030",
       "replay_status": 200,
-      "replay_sha256": "4eaea8306040a00a8d9a9bd2beffe6f39d97f1e039ca2fcaae85d8a70256272b",
+      "replay_sha256": "c44f5e2735024365727f555712725f46402bd8be4da3a45e2fe61e761f485f1a",
       "rejected_run_trace_status": null
     },
     "wrong": {
@@ -60,9 +60,9 @@
       },
       "error": null,
       "trace_status": 200,
-      "trace_sha256": "7034365180faf3d19eaeb1eea137013eff8d6a322d55a0ee28562f7014bffa78",
+      "trace_sha256": "494d914c5a6f20156638c807e36cceb73aecd6e29bb474023b7e84e6cb381366",
       "replay_status": 200,
-      "replay_sha256": "543a35b6d6e51b478203e5d9e9eca1dfebc32ea28e7929f7f84d39948c078798",
+      "replay_sha256": "8edc1f72033ed7bfce220a9a8a9034113a6537e50c4aa6d0c68529f52e94843a",
       "rejected_run_trace_status": null
     },
     "pii": {
@@ -98,9 +98,9 @@
       },
       "error": null,
       "trace_status": 200,
-      "trace_sha256": "011d7053a70952ee6e5c6ea28224dd027eae4e9f19c90cdd9b68c9314d8e6949",
+      "trace_sha256": "0f8e3351772c43831c8d626df1ceae29bdf1b58c437d7c5759e789f6e20036c9",
       "replay_status": 200,
-      "replay_sha256": "47a2a418197466b9689b2495deae255bc246c2b671e10dcd9e4f18a72871ddfa",
+      "replay_sha256": "0cc99ea1bf135321320da233b35013284bb4e7a16782f97865dce317ab3a8910",
       "rejected_run_trace_status": null
     },
     "unknown_field": {
@@ -169,7 +169,7 @@
               "attempt_id": "r_NEKPAELBPFBAAIMGFGLDIMIHFGDIGJGDLHFJIBHI:independent-verify",
               "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
               "item_type": "资料分析/增长率",
-              "observed_at": "2026-07-13T03:46:15.857411+00:00",
+              "observed_at": "2026-07-13T05:05:12.021115+00:00",
               "selected_option": "C",
               "response_time_seconds": 20.0,
               "confidence": 0.9,
@@ -214,7 +214,7 @@
                   "attempt_id": "r_NEKPAELBPFBAAIMGFGLDIMIHFGDIGJGDLHFJIBHI:initial",
                   "item_id": "xingce.data-analysis.growth-rate.synthetic-01",
                   "item_type": "资料分析/增长率",
-                  "observed_at": "2026-07-13T03:46:15.796590+00:00",
+                  "observed_at": "2026-07-13T05:05:11.941088+00:00",
                   "selected_option": "A",
                   "response_time_seconds": 31.0,
                   "confidence": 0.8,
@@ -264,7 +264,7 @@
                   "attempt_id": "r_NEKPAELBPFBAAIMGFGLDIMIHFGDIGJGDLHFJIBHI:independent-verify",
                   "item_id": "xingce.data-analysis.growth-rate.synthetic-01:independent-verify",
                   "item_type": "资料分析/增长率",
-                  "observed_at": "2026-07-13T03:46:15.857411+00:00",
+                  "observed_at": "2026-07-13T05:05:12.021115+00:00",
                   "selected_option": "C",
                   "response_time_seconds": 20.0,
                   "confidence": 0.9,
@@ -316,8 +316,8 @@
       },
       "after_skill_count": 1,
       "duplicate_after_complete_status": 409,
-      "trace_sha256": "dd6d78cb367c063017629e6e401b857acd936e89ae7a78bb36c53d10ecf55427",
-      "replay_sha256": "bad234df4f8ae60cba61d4f39b85f01f666c5026646a6ab52428707a69c66b77"
+      "trace_sha256": "ff5f703d094f5b0a6cebd7ef22dbf4c9c6a595db2ab5ac817c5ee2d500d9a49e",
+      "replay_sha256": "e99dec1f1917b48ee43490a6a4fe520ad25d605f06999eed0955449ff73b310e"
     },
     "progressive_assistance": {
       "initial_status": 201,
@@ -388,7 +388,7 @@
         "code": "assistance_exhausted"
       },
       "trace_verified": true,
-      "trace_sha256": "7af08c4b369320ec93fe20d3d86e664249d1df3888b5833c6cbe3b810fdbadee",
+      "trace_sha256": "0ec82d256cd9c53dd88471d2131d239fe6e866f62b74c12eaaa8fa2821230555",
       "assistance_history_count": 6,
       "cohort_evidence_status": "unavailable"
     },

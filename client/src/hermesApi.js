@@ -90,6 +90,23 @@ const JUDGMENT_UNSAFE_PUBLIC_KEYS = new Set([
   "selected_when",
   "formalization",
 ]);
+const JUDGMENT_RECENT_STAGES = new Set([
+  "awaiting_probe",
+  "awaiting_transfer",
+  "committing_transfer",
+  "completed",
+  "completed_no_error",
+]);
+const JUDGMENT_RESUMABLE_STAGES = new Set(["awaiting_probe", "awaiting_transfer"]);
+const JUDGMENT_RECENT_SESSION_KEYS = new Set([
+  "session_id",
+  "stage",
+  "updated_at",
+  "event_count",
+  "entry",
+  "replay_available",
+  "resume_available",
+]);
 
 export async function fetchJudgmentWorkspace() {
   const workspace = await request("/v1/judgment/workspace");
@@ -197,6 +214,29 @@ export async function fetchJudgmentReplay(sessionId) {
   return replay;
 }
 
+export function latestJudgmentSessionFromReplay(replay) {
+  const latest = replay?.timeline?.at?.(-1);
+  const result = latest?.result;
+  if (
+    !latest
+    || !Number.isInteger(latest.seq)
+    || typeof latest.stage_after !== "string"
+    || !JUDGMENT_RECENT_STAGES.has(latest.stage_after)
+    || !result
+    || result.session_id !== replay.session_id
+    || result.stage !== latest.stage_after
+  ) {
+    throw new HermesApiError("本机回放不能安全恢复当前学习步骤。", {
+      kind: "contract",
+      code: "invalid_judgment_replay_resume",
+    });
+  }
+  assertJudgmentSessionResult(result, {
+    expectedStages: ["awaiting_probe", "awaiting_transfer", "completed", "completed_no_error"],
+  });
+  return result;
+}
+
 export function isValidJudgmentWorkspaceContract(workspace) {
   if (!workspace || typeof workspace !== "object" || containsUnsafeJudgmentKey(workspace)) return false;
   if (workspace.available === false) {
@@ -213,7 +253,36 @@ export function isValidJudgmentWorkspaceContract(workspace) {
     && workspace.privacy === "local_only"
     && Array.isArray(workspace.entry_items)
     && workspace.entry_items.length > 0
-    && workspace.entry_items.every((item) => isValidJudgmentPublicRecord(item, ["entry_diagnostic", "routing_diagnostic"]));
+    && workspace.entry_items.every((item) => isValidJudgmentPublicRecord(item, ["entry_diagnostic", "routing_diagnostic"]))
+    && Array.isArray(workspace.recent_sessions)
+    && workspace.recent_sessions.length <= 6
+    && workspace.recent_sessions.every(isValidJudgmentRecentSession)
+    && new Set(workspace.recent_sessions.map((item) => item.session_id)).size === workspace.recent_sessions.length;
+}
+
+export function isValidJudgmentRecentSession(session) {
+  if (!session || typeof session !== "object" || containsUnsafeJudgmentKey(session)) return false;
+  if (
+    Object.keys(session).length !== JUDGMENT_RECENT_SESSION_KEYS.size
+    || Object.keys(session).some((key) => !JUDGMENT_RECENT_SESSION_KEYS.has(key))
+  ) return false;
+  if (
+    !/^jr_[a-f0-9]{24,96}$/i.test(session.session_id || "")
+    || !JUDGMENT_RECENT_STAGES.has(session.stage)
+    || typeof session.updated_at !== "string"
+    || session.updated_at.length < 20
+    || !Number.isInteger(session.event_count)
+    || session.event_count < 1
+    || session.replay_available !== true
+    || typeof session.resume_available !== "boolean"
+    || session.resume_available !== JUDGMENT_RESUMABLE_STAGES.has(session.stage)
+  ) return false;
+  const entry = session.entry;
+  return entry
+    && typeof entry === "object"
+    && Object.keys(entry).length === 2
+    && typeof entry.record_id === "string"
+    && typeof entry.title === "string";
 }
 
 export function isValidJudgmentPublicRecord(record, expectedRole) {

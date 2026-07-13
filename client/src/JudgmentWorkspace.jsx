@@ -16,6 +16,7 @@ import {
   answerJudgmentTransfer,
   fetchJudgmentReplay,
   fetchJudgmentWorkspace,
+  latestJudgmentSessionFromReplay,
   startJudgmentSession,
 } from "./hermesApi.js";
 import { createCommandId } from "./publicLearningId.js";
@@ -114,6 +115,32 @@ function SavedReviewPlan({ tasks }) {
     <section className="judgment-panel saved-review-plan" aria-labelledby="saved-review-heading">
       <header><div><Clock size={16} /><h2 id="saved-review-heading">已登记的复习</h2></div><small>本机证据</small></header>
       <ul>{tasks.map((task) => <li key={task.task_id}><strong>{task.kind === "delayed_retention" ? "延后保持性复测" : "独立重试"}</strong><span>{task.due_on}</span><p>{task.success_criterion}</p></li>)}</ul>
+    </section>
+  );
+}
+
+function recentSessionCopy(session) {
+  if (session.stage === "completed_no_error") return "本题未观察到需要辨析的错误候选；没有强行生成教学或复习。";
+  if (session.stage === "completed") return "迁移评分与状态收据已写入本机；可回放查看依据。";
+  if (session.stage === "awaiting_probe") return "首答已写入，仍在等待最小探查。";
+  if (session.stage === "awaiting_transfer") return "探查与微课已完成，仍在等待无提示迁移。";
+  return "上一次迁移写入在中断时停留在收据提交边界；Lumi 不会猜测或重复作答。";
+}
+
+function RecentSessions({ sessions, onOpen, openingSessionId }) {
+  if (!Array.isArray(sessions) || sessions.length === 0) return null;
+  return (
+    <section className="judgment-panel recent-sessions" aria-labelledby="recent-sessions-heading">
+      <header><div><ArrowClockwise size={16} /><h2 id="recent-sessions-heading">最近本机记录</h2></div><small>选择后才读取回放</small></header>
+      <ul>{sessions.map((item) => (
+        <li key={item.session_id}>
+          <strong>{item.entry?.title || "判断推理记录"}</strong>
+          <p>{recentSessionCopy(item)}</p>
+          {item.stage !== "committing_transfer" && <button className="button text-button compact" type="button" onClick={() => onOpen(item)} disabled={openingSessionId === item.session_id}>
+            {openingSessionId === item.session_id ? "正在读取" : item.resume_available ? "继续本轮" : "查看结果与回放"}<CaretRight size={13} />
+          </button>}
+        </li>
+      ))}</ul>
     </section>
   );
 }
@@ -328,6 +355,7 @@ export function JudgmentWorkspace({ onServiceReachable = undefined }) {
   const [pendingCommand, setPendingCommand] = useState(null);
   const [replay, setReplay] = useState(null);
   const [replayState, setReplayState] = useState("idle");
+  const [openingSessionId, setOpeningSessionId] = useState(null);
 
   const reportServiceReachable = useCallback(() => {
     // A successful workspace read proves the local sidecar is reachable even
@@ -347,6 +375,7 @@ export function JudgmentWorkspace({ onServiceReachable = undefined }) {
     setSubmission({ inFlight: false, error: null, kind: null, uncertain: false });
     setPendingCommand(null);
     setReplay(null);
+    setOpeningSessionId(null);
     try {
       const result = await fetchJudgmentWorkspace();
       reportServiceReachable();
@@ -392,6 +421,30 @@ export function JudgmentWorkspace({ onServiceReachable = undefined }) {
       setSubmission((current) => ({ ...current, error, kind: current.kind || "replay", uncertain: false }));
     }
   }, [session?.session_id]);
+
+  const openRecentSession = async (summary) => {
+    if (!summary?.replay_available || summary?.stage === "committing_transfer") return;
+    setOpeningSessionId(summary.session_id);
+    setReplayState("loading");
+    setSubmission({ inFlight: false, error: null, kind: null, uncertain: false });
+    try {
+      const loadedReplay = await fetchJudgmentReplay(summary.session_id);
+      const restored = latestJudgmentSessionFromReplay(loadedReplay);
+      setSession(restored);
+      setReplay(loadedReplay);
+      setReplayState("ready");
+      setPendingCommand(null);
+      setProbeDraft(EMPTY_DRAFT);
+      setTransferDraft(EMPTY_DRAFT);
+      setStartedAt(Date.now());
+      setElapsed(0);
+    } catch (error) {
+      setReplayState("error");
+      setSubmission({ inFlight: false, error, kind: "replay", uncertain: false });
+    } finally {
+      setOpeningSessionId(null);
+    }
+  };
 
   const submitEntry = async () => {
     const reusing = pendingCommand?.kind === "entry";
@@ -466,7 +519,7 @@ export function JudgmentWorkspace({ onServiceReachable = undefined }) {
       </div>
 
       <div className="judgment-layout">
-        <aside className="judgment-rail"><LearningMap stage={currentStage} /><section className="judgment-panel current-step"><header><div><CheckCircle size={16} /><h2>当前步骤</h2></div></header><strong>{stageCopy(currentStage)}</strong><p>{showingEntry ? "选择一个答案、标记信心，并可补充自己的判断过程。" : showingProbe ? "用最小探查支持或反驳候选，不作最终归因。" : showingTransfer ? "不提供提示；这次作答才有资格进入状态收据。" : "查看收据和后续复习要求。"}</p></section><SavedReviewPlan tasks={workspace.data?.review_plan} /></aside>
+        <aside className="judgment-rail"><LearningMap stage={currentStage} /><section className="judgment-panel current-step"><header><div><CheckCircle size={16} /><h2>当前步骤</h2></div></header><strong>{stageCopy(currentStage)}</strong><p>{showingEntry ? "选择一个答案、标记信心，并可补充自己的判断过程。" : showingProbe ? "用最小探查支持或反驳候选，不作最终归因。" : showingTransfer ? "不提供提示；这次作答才有资格进入状态收据。" : "查看收据和后续复习要求。"}</p></section>{showingEntry && <RecentSessions sessions={workspace.data?.recent_sessions} onOpen={openRecentSession} openingSessionId={openingSessionId} />}<SavedReviewPlan tasks={workspace.data?.review_plan} /></aside>
         <main className="judgment-main">
           {showingEntry && entryItems.length > 1 && <section className="entry-selector" aria-labelledby="entry-selector-heading"><div><h2 id="entry-selector-heading">选择本轮起点</h2><p>从一个未完成的条件推理诊断开始；两条路径都遵守相同的证据与验证规则。</p></div><div role="list" aria-label="可选判断推理起点">{entryItems.map((item) => <button key={item.record_id} className={entry?.record_id === item.record_id ? "selected" : ""} type="button" role="listitem" aria-pressed={entry?.record_id === item.record_id} onClick={() => { setSelectedEntryId(item.record_id); setEntryDraft(EMPTY_DRAFT); setStartedAt(Date.now()); setElapsed(0); }} disabled={submission.inFlight}><strong>{item.role === "routing_diagnostic" ? "推理有效性" : "条件方向"}</strong><span>{item.title}</span></button>)}</div></section>}
           {showingEntry && activeRecord && <JudgmentQuestion record={activeRecord} draft={entryDraft} onDraft={setEntryDraft} elapsed={elapsed} label="第一步 · 首答" boundary="请先独立判断。提交后才会创建本机记录并计算候选错因。" submitLabel="提交首答并创建本机记录" onSubmit={submitEntry} inFlight={submission.inFlight} showRationale />}
