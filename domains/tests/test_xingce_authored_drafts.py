@@ -18,6 +18,7 @@ class XingceAuthoredDraftTests(unittest.TestCase):
             CONTENT_ROOT / "verbal" / "lumi-main-idea-v0",
             CONTENT_ROOT / "verbal" / "lumi-detail-inference-v0",
             CONTENT_ROOT / "verbal" / "lumi-sentence-order-v0",
+            CONTENT_ROOT / "verbal" / "lumi-sentence-fill-v0",
             CONTENT_ROOT / "quantitative" / "lumi-number-sequence-v0",
             CONTENT_ROOT / "quantitative" / "lumi-math-operations-v0",
             CONTENT_ROOT / "judgment" / "lumi-analogy-reasoning-v0",
