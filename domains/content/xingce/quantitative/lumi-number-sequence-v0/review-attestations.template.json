@@ -1,0 +1,17 @@
+{
+  "release_version": "0.1.0-reviewed-local-YYYYMMDD",
+  "reviewer_attestations": [
+    {
+      "review_kind": "logic",
+      "status": "approved",
+      "reviewer_id": "replace-with-stable-logic-reviewer-id",
+      "reviewed_at": "YYYY-MM-DD"
+    },
+    {
+      "review_kind": "editorial_rights",
+      "status": "approved",
+      "reviewer_id": "replace-with-stable-editorial-rights-reviewer-id",
+      "reviewed_at": "YYYY-MM-DD"
+    }
+  ]
+}
