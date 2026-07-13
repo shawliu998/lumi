@@ -1,0 +1,219 @@
+{
+  "schema_version": "lumi.xingce-adaptive-records.v1",
+  "pack_id": "lumi-management-v0",
+  "pack_version": "0.1.0-draft",
+  "review_status": "draft_unreviewed",
+  "records": [
+    {
+      "record_id": "D01",
+      "role": "entry_diagnostic",
+      "title": "管理常识：先有目标再配置行动",
+      "target_skill_ids": [
+        "xingce.common.management.process",
+        "xingce.common.management.boundary",
+        "xingce.common.management.role"
+      ],
+      "candidate_misconception_ids": [
+        "M-BOUND",
+        "M-ORDER",
+        "M-ROLE"
+      ],
+      "independence_group": "management-entry",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "一个服务团队准备缩短咨询等待时间。下列哪项最适合作为管理过程的起点？",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "先明确当前等待时间和希望达到的目标"
+        },
+        {
+          "label": "B",
+          "text": "先宣布所有措施已经有效"
+        },
+        {
+          "label": "C",
+          "text": "先评价尚未执行的结果"
+        },
+        {
+          "label": "D",
+          "text": "先把反馈当作最终目标"
+        }
+      ],
+      "correct_option": "A",
+      "route_probe_ids": [
+        "P01"
+      ],
+      "record_sha256": "9cb622db786fe7f986cdce7dad300f584af7c0357014b3f3598a3ccba367812c"
+    },
+    {
+      "record_id": "P01",
+      "role": "probe",
+      "title": "最小探查：目标、执行与检查不能倒置",
+      "target_skill_ids": [
+        "xingce.common.management.process",
+        "xingce.common.management.boundary",
+        "xingce.common.management.role"
+      ],
+      "candidate_misconception_ids": [
+        "M-BOUND",
+        "M-ORDER",
+        "M-ROLE"
+      ],
+      "independence_group": "management-probe",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "团队已确定“缩短等待时间”的目标。下一步最符合管理过程的是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "制定分流和排班方案后实施，并记录等待数据"
+        },
+        {
+          "label": "B",
+          "text": "把尚未记录的数据作为检查结论"
+        },
+        {
+          "label": "C",
+          "text": "把执行人员的工作直接定义为目标"
+        },
+        {
+          "label": "D",
+          "text": "跳过实施，直接宣布调整完成"
+        }
+      ],
+      "correct_option": "A",
+      "discriminates": [
+        "M-BOUND",
+        "M-ORDER",
+        "M-ROLE"
+      ],
+      "candidate_evidence_map": {
+        "M-BOUND": {
+          "A": "refute",
+          "B": "support",
+          "C": "support",
+          "D": "insufficient"
+        },
+        "M-ORDER": {
+          "A": "refute",
+          "B": "support",
+          "C": "insufficient",
+          "D": "support"
+        },
+        "M-ROLE": {
+          "A": "refute",
+          "B": "insufficient",
+          "C": "support",
+          "D": "support"
+        }
+      },
+      "record_sha256": "7b7c46f7ecf91dd61c407efcf24992225a5835d13673fb2463e794b1d89ae85a"
+    },
+    {
+      "record_id": "T-ORDER",
+      "role": "teaching_asset",
+      "title": "微课：目标—方案—执行—检查—调整",
+      "target_skill_ids": [
+        "xingce.common.management.process"
+      ],
+      "candidate_misconception_ids": [
+        "M-ORDER"
+      ],
+      "independence_group": "management-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-ORDER"
+      ],
+      "teaching_content": "先界定要改善什么，再选择措施并执行；有了记录才能检查效果，检查后才决定保留或调整。每一步都不能用后一步代替前一步。",
+      "record_sha256": "e40847bd52b1c991df10f129c6ddb279b306fc14bdcad04751cd2ec62382ce1f"
+    },
+    {
+      "record_id": "V01",
+      "role": "independent_transfer",
+      "title": "独立迁移：用数据检查方案",
+      "target_skill_ids": [
+        "xingce.common.management.process",
+        "xingce.common.management.boundary"
+      ],
+      "candidate_misconception_ids": [
+        "M-BOUND",
+        "M-ORDER",
+        "M-ROLE"
+      ],
+      "independence_group": "management-transfer",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "图书馆希望提高预约取书按时完成率。方案试行一周后，最合适的下一步是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "查看按时完成数据，与试行前目标比较后决定是否调整"
+        },
+        {
+          "label": "B",
+          "text": "不看记录，直接认定方案成功"
+        },
+        {
+          "label": "C",
+          "text": "把“按时完成率”改成执行人员姓名"
+        },
+        {
+          "label": "D",
+          "text": "在执行前先宣布检查结论"
+        }
+      ],
+      "correct_option": "A",
+      "requires_no_hints": true,
+      "record_sha256": "090a5e0d5e3f48a58c7a830d84ee1c37b3236de9d6d698ebe7a21e1562ec5322"
+    },
+    {
+      "record_id": "R01",
+      "role": "delayed_review",
+      "title": "延迟复习：角色与反馈",
+      "target_skill_ids": [
+        "xingce.common.management.role",
+        "xingce.common.management.process"
+      ],
+      "candidate_misconception_ids": [
+        "M-BOUND",
+        "M-ORDER",
+        "M-ROLE"
+      ],
+      "independence_group": "management-review",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "在一项服务改进中，执行人员记录现场问题并反馈给负责协调方案的成员。这一做法主要体现：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "执行与反馈为后续调整提供依据"
+        },
+        {
+          "label": "B",
+          "text": "记录本身等同于最终目标"
+        },
+        {
+          "label": "C",
+          "text": "协调者无需再看反馈"
+        },
+        {
+          "label": "D",
+          "text": "反馈应早于问题发生"
+        }
+      ],
+      "correct_option": "A",
+      "requires_no_hints": true,
+      "scheduled_after_days": 4,
+      "eligible_after_transfer_ids": [
+        "V01"
+      ],
+      "record_sha256": "c1901af0250e25cd04a459615cf7976ba42c8ad8832cdf412f3a3aa1b0a99d28"
+    }
+  ]
+}

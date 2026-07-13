@@ -31,6 +31,7 @@ class XingceAuthoredDraftTests(unittest.TestCase):
             CONTENT_ROOT / "data_analysis" / "lumi-table-material-v0",
             CONTENT_ROOT / "data_analysis" / "lumi-chart-material-v0",
             CONTENT_ROOT / "data_analysis" / "lumi-composite-material-v0",
+            CONTENT_ROOT / "common_knowledge" / "lumi-management-v0",
         )
         for root in roots:
             with self.subTest(pack=root.name):
