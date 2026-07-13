@@ -211,6 +211,28 @@ async function initializeLearningProjections(port) {
   }
 }
 
+async function verifyReviewedXingceCatalog(port) {
+  const catalog = await requestJson(port, "/v1/xingce/coverage");
+  assertCheck(catalog.status === 200, "xingce_catalog_unavailable");
+  const { summary, items } = catalog.body;
+  assertCheck(summary?.total_subtypes === 31, "xingce_catalog_total_mismatch");
+  assertCheck(summary?.reviewed_release_ready_subtypes === 30, "xingce_catalog_reviewed_count_mismatch");
+  assertCheck(summary?.available_subtypes === 31, "xingce_catalog_available_count_mismatch");
+  assertCheck(items?.length === 31 && items.every((item) => item.availability === "available"), "xingce_catalog_unavailable_pack");
+  const tableMaterial = items.find((item) => item.subtype_id === "xingce.data.table_material");
+  assertCheck(tableMaterial?.launch === "/v1/xingce/adaptive/xingce.data.table_material/workspace", "xingce_table_material_launch_missing");
+  const workspace = await requestJson(port, tableMaterial.launch);
+  assertCheck(workspace.status === 200 && workspace.body?.available === true, "xingce_table_material_workspace_unavailable");
+  assertCheck(workspace.body?.entry_items?.length > 0, "xingce_table_material_entry_missing");
+  assertCheck(!JSON.stringify(workspace.body).includes("correct_option"), "xingce_workspace_answer_leaked");
+  return {
+    total_subtypes: summary.total_subtypes,
+    reviewed_release_ready_subtypes: summary.reviewed_release_ready_subtypes,
+    available_subtypes: summary.available_subtypes,
+    table_material_workspace_verified: true,
+  };
+}
+
 async function runPackagedIdentifierGuards(port, initialHealth) {
   const rejectedRunIds = [
     "legacy-safe-run",
@@ -588,6 +610,8 @@ try {
   assertCheck(!Object.hasOwn(advertisedEndpoints, "run"), "removed_run_route_advertised");
   assertCheck(!JSON.stringify(capabilities.body).toLowerCase().includes("offline"), "offline_product_path_advertised");
 
+  const xingceCatalogEvidence = await verifyReviewedXingceCatalog(port);
+
   const disabledRuns = await requestJson(port, "/v1/runs", {
     method: "POST",
     body: { mode: "offline", run_id: opaquePublicId("r", "disabled-public-runs") },
@@ -657,6 +681,7 @@ try {
     },
     ...identifierEvidence,
     learning_state_sha256: baselineDigest,
+    xingce_catalog: xingceCatalogEvidence,
     ...TEST_EVIDENCE,
     raw_source_saved_to_report: false,
     raw_answer_saved_to_report: false,

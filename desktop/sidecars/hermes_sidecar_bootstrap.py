@@ -12,19 +12,19 @@ import time
 # extraction directory without changing the shared service package.
 if getattr(sys, "frozen", False):
     from hermes_service import catalog
-    from hermes_domains import product_activity
+    from hermes_domains import product_activity, xingce_coverage
 
-    catalog.FIXTURE_ROOT = Path(sys._MEIPASS) / "domains" / "fixtures"
+    domain_root = Path(sys._MEIPASS) / "domains"
+
+    catalog.FIXTURE_ROOT = domain_root / "fixtures"
     catalog.PRODUCT_ACTIVITY_PAYLOAD = (
-        Path(sys._MEIPASS)
-        / "domains"
+        domain_root
         / "local_content"
         / "xingce"
         / "p031-data-analysis-v1.json"
     )
     product_activity.DEFAULT_RELEASE_ROOT = (
-        Path(sys._MEIPASS)
-        / "domains"
+        domain_root
         / "content"
         / "xingce"
         / "p031-data-analysis-v1"
@@ -36,11 +36,14 @@ if getattr(sys, "frozen", False):
         product_activity.DEFAULT_RELEASE_ROOT / "pedagogical-overlay.json"
     )
     product_activity.DEFAULT_PAYLOAD_PATH = catalog.PRODUCT_ACTIVITY_PAYLOAD
+    xingce_coverage.DOMAIN_ROOT = domain_root
+    xingce_coverage.DEFAULT_COVERAGE_MATRIX = (
+        domain_root / "content" / "xingce" / "coverage-matrix.v1.json"
+    )
     os.environ.setdefault(
         "LUMI_JUDGMENT_PACK_ROOT",
         str(
-            Path(sys._MEIPASS)
-            / "domains"
+            domain_root
             / "released"
             / "judgment"
             / "lumi-conditional-reasoning-v0-0.1.0-reviewed-local-20260713"
@@ -48,7 +51,7 @@ if getattr(sys, "frozen", False):
     )
     os.environ.setdefault(
         "LUMI_XINGCE_ADAPTIVE_PACK_ROOTS",
-        str(Path(sys._MEIPASS) / "domains" / "released" / "xingce"),
+        str(domain_root / "released"),
     )
 
 from hermes_service.cli import main

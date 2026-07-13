@@ -12,14 +12,28 @@ mean population learning efficacy or production distribution has been proved.
 > substitute for a type-specific release. A data-analysis run, Study Pack,
 > synthetic fixture coverage or the old 42-path matrix cannot complete a row.
 
-> **Current release status:** partial — exactly 1/31 rows is released
-> (conditional logic). The other 30 require type-specific reviewed immutable
-> content, a connected observe → diagnose → probe → teach → verify → update →
-> reflect workspace, deterministic replay/evaluation and a voluntary
-> human-local walkthrough. No automated answer may be used for that walkthrough,
+> **Current content and local-runtime status — 2026-07-13:** all 31/31 rows are
+> available from the local sidecar: conditional logic is the existing
+> `released` runtime pack, and the other 30 are distinct, immutable
+> `reviewed_release_ready` packs bound to the owner-confirmed two-person review
+> workbook. The ARM64 debug `Lumi.app` contains that same resource tree and its
+> bundled sidecar proves the 31/31 catalog plus a real table-material workspace
+> without leaking an answer key.
+>
+> **Acceptance status remains partial:** content review and deterministic
+> evaluation do not replace a voluntary human-local walkthrough of every new
+> type's full observe → diagnose → probe → teach → no-hint transfer → state
+> receipt → review flow. No automated answer may be used for that walkthrough,
 > and no learning-effect claim follows from it.
 
-## Current judgment-reasoning implementation slice
+| 2026-07-13 all-Xingce delivery slice | Evidence | Explicit limit |
+| --- | --- | --- |
+| 30 reviewed generic packs registered locally | `domains/released/`; `bf06664`; `c9d29db`; `service/hermes_service/cli.py` | each pack remains `reviewed_release_ready`, not a claim of human effectiveness |
+| 31/31 local catalog + Chinese type selector | real loopback/browser QA in `client/design-qa.md`; `client/`; `service/` | no generic learner answer was entered during QA |
+| Packaged macOS candidate | debug `Lumi.app`; bundled tree SHA-256 `23fee5b1801427d9013729d955e66966f8f2885efdc8c25fb0c5376501171701`; strict/deep signature and lifecycle checks | ARM64, ad-hoc signed only; not notarized or production-distributed |
+| Full deterministic release evidence | `evals/reports/latest.json`, run `run-20260713T112758Z`: 17/17 PASS; `scripts/verify_core.py` PASS | local/evaluation-fixture evidence is kept separate from human learning evidence |
+
+## Historical judgment-reasoning implementation slice
 
 This table supersedes any implication that the historical 42-fixture or
 data-analysis gates are a release signal for the active application.
@@ -84,7 +98,7 @@ and must not be combined into a claim that the end-to-end P0 product is complete
 | Automated release evidence | complete for final P0.2 source | `scripts/verify_core.py`: 17/17 checks; `evals/run_all.py`: 16/16 final release cut `run-20260711T132028Z`; `today_plan_schedule`: 23 cases / 2675 assertions | local deterministic/loopback evidence only; no population efficacy claim |
 | Portfolio evidence | complete for v0 mechanics | `portfolio/`, release reports, `client/design-qa.md`, Mac artifact | learner interviews, calibrated population results, and notarized distribution remain future evidence |
 
-## Current release state
+## Historical P0.2 release state
 
 P0.2 at implementation commit
 `5e8709d0a1e35bfa85d5a91db2bb42dba9e10af0` has passed adversarial security and evidence re-audit, the final 16/16
@@ -111,4 +125,4 @@ milestones.
 - user-marked completion as learning evidence;
 - cohort/common-error rates without eligible consented data;
 - notarized or production-distributed macOS readiness;
-- full Xingce content coverage.
+- type-by-type human learning-flow acceptance for all Xingce packs.

@@ -69,6 +69,7 @@ def command(
         ROOT / "engine",
         ROOT / "runtime",
         ROOT / "domains",
+        ROOT / "domains" / "tests",
         ROOT / "integration",
         ROOT / "service",
         ROOT / "study_pack",

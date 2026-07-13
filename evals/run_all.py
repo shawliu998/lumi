@@ -800,6 +800,7 @@ def _service_environment() -> dict[str, str]:
             "integration",
             "runtime",
             "domains",
+            "domains/tests",
             "engine",
             "study_pack",
         )

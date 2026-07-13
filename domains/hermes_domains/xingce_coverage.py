@@ -38,9 +38,18 @@ def _require(mapping: Mapping[str, Any], key: str, expected: type | tuple[type, 
     return value
 
 
-def load_coverage_matrix(path: str | Path = DEFAULT_COVERAGE_MATRIX) -> dict[str, Any]:
+def load_coverage_matrix(path: str | Path | None = None) -> dict[str, Any]:
+    """Load the configured matrix, resolving the default at call time.
+
+    The bundled macOS runtime relocates immutable domain data beneath its
+    PyInstaller resource root.  Looking up the default lazily preserves the
+    normal repository path while allowing that explicit, read-only relocation
+    without monkey-patching a function default captured at import time.
+    """
+
+    selected_path = DEFAULT_COVERAGE_MATRIX if path is None else path
     try:
-        document = json.loads(Path(path).read_text(encoding="utf-8"))
+        document = json.loads(Path(selected_path).read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise XingceCoverageError("coverage matrix cannot be loaded") from exc
     if not isinstance(document, dict):
@@ -144,7 +153,7 @@ def validate_coverage_matrix(document: Mapping[str, Any]) -> None:
         raise XingceCoverageError("every canonical Xingce module must have a subtype")
 
 
-def coverage_summary(path: str | Path = DEFAULT_COVERAGE_MATRIX) -> dict[str, Any]:
+def coverage_summary(path: str | Path | None = None) -> dict[str, Any]:
     matrix = load_coverage_matrix(path)
     subtypes = matrix["subtypes"]
     released = [item for item in subtypes if item.get("release", {}).get("state") == "released"]

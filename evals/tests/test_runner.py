@@ -20,6 +20,11 @@ SPEC.loader.exec_module(runner)
 
 
 class JsonSchemaSubsetTests(unittest.TestCase):
+    def test_service_surface_environment_includes_cross_package_fixtures(self) -> None:
+        environment = runner._service_environment()
+        roots = environment["PYTHONPATH"].split(os.pathsep)
+        self.assertIn(str(runner.REPO_ROOT / "domains" / "tests"), roots)
+
     def test_rejects_missing_and_unknown_properties(self) -> None:
         schema = {
             "type": "object",

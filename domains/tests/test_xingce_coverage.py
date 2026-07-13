@@ -1,8 +1,12 @@
 from __future__ import annotations
 
 import copy
+from pathlib import Path
+import tempfile
 import unittest
+from unittest.mock import patch
 
+from hermes_domains import xingce_coverage
 from hermes_domains.xingce_coverage import (
     DEFAULT_COVERAGE_MATRIX,
     XingceCoverageError,
@@ -36,6 +40,14 @@ class XingceCoverageTests(unittest.TestCase):
         ]
         self.assertEqual([item["id"] for item in released], ["xingce.judgment.conditional_logic"])
         self.assertEqual(released[0]["release"]["pack_id"], "lumi-conditional-reasoning-v0")
+
+    def test_default_matrix_path_can_be_relocated_for_a_frozen_read_only_bundle(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            relocated = Path(directory) / "coverage-matrix.v1.json"
+            relocated.write_text("{}", encoding="utf-8")
+            with patch.object(xingce_coverage, "DEFAULT_COVERAGE_MATRIX", relocated):
+                with self.assertRaisesRegex(XingceCoverageError, "missing schema_version"):
+                    load_coverage_matrix()
 
     def test_visual_and_material_types_cannot_drop_immutable_evidence_requirements(self) -> None:
         broken = copy.deepcopy(self.matrix)
