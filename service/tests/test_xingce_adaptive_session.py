@@ -10,6 +10,7 @@ from hermes_domains.xingce_coverage import load_coverage_matrix
 from test_xingce_adaptive_pack import documents_for
 from hermes_domains.xingce_adaptive_pack import record_sha256
 from hermes_service.xingce_adaptive_session import XingceAdaptiveSessionConfig, XingceAdaptiveSessionService
+from hermes_service.application import SidecarApplication
 
 
 def reviewed_root(root: Path) -> Path:
@@ -50,6 +51,18 @@ class XingceAdaptiveSessionTests(unittest.TestCase):
         self.assertEqual(completed["state_update"]["receipts"][0]["state_delta"]["commit_status"], "committed")
         self.assertEqual(completed["review_task"]["kind"], "delayed_retention")
         self.assertTrue(self.service.replay(entry["session_id"])["trace_verified"])
+
+    def test_sidecar_registers_only_the_bound_reviewed_subtype(self) -> None:
+        application = SidecarApplication(
+            Path(self.temp.name) / "http.sqlite3",
+            attempt_evidence_origin="evaluation_fixture",
+            evaluation_projection_enabled=True,
+            xingce_adaptive_session_services={"xingce.verbal.logical_cloze": self.service},
+        )
+        self.assertIn("xingce-adaptive-session-v1", application.capabilities()["features"])
+        self.assertTrue(application.xingce_adaptive_workspace("xingce.verbal.logical_cloze")["available"])
+        with self.assertRaises(Exception):
+            application.xingce_adaptive_workspace("xingce.judgment.definition")
 
 
 if __name__ == "__main__": unittest.main()
