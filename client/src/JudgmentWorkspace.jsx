@@ -30,6 +30,7 @@ import {
   reviewTaskCopy,
   stageProgress,
 } from "./judgmentWorkspaceAdapter.js";
+import { XingceAdaptiveWorkspace } from "./XingceAdaptiveWorkspace.jsx";
 
 const LEARNING_MAP = [
   ["条件方向", "把“只有 / 才 / 除非”译成可检验的方向"],
@@ -110,7 +111,7 @@ function LearningMap({ stage }) {
   );
 }
 
-function XingceCoverageSummary() {
+function XingceCoverageSummary({ onOpenSubtype }) {
   const [state, setState] = useState({ phase: "loading", coverage: null, error: null });
 
   useEffect(() => {
@@ -127,13 +128,15 @@ function XingceCoverageSummary() {
   if (state.phase === "unavailable") {
     return <section className="judgment-panel xingce-coverage" aria-label="行测题型范围"><header><div><MapTrifold size={16} /><h2>行测题型范围</h2></div><small>暂不可读</small></header><p className="xingce-coverage-note">未确认本机范围时，不把历史题库或 fixture 当作可学题型。</p></section>;
   }
-  const { summary } = state.coverage;
+  const { summary, items } = state.coverage;
+  const readyForLocalAcceptance = items.filter((item) => item.availability === "available" && item.content_status === "reviewed_release_ready");
   return (
     <section className="judgment-panel xingce-coverage" aria-labelledby="xingce-coverage-heading">
       <header><div><MapTrifold size={16} /><h2 id="xingce-coverage-heading">行测题型范围</h2></div><small>本机题包</small></header>
-      <div className="xingce-coverage-total"><strong>{summary.released_subtypes}<span> / {summary.total_subtypes}</span></strong><p>个子型已审核，可开始学习</p></div>
-      <ul>{Object.entries(summary.modules).map(([id, module]) => <li key={id}><span>{module.label}</span><strong>{module.released} / {module.total}</strong></li>)}</ul>
-      <p className="xingce-coverage-note">其余题型需先通过题型专属内容、审核与真人验收，Lumi 不会提前开放。</p>
+      <div className="xingce-coverage-total"><strong>{summary.available_subtypes}<span> / {summary.total_subtypes}</span></strong><p>个本机题型已完成内容审核</p></div>
+      <ul>{Object.entries(summary.modules).map(([id, module]) => <li key={id}><span>{module.label}</span><strong>{module.available} / {module.total}</strong></li>)}</ul>
+      {readyForLocalAcceptance.length > 0 && <details className="xingce-pack-picker"><summary>选择已审核题型</summary><div>{readyForLocalAcceptance.map((item) => <button key={item.subtype_id} type="button" onClick={() => onOpenSubtype({ subtypeId: item.subtype_id, label: item.label })}><span>{item.label}</span><CaretRight size={12} /></button>)}</div></details>}
+      <p className="xingce-coverage-note">其中 {summary.reviewed_release_ready_subtypes} 个正进行真人学习流验收；内容审核不等于产品验收完成。</p>
     </section>
   );
 }
@@ -385,6 +388,7 @@ export function JudgmentWorkspace({ onServiceReachable = undefined }) {
   const [replay, setReplay] = useState(null);
   const [replayState, setReplayState] = useState("idle");
   const [openingSessionId, setOpeningSessionId] = useState(null);
+  const [adaptiveSelection, setAdaptiveSelection] = useState(null);
 
   const reportServiceReachable = useCallback(() => {
     // A successful workspace read proves the local sidecar is reachable even
@@ -528,6 +532,8 @@ export function JudgmentWorkspace({ onServiceReachable = undefined }) {
     }
   };
 
+  if (adaptiveSelection) return <div className="screen judgment-workspace adaptive-host"><div className="page-heading judgment-heading"><div><span className="eyebrow">Lumi · 已审核本机题型</span><h1>行测学习空间</h1><p>内容审核已完成；本轮使用真实本机作答验证完整学习流。</p></div><button className="button secondary compact" type="button" onClick={() => setAdaptiveSelection(null)}>返回题型列表</button></div><XingceAdaptiveWorkspace subtypeId={adaptiveSelection.subtypeId} displayTitle={adaptiveSelection.label} onServiceReachable={onServiceReachable} /></div>;
+
   if (workspace.phase !== "available") return <div className="screen judgment-workspace"><UnavailableWorkspace state={workspace} onRetry={reloadWorkspace} /></div>;
 
   const currentStage = session?.stage || "entry";
@@ -548,7 +554,7 @@ export function JudgmentWorkspace({ onServiceReachable = undefined }) {
       </div>
 
       <div className="judgment-layout">
-        <aside className="judgment-rail"><LearningMap stage={currentStage} /><XingceCoverageSummary /><section className="judgment-panel current-step"><header><div><CheckCircle size={16} /><h2>当前步骤</h2></div></header><strong>{stageCopy(currentStage)}</strong><p>{showingEntry ? "选择一个答案、标记信心，并可补充自己的判断过程。" : showingProbe ? "用最小探查支持或反驳候选，不作最终归因。" : showingTransfer ? "不提供提示；这次作答才有资格进入状态收据。" : "查看收据和后续复习要求。"}</p></section>{showingEntry && <RecentSessions sessions={workspace.data?.recent_sessions} onOpen={openRecentSession} openingSessionId={openingSessionId} />}<SavedReviewPlan tasks={workspace.data?.review_plan} /></aside>
+        <aside className="judgment-rail"><LearningMap stage={currentStage} /><XingceCoverageSummary onOpenSubtype={setAdaptiveSelection} /><section className="judgment-panel current-step"><header><div><CheckCircle size={16} /><h2>当前步骤</h2></div></header><strong>{stageCopy(currentStage)}</strong><p>{showingEntry ? "选择一个答案、标记信心，并可补充自己的判断过程。" : showingProbe ? "用最小探查支持或反驳候选，不作最终归因。" : showingTransfer ? "不提供提示；这次作答才有资格进入状态收据。" : "查看收据和后续复习要求。"}</p></section>{showingEntry && <RecentSessions sessions={workspace.data?.recent_sessions} onOpen={openRecentSession} openingSessionId={openingSessionId} />}<SavedReviewPlan tasks={workspace.data?.review_plan} /></aside>
         <main className="judgment-main">
           {showingEntry && entryItems.length > 1 && <section className="entry-selector" aria-labelledby="entry-selector-heading"><div><h2 id="entry-selector-heading">选择本轮起点</h2><p>从一个未完成的条件推理诊断开始；两条路径都遵守相同的证据与验证规则。</p></div><div role="list" aria-label="可选判断推理起点">{entryItems.map((item) => <button key={item.record_id} className={entry?.record_id === item.record_id ? "selected" : ""} type="button" role="listitem" aria-pressed={entry?.record_id === item.record_id} onClick={() => { setSelectedEntryId(item.record_id); setEntryDraft(EMPTY_DRAFT); setStartedAt(Date.now()); setElapsed(0); }} disabled={submission.inFlight}><strong>{item.role === "routing_diagnostic" ? "推理有效性" : "条件方向"}</strong><span>{item.title}</span></button>)}</div></section>}
           {showingEntry && activeRecord && <JudgmentQuestion record={activeRecord} draft={entryDraft} onDraft={setEntryDraft} elapsed={elapsed} label="第一步 · 首答" boundary="请先独立判断。提交后才会创建本机记录并计算候选错因。" submitLabel="提交首答并创建本机记录" onSubmit={submitEntry} inFlight={submission.inFlight} showRationale />}

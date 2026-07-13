@@ -5305,6 +5305,50 @@ button.connection-status:hover {
   line-height: 14px;
 }
 
+.xingce-pack-picker {
+  margin: 0 10px 8px;
+  border-top: 1px solid #eaebef;
+  padding-top: 7px;
+}
+
+.xingce-pack-picker summary {
+  color: #5853ce;
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.xingce-pack-picker > div {
+  display: grid;
+  gap: 1px;
+  margin-top: 6px;
+  max-height: 170px;
+  overflow: auto;
+}
+
+.xingce-pack-picker button {
+  width: 100%;
+  min-width: 0;
+  padding: 4px 2px;
+  border: 0;
+  border-bottom: 1px solid #f0f0f2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  color: #555860;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 8.5px;
+  text-align: left;
+}
+
+.xingce-pack-picker button:hover,
+.xingce-pack-picker button:focus-visible { color: #504ac8; outline: 0; }
+.xingce-pack-picker button:focus-visible { box-shadow: 0 0 0 2px rgba(91, 85, 245, 0.3); border-radius: 3px; }
+.xingce-pack-picker button span { overflow-wrap: anywhere; }
+
 .xingce-coverage ul {
   margin: 0;
   padding: 5px 10px;

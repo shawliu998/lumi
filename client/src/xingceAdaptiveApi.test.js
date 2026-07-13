@@ -56,6 +56,12 @@ test("generic Xingce workspace accepts only a reviewed public projection bound t
     entry_items: [entry],
   };
   assert.equal(isValidXingceAdaptiveWorkspace(workspace, { subtypeId }), true);
+  const reviewedTable = {
+    ...workspace,
+    pack: { pack_id: "lumi-table-material", pack_version: "0.1.0", subtype_id: "xingce.data.table_material", module_id: "data_analysis", form: "material_mcq" },
+    entry_items: [{ ...entry, source_material: tableMaterial }],
+  };
+  assert.equal(isValidXingceAdaptiveWorkspace(reviewedTable, { subtypeId: "xingce.data.table_material" }), true);
   assert.equal(isValidXingceAdaptiveWorkspace({ ...workspace, pack: { ...workspace.pack, subtype_id: "xingce.verbal.main_idea" } }, { subtypeId }), false);
   assert.equal(isValidXingceAdaptiveWorkspace({ ...workspace, entry_items: [{ ...entry, correct_option: "A" }] }, { subtypeId }), false);
 });

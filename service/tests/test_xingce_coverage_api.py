@@ -38,25 +38,27 @@ class XingceCoverageApiTests(unittest.TestCase):
             finally:
                 error.close()
 
-    def test_catalog_exposes_only_status_and_does_not_overclaim_all_xingce_available(self) -> None:
+    def test_catalog_exposes_only_status_and_does_not_claim_unregistered_packs_are_usable(self) -> None:
         status, payload = self.request("/v1/xingce/coverage")
         self.assertEqual(status, 200)
         self.assertEqual(payload["schema_version"], "lumi.xingce-coverage-catalog.v1")
         self.assertTrue(payload["local_only"])
         self.assertEqual(payload["summary"]["total_subtypes"], 31)
         self.assertEqual(payload["summary"]["released_subtypes"], 1)
-        self.assertEqual(payload["summary"]["planned_subtypes"], 30)
+        self.assertEqual(payload["summary"]["reviewed_release_ready_subtypes"], 30)
+        self.assertEqual(payload["summary"]["planned_subtypes"], 0)
+        self.assertTrue(payload["summary"]["content_release_ready"])
+        self.assertEqual(payload["summary"]["available_subtypes"], 0)
         self.assertFalse(payload["summary"]["is_complete"])
         self.assertEqual(len(payload["items"]), 31)
         available = [item for item in payload["items"] if item["availability"] == "available"]
-        self.assertEqual(len(available), 1)
-        self.assertEqual(available[0]["subtype_id"], "xingce.judgment.conditional_logic")
-        self.assertEqual(available[0]["launch"], "/v1/judgment/workspace")
+        self.assertEqual(available, [])
         self.assertTrue(all("misconception_dimensions" not in item for item in payload["items"]))
         self.assertTrue(all("content_requirements" not in item for item in payload["items"]))
         planned = [item for item in payload["items"] if item["availability"] == "planned"]
         self.assertTrue(all(item["launch"] is None for item in planned))
-        self.assertTrue(all(item["unavailable_reason"] == "reviewed_type_specific_pack_required" for item in planned))
+        self.assertTrue(all(item["unavailable_reason"] == "local_reviewed_pack_not_registered" for item in planned))
+        self.assertEqual({item["content_status"] for item in planned}, {"released", "reviewed_release_ready"})
 
     def test_catalog_is_declared_in_capabilities_and_rejects_query_parameters(self) -> None:
         status, capabilities = self.request("/v1/capabilities")

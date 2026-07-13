@@ -6,6 +6,7 @@ import {
   isValidJudgmentWorkspaceContract,
   latestJudgmentSessionFromReplay,
 } from "./hermesApi.js";
+import { readFileSync } from "node:fs";
 
 const entry = {
   record_id: "D01",
@@ -98,4 +99,11 @@ test("a deliberate replay read can restore only the matching public local receip
     () => latestJudgmentSessionFromReplay({ ...replay, timeline: [{ ...replay.timeline[0], stage_after: "awaiting_probe" }] }),
     /不能安全恢复/,
   );
+});
+
+test("reviewed local Xingce packs open under their human-readable subtype label", () => {
+  const source = readFileSync(new URL("./JudgmentWorkspace.jsx", import.meta.url), "utf8");
+  assert.match(source, /onOpenSubtype\(\{ subtypeId: item\.subtype_id, label: item\.label \}\)/);
+  assert.match(source, /displayTitle=\{adaptiveSelection\.label\}/);
+  assert.match(source, /真人学习流验收；内容审核不等于产品验收完成/);
 });

@@ -10,22 +10,24 @@ import {
 
 function xingceCoverageContract() {
   const modules = {
-    verbal: { label: "言语理解与表达", total: 6, released: 0 },
-    quantitative: { label: "数量关系", total: 2, released: 0 },
-    judgment: { label: "判断推理", total: 7, released: 1 },
-    data_analysis: { label: "资料分析", total: 4, released: 0 },
-    common_knowledge: { label: "常识判断", total: 6, released: 0 },
-    political_theory: { label: "政治理论", total: 6, released: 0 },
+    verbal: { label: "言语理解与表达", total: 6, released: 0, reviewed_release_ready: 6, available: 6 },
+    quantitative: { label: "数量关系", total: 2, released: 0, reviewed_release_ready: 2, available: 2 },
+    judgment: { label: "判断推理", total: 7, released: 1, reviewed_release_ready: 6, available: 7 },
+    data_analysis: { label: "资料分析", total: 4, released: 0, reviewed_release_ready: 4, available: 4 },
+    common_knowledge: { label: "常识判断", total: 6, released: 0, reviewed_release_ready: 6, available: 6 },
+    political_theory: { label: "政治理论", total: 6, released: 0, reviewed_release_ready: 6, available: 6 },
   };
-  const planned = Object.entries(modules).flatMap(([moduleId, module]) => Array.from({ length: module.total - module.released }, (_, index) => ({
+  const reviewed = Object.entries(modules).flatMap(([moduleId, module]) => Array.from({ length: module.reviewed_release_ready }, (_, index) => ({
     subtype_id: `xingce.${moduleId}.planned_${index}`,
     module_id: moduleId,
     module_label: module.label,
     label: `待审核子型 ${index + 1}`,
     form: "text_mcq",
-    availability: "planned",
-    launch: null,
-    unavailable_reason: "reviewed_type_specific_pack_required",
+    content_status: "reviewed_release_ready",
+    availability: "available",
+    launch: `/v1/xingce/adaptive/xingce.${moduleId}.planned_${index}/workspace`,
+    unavailable_reason: null,
+    pack: { pack_id: `lumi-${moduleId}-${index}`, pack_version: "0.1.0-reviewed-local-20260713" },
   })));
   return {
     schema_version: "lumi.xingce-coverage-catalog.v1",
@@ -35,7 +37,10 @@ function xingceCoverageContract() {
       taxonomy_version: "lumi.xingce-taxonomy.v1",
       total_subtypes: 31,
       released_subtypes: 1,
-      planned_subtypes: 30,
+      reviewed_release_ready_subtypes: 30,
+      planned_subtypes: 0,
+      content_release_ready: true,
+      available_subtypes: 31,
       is_complete: false,
       modules,
     },
@@ -46,17 +51,18 @@ function xingceCoverageContract() {
         module_label: "判断推理",
         label: "逻辑判断·条件关系",
         form: "text_mcq",
+        content_status: "released",
         availability: "available",
         launch: "/v1/judgment/workspace",
         unavailable_reason: null,
         pack: { pack_id: "lumi-conditional-reasoning-v0", pack_version: "0.1.0-reviewed-local-20260713" },
       },
-      ...planned,
+      ...reviewed,
     ],
   };
 }
 
-test("Xingce coverage accepts released and planned states without leaking draft content", () => {
+test("Xingce coverage distinguishes reviewed local availability from full runtime release", () => {
   assert.equal(isValidXingceCoverageContract(xingceCoverageContract()), true);
   const leaked = xingceCoverageContract();
   leaked.items[0].options = [{ label: "A", text: "leak" }];

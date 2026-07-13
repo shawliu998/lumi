@@ -117,9 +117,13 @@ class XingceAdaptiveSessionTests(unittest.TestCase):
         )
         self.assertIn("xingce-adaptive-session-v1", application.capabilities()["features"])
         self.assertTrue(application.xingce_adaptive_workspace("xingce.verbal.logical_cloze")["available"])
+        catalog = application.xingce_coverage_catalog()
+        logical_cloze = next(row for row in catalog["items"] if row["subtype_id"] == "xingce.verbal.logical_cloze")
+        self.assertEqual(logical_cloze["availability"], "available")
+        self.assertEqual(logical_cloze["content_status"], "reviewed_release_ready")
         with self.assertRaises(Exception):
             application.xingce_adaptive_workspace("xingce.judgment.definition")
-        with self.assertRaisesRegex(ValueError, "released coverage row"):
+        with self.assertRaisesRegex(ValueError, "reviewed coverage row"):
             SidecarApplication(
                 Path(self.temp.name) / "production.sqlite3",
                 xingce_adaptive_session_services={"xingce.verbal.logical_cloze": self.service},

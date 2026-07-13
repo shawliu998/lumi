@@ -117,12 +117,18 @@ export function isValidXingceCoverageContract(coverage) {
     || typeof summary.taxonomy_version !== "string"
     || !Number.isInteger(summary.total_subtypes)
     || !Number.isInteger(summary.released_subtypes)
+    || !Number.isInteger(summary.reviewed_release_ready_subtypes)
     || !Number.isInteger(summary.planned_subtypes)
+    || typeof summary.content_release_ready !== "boolean"
+    || !Number.isInteger(summary.available_subtypes)
     || typeof summary.is_complete !== "boolean"
     || !summary.modules
     || summary.total_subtypes !== coverage.items.length
     || summary.total_subtypes < 1
-    || summary.released_subtypes + summary.planned_subtypes !== summary.total_subtypes
+    || summary.released_subtypes + summary.reviewed_release_ready_subtypes + summary.planned_subtypes !== summary.total_subtypes
+    || summary.content_release_ready !== (summary.released_subtypes + summary.reviewed_release_ready_subtypes === summary.total_subtypes)
+    || summary.available_subtypes < 0
+    || summary.available_subtypes > summary.released_subtypes + summary.reviewed_release_ready_subtypes
     || summary.is_complete !== (summary.released_subtypes === summary.total_subtypes)
   ) return false;
   const moduleEntries = Object.entries(summary.modules);
@@ -132,12 +138,17 @@ export function isValidXingceCoverageContract(coverage) {
     || typeof module.label !== "string"
     || !Number.isInteger(module.total)
     || !Number.isInteger(module.released)
+    || !Number.isInteger(module.reviewed_release_ready)
+    || !Number.isInteger(module.available)
     || module.total < 1
     || module.released < 0
-    || module.released > module.total
+    || module.reviewed_release_ready < 0
+    || module.available < 0
+    || module.released + module.reviewed_release_ready > module.total
+    || module.available > module.released + module.reviewed_release_ready
   ))) return false;
   const seen = new Set();
-  let released = 0;
+  let available = 0;
   for (const item of coverage.items) {
     if (!item || typeof item !== "object" || seen.has(item.subtype_id)) return false;
     seen.add(item.subtype_id);
@@ -148,15 +159,20 @@ export function isValidXingceCoverageContract(coverage) {
       || typeof item.module_label !== "string"
       || typeof item.label !== "string"
       || !XINGCE_COVERAGE_FORMS.has(item.form)
+      || !["released", "reviewed_release_ready", "planned"].includes(item.content_status)
       || !["available", "planned"].includes(item.availability)
       || !(item.launch === null || (typeof item.launch === "string" && item.launch.startsWith("/v1/")))
     ) return false;
     if (item.availability === "available") {
-      released += 1;
-      if (item.unavailable_reason !== null || !item.pack || typeof item.pack.pack_id !== "string" || typeof item.pack.pack_version !== "string" || item.launch === null) return false;
-    } else if (item.launch !== null || item.unavailable_reason !== "reviewed_type_specific_pack_required" || "pack" in item) return false;
+      available += 1;
+      if (!["released", "reviewed_release_ready"].includes(item.content_status) || item.unavailable_reason !== null || !item.pack || typeof item.pack.pack_id !== "string" || typeof item.pack.pack_version !== "string" || item.launch === null) return false;
+    } else if (
+      item.launch !== null || "pack" in item
+      || (item.content_status === "planned" && item.unavailable_reason !== "reviewed_type_specific_pack_required")
+      || (item.content_status !== "planned" && item.unavailable_reason !== "local_reviewed_pack_not_registered")
+    ) return false;
   }
-  return released === summary.released_subtypes;
+  return available === summary.available_subtypes;
 }
 
 function containsUnsafeXingceCoverageKey(value) {

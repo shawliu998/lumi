@@ -34,7 +34,6 @@ DEFAULT_RELEASED_XINGCE_ADAPTIVE_PACKS_ROOT = (
     Path(__file__).resolve().parents[2]
     / "domains"
     / "released"
-    / "xingce"
 )
 
 
@@ -105,6 +104,15 @@ def configured_xingce_adaptive_session_services(
             continue
         candidates = [root] if (root / "manifest.json").is_file() else sorted(item.parent for item in root.glob("**/manifest.json"))
         for pack_root in candidates:
+            try:
+                manifest = json.loads((pack_root / "manifest.json").read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError) as exc:
+                raise SystemExit("released Xingce manifest cannot be loaded") from exc
+            # The released conditional-logic pack uses the older specialised
+            # reasoning schema and is registered by the judgment workspace.
+            # Generic adaptive discovery must skip it, never try to coerce it.
+            if manifest.get("schema_version") != "lumi.xingce-adaptive-pack.v1":
+                continue
             service = XingceAdaptiveSessionService(database, reviewed_pack_root=pack_root, config=config)
             subtype_id = service.pack["subtype_id"]
             if subtype_id in services:

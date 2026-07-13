@@ -58,13 +58,13 @@ function formReadiness(record, draft, kind) {
   return kind !== "entry" || draft.rationale.length <= 1200;
 }
 
-function StageRail({ stage, pack }) {
+function StageRail({ stage, pack, title }) {
   const steps = [["entry", "首答"], ["awaiting_probe", "探查"], ["awaiting_transfer", "迁移"], ["completed", "收据"]];
   const ordinal = { entry: 0, awaiting_probe: 1, awaiting_transfer: 2, completed: 3, completed_no_error: 3 }[stage] ?? 0;
   return <aside className="adaptive-rail" aria-label="本轮学习步骤">
     <section className="adaptive-panel adaptive-pack-summary">
       <span>本地题型</span>
-      <strong>{pack?.subtype_id?.replace(/^xingce\./, "") || "行测"}</strong>
+      <strong>{title || pack?.subtype_id?.replace(/^xingce\./, "") || "行测"}</strong>
       <small>题包 {pack?.pack_version || "—"}</small>
     </section>
     <ol className="adaptive-steps">
@@ -163,7 +163,7 @@ function Completion({ session }) {
   return <section className="adaptive-completion" aria-labelledby="adaptive-receipt-heading"><SealCheck size={22} weight="fill" /><div><small>本机状态收据</small><h1 id="adaptive-receipt-heading">{committed ? "已记录一条独立迁移证据" : "学习状态保持不变"}</h1><p>{session.state_update.reason}</p><dl><div><dt>后续任务</dt><dd>{session.review_task.kind === "delayed_retention" ? "延迟复习" : "独立重试"} · {session.review_task.due_on}</dd></div><div><dt>成功标准</dt><dd>{session.review_task.success_criterion}</dd></div><div><dt>跳过后果</dt><dd>{session.review_task.skip_consequence}</dd></div></dl></div></section>;
 }
 
-export function XingceAdaptiveWorkspace({ subtypeId, onServiceReachable = undefined }) {
+export function XingceAdaptiveWorkspace({ subtypeId, displayTitle = undefined, onServiceReachable = undefined }) {
   const [workspace, setWorkspace] = useState({ phase: "loading", data: null, error: null });
   const [session, setSession] = useState(null);
   const [draft, setDraft] = useState(EMPTY_DRAFT);
@@ -211,7 +211,7 @@ export function XingceAdaptiveWorkspace({ subtypeId, onServiceReachable = undefi
   if (workspace.phase === "error") return <section className="adaptive-workspace-state error" role="alert"><WarningCircle size={18} /><div><strong>无法读取本机题型工作台</strong><p>{workspace.error?.message || "请检查本机服务后重试。"}</p><button className="button secondary compact" type="button" onClick={reload}>重新读取</button></div></section>;
 
   return <section className="adaptive-workspace">
-    <header className="adaptive-heading"><div><small>行测 · 已审核题型</small><h1>{workspace.data.pack.subtype_id.replace(/^xingce\./, "")}</h1><p>本轮以本机题包完成首答、探查、针对性帮助、无提示迁移和可回放收据。</p></div><button className="button secondary compact" type="button" onClick={reload} disabled={submission.inFlight}>重新读取</button></header>
-    <div className="adaptive-layout"><StageRail stage={stage} pack={workspace.data.pack} /><main className="adaptive-main"><CandidatePanel session={session} /><ProbeEvidence session={session} /><TeachingPanel teaching={session?.stage === "awaiting_transfer" ? session.teaching : null} />{record && <RecordForm record={record} kind={kind} draft={draft} setDraft={setDraft} elapsed={elapsed} disabled={submission.inFlight} onSubmit={submit} pending={submission.inFlight} error={submission.error} />}{<Completion session={session} />}</main></div>
+    <header className="adaptive-heading"><div><small>行测 · 已审核题型</small><h1>{displayTitle || workspace.data.pack.subtype_id.replace(/^xingce\./, "")}</h1><p>本轮以本机题包完成首答、探查、针对性帮助、无提示迁移和可回放收据。</p></div><button className="button secondary compact" type="button" onClick={reload} disabled={submission.inFlight}>重新读取</button></header>
+    <div className="adaptive-layout"><StageRail stage={stage} pack={workspace.data.pack} title={displayTitle} /><main className="adaptive-main"><CandidatePanel session={session} /><ProbeEvidence session={session} /><TeachingPanel teaching={session?.stage === "awaiting_transfer" ? session.teaching : null} />{record && <RecordForm record={record} kind={kind} draft={draft} setDraft={setDraft} elapsed={elapsed} disabled={submission.inFlight} onSubmit={submit} pending={submission.inFlight} error={submission.error} />}{<Completion session={session} />}</main></div>
   </section>;
 }

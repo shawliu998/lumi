@@ -2,7 +2,7 @@ import { HermesApiError, request } from "./hermesApi.js";
 import { isCommandId } from "./publicLearningId.js";
 
 const SCHEMA = "lumi.xingce-adaptive-session.v1";
-const SUBTYPE_ID = /^xingce\.(verbal|quantitative|judgment|data_analysis|common|political)\.[a-z_]+$/;
+const SUBTYPE_ID = /^xingce\.(verbal|quantitative|judgment|data|common|political)\.[a-z_]+$/;
 const SESSION_ID = /^xa_[a-f0-9]{36}$/i;
 const STAGES = new Set(["awaiting_probe", "awaiting_transfer", "completed", "completed_no_error"]);
 const RECORD_ROLES = new Set(["entry_diagnostic", "routing_diagnostic", "probe", "teaching_asset", "independent_transfer", "delayed_review"]);

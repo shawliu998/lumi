@@ -115,7 +115,6 @@ class SidecarApplication:
             )
         self.database = str(database)
         self.catalog = ScenarioCatalog()
-        self.xingce_coverage = XingceCoverageCatalog()
         if product_activity_catalog is not None and product_activity_payload_path is not None:
             raise ValueError("provide either product activity catalog or payload path")
         self.product_activities = product_activity_catalog or (
@@ -186,15 +185,21 @@ class SidecarApplication:
         if any(service.pack["subtype_id"] != subtype_id for subtype_id, service in self._xingce_adaptive_sessions.items()):
             raise ValueError("adaptive session registry key must match its reviewed pack subtype")
         if not self._evaluation_projection_enabled:
-            released = {
+            reviewed_releases = {
                 row["id"]: row["release"]
                 for row in load_coverage_matrix()["subtypes"]
-                if row.get("release", {}).get("state") == "released"
+                if row.get("release", {}).get("state") in {"released", "reviewed_release_ready"}
             }
             for subtype_id, service in self._xingce_adaptive_sessions.items():
-                release = released.get(subtype_id)
+                release = reviewed_releases.get(subtype_id)
                 if release is None or release["pack_id"] != service.pack["pack_id"] or release["pack_version"] != service.pack["pack_version"]:
-                    raise ValueError("production Xingce adaptive pack must exactly match a released coverage row")
+                    raise ValueError("production Xingce adaptive pack must exactly match a reviewed coverage row")
+        available_xingce_subtypes = set(self._xingce_adaptive_sessions)
+        if self._judgment_sessions is not None:
+            available_xingce_subtypes.add("xingce.judgment.conditional_logic")
+        self.xingce_coverage = XingceCoverageCatalog(
+            available_subtype_ids=available_xingce_subtypes,
+        )
 
     def health(self) -> dict[str, Any]:
         store = EventStore(self.database)

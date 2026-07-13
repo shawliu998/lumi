@@ -612,3 +612,25 @@ temporary service stayed at `run_count: 0` throughout.
 This is pre-submit component/browser evidence. It deliberately does not claim
 the learner-only probe, teaching, transfer, KT, or review outcomes; those still
 require the real v2 acceptance run in `docs/P031_ACCEPTANCE.md`.
+
+## Reviewed Xingce local catalog QA — 2026-07-13
+
+A loopback sidecar was started from the immutable reviewed release directories,
+not from the mutable question-bank factory. It registered the reviewed
+conditional-logic package and all 30 reviewed generic Xingce packages.
+
+- The connected catalog showed `31 / 31` locally available subtypes and kept
+  the distinction between content review and human learning-flow acceptance
+  visible.
+- The picker opened the reviewed `表格材料` workspace with its source table,
+  question, options and confidence control in the first viewport. The generic
+  route now passes the canonical `xingce.data.*` subtype identifier rather
+  than rejecting it as an invalid route.
+- At `640 × 720`, the material, options and confidence controls remained
+  reachable without horizontal clipping.
+- Stopping the sidecar produced the explicit local-service error state; after
+  restarting it, the same `重新读取` action restored the workspace.
+
+No answer was selected or submitted during this pass. The learner-only
+first-answer, probe, teaching, no-hint transfer, state update and review
+acceptance remain deliberately unclaimed until a person completes them.
