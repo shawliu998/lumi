@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import copy
+from pathlib import Path
 import unittest
 
 from hermes_domains.xingce_adaptive_pack import (
     XingceAdaptivePackError,
+    load_xingce_adaptive_pack,
     public_record_projection,
     record_sha256,
     validate_xingce_adaptive_documents,
@@ -177,6 +179,13 @@ class XingceAdaptivePackTests(unittest.TestCase):
         self.assertNotIn("correct_option", projection)
         self.assertNotIn("candidate_misconception_ids", projection)
         self.assertNotIn("route_probe_ids", projection)
+
+    def test_original_definition_draft_is_complete_but_cannot_be_registered(self) -> None:
+        root = Path(__file__).resolve().parents[1] / "content" / "xingce" / "judgment" / "lumi-definition-reasoning-v0"
+        pack = load_xingce_adaptive_pack(root)
+        self.assertEqual(pack["subtype_id"], "xingce.judgment.definition")
+        with self.assertRaisesRegex(XingceAdaptivePackError, "content_review_required"):
+            load_xingce_adaptive_pack(root, require_reviewed=True)
 
 
 if __name__ == "__main__":
