@@ -7,8 +7,8 @@ import unittest
 from pathlib import Path
 
 from hermes_domains.xingce_coverage import load_coverage_matrix
-from test_xingce_adaptive_pack import documents_for
-from hermes_domains.xingce_adaptive_pack import record_sha256
+from xingce_adaptive_fixtures import documents_for
+from hermes_domains.xingce_adaptive_pack import record_sha256, reviewed_manifest_sha256
 from hermes_service.xingce_adaptive_session import XingceAdaptiveSessionConfig, XingceAdaptiveSessionService
 from hermes_service.application import SidecarApplication
 
@@ -19,8 +19,8 @@ def reviewed_root(root: Path) -> Path:
     manifest.update({"status": "release_ready", "release_ready": True, "runtime_registration": "allowed_after_human_review"})
     manifest["rights"]["distribution"] = "release_distribution_allowed"
     manifest["human_review_gate"] = {"required": True, "production_load_allowed": True, "review_attestations": [
-        {"review_kind": "logic", "status": "approved", "reviewer_id": "logic-reviewer", "reviewed_at": "2026-07-13", "manifest_sha256": "a" * 64},
-        {"review_kind": "editorial_rights", "status": "approved", "reviewer_id": "rights-reviewer", "reviewed_at": "2026-07-13", "manifest_sha256": "a" * 64},
+        {"review_kind": "logic", "status": "approved", "reviewer_id": "logic-reviewer", "reviewed_at": "2026-07-13", "manifest_sha256": "pending"},
+        {"review_kind": "editorial_rights", "status": "approved", "reviewer_id": "rights-reviewer", "reviewed_at": "2026-07-13", "manifest_sha256": "pending"},
     ]}
     for document in (records, skills, taxonomy): document["review_status"] = "release_ready"
     for record in records["records"]:
@@ -33,6 +33,9 @@ def reviewed_root(root: Path) -> Path:
     data = json.dumps(evidence, ensure_ascii=False, sort_keys=True, indent=2).encode()
     (root / "review-evidence.json").write_bytes(data)
     manifest["artifacts"].append({"path": "review-evidence.json", "sha256": hashlib.sha256(data).hexdigest()})
+    digest = reviewed_manifest_sha256(manifest)
+    for attestation in manifest["human_review_gate"]["review_attestations"]:
+        attestation["manifest_sha256"] = digest
     (root / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
     return root
 

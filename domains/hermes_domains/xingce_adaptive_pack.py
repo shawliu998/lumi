@@ -51,6 +51,20 @@ def canonical_json_sha256(value: Any) -> str:
     ).hexdigest()
 
 
+def reviewed_manifest_sha256(manifest: Mapping[str, Any]) -> str:
+    """Hash the release manifest without the self-referential signatures.
+
+    Review attestations sign the exact release intent, artifact hashes and
+    review-evidence checksum.  The attestation list itself is excluded so a
+    signature can name this digest without creating a hash cycle.
+    """
+    signed = copy.deepcopy(manifest)
+    gate = signed.get("human_review_gate")
+    if isinstance(gate, dict):
+        gate.pop("review_attestations", None)
+    return canonical_json_sha256(signed)
+
+
 def record_sha256(record: Mapping[str, Any]) -> str:
     payload = copy.deepcopy(dict(record))
     payload.pop("record_sha256", None)
@@ -171,6 +185,8 @@ def _validate_manifest(manifest: Mapping[str, Any]) -> Mapping[str, Any]:
         attestations = _require(gate, "review_attestations", list)
         kinds: set[str] = set()
         reviewers: set[str] = set()
+        expected_manifest_sha256 = reviewed_manifest_sha256(manifest)
+        attested_manifest_hashes: set[str] = set()
         for attestation in attestations:
             if not isinstance(attestation, Mapping) or attestation.get("status") != "approved":
                 raise XingceAdaptivePackError("release review attestations must be approved")
@@ -178,9 +194,11 @@ def _validate_manifest(manifest: Mapping[str, Any]) -> Mapping[str, Any]:
             reviewer = _nonempty(attestation.get("reviewer_id"), "reviewer_id")
             kinds.add(kind)
             reviewers.add(reviewer)
-            _sha256(attestation.get("manifest_sha256"), "reviewed manifest sha256")
+            attested_manifest_hashes.add(_sha256(attestation.get("manifest_sha256"), "reviewed manifest sha256"))
         if kinds != _REVIEW_KINDS or len(reviewers) != 2 or len(attestations) != 2:
             raise XingceAdaptivePackError("release requires two different human reviewer attestations")
+        if attested_manifest_hashes != {expected_manifest_sha256}:
+            raise XingceAdaptivePackError("reviewed manifest sha256 does not bind this exact release")
 
     artifacts = _require(manifest, "artifacts", list)
     artifact_paths: set[str] = set()

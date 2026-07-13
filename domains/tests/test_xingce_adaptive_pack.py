@@ -9,6 +9,7 @@ from hermes_domains.xingce_adaptive_pack import (
     load_xingce_adaptive_pack,
     public_record_projection,
     record_sha256,
+    reviewed_manifest_sha256,
     validate_xingce_adaptive_documents,
 )
 from hermes_domains.xingce_coverage import load_coverage_matrix
@@ -52,6 +53,35 @@ class XingceAdaptivePackTests(unittest.TestCase):
             ],
         }
         with self.assertRaisesRegex(XingceAdaptivePackError, "two different"):
+            validate_xingce_adaptive_documents(release, records, skills, taxonomy)
+
+    def test_release_attestations_bind_the_exact_manifest_payload(self) -> None:
+        subtype = next(row for row in self.matrix["subtypes"] if row["id"] == "xingce.judgment.definition")
+        manifest, records, skills, taxonomy = documents_for(subtype)
+        release = copy.deepcopy(manifest)
+        release.update({"status": "release_ready", "release_ready": True, "runtime_registration": "allowed_after_human_review"})
+        release["rights"]["distribution"] = "release_distribution_allowed"
+        release["artifacts"].append({"path": "review-evidence.json", "sha256": "e" * 64})
+        release["human_review_gate"] = {
+            "required": True,
+            "production_load_allowed": True,
+            "review_attestations": [
+                {"review_kind": "logic", "status": "approved", "reviewer_id": "logic-reviewer", "reviewed_at": "2026-07-13", "manifest_sha256": "pending"},
+                {"review_kind": "editorial_rights", "status": "approved", "reviewer_id": "rights-reviewer", "reviewed_at": "2026-07-13", "manifest_sha256": "pending"},
+            ],
+        }
+        for document in (records, skills, taxonomy):
+            document["pack_version"] = release["pack_version"]
+            document["review_status"] = "release_ready"
+        for record in records["records"]:
+            record["review_status"] = "release_ready"
+            record["record_sha256"] = record_sha256(record)
+        digest = reviewed_manifest_sha256(release)
+        for attestation in release["human_review_gate"]["review_attestations"]:
+            attestation["manifest_sha256"] = digest
+        validate_xingce_adaptive_documents(release, records, skills, taxonomy)
+        release["artifacts"][0]["sha256"] = "f" * 64
+        with self.assertRaisesRegex(XingceAdaptivePackError, "exact release"):
             validate_xingce_adaptive_documents(release, records, skills, taxonomy)
 
     def test_public_projection_does_not_expose_scorer_or_candidate_routing(self) -> None:
