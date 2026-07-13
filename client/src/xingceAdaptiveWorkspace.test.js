@@ -14,6 +14,9 @@ test("generic Xingce workspace keeps adaptive evidence and answer modes visible 
   assert.match(source, /aria-label=\{material\.alt_text\}/);
   assert.match(source, /adaptive-diagram-panels/);
   assert.match(source, /只有独立作答才有资格进入状态收据/);
+  assert.match(source, /首答正确，继续独立验证/);
+  assert.match(source, /未见、无提示的迁移题已通过/);
+  assert.doesNotMatch(source, /<p>\{session\.state_update\.reason\}<\/p>/);
   assert.match(source, /displayTitle = undefined/);
   assert.match(source, /title=\{displayTitle\}/);
   assert.doesNotMatch(source, /correct_option|answer_spec|candidate_misconception_ids/);

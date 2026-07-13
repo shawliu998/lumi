@@ -173,14 +173,14 @@ class EntryPolicyDecision:
     facts: tuple[DecisionFact, ...]
     candidate_causes: tuple[CandidateCause, ...]
     probe_plan: ProbePlan
-    next_action: Literal["probe", "retention_or_abstain", "abstain"]
+    next_action: Literal["probe", "independent_transfer", "abstain"]
     historical_context: tuple[HistoricalCandidateEvidence, ...] = ()
     policy_id: str = POLICY_ID
     policy_version: str = POLICY_VERSION
     calibration_status: str = CALIBRATION_STATUS
 
     def __post_init__(self) -> None:
-        if self.next_action == "retention_or_abstain" and self.candidate_causes:
+        if self.next_action == "independent_transfer" and self.candidate_causes:
             raise JudgmentPolicyError("a correct entry answer must not create cause candidates")
         if self.next_action == "probe" and not self.probe_plan.selected_probe_id:
             raise JudgmentPolicyError("probe action requires a selected probe")
@@ -290,9 +290,9 @@ def diagnose_entry(
             probe_plan=ProbePlan(
                 selected_probe_id=None,
                 candidate_actions=(),
-                why_selected="首答正确；不把一次正确作答解释为无错因或已掌握，进入保留/延迟复测或暂不动作。",
+                why_selected="首答正确；不生成错因或微课，改用未见、无提示的独立迁移题验证是否可更新状态。",
             ),
-            next_action="retention_or_abstain",
+            next_action="independent_transfer",
             historical_context=history,
         )
 

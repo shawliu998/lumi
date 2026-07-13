@@ -90,6 +90,22 @@ test("candidate labels are learner-visible hypotheses while internal routing rem
   assert.equal(isValidXingceAdaptiveSessionResult({ ...awaitingProbe, candidate_causes: [{ ...causes[0], route_probe_ids: ["P01"] }, causes[1]] }, { subtypeId, stages: ["awaiting_probe"] }), false);
 });
 
+test("a correct entry exposes only a distinct unassisted transfer, not a fabricated diagnosis", () => {
+  const direct = {
+    schema_version: "lumi.xingce-adaptive-session.v1",
+    session_id: sessionId,
+    state_version: 1,
+    stage: "awaiting_transfer",
+    entry: { ...entry, selected_response: "A", correct: true, confidence: "high", elapsed_seconds: 8 },
+    candidate_causes: [],
+    teaching: null,
+    transfer,
+    next_step: "answer_transfer",
+  };
+  assert.equal(isValidXingceAdaptiveSessionResult(direct, { subtypeId, stages: ["awaiting_transfer"] }), true);
+  assert.equal(isValidXingceAdaptiveSessionResult({ ...direct, candidate_causes: causes }, { subtypeId, stages: ["awaiting_transfer"] }), false);
+});
+
 test("replay restores only public, trace-verified generic learning states", () => {
   const completed = {
     schema_version: "lumi.xingce-adaptive-session.v1",

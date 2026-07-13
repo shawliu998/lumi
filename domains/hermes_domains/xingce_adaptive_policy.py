@@ -64,7 +64,8 @@ class EntryDecision:
     facts: tuple[dict[str, Any], ...]
     candidates: tuple[CandidateHypothesis, ...]
     probe_record_id: str | None
-    next_step: Literal["probe", "review_or_stop"]
+    next_step: Literal["probe", "independent_transfer"]
+    transfer_record_id: str | None = None
     policy_id: str = POLICY_ID
     policy_version: str = POLICY_VERSION
     calibration_status: str = CALIBRATION_STATUS
@@ -131,6 +132,27 @@ def _facts(prefix: str, observation: Observation, correct: bool) -> tuple[dict[s
     )
 
 
+def _independent_transfer_for_entry(
+    index: Mapping[str, Mapping[str, Any]], entry: Mapping[str, Any]
+) -> Mapping[str, Any]:
+    """Select an authored unseen transfer for an entry without inferring a cause."""
+
+    transfer = next(
+        (
+            record
+            for record in index.values()
+            if record.get("role") == "independent_transfer"
+            and record.get("requires_no_hints") is True
+            and record.get("independence_group") != entry.get("independence_group")
+            and set(record.get("target_skill_ids", [])).intersection(entry.get("target_skill_ids", []))
+        ),
+        None,
+    )
+    if transfer is None:
+        raise XingceAdaptivePolicyError("entry has no unseen independent transfer for its skill")
+    return transfer
+
+
 def diagnose_entry(
     records: Sequence[Mapping[str, Any]], *, scorer: str, entry_record_id: str, observation: Observation
 ) -> EntryDecision:
@@ -143,7 +165,16 @@ def diagnose_entry(
     correct = _score(entry, scorer, observation.selected_response)
     facts = _facts(f"entry:{entry_record_id}", observation, correct)
     if correct:
-        return EntryDecision(entry_record_id, True, facts, (), None, "review_or_stop")
+        transfer = _independent_transfer_for_entry(index, entry)
+        return EntryDecision(
+            entry_record_id,
+            True,
+            facts,
+            (),
+            None,
+            "independent_transfer",
+            str(transfer["record_id"]),
+        )
     causes = entry.get("candidate_misconception_ids")
     route_ids = entry.get("route_probe_ids")
     if not isinstance(causes, list) or len(causes) < 2 or not isinstance(route_ids, list):
@@ -193,19 +224,7 @@ def resolve_probe(
         None,
     )
     entry_record = _record(index, entry.entry_record_id)
-    entry_groups = {entry_record.get("independence_group")}
-    transfer = next(
-        (
-            record for record in index.values()
-            if record.get("role") == "independent_transfer"
-            and record.get("requires_no_hints") is True
-            and record.get("independence_group") not in entry_groups
-            and set(record.get("target_skill_ids", [])).intersection(entry_record.get("target_skill_ids", []))
-        ),
-        None,
-    )
-    if transfer is None:
-        raise XingceAdaptivePolicyError("probe has no unseen independent transfer for the entry skill")
+    transfer = _independent_transfer_for_entry(index, entry_record)
     return ProbeDecision(
         str(probe["record_id"]), correct, tuple(updates),
         str(teaching["record_id"]) if teaching is not None else None,
@@ -214,12 +233,16 @@ def resolve_probe(
 
 
 def independent_transfer_proposal(
-    records: Sequence[Mapping[str, Any]], *, scorer: str, entry: EntryDecision, probe: ProbeDecision, observation: Observation
+    records: Sequence[Mapping[str, Any]], *, scorer: str, entry: EntryDecision,
+    probe: ProbeDecision | None, observation: Observation
 ) -> dict[str, Any]:
     """Create a bounded KT-commit proposal, never mutate learner state itself."""
 
     index = _index(records)
-    transfer = _record(index, probe.transfer_record_id, "independent_transfer")
+    transfer_record_id = probe.transfer_record_id if probe is not None else entry.transfer_record_id
+    if not transfer_record_id:
+        raise XingceAdaptivePolicyError("entry route has no independent transfer")
+    transfer = _record(index, transfer_record_id, "independent_transfer")
     entry_record = _record(index, entry.entry_record_id)
     if transfer.get("requires_no_hints") is not True or transfer.get("independence_group") == entry_record.get("independence_group"):
         raise XingceAdaptivePolicyError("transfer is not independent")

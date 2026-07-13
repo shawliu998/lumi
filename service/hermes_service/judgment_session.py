@@ -56,20 +56,20 @@ _LEARNER_VISIBLE_ENTRY_FACT_KINDS = frozenset(
 )
 _RECENT_SESSION_LIMIT = 6
 _RECENT_SESSION_EVENT_SEQUENCES = {
-    "awaiting_probe": ("judgment_entry_submitted",),
-    "completed_no_error": ("judgment_entry_submitted",),
-    "awaiting_transfer": ("judgment_entry_submitted", "judgment_probe_submitted"),
-    "committing_transfer": (
-        "judgment_entry_submitted",
-        "judgment_probe_submitted",
-        "judgment_transfer_observed",
-    ),
-    "completed": (
-        "judgment_entry_submitted",
-        "judgment_probe_submitted",
-        "judgment_transfer_observed",
-        "judgment_transfer_receipt",
-    ),
+    "awaiting_probe": {("judgment_entry_submitted",)},
+    "completed_no_error": {("judgment_entry_submitted",)},
+    "awaiting_transfer": {
+        ("judgment_entry_submitted",),
+        ("judgment_entry_submitted", "judgment_probe_submitted"),
+    },
+    "committing_transfer": {
+        ("judgment_entry_submitted", "judgment_transfer_observed"),
+        ("judgment_entry_submitted", "judgment_probe_submitted", "judgment_transfer_observed"),
+    },
+    "completed": {
+        ("judgment_entry_submitted", "judgment_transfer_observed", "judgment_transfer_receipt"),
+        ("judgment_entry_submitted", "judgment_probe_submitted", "judgment_transfer_observed", "judgment_transfer_receipt"),
+    },
 }
 
 
@@ -418,11 +418,12 @@ class JudgmentSessionService:
                 )
             self._assert_state(events, expected_version, expected_stage, "awaiting_transfer")
             entry_event = _require_event(events, "judgment_entry_submitted")
-            probe_event = _require_event(events, "judgment_probe_submitted")
-            transfer = self._assessment_record(
-                str(probe_event.payload["public_result"]["transfer"]["record_id"]),
-                role="independent_transfer",
-            )
+            probe_event = next((event for event in events if event.kind == "judgment_probe_submitted"), None)
+            if probe_event is not None:
+                transfer_record_id = str(probe_event.payload["public_result"]["transfer"]["record_id"])
+            else:
+                transfer_record_id = str(entry_event.payload["public_result"]["transfer"]["record_id"])
+            transfer = self._assessment_record(transfer_record_id, role="independent_transfer")
             selected = _option(selected_option)
             correct = selected == str(transfer["correct_option"])
             try:
@@ -547,12 +548,20 @@ class JudgmentSessionService:
                     for action in decision.probe_plan.candidate_actions
                 ],
             },
-            "next_step": "answer_probe" if stage == "awaiting_probe" else "review_or_stop",
+            "next_step": "answer_probe" if stage == "awaiting_probe" else "answer_transfer",
         }
         if decision.probe_plan.selected_probe_id:
             result["probe"] = self._public_record(
                 self._assessment_record(decision.probe_plan.selected_probe_id, role="probe")
             )
+        if stage == "awaiting_transfer":
+            transfer = self._direct_transfer_for_entry(entry)
+            result["teaching"] = None
+            result["transfer"] = self._public_record(transfer)
+            result["independence"] = {
+                "requires_no_hints": True,
+                "distinct_from": [str(entry["record_id"])],
+            }
         return result
 
     def _probe_projection(
@@ -781,7 +790,7 @@ class JudgmentSessionService:
         command_id: str,
     ) -> dict[str, Any]:
         entry_event = _require_event(events, "judgment_entry_submitted")
-        probe_event = _require_event(events, "judgment_probe_submitted")
+        probe_event = next((event for event in events if event.kind == "judgment_probe_submitted"), None)
         receipts = self._commit_transfer(
             learner_store,
             run_id=run_id,
@@ -864,7 +873,7 @@ class JudgmentSessionService:
         confidence: str,
         elapsed_seconds: float,
         entry_event: TraceEvent,
-        probe_event: TraceEvent,
+        probe_event: TraceEvent | None,
     ) -> list[dict[str, Any]]:
         event_id = f"evt_{run_id}_transfer"
         learner_store.append_evidence(
@@ -880,14 +889,17 @@ class JudgmentSessionService:
                     "response_time_seconds": elapsed_seconds,
                     "hint_count": 0,
                     "independently_answered": True,
-                    "attempt_ordinal": 3,
+                    "attempt_ordinal": 3 if probe_event is not None else 2,
                 },
             )
         )
         excluded = [
-            _content_signature(self._entry_assessment_record(str(entry_event.payload["entry_record_id"]))),
-            _content_signature(self._assessment_record(str(probe_event.payload["probe_record_id"]), role="probe")),
+            _content_signature(self._entry_assessment_record(str(entry_event.payload["entry_record_id"])))
         ]
+        if probe_event is not None:
+            excluded.append(
+                _content_signature(self._assessment_record(str(probe_event.payload["probe_record_id"]), role="probe"))
+            )
         receipts: list[dict[str, Any]] = []
         for ordinal, skill_id in enumerate(transfer["target_skill_ids"], start=1):
             verification_id = f"vr_{_digest(f'{run_id}:{skill_id}:{ordinal}') }"
@@ -1072,8 +1084,8 @@ class JudgmentSessionService:
         stage = events[-1].payload.get("stage_after")
         if not isinstance(stage, str):
             raise JudgmentSessionError("judgment session history has an invalid stage")
-        expected_kinds = _RECENT_SESSION_EVENT_SEQUENCES.get(stage)
-        if expected_kinds is None or tuple(event.kind for event in events) != expected_kinds:
+        expected_sequences = _RECENT_SESSION_EVENT_SEQUENCES.get(stage)
+        if expected_sequences is None or tuple(event.kind for event in events) not in expected_sequences:
             raise JudgmentSessionError("judgment session history has an unsupported event sequence")
         return {
             "session_id": entry_event.run_id,
@@ -1153,6 +1165,22 @@ class JudgmentSessionService:
             raise JudgmentSessionError(f"reviewed pack has no entry diagnostic {record_id}")
         return record
 
+    def _direct_transfer_for_entry(self, entry: Mapping[str, Any]) -> Mapping[str, Any]:
+        transfer = next(
+            (
+                record
+                for record in self._records
+                if record.get("role") == "independent_transfer"
+                and record.get("requires_no_hints") is True
+                and record.get("independence_group") != entry.get("independence_group")
+                and set(record.get("target_skill_ids", [])).intersection(entry.get("target_skill_ids", []))
+            ),
+            None,
+        )
+        if transfer is None:
+            raise JudgmentSessionError("reviewed pack has no unseen transfer for the correct entry")
+        return transfer
+
     def _public_record(self, record: Mapping[str, Any]) -> dict[str, Any]:
         allowed = _PUBLIC_TEACHING_FIELDS if record.get("role") == "teaching_asset" else _PUBLIC_ASSESSMENT_FIELDS
         projected = {key: record[key] for key in allowed if key in record}
@@ -1174,8 +1202,8 @@ class JudgmentSessionService:
 def _entry_stage(decision: EntryPolicyDecision) -> str:
     if decision.next_action == "probe":
         return "awaiting_probe"
-    if decision.next_action == "retention_or_abstain":
-        return "completed_no_error"
+    if decision.next_action == "independent_transfer":
+        return "awaiting_transfer"
     return "blocked_insufficient_evidence"
 
 

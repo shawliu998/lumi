@@ -209,7 +209,7 @@ class JudgmentPolicyTests(unittest.TestCase):
             ),
         )
 
-        self.assertEqual(decision.next_action, "retention_or_abstain")
+        self.assertEqual(decision.next_action, "independent_transfer")
         self.assertEqual(decision.candidate_causes, ())
         self.assertTrue(decision.probe_plan.is_abstention)
         self.assertEqual(decision.probe_plan.candidate_actions, ())

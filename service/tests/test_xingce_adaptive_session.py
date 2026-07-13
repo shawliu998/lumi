@@ -70,6 +70,37 @@ class XingceAdaptiveSessionTests(unittest.TestCase):
         )
         self.assertTrue(self.service.replay(entry["session_id"])["trace_verified"])
 
+    def test_correct_entry_requires_an_unseen_transfer_before_state_commit(self) -> None:
+        entry = self.service.start(
+            entry_record_id="D01",
+            selected_response="A",
+            confidence="high",
+            elapsed_seconds=6,
+            command_id="c_xingce_correct_entry",
+        )
+        self.assertEqual(entry["stage"], "awaiting_transfer")
+        self.assertTrue(entry["entry"]["correct"])
+        self.assertEqual(entry["candidate_causes"], [])
+        self.assertIsNone(entry["teaching"])
+        self.assertEqual(entry["transfer"]["record_id"], "V01")
+
+        completed = self.service.answer_transfer(
+            session_id=entry["session_id"],
+            expected_version=1,
+            selected_response="A",
+            confidence="high",
+            elapsed_seconds=8,
+            command_id="c_xingce_correct_transfer",
+        )
+        self.assertTrue(completed["state_update"]["eligible"])
+        self.assertEqual(completed["review_task"]["kind"], "delayed_retention")
+        replay = self.service.replay(entry["session_id"])
+        self.assertEqual([row["kind"] for row in replay["timeline"]], [
+            "xingce_adaptive_entry",
+            "xingce_adaptive_transfer",
+            "xingce_adaptive_receipt",
+        ])
+
     def test_transfer_recovers_after_persisting_command_before_receipt(self) -> None:
         """A crash-recovery test in the isolated evaluation namespace only."""
         entry = self.service.start(entry_record_id="D01", selected_response="B", confidence="high", elapsed_seconds=8, command_id="crash-entry")

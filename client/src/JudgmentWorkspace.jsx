@@ -155,7 +155,7 @@ function recentSessionCopy(session) {
   if (session.stage === "completed_no_error") return "本题未观察到需要辨析的错误候选；没有强行生成教学或复习。";
   if (session.stage === "completed") return "迁移评分与状态收据已写入本机；可回放查看依据。";
   if (session.stage === "awaiting_probe") return "首答已写入，仍在等待最小探查。";
-  if (session.stage === "awaiting_transfer") return "探查与微课已完成，仍在等待无提示迁移。";
+  if (session.stage === "awaiting_transfer") return "首答已完成，仍在等待无提示迁移验证。";
   return "上一次迁移写入在中断时停留在收据提交边界；Lumi 不会猜测或重复作答。";
 }
 
@@ -319,6 +319,16 @@ function ProbeOutcomePanel({ session }) {
       <ul>
         {updates.map((update) => <li key={update.cause_id}><strong>{update.cause_id}</strong><span>{update.outcome === "support" ? "得到支持" : update.outcome === "refute" ? "得到反驳" : "证据仍不足"}</span><p>{update.evidence}</p><small>{candidateStatusCopy(update.status)}</small></li>)}
       </ul>
+    </section>
+  );
+}
+
+function DirectVerificationPanel({ session }) {
+  if (session?.stage !== "awaiting_transfer" || session?.entry?.correct !== true || session?.probe) return null;
+  return (
+    <section className="judgment-panel probe-outcome-panel" aria-labelledby="direct-verification-heading">
+      <header><div><CheckCircle size={16} /><h2 id="direct-verification-heading">首答正确，继续独立验证</h2></div><small>暂不推断错因</small></header>
+      <p>一次正确作答还不足以提高掌握状态。下面使用不同题面验证你能否无提示地再次应用。</p>
     </section>
   );
 }
@@ -540,6 +550,7 @@ export function JudgmentWorkspace({ onServiceReachable = undefined }) {
   const showingEntry = !session;
   const showingProbe = session?.stage === "awaiting_probe";
   const showingTransfer = session?.stage === "awaiting_transfer";
+  const directVerification = showingTransfer && session?.entry?.correct === true && !session?.probe;
   const completed = session?.stage === "completed";
   const noError = session?.stage === "completed_no_error";
   const retryCommand = pendingCommand?.kind === submission.kind
@@ -559,7 +570,7 @@ export function JudgmentWorkspace({ onServiceReachable = undefined }) {
           {showingEntry && entryItems.length > 1 && <section className="entry-selector" aria-labelledby="entry-selector-heading"><div><h2 id="entry-selector-heading">选择本轮起点</h2><p>从一个未完成的条件推理诊断开始；两条路径都遵守相同的证据与验证规则。</p></div><div role="list" aria-label="可选判断推理起点">{entryItems.map((item) => <button key={item.record_id} className={entry?.record_id === item.record_id ? "selected" : ""} type="button" role="listitem" aria-pressed={entry?.record_id === item.record_id} onClick={() => { setSelectedEntryId(item.record_id); setEntryDraft(EMPTY_DRAFT); setStartedAt(Date.now()); setElapsed(0); }} disabled={submission.inFlight}><strong>{item.role === "routing_diagnostic" ? "推理有效性" : "条件方向"}</strong><span>{item.title}</span></button>)}</div></section>}
           {showingEntry && activeRecord && <JudgmentQuestion record={activeRecord} draft={entryDraft} onDraft={setEntryDraft} elapsed={elapsed} label="第一步 · 首答" boundary="请先独立判断。提交后才会创建本机记录并计算候选错因。" submitLabel="提交首答并创建本机记录" onSubmit={submitEntry} inFlight={submission.inFlight} showRationale />}
           {showingProbe && <><DiagnosisPanel session={session} /><JudgmentQuestion record={activeRecord} draft={probeDraft} onDraft={setProbeDraft} elapsed={elapsed} label="第二步 · 最小探查" boundary="这题只用来区分候选原因。无论结果如何，候选都不会被直接确认。" submitLabel="提交探查作答" onSubmit={() => submitContinuation("probe")} inFlight={submission.inFlight} lockInputs={submission.kind === "probe" && Boolean(submission.error)} /></>}
-          {showingTransfer && <><ProbeOutcomePanel session={session} /><TeachingPanel session={session} /><JudgmentQuestion record={activeRecord} draft={transferDraft} onDraft={setTransferDraft} elapsed={elapsed} label="第三步 · 无提示迁移" boundary="这是一道未见过的平行题。请不要请求提示；只有独立作答才可能更新状态。" submitLabel="提交无提示迁移" onSubmit={() => submitContinuation("transfer")} inFlight={submission.inFlight} lockInputs={submission.kind === "transfer" && Boolean(submission.error)} /></>}
+          {showingTransfer && <><ProbeOutcomePanel session={session} /><TeachingPanel session={session} /><DirectVerificationPanel session={session} /><JudgmentQuestion record={activeRecord} draft={transferDraft} onDraft={setTransferDraft} elapsed={elapsed} label={directVerification ? "第二步 · 独立验证" : "第三步 · 无提示迁移"} boundary="这是一道未见过的平行题。请不要请求提示；只有独立作答才可能更新状态。" submitLabel="提交无提示迁移" onSubmit={() => submitContinuation("transfer")} inFlight={submission.inFlight} lockInputs={submission.kind === "transfer" && Boolean(submission.error)} /></>}
           {(completed || noError) && <section className="judgment-complete"><header><CheckCircle size={21} weight="fill" /><div><h2>{completed ? "本轮学习已完成" : "本题学习已结束"}</h2><p>{completed ? "迁移题评分与状态写入已由本机服务返回收据。" : "首答没有产生可解释的错因候选；Lumi 不会虚构诊断或迁移。"}</p></div></header>{completed && <ReceiptPanel session={session} />}<button className="button secondary" type="button" onClick={reloadWorkspace}>开始新的独立检查</button></section>}
           <SubmissionNotice state={submission} onSafeRetry={retryCommand} onReplay={session?.session_id ? loadReplay : undefined} />
           {session?.session_id && <ReplayPanel replay={replay} state={replayState} onLoad={loadReplay} />}

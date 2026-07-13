@@ -634,3 +634,33 @@ conditional-logic package and all 30 reviewed generic Xingce packages.
 No answer was selected or submitted during this pass. The learner-only
 first-answer, probe, teaching, no-hint transfer, state update and review
 acceptance remain deliberately unclaimed until a person completes them.
+
+## Correct-first independent verification QA — 2026-07-13
+
+Three voluntary human-local conditional-logic entries were observed as correct
+first answers under the preceding policy. They produced no candidate cause, KT
+update or review task, but also ended before an independent verification. That
+real usability evidence drove the current correction: a correct entry skips
+diagnosis and teaching, then exposes an authored, unseen, no-hint transfer item.
+
+The corrected flow was exercised only in a disposable
+`evaluation_fixture` database for engineering QA:
+
+- conditional logic rendered `首答正确，继续独立验证`, skipped candidate and
+  teaching panels, then produced a three-event verified replay
+  (`entry_submitted → transfer_observed → transfer_receipt`);
+- the generic `逻辑填空` workspace followed the same direct route and labelled
+  the skipped step `无需探查` rather than presenting a fictitious diagnosis;
+- passing the independent transfer produced bounded state receipts and a
+  delayed-retention task with a date, success criterion and skip consequence;
+- learner-facing completion copy translates internal policy reason codes into
+  plain Chinese;
+- at `640 × 720`, `document.scrollWidth === clientWidth === 640`; the status
+  receipt and replay remained reachable without horizontal clipping;
+- browser console warnings and errors were `[]`.
+
+The evaluation answers are isolated from the human namespace and are not a
+human acceptance claim. The next honest evidence is a fresh voluntary learner
+answer on the rebuilt product: if the first answer is correct, the learner must
+complete the direct transfer; if incorrect, the existing probe → teaching →
+transfer route remains authoritative.

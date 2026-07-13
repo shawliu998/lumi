@@ -256,7 +256,7 @@ export async function startJudgmentSession({
       ...(rationale?.trim() ? { rationale: rationale.trim() } : {}),
     },
   });
-  assertJudgmentSessionResult(result, { expectedStages: ["awaiting_probe", "completed_no_error"] });
+  assertJudgmentSessionResult(result, { expectedStages: ["awaiting_probe", "awaiting_transfer", "completed_no_error"] });
   return result;
 }
 
@@ -463,13 +463,20 @@ function assertJudgmentSessionResult(result, { expectedStages }) {
     ) throw new HermesApiError("本机服务没有返回可解释的探查步骤。", { kind: "contract", code: "incomplete_judgment_diagnosis" });
   }
   if (result.stage === "awaiting_transfer") {
+    const probedRoute = isValidJudgmentPublicRecord(result.probe, "probe")
+      && result.teaching?.asset
+      && isValidJudgmentTeachingAsset(result.teaching.asset);
+    const directRoute = isValidJudgmentPublicRecord(result.entry, ["entry_diagnostic", "routing_diagnostic"])
+      && result.entry.correct === true
+      && Array.isArray(result.candidate_causes)
+      && result.candidate_causes.length === 0
+      && result.teaching === null
+      && result.probe === undefined;
     if (
-      !isValidJudgmentPublicRecord(result.probe, "probe")
+      !(probedRoute || directRoute)
       || !isValidJudgmentPublicRecord(result.transfer, "independent_transfer")
-      || !result.teaching?.asset
-      || !isValidJudgmentTeachingAsset(result.teaching.asset)
       || result.independence?.requires_no_hints !== true
-    ) throw new HermesApiError("本机服务没有返回安全的教学和迁移步骤。", { kind: "contract", code: "incomplete_judgment_transfer" });
+    ) throw new HermesApiError("本机服务没有返回安全的独立迁移步骤。", { kind: "contract", code: "incomplete_judgment_transfer" });
   }
   if (result.stage === "completed") {
     if (

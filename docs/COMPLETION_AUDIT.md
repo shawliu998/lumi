@@ -25,13 +25,21 @@ mean population learning efficacy or production distribution has been proved.
 > type's full observe → diagnose → probe → teach → no-hint transfer → state
 > receipt → review flow. No automated answer may be used for that walkthrough,
 > and no learning-effect claim follows from it.
+>
+> Three voluntary human-local conditional-logic first answers were correct
+> under the preceding policy and honestly created no diagnosis, KT update or
+> review task. They exposed that the correct path ended before independent
+> verification. The current source now routes a correct entry directly to an
+> authored unseen transfer, while the wrong-answer route still requires probe
+> and teaching. Browser completion evidence for that correction is isolated
+> `evaluation_fixture` QA; a fresh voluntary human transfer is still pending.
 
 | 2026-07-13 all-Xingce delivery slice | Evidence | Explicit limit |
 | --- | --- | --- |
 | 30 reviewed generic packs registered locally | `domains/released/`; `bf06664`; `c9d29db`; `service/hermes_service/cli.py` | each pack remains `reviewed_release_ready`, not a claim of human effectiveness |
-| 31/31 local catalog + Chinese type selector | real loopback/browser QA in `client/design-qa.md`; `client/`; `service/` | no generic learner answer was entered during QA |
-| Packaged macOS candidate | debug `Lumi.app`; bundled tree SHA-256 `23fee5b1801427d9013729d955e66966f8f2885efdc8c25fb0c5376501171701`; strict/deep signature and lifecycle checks | ARM64, ad-hoc signed only; not notarized or production-distributed |
-| Full deterministic release evidence | `evals/reports/latest.json`, run `run-20260713T112758Z`: 17/17 PASS; `scripts/verify_core.py` PASS | local/evaluation-fixture evidence is kept separate from human learning evidence |
+| 31/31 local catalog + Chinese type selector | real loopback/browser QA in `client/design-qa.md`; `client/`; `service/` | automated direct-route answers use an isolated evaluation namespace and do not count as human acceptance |
+| Packaged macOS candidate | debug `Lumi.app`; bundled tree SHA-256 `0de1f24df5096980c6f410d61a8d464d757c2c7b8b3ce39d7dbbd4c3a1a92b80`; strict/deep signature and lifecycle checks | ARM64, ad-hoc signed only; not notarized or production-distributed |
+| Full deterministic release evidence | `evals/reports/latest.json`, run `run-20260713T154334Z`: 17/17 PASS; `scripts/verify_core.py` PASS | local/evaluation-fixture evidence is kept separate from human learning evidence |
 
 ## Historical judgment-reasoning implementation slice
 

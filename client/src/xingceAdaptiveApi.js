@@ -52,7 +52,7 @@ export async function startXingceAdaptiveSession({
       ...(rationale?.trim() ? { rationale: rationale.trim() } : {}),
     },
   });
-  assertSessionResult(payload, { subtypeId, stages: ["awaiting_probe", "completed_no_error"] });
+  assertSessionResult(payload, { subtypeId, stages: ["awaiting_probe", "awaiting_transfer", "completed_no_error"] });
   return payload;
 }
 
@@ -158,9 +158,18 @@ function assertSessionResult(result, { subtypeId, stages, allowPackOmission = fa
     if (!isObservedRecord(result.entry, ["entry_diagnostic", "routing_diagnostic"]) || !isValidXingceAdaptiveRecord(result.probe, ["probe"]) || !validCandidates(result.candidate_causes) || result.next_step !== "answer_probe") failResult("诊断步骤缺少可解释的本机证据。");
   }
   if (result.stage === "awaiting_transfer") {
-    if (!isObservedRecord(result.probe, ["probe"]) || !isValidXingceAdaptiveRecord(result.transfer, ["independent_transfer"]) || !(result.teaching === null || isValidXingceAdaptiveRecord(result.teaching, ["teaching_asset"])) || result.next_step !== "answer_transfer") failResult("教学或迁移步骤不完整。");
+    const probedRoute = isObservedRecord(result.probe, ["probe"])
+      && (result.teaching === null || isValidXingceAdaptiveRecord(result.teaching, ["teaching_asset"]));
+    const directRoute = isObservedRecord(result.entry, ["entry_diagnostic", "routing_diagnostic"])
+      && result.entry.correct === true
+      && Array.isArray(result.candidate_causes)
+      && result.candidate_causes.length === 0
+      && result.teaching === null
+      && result.probe === undefined;
+    if (!(probedRoute || directRoute) || !isValidXingceAdaptiveRecord(result.transfer, ["independent_transfer"]) || result.next_step !== "answer_transfer") failResult("独立验证步骤不完整。");
   }
   if (result.stage === "completed") {
+    if (result.learning_route !== undefined && !["diagnostic_probe", "direct_verification"].includes(result.learning_route)) failResult("学习路径标记不完整。");
     if (!isCompletedTransfer(result.transfer) || !isStateUpdate(result.state_update) || !isReviewTask(result.review_task) || !["delayed_review", "independent_retry"].includes(result.next_step)) failResult("状态收据或复习任务不完整。");
   }
   if (result.stage === "completed_no_error") {

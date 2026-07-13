@@ -234,14 +234,17 @@ class JudgmentSessionTests(unittest.TestCase):
 
     def test_workspace_exposes_only_a_safe_owned_recent_session_index(self) -> None:
         service = self.service()
-        completed_without_error = service.start(
+        direct_verification = service.start(
             entry_record_id="D01",
             selected_option="A",
             confidence="high",
             elapsed_seconds=7,
             command_id="c_recent_owner_entry_0001",
         )
-        self.assertEqual(completed_without_error["stage"], "completed_no_error")
+        self.assertEqual(direct_verification["stage"], "awaiting_transfer")
+        self.assertEqual(direct_verification["candidate_causes"], [])
+        self.assertIsNone(direct_verification["teaching"])
+        self.assertEqual(direct_verification["transfer"]["record_id"], "V01")
 
         other_learner = self.service(learner_id="other-local-learner")
         other_learner.start(
@@ -255,11 +258,11 @@ class JudgmentSessionTests(unittest.TestCase):
         workspace = service.workspace()
         self.assertEqual(len(workspace["recent_sessions"]), 1)
         recent = workspace["recent_sessions"][0]
-        self.assertEqual(recent["session_id"], completed_without_error["session_id"])
-        self.assertEqual(recent["stage"], "completed_no_error")
+        self.assertEqual(recent["session_id"], direct_verification["session_id"])
+        self.assertEqual(recent["stage"], "awaiting_transfer")
         self.assertEqual(recent["entry"], {"record_id": "D01", "title": "只有：从结果回推必要条件"})
         self.assertTrue(recent["replay_available"])
-        self.assertFalse(recent["resume_available"])
+        self.assertTrue(recent["resume_available"])
         self.assertEqual(recent["event_count"], 1)
         rendered = json.dumps(workspace, ensure_ascii=False)
         for private_or_response_key in (
@@ -272,6 +275,38 @@ class JudgmentSessionTests(unittest.TestCase):
             "state_receipts",
         ):
             self.assertNotIn(private_or_response_key, rendered)
+
+    def test_correct_entry_commits_only_after_direct_unseen_transfer(self) -> None:
+        service = self.service()
+        started = service.start(
+            entry_record_id="D01",
+            selected_option="A",
+            confidence="high",
+            elapsed_seconds=7,
+            command_id="c_direct_entry_0001",
+        )
+        self.assertEqual(started["stage"], "awaiting_transfer")
+        self.assertEqual(started["candidate_causes"], [])
+        self.assertNotIn("probe", started)
+        self.assertIsNone(started["teaching"])
+
+        completed = service.answer_transfer(
+            session_id=started["session_id"],
+            expected_version=1,
+            expected_stage="awaiting_transfer",
+            selected_option="D",
+            confidence="high",
+            elapsed_seconds=10,
+            command_id="c_direct_transfer_0001",
+        )
+        self.assertEqual(completed["stage"], "completed")
+        self.assertEqual(completed["review_task"]["kind"], "delayed_retention")
+        self.assertTrue(all(row["state_delta"]["commit_status"] == "committed" for row in completed["state_receipts"]))
+        replay = service.replay(started["session_id"])
+        self.assertEqual(
+            [row["kind"] for row in replay["timeline"]],
+            ["judgment_entry_submitted", "judgment_transfer_observed", "judgment_transfer_receipt"],
+        )
 
     def test_workspace_marks_an_interrupted_owned_session_resumable(self) -> None:
         service = self.service()

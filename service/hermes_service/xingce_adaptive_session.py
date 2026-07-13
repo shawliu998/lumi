@@ -69,7 +69,8 @@ class XingceAdaptiveSessionService:
             events = store.events(run_id)
             if events:
                 return self._replay_command(events, command_id, selected_response, confidence, elapsed_seconds)
-            event = store.append_if_version(run_id, 0, "xingce_adaptive_entry", self._payload("awaiting_probe" if decision.next_step == "probe" else "completed_no_error", command_id, {"entry_record_id": entry_record_id, "selected_response": selected_response, "confidence": confidence, "elapsed_seconds": elapsed_seconds, "rationale": rationale, "public_result": public}))
+            stage = "awaiting_probe" if decision.next_step == "probe" else "awaiting_transfer"
+            event = store.append_if_version(run_id, 0, "xingce_adaptive_entry", self._payload(stage, command_id, {"entry_record_id": entry_record_id, "selected_response": selected_response, "confidence": confidence, "elapsed_seconds": elapsed_seconds, "rationale": rationale, "public_result": public}))
             self._append_evidence(learner, event, entry, observation, "attempt", decision.correct)
             for candidate in decision.candidates:
                 learner.append_hypothesis(self._hypothesis(event, candidate.cause_id, "unconfirmed", entry))
@@ -105,12 +106,12 @@ class XingceAdaptiveSessionService:
         store, learner = EventStore(self.database), LearnerStateStore(self.database)
         try:
             events = self._events(store, session_id)
-            if len(events) >= 4 and events[-1].kind == "xingce_adaptive_receipt":
+            if events[-1].kind == "xingce_adaptive_receipt":
                 transfer_event, receipt = events[-2], events[-1].payload
                 if transfer_event.payload.get("command_id") != command_id or transfer_event.payload.get("selected_response") != selected_response or transfer_event.payload.get("confidence") != confidence or transfer_event.payload.get("elapsed_seconds") != elapsed_seconds:
                     raise XingceAdaptiveSessionError("command id is already bound to a different transfer")
                 return receipt["public_result"]
-            if len(events) == 3 and events[-1].kind == "xingce_adaptive_transfer":
+            if events[-1].kind == "xingce_adaptive_transfer":
                 event = events[-1]
                 self._same_transfer_command(event, command_id, selected_response, confidence, elapsed_seconds)
                 return self._complete_transfer(store, learner, events, event)
@@ -144,7 +145,7 @@ class XingceAdaptiveSessionService:
         safe whether the interruption occurred before, during, or after the
         learner-state writes.  Only the missing trace receipt is appended.
         """
-        entry_event, probe_event = events[0], events[1]
+        entry_event = events[0]
         entry_id = str(entry_event.payload["entry_record_id"])
         entry_decision = diagnose_entry(
             self.records,
@@ -156,16 +157,19 @@ class XingceAdaptiveSessionService:
                 float(entry_event.payload["elapsed_seconds"]),
             ),
         )
-        probe_decision = resolve_probe(
-            self.records,
-            scorer=self.pack["scorer"],
-            entry=entry_decision,
-            observation=Observation(
-                str(probe_event.payload["selected_response"]),
-                str(probe_event.payload["confidence"]),
-                float(probe_event.payload["elapsed_seconds"]),
-            ),
-        )
+        probe_event = next((row for row in events if row.kind == "xingce_adaptive_probe"), None)
+        probe_decision = None
+        if probe_event is not None:
+            probe_decision = resolve_probe(
+                self.records,
+                scorer=self.pack["scorer"],
+                entry=entry_decision,
+                observation=Observation(
+                    str(probe_event.payload["selected_response"]),
+                    str(probe_event.payload["confidence"]),
+                    float(probe_event.payload["elapsed_seconds"]),
+                ),
+            )
         observation = Observation(
             str(event.payload["selected_response"]),
             str(event.payload["confidence"]),
@@ -178,13 +182,27 @@ class XingceAdaptiveSessionService:
             probe=probe_decision,
             observation=observation,
         )
-        transfer = self._record(probe_decision.transfer_record_id, {"independent_transfer"})
+        transfer_record_id = (
+            probe_decision.transfer_record_id
+            if probe_decision is not None
+            else entry_decision.transfer_record_id
+        )
+        if transfer_record_id is None:
+            raise XingceAdaptiveSessionError("session has no independent transfer")
+        transfer = self._record(transfer_record_id, {"independent_transfer"})
         transfer_correct = next(
             fact["value"] for fact in proposal["evidence"] if fact["kind"] == "correctness"
         )
         evidence_id = self._append_evidence(
             learner, event, transfer, observation, "verification", bool(transfer_correct)
         )
+        unseen_from = [
+            "sha256:" + self._record(entry_id, {"entry_diagnostic", "routing_diagnostic"})["record_sha256"]
+        ]
+        if probe_decision is not None:
+            unseen_from.append(
+                "sha256:" + self._record(probe_decision.probe_record_id, {"probe"})["record_sha256"]
+            )
         receipts = []
         for skill_id in transfer["target_skill_ids"]:
             current = learner.current_snapshot(
@@ -203,10 +221,7 @@ class XingceAdaptiveSessionService:
                     evidence_event_id=evidence_id,
                     expected_state_version=int(current["state_version"]) if current else 0,
                     outcome="passed" if transfer_correct else "failed",
-                    unseen_from_content_signatures=[
-                        "sha256:" + self._record(entry_id, {"entry_diagnostic", "routing_diagnostic"})["record_sha256"],
-                        "sha256:" + self._record(probe_decision.probe_record_id, {"probe"})["record_sha256"],
-                    ],
+                    unseen_from_content_signatures=unseen_from,
                 )
             )
         review = self._review_task(event.run_id, transfer, bool(proposal["eligible"]))
@@ -229,6 +244,7 @@ class XingceAdaptiveSessionService:
             "session_id": event.run_id,
             "state_version": event.seq + 1,
             "stage": "completed",
+            "learning_route": "diagnostic_probe" if probe_decision is not None else "direct_verification",
             "transfer": {
                 **public_record_projection(transfer),
                 "selected_response": observation.selected_response,
@@ -285,8 +301,13 @@ class XingceAdaptiveSessionService:
         finally: store.close()
 
     def _entry_public(self, run_id: str, version: int, entry: Mapping[str, Any], o: Observation, d: Any) -> dict[str, Any]:
-        result = {"schema_version":SCHEMA,"session_id":run_id,"state_version":version,"stage":"awaiting_probe" if d.next_step=="probe" else "completed_no_error","entry":{**public_record_projection(entry),"selected_response":o.selected_response,"correct":d.correct,"confidence":o.confidence,"elapsed_seconds":o.elapsed_seconds},"candidate_causes":[{"cause_id":c.cause_id,"label":self._cause_label(c.cause_id),"status":"unconfirmed","rank":c.rank} for c in d.candidates],"next_step":"answer_probe" if d.next_step=="probe" else "review_or_stop"}
-        if d.probe_record_id: result["probe"] = public_record_projection(self._record(d.probe_record_id,{"probe"}))
+        stage = "awaiting_probe" if d.next_step == "probe" else "awaiting_transfer"
+        result = {"schema_version":SCHEMA,"session_id":run_id,"state_version":version,"stage":stage,"entry":{**public_record_projection(entry),"selected_response":o.selected_response,"correct":d.correct,"confidence":o.confidence,"elapsed_seconds":o.elapsed_seconds},"candidate_causes":[{"cause_id":c.cause_id,"label":self._cause_label(c.cause_id),"status":"unconfirmed","rank":c.rank} for c in d.candidates],"next_step":"answer_probe" if d.next_step=="probe" else "answer_transfer"}
+        if d.probe_record_id:
+            result["probe"] = public_record_projection(self._record(d.probe_record_id,{"probe"}))
+        if d.transfer_record_id:
+            result["teaching"] = None
+            result["transfer"] = public_record_projection(self._record(d.transfer_record_id,{"independent_transfer"}))
         return result
 
     def _payload(self, stage: str, command_id: str, fields: Mapping[str,Any]) -> dict[str,Any]: return {"schema_version":SCHEMA,"namespace_id":self.config.namespace_id,"evidence_origin":self.config.evidence_origin,"learner_id":self.config.learner_id,"stage_after":stage,"command_id":command_id,**fields}

@@ -50,11 +50,20 @@ class XingceAdaptivePolicyTests(unittest.TestCase):
         self.assertFalse(failed["eligible"])
         self.assertEqual(failed["reason"], "independent_transfer_not_passed")
 
-    def test_correct_entry_never_invents_no_error_or_mastery(self) -> None:
+    def test_correct_entry_routes_to_unseen_transfer_without_inventing_a_cause_or_mastery(self) -> None:
         decision = diagnose_entry(self.records, scorer=self.manifest["scorer"], entry_record_id="D01", observation=Observation("A", "high", 12))
         self.assertTrue(decision.correct)
         self.assertEqual(decision.candidates, ())
-        self.assertEqual(decision.next_step, "review_or_stop")
+        self.assertEqual(decision.next_step, "independent_transfer")
+        self.assertEqual(decision.transfer_record_id, "V01")
+        proposal = independent_transfer_proposal(
+            self.records,
+            scorer=self.manifest["scorer"],
+            entry=decision,
+            probe=None,
+            observation=Observation("A", "high", 11),
+        )
+        self.assertTrue(proposal["eligible"])
 
     def test_every_declared_subtype_profile_has_an_executable_unassisted_transfer_path(self) -> None:
         for subtype in load_coverage_matrix()["subtypes"]:

@@ -58,8 +58,8 @@ function formReadiness(record, draft, kind) {
   return kind !== "entry" || draft.rationale.length <= 1200;
 }
 
-function StageRail({ stage, pack, title }) {
-  const steps = [["entry", "首答"], ["awaiting_probe", "探查"], ["awaiting_transfer", "迁移"], ["completed", "收据"]];
+function StageRail({ stage, pack, title, directVerification = false }) {
+  const steps = [["entry", "首答"], ["awaiting_probe", directVerification ? "无需探查" : "探查"], ["awaiting_transfer", "迁移"], ["completed", "收据"]];
   const ordinal = { entry: 0, awaiting_probe: 1, awaiting_transfer: 2, completed: 3, completed_no_error: 3 }[stage] ?? 0;
   return <aside className="adaptive-rail" aria-label="本轮学习步骤">
     <section className="adaptive-panel adaptive-pack-summary">
@@ -89,11 +89,19 @@ function CandidatePanel({ session }) {
 }
 
 function ProbeEvidence({ session }) {
-  if (session?.stage !== "awaiting_transfer") return null;
+  if (session?.stage !== "awaiting_transfer" || !session?.probe) return null;
   return <section className="adaptive-panel adaptive-evidence" aria-labelledby="probe-evidence-heading">
     <header><Info size={16} /><h2 id="probe-evidence-heading">探查结果</h2></header>
     <p>探查只支持或反驳候选；不会将任何原因确认为事实。</p>
     <ul>{session.probe.evidence_updates.map((item) => <li key={item.cause_id}><strong>{item.label}</strong><span>{item.outcome === "support" ? "获得支持" : item.outcome === "refute" ? "暂被反驳" : "证据不足"}</span></li>)}</ul>
+  </section>;
+}
+
+function DirectVerificationPanel({ session }) {
+  if (session?.stage !== "awaiting_transfer" || session?.entry?.correct !== true || session?.probe) return null;
+  return <section className="adaptive-panel adaptive-evidence" aria-labelledby="direct-verification-heading">
+    <header><CheckCircle size={16} /><h2 id="direct-verification-heading">首答正确，继续独立验证</h2></header>
+    <p>这一题没有产生错因候选，也还不足以提高掌握状态。请用不同题面的无提示迁移题确认能否独立应用。</p>
   </section>;
 }
 
@@ -131,11 +139,11 @@ function SourceMaterial({ material, nested = false }) {
   return <section className="adaptive-material adaptive-material-composite" aria-label={material.title}><header><small>综合材料</small><strong>{material.title}</strong></header><p>{material.scope_note}</p>{material.parts.map((part, index) => <SourceMaterial key={`${part.title}-${index}`} material={part} nested />)}</section>;
 }
 
-function RecordForm({ record, kind, draft, setDraft, elapsed, disabled, onSubmit, pending, error }) {
+function RecordForm({ record, kind, draft, setDraft, elapsed, disabled, onSubmit, pending, error, directVerification = false }) {
   const numeric = record.response_mode === "numeric";
   const ready = formReadiness(record, draft, kind);
-  const title = kind === "entry" ? "第一步 · 先独立作答" : kind === "probe" ? "第二步 · 最小探查" : "第三步 · 无提示迁移";
-  const action = kind === "entry" ? "提交首答" : kind === "probe" ? "提交探查作答" : "提交独立迁移";
+  const title = kind === "entry" ? "第一步 · 先独立作答" : kind === "probe" ? "第二步 · 最小探查" : directVerification ? "第二步 · 独立验证" : "第三步 · 无提示迁移";
+  const action = kind === "entry" ? "提交首答" : kind === "probe" ? "提交探查作答" : directVerification ? "提交独立验证" : "提交独立迁移";
   return <section className="adaptive-question" aria-labelledby="adaptive-question-heading">
     <header className="adaptive-question-meta"><div><span>{title}</span><strong>{record.title}</strong></div><span><Clock size={14} /> {elapsedCopy(elapsed)}</span></header>
     <SourceMaterial material={record.source_material} />
@@ -160,7 +168,12 @@ function Completion({ session }) {
   if (!session || !["completed", "completed_no_error"].includes(session.stage)) return null;
   if (session.stage === "completed_no_error") return <section className="adaptive-completion"><CheckCircle size={22} weight="fill" /><div><h1>本题首答正确</h1><p>没有依据这一题推断错因或提高掌握状态。可在之后完成另一轮独立练习。</p></div></section>;
   const committed = session.state_update.eligible;
-  return <section className="adaptive-completion" aria-labelledby="adaptive-receipt-heading"><SealCheck size={22} weight="fill" /><div><small>本机状态收据</small><h1 id="adaptive-receipt-heading">{committed ? "已记录一条独立迁移证据" : "学习状态保持不变"}</h1><p>{session.state_update.reason}</p><dl><div><dt>后续任务</dt><dd>{session.review_task.kind === "delayed_retention" ? "延迟复习" : "独立重试"} · {session.review_task.due_on}</dd></div><div><dt>成功标准</dt><dd>{session.review_task.success_criterion}</dd></div><div><dt>跳过后果</dt><dd>{session.review_task.skip_consequence}</dd></div></dl></div></section>;
+  const reason = {
+    unseen_unassisted_transfer_passed: "未见、无提示的迁移题已通过，允许记录一条有限的掌握证据。",
+    independent_transfer_not_passed: "独立迁移尚未通过，本次不提高掌握状态。",
+    transfer_was_assisted: "迁移过程使用了帮助，本次不作为独立掌握证据。",
+  }[session.state_update.reason] || "本次状态变化仅依据可回放的独立迁移证据。";
+  return <section className="adaptive-completion" aria-labelledby="adaptive-receipt-heading"><SealCheck size={22} weight="fill" /><div><small>本机状态收据</small><h1 id="adaptive-receipt-heading">{committed ? "已记录一条独立迁移证据" : "学习状态保持不变"}</h1><p>{reason}</p><dl><div><dt>后续任务</dt><dd>{session.review_task.kind === "delayed_retention" ? "延迟复习" : "独立重试"} · {session.review_task.due_on}</dd></div><div><dt>成功标准</dt><dd>{session.review_task.success_criterion}</dd></div><div><dt>跳过后果</dt><dd>{session.review_task.skip_consequence}</dd></div></dl></div></section>;
 }
 
 export function XingceAdaptiveWorkspace({ subtypeId, displayTitle = undefined, onServiceReachable = undefined }) {
@@ -192,6 +205,8 @@ export function XingceAdaptiveWorkspace({ subtypeId, displayTitle = undefined, o
   const record = useMemo(() => currentRecord(workspace.data, session), [session, workspace.data]);
   const kind = currentKind(session);
   const stage = session?.stage || "entry";
+  const directVerification = (session?.stage === "awaiting_transfer" && session?.entry?.correct === true && !session?.probe)
+    || session?.learning_route === "direct_verification";
   const submit = useCallback(async () => {
     if (!record || !kind || !formReadiness(record, draft, kind) || submission.inFlight) return;
     const commandId = submission.kind === kind && submission.commandId ? submission.commandId : createCommandId(`xingce-${kind}`);
@@ -212,6 +227,6 @@ export function XingceAdaptiveWorkspace({ subtypeId, displayTitle = undefined, o
 
   return <section className="adaptive-workspace">
     <header className="adaptive-heading"><div><small>行测 · 已审核题型</small><h1>{displayTitle || workspace.data.pack.subtype_id.replace(/^xingce\./, "")}</h1><p>本轮以本机题包完成首答、探查、针对性帮助、无提示迁移和可回放收据。</p></div><button className="button secondary compact" type="button" onClick={reload} disabled={submission.inFlight}>重新读取</button></header>
-    <div className="adaptive-layout"><StageRail stage={stage} pack={workspace.data.pack} title={displayTitle} /><main className="adaptive-main"><CandidatePanel session={session} /><ProbeEvidence session={session} /><TeachingPanel teaching={session?.stage === "awaiting_transfer" ? session.teaching : null} />{record && <RecordForm record={record} kind={kind} draft={draft} setDraft={setDraft} elapsed={elapsed} disabled={submission.inFlight} onSubmit={submit} pending={submission.inFlight} error={submission.error} />}{<Completion session={session} />}</main></div>
+    <div className="adaptive-layout"><StageRail stage={stage} pack={workspace.data.pack} title={displayTitle} directVerification={directVerification} /><main className="adaptive-main"><CandidatePanel session={session} /><ProbeEvidence session={session} /><DirectVerificationPanel session={session} /><TeachingPanel teaching={session?.stage === "awaiting_transfer" ? session.teaching : null} />{record && <RecordForm record={record} kind={kind} draft={draft} setDraft={setDraft} elapsed={elapsed} disabled={submission.inFlight} onSubmit={submit} pending={submission.inFlight} error={submission.error} directVerification={directVerification} />}{<Completion session={session} />}</main></div>
   </section>;
 }
