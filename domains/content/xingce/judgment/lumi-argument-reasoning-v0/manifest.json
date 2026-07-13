@@ -1,0 +1,67 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-argument-reasoning-v0",
+  "pack_version": "0.1.0-draft",
+  "status": "draft_unreviewed",
+  "release_ready": false,
+  "runtime_registration": "forbidden_until_human_review",
+  "subtype_id": "xingce.judgment.argument",
+  "module_id": "judgment",
+  "form": "text_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "draft_no_distribution"
+  },
+  "content_evidence": {
+    "argument_map": "records.json#D01,P01,V01,R01: observation → causal conclusion; a synchronous competing change is the critical alternative explanation."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": false,
+    "required_reviews": [
+      {
+        "review_kind": "logic",
+        "status": "pending",
+        "required_checks": [
+          "unique_answer",
+          "argument_structure",
+          "alternative_cause",
+          "scope",
+          "probe_discrimination",
+          "transfer_independence"
+        ]
+      },
+      {
+        "review_kind": "editorial_rights",
+        "status": "pending",
+        "required_checks": [
+          "original_wording",
+          "neutral_context",
+          "clarity",
+          "license_scope"
+        ]
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "50741194ac1882828c09b4b323c04c24866d671e7c6d9ca4049a7c8803f04045"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "cac846c398df3a6cd231d230865c059bb9e1b4081a8cbc564f5cf0e0fe359249"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "17a6e612fa08c7baab58b59d636ed377227655da7f0b145cc78df170a317e729"
+    }
+  ]
+}

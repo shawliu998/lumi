@@ -1,0 +1,290 @@
+{
+  "schema_version": "lumi.xingce-adaptive-records.v1",
+  "pack_id": "lumi-argument-reasoning-v0",
+  "pack_version": "0.1.0-draft",
+  "review_status": "draft_unreviewed",
+  "records": [
+    {
+      "record_id": "D01",
+      "role": "entry_diagnostic",
+      "title": "论证：共同变化不能独自证明原因",
+      "target_skill_ids": [
+        "xingce.judgment.argument.conclusion",
+        "xingce.judgment.argument.causality",
+        "xingce.judgment.argument.scope",
+        "xingce.judgment.argument.evidence_strength"
+      ],
+      "candidate_misconception_ids": [
+        "M-CONCL",
+        "M-CAUSE",
+        "M-SCOPE",
+        "M-EVID"
+      ],
+      "independence_group": "argument-sign-entry",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "某服务大厅在入口增加了流程提示牌后，一个月内填错表格的次数下降。负责人据此认为，提示牌是填错次数下降的原因。下列哪项如果为真，最能削弱该结论？\n\nA. 同月该大厅启用了自动校验系统，会在提交前提示缺项\nB. 提示牌使用了较大的字体\nC. 有些使用者表示愿意阅读提示牌\nD. 该大厅的入口比以前更整洁",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "同月启用了自动校验系统，会在提交前提示缺项"
+        },
+        {
+          "label": "B",
+          "text": "提示牌使用了较大的字体"
+        },
+        {
+          "label": "C",
+          "text": "有些使用者表示愿意阅读提示牌"
+        },
+        {
+          "label": "D",
+          "text": "入口比以前更整洁"
+        }
+      ],
+      "correct_option": "A",
+      "route_probe_ids": [
+        "P01"
+      ],
+      "record_sha256": "7d81536556a7257925fe4bb3e36a9f4b9118163030074934c3ac89c5f909a614"
+    },
+    {
+      "record_id": "P01",
+      "role": "probe",
+      "title": "最小探查：找到与结论竞争的解释",
+      "target_skill_ids": [
+        "xingce.judgment.argument.conclusion",
+        "xingce.judgment.argument.causality",
+        "xingce.judgment.argument.scope",
+        "xingce.judgment.argument.evidence_strength"
+      ],
+      "candidate_misconception_ids": [
+        "M-CONCL",
+        "M-CAUSE",
+        "M-SCOPE",
+        "M-EVID"
+      ],
+      "independence_group": "argument-reading-probe",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "一所学校在阅览区新增安静提示后，晚间停留的学生人数增加。管理者认为，安静提示使更多学生愿意停留。下列哪项最能削弱这一判断？\n\nA. 同期学校将晚间闭馆时间延后了一小时\nB. 安静提示采用了蓝色底板\nC. 有学生认为安静环境更适合阅读\nD. 阅览区的桌椅数量没有变化",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "同期将晚间闭馆时间延后了一小时"
+        },
+        {
+          "label": "B",
+          "text": "安静提示采用蓝色底板"
+        },
+        {
+          "label": "C",
+          "text": "有学生认为安静环境更适合阅读"
+        },
+        {
+          "label": "D",
+          "text": "桌椅数量没有变化"
+        }
+      ],
+      "correct_option": "A",
+      "discriminates": [
+        "M-CONCL",
+        "M-CAUSE",
+        "M-SCOPE",
+        "M-EVID"
+      ],
+      "candidate_evidence_map": {
+        "M-CONCL": {
+          "A": "refute",
+          "B": "support",
+          "C": "insufficient",
+          "D": "insufficient"
+        },
+        "M-CAUSE": {
+          "A": "refute",
+          "B": "insufficient",
+          "C": "support",
+          "D": "insufficient"
+        },
+        "M-SCOPE": {
+          "A": "refute",
+          "B": "support",
+          "C": "insufficient",
+          "D": "support"
+        },
+        "M-EVID": {
+          "A": "refute",
+          "B": "support",
+          "C": "support",
+          "D": "support"
+        }
+      },
+      "record_sha256": "7354f6042611c748df41ad99ee383535d8d510294eecda01c2a6f7e5b5179f81"
+    },
+    {
+      "record_id": "T-CONCL",
+      "role": "teaching_asset",
+      "title": "微课：先标出作者真正想证明的句子",
+      "target_skill_ids": [
+        "xingce.judgment.argument.conclusion"
+      ],
+      "candidate_misconception_ids": [
+        "M-CONCL"
+      ],
+      "independence_group": "argument-conclusion-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-CONCL"
+      ],
+      "teaching_content": "把“因此认为、说明、导致”等后面的判断圈为结论；之前的时间变化只是证据。削弱题要找使这个结论变得不可靠的信息，而不是重复背景。",
+      "record_sha256": "4bc472aa037bd6e3323a869375ba6422686f870a88c288a8486ce865997be67f"
+    },
+    {
+      "record_id": "T-CAUSE",
+      "role": "teaching_asset",
+      "title": "微课：同一时间发生的另一项变化是关键检查点",
+      "target_skill_ids": [
+        "xingce.judgment.argument.causality"
+      ],
+      "candidate_misconception_ids": [
+        "M-CAUSE"
+      ],
+      "independence_group": "argument-cause-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-CAUSE"
+      ],
+      "teaching_content": "若论证把“先后出现”当作“由此导致”，优先寻找同期的替代解释。自动校验或延长开放时间都能单独影响结果，因此会削弱单一原因的断言。",
+      "record_sha256": "b0eeca624f4bc554298a9ef85c543ae156ec2b93ed12e51f8753a68a08a3db17"
+    },
+    {
+      "record_id": "T-SCOPE",
+      "role": "teaching_asset",
+      "title": "微课：试点证据不能自动覆盖所有情境",
+      "target_skill_ids": [
+        "xingce.judgment.argument.scope"
+      ],
+      "candidate_misconception_ids": [
+        "M-SCOPE"
+      ],
+      "independence_group": "argument-scope-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-SCOPE"
+      ],
+      "teaching_content": "核对论证中的地点、时间和人群。一个大厅一个月的观察不足以直接推出所有大厅、所有时间都会如此；选项若揭示范围不匹配，可能削弱结论。",
+      "record_sha256": "03c6b97df4c86ec7e22502e6219e868ff92a5b90ac3b2d5b1a6f9a69ec0d5b59"
+    },
+    {
+      "record_id": "T-EVID",
+      "role": "teaching_asset",
+      "title": "微课：信息要能改变结论的可信度",
+      "target_skill_ids": [
+        "xingce.judgment.argument.evidence_strength"
+      ],
+      "candidate_misconception_ids": [
+        "M-EVID"
+      ],
+      "independence_group": "argument-evidence-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-EVID"
+      ],
+      "teaching_content": "问自己：若这条信息为真，是否会让“提示牌导致下降”更难成立？字体颜色、入口整洁等若不能解释结果变化，多半与因果结论无关。",
+      "record_sha256": "eb5a8711c2aae9de48c3772e0add1a4a9836e43c49c0ca9d874a11ebdeadc2f4"
+    },
+    {
+      "record_id": "V01",
+      "role": "independent_transfer",
+      "title": "独立迁移：另一项同期改变",
+      "target_skill_ids": [
+        "xingce.judgment.argument.conclusion",
+        "xingce.judgment.argument.causality",
+        "xingce.judgment.argument.evidence_strength"
+      ],
+      "candidate_misconception_ids": [
+        "M-CONCL",
+        "M-CAUSE",
+        "M-SCOPE",
+        "M-EVID"
+      ],
+      "independence_group": "argument-route-transfer",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "某路线增设连续路标后，迷路求助次数下降。管理者认为，连续路标导致了求助次数下降。下列哪项最能削弱该判断？\n\nA. 同期地图应用更新了该路线的步行导航\nB. 路标采用统一的字体\nC. 有游客喜欢新的路标颜色\nD. 路线两侧新种了一些树",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "同期地图应用更新了该路线的步行导航"
+        },
+        {
+          "label": "B",
+          "text": "路标采用统一字体"
+        },
+        {
+          "label": "C",
+          "text": "有游客喜欢路标颜色"
+        },
+        {
+          "label": "D",
+          "text": "路线两侧新种了一些树"
+        }
+      ],
+      "correct_option": "A",
+      "requires_no_hints": true,
+      "record_sha256": "190b26c87c981b48c0d57ce640262518833c7450f1f9d93ba4a4fc491f453a7a"
+    },
+    {
+      "record_id": "R01",
+      "role": "delayed_review",
+      "title": "延迟复习：因果结论的替代解释",
+      "target_skill_ids": [
+        "xingce.judgment.argument.causality",
+        "xingce.judgment.argument.scope"
+      ],
+      "candidate_misconception_ids": [
+        "M-CONCL",
+        "M-CAUSE",
+        "M-SCOPE",
+        "M-EVID"
+      ],
+      "independence_group": "argument-workshop-review",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "某工作坊发送报名提醒后，到场率提高。组织者认为，提醒短信导致到场率提高。下列哪项最能削弱该判断？\n\nA. 同期工作坊将活动改到周末举行\nB. 短信包含活动名称\nC. 有人收藏了短信\nD. 工作坊的海报仍放在原处",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "同期将活动改到周末举行"
+        },
+        {
+          "label": "B",
+          "text": "短信包含活动名称"
+        },
+        {
+          "label": "C",
+          "text": "有人收藏了短信"
+        },
+        {
+          "label": "D",
+          "text": "海报仍放在原处"
+        }
+      ],
+      "correct_option": "A",
+      "requires_no_hints": true,
+      "scheduled_after_days": 4,
+      "eligible_after_transfer_ids": [
+        "V01"
+      ],
+      "record_sha256": "7879dacc0fc4c74fe8ae0b4a819085501eb88cf04005be6fcd8fdcff20d798f6"
+    }
+  ]
+}
