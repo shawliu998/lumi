@@ -1,0 +1,23 @@
+{
+  "schema_version": "lumi.xingce-adaptive-skills.v1",
+  "pack_id": "lumi-logical-cloze-v0",
+  "pack_version": "0.1.0-draft",
+  "review_status": "draft_unreviewed",
+  "skills": [
+    {
+      "skill_id": "xingce.verbal.logical_cloze.semantic_collocation",
+      "label": "识别词义与搭配约束",
+      "mastery_claim": "能根据对象、搭配和语义强度排除不合语境的词语；仅由无提示迁移证据更新。"
+    },
+    {
+      "skill_id": "xingce.verbal.logical_cloze.context_relation",
+      "label": "识别句间逻辑关系",
+      "mastery_claim": "能根据转折、递进、因果和顺承关系选择连接词；仅由无提示迁移证据更新。"
+    },
+    {
+      "skill_id": "xingce.verbal.logical_cloze.word_style",
+      "label": "匹配表达语体与准确性",
+      "mastery_claim": "能在正式说明语境中判断词语的语体与表达准确性；仅由无提示迁移证据更新。"
+    }
+  ]
+}
