@@ -8,8 +8,8 @@ from hermes_domains.xingce_adaptive_policy import (
     independent_transfer_proposal,
     resolve_probe,
 )
-from test_xingce_adaptive_pack import documents_for
 from hermes_domains.xingce_coverage import load_coverage_matrix
+from xingce_adaptive_fixtures import documents_for
 
 
 class XingceAdaptivePolicyTests(unittest.TestCase):
@@ -55,6 +55,19 @@ class XingceAdaptivePolicyTests(unittest.TestCase):
         self.assertTrue(decision.correct)
         self.assertEqual(decision.candidates, ())
         self.assertEqual(decision.next_step, "review_or_stop")
+
+    def test_every_declared_subtype_profile_has_an_executable_unassisted_transfer_path(self) -> None:
+        for subtype in load_coverage_matrix()["subtypes"]:
+            with self.subTest(subtype=subtype["id"]):
+                manifest, document, _, _ = documents_for(subtype)
+                records = document["records"]
+                entry_response = "999" if manifest["scorer"] == "authored_numeric_v1" else "B"
+                entry = diagnose_entry(records, scorer=manifest["scorer"], entry_record_id="D01", observation=Observation(entry_response, "low", 10))
+                probe = resolve_probe(records, scorer=manifest["scorer"], entry=entry, observation=Observation("A", "medium", 8))
+                transfer_response = "12" if manifest["scorer"] == "authored_numeric_v1" else "A"
+                proposal = independent_transfer_proposal(records, scorer=manifest["scorer"], entry=entry, probe=probe, observation=Observation(transfer_response, "high", 12))
+                self.assertTrue(proposal["eligible"])
+                self.assertEqual(proposal["state_delta"]["kind"], "bounded_independent_transfer_evidence")
 
 
 if __name__ == "__main__":
