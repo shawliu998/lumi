@@ -1,0 +1,264 @@
+{
+  "schema_version": "lumi.xingce-adaptive-records.v1",
+  "pack_id": "lumi-event-ordering-v0",
+  "pack_version": "0.1.0-draft",
+  "review_status": "draft_unreviewed",
+  "ordering_proofs": {
+    "D01": "发现漏水后才可报修；报修后安排维修；维修后复查。",
+    "P01": "先收到异常记录，再核对范围，随后通知负责人，最后完成更正。",
+    "V01": "先发现路标缺失，再记录位置，随后补设路标，最后回访使用情况。",
+    "R01": "先收集反馈，再归类问题，随后调整方案，最后公布更新。"
+  },
+  "records": [
+    {
+      "record_id": "D01",
+      "role": "entry_diagnostic",
+      "title": "事件排序：触发—处理—复查",
+      "target_skill_ids": [
+        "xingce.judgment.event_ordering.prerequisite",
+        "xingce.judgment.event_ordering.causality",
+        "xingce.judgment.event_ordering.response"
+      ],
+      "candidate_misconception_ids": [
+        "M-CAUSE",
+        "M-PRE",
+        "M-RESP"
+      ],
+      "independence_group": "ordering-repair-entry",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "某场馆处理漏水问题，需要依次完成：①安排维修 ②发现漏水 ③复查维修结果 ④提交报修。合理顺序是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "②④①③"
+        },
+        {
+          "label": "B",
+          "text": "④②①③"
+        },
+        {
+          "label": "C",
+          "text": "②①④③"
+        },
+        {
+          "label": "D",
+          "text": "①②④③"
+        }
+      ],
+      "correct_option": "A",
+      "route_probe_ids": [
+        "P01"
+      ],
+      "record_sha256": "4be6c162a92127b25568f5f2a4479a1bb91cba9c01861058c7132f1b71e98450"
+    },
+    {
+      "record_id": "P01",
+      "role": "probe",
+      "title": "最小探查：核对在通知之前",
+      "target_skill_ids": [
+        "xingce.judgment.event_ordering.prerequisite",
+        "xingce.judgment.event_ordering.causality",
+        "xingce.judgment.event_ordering.response"
+      ],
+      "candidate_misconception_ids": [
+        "M-CAUSE",
+        "M-PRE",
+        "M-RESP"
+      ],
+      "independence_group": "ordering-data-probe",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "处理一条数据异常记录，需要：①通知负责人 ②收到异常记录 ③核对受影响范围 ④完成更正。合理顺序是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "②③①④"
+        },
+        {
+          "label": "B",
+          "text": "①②③④"
+        },
+        {
+          "label": "C",
+          "text": "②①④③"
+        },
+        {
+          "label": "D",
+          "text": "③②①④"
+        }
+      ],
+      "correct_option": "A",
+      "discriminates": [
+        "M-CAUSE",
+        "M-PRE",
+        "M-RESP"
+      ],
+      "candidate_evidence_map": {
+        "M-CAUSE": {
+          "A": "refute",
+          "B": "support",
+          "C": "support",
+          "D": "support"
+        },
+        "M-PRE": {
+          "A": "refute",
+          "B": "support",
+          "C": "support",
+          "D": "support"
+        },
+        "M-RESP": {
+          "A": "refute",
+          "B": "support",
+          "C": "support",
+          "D": "insufficient"
+        }
+      },
+      "record_sha256": "b15041486dd1be1d6d20985cb4f77fec0b86be0519fe20d1101a46ed41c9a0fe"
+    },
+    {
+      "record_id": "T-CAUSE",
+      "role": "teaching_asset",
+      "title": "微课：先问“这件事由什么引起”",
+      "target_skill_ids": [
+        "xingce.judgment.event_ordering.causality"
+      ],
+      "candidate_misconception_ids": [
+        "M-CAUSE"
+      ],
+      "independence_group": "ordering-cause-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-CAUSE"
+      ],
+      "teaching_content": "把事件改写成箭头：发现漏水→报修→维修→复查。若一个事件需要前一个事件提供信息或机会，它不能排在前面。",
+      "record_sha256": "50e434eb34b661d8f61f1703c3517b55fe328a9bc107c6a1fca16f3142262326"
+    },
+    {
+      "record_id": "T-PRE",
+      "role": "teaching_asset",
+      "title": "微课：把关键前提固定为起点",
+      "target_skill_ids": [
+        "xingce.judgment.event_ordering.prerequisite"
+      ],
+      "candidate_misconception_ids": [
+        "M-PRE"
+      ],
+      "independence_group": "ordering-pre-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-PRE"
+      ],
+      "teaching_content": "先找不能省略的前提，例如收到记录、发现问题、收集反馈。没有前提就没有可核对的对象，因此通知、修复和公布都要后置。",
+      "record_sha256": "6d2c79ed1f6ce3996c67a7e038e6a6d0e1490b93ef270ade986a0633ac9a743a"
+    },
+    {
+      "record_id": "T-RESP",
+      "role": "teaching_asset",
+      "title": "微课：回应事件一定要有对象",
+      "target_skill_ids": [
+        "xingce.judgment.event_ordering.response"
+      ],
+      "candidate_misconception_ids": [
+        "M-RESP"
+      ],
+      "independence_group": "ordering-response-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-RESP"
+      ],
+      "teaching_content": "通知谁、修复什么、评估哪次调整，都需要一个已经发生的触发对象。把每个回应句补成“回应什么”，即可发现它不能提前。",
+      "record_sha256": "b7b8cec2e4cdfb27448f77c1da02fccfee0832405afee5639b57b3bb0b133d85"
+    },
+    {
+      "record_id": "V01",
+      "role": "independent_transfer",
+      "title": "独立迁移：发现—记录—补设—回访",
+      "target_skill_ids": [
+        "xingce.judgment.event_ordering.prerequisite",
+        "xingce.judgment.event_ordering.causality",
+        "xingce.judgment.event_ordering.response"
+      ],
+      "candidate_misconception_ids": [
+        "M-CAUSE",
+        "M-PRE",
+        "M-RESP"
+      ],
+      "independence_group": "ordering-route-transfer",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "完善步行路线提示，需要：①补设路标 ②发现路标缺失 ③回访使用情况 ④记录缺失位置。合理顺序是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "②④①③"
+        },
+        {
+          "label": "B",
+          "text": "④②①③"
+        },
+        {
+          "label": "C",
+          "text": "②①④③"
+        },
+        {
+          "label": "D",
+          "text": "①②④③"
+        }
+      ],
+      "correct_option": "A",
+      "requires_no_hints": true,
+      "record_sha256": "9f5be50f5c3dc87ddd996832ebb7cc13f666f9861a2705c0ed1ed97a5ddd0cc0"
+    },
+    {
+      "record_id": "R01",
+      "role": "delayed_review",
+      "title": "延迟复习：反馈到更新的顺序",
+      "target_skill_ids": [
+        "xingce.judgment.event_ordering.prerequisite",
+        "xingce.judgment.event_ordering.response"
+      ],
+      "candidate_misconception_ids": [
+        "M-CAUSE",
+        "M-PRE",
+        "M-RESP"
+      ],
+      "independence_group": "ordering-feedback-review",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "改进服务方案，需要：①调整方案 ②收集反馈 ③公布更新 ④归类问题。合理顺序是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "②④①③"
+        },
+        {
+          "label": "B",
+          "text": "④②①③"
+        },
+        {
+          "label": "C",
+          "text": "②①④③"
+        },
+        {
+          "label": "D",
+          "text": "①②④③"
+        }
+      ],
+      "correct_option": "A",
+      "requires_no_hints": true,
+      "scheduled_after_days": 4,
+      "eligible_after_transfer_ids": [
+        "V01"
+      ],
+      "record_sha256": "9a9f2649036d3ef696c0dcb113623961fafe4099e551936b3df23f6d010aba03"
+    }
+  ]
+}
