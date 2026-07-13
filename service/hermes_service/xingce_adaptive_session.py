@@ -49,6 +49,7 @@ class XingceAdaptiveSessionService:
         self.pack = pack
         self.records = tuple(pack["records"])
         self.index = {str(row["record_id"]): row for row in self.records}
+        self.cause_index = {str(row["cause_id"]): row for row in pack["candidate_misconceptions"]}
 
     def workspace(self) -> dict[str, Any]:
         return {"schema_version": SCHEMA, "available": True, "local_only": True,
@@ -89,7 +90,7 @@ class XingceAdaptiveSessionService:
             observation = Observation(selected_response, confidence, elapsed_seconds)
             resolution = resolve_probe(self.records, scorer=self.pack["scorer"], entry=entry_decision, observation=observation)
             probe = self._record(resolution.probe_record_id, {"probe"}); transfer = self._record(resolution.transfer_record_id, {"independent_transfer"})
-            public = {"schema_version": SCHEMA, "session_id": session_id, "state_version": expected_version + 1, "stage": "awaiting_transfer", "probe": {**public_record_projection(probe), "selected_response": selected_response, "correct": resolution.correct, "evidence_updates": list(resolution.evidence_updates)}, "teaching": public_record_projection(self._record(resolution.teaching_record_id, {"teaching_asset"})) if resolution.teaching_record_id else None, "transfer": public_record_projection(transfer), "next_step": "answer_transfer"}
+            public = {"schema_version": SCHEMA, "session_id": session_id, "state_version": expected_version + 1, "stage": "awaiting_transfer", "probe": {**public_record_projection(probe), "selected_response": selected_response, "correct": resolution.correct, "evidence_updates": [{**row, "label": self._cause_label(str(row["cause_id"]))} for row in resolution.evidence_updates]}, "teaching": public_record_projection(self._record(resolution.teaching_record_id, {"teaching_asset"})) if resolution.teaching_record_id else None, "transfer": public_record_projection(transfer), "next_step": "answer_transfer"}
             event = store.append_if_version(session_id, expected_version, "xingce_adaptive_probe", self._payload("awaiting_transfer", command_id, {"selected_response": selected_response, "confidence": confidence, "elapsed_seconds": elapsed_seconds, "public_result": public}))
             self._append_evidence(learner, event, probe, observation, "probe_response", resolution.correct)
             for update in resolution.evidence_updates:
@@ -140,7 +141,7 @@ class XingceAdaptiveSessionService:
         finally: store.close()
 
     def _entry_public(self, run_id: str, version: int, entry: Mapping[str, Any], o: Observation, d: Any) -> dict[str, Any]:
-        result = {"schema_version":SCHEMA,"session_id":run_id,"state_version":version,"stage":"awaiting_probe" if d.next_step=="probe" else "completed_no_error","entry":{**public_record_projection(entry),"selected_response":o.selected_response,"correct":d.correct,"confidence":o.confidence,"elapsed_seconds":o.elapsed_seconds},"candidate_causes":[{"cause_id":c.cause_id,"status":"unconfirmed","rank":c.rank} for c in d.candidates],"next_step":"answer_probe" if d.next_step=="probe" else "review_or_stop"}
+        result = {"schema_version":SCHEMA,"session_id":run_id,"state_version":version,"stage":"awaiting_probe" if d.next_step=="probe" else "completed_no_error","entry":{**public_record_projection(entry),"selected_response":o.selected_response,"correct":d.correct,"confidence":o.confidence,"elapsed_seconds":o.elapsed_seconds},"candidate_causes":[{"cause_id":c.cause_id,"label":self._cause_label(c.cause_id),"status":"unconfirmed","rank":c.rank} for c in d.candidates],"next_step":"answer_probe" if d.next_step=="probe" else "review_or_stop"}
         if d.probe_record_id: result["probe"] = public_record_projection(self._record(d.probe_record_id,{"probe"}))
         return result
 
@@ -149,6 +150,11 @@ class XingceAdaptiveSessionService:
         r=self.index.get(record_id)
         if r is None or r.get("role") not in roles: raise XingceAdaptiveSessionError("pack record is unavailable")
         return r
+    def _cause_label(self, cause_id: str) -> str:
+        row = self.cause_index.get(cause_id)
+        if row is None or not isinstance(row.get("label"), str) or not row["label"].strip():
+            raise XingceAdaptiveSessionError("pack candidate cause is unavailable")
+        return row["label"]
     def _events(self, store: EventStore, sid: str):
         events=store.events(sid)
         if not events or any(e.payload.get("namespace_id")!=self.config.namespace_id or e.payload.get("evidence_origin")!=self.config.evidence_origin for e in events): raise XingceAdaptiveSessionError("session unavailable")

@@ -137,6 +137,15 @@ export function isValidXingceAdaptiveReplay(replay, { sessionId } = {}) {
   ));
 }
 
+export function isValidXingceAdaptiveSessionResult(result, { subtypeId, stages = [...STAGES] } = {}) {
+  try {
+    assertSessionResult(result, { subtypeId, stages, allowPackOmission: !subtypeId });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function assertSessionResult(result, { subtypeId, stages, allowPackOmission = false }) {
   if (!isSafe(result) || result?.schema_version !== SCHEMA || !SESSION_ID.test(result?.session_id || "") || !Number.isInteger(result?.state_version) || result.state_version < 1 || !stages.includes(result.stage)) {
     throw new HermesApiError("本机服务返回了不一致的行测学习步骤。", { kind: "contract", code: "invalid_xingce_adaptive_session" });
@@ -180,8 +189,9 @@ function isCompletedTransfer(record) {
 
 function validCandidates(rows) {
   return Array.isArray(rows) && rows.length >= 2 && rows.every((row, index) => (
-    row && exactKeys(row, ["cause_id", "status", "rank"])
+    row && exactKeys(row, ["cause_id", "label", "status", "rank"])
     && isRecordId(row.cause_id)
+    && nonempty(row.label)
     && row.status === "unconfirmed"
     && row.rank === index + 1
   ));
@@ -189,8 +199,9 @@ function validCandidates(rows) {
 
 function validEvidenceUpdates(rows) {
   return Array.isArray(rows) && rows.length >= 1 && rows.every((row) => (
-    row && exactKeys(row, ["cause_id", "outcome", "status"])
+    row && exactKeys(row, ["cause_id", "label", "outcome", "status"])
     && isRecordId(row.cause_id)
+    && nonempty(row.label)
     && ["support", "refute", "insufficient"].includes(row.outcome)
     && ["supported", "refuted", "unconfirmed"].includes(row.status)
   ));

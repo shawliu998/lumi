@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   isValidXingceAdaptiveRecord,
   isValidXingceAdaptiveReplay,
+  isValidXingceAdaptiveSessionResult,
   isValidXingceAdaptiveWorkspace,
   latestXingceAdaptiveSessionFromReplay,
 } from "./xingceAdaptiveApi.js";
@@ -33,6 +34,10 @@ const transfer = {
   response_mode: "single_choice",
   options: [{ label: "A", text: "然后" }, { label: "B", text: "即使" }],
 };
+const causes = [
+  { cause_id: "M-SC", label: "候选：忽略词义或搭配约束", status: "unconfirmed", rank: 1 },
+  { cause_id: "M-CR", label: "候选：误判上下文逻辑关系", status: "unconfirmed", rank: 2 },
+];
 
 test("generic Xingce workspace accepts only a reviewed public projection bound to its subtype", () => {
   const workspace = {
@@ -51,6 +56,21 @@ test("generic records support both public choice and numeric forms but never sco
   assert.equal(isValidXingceAdaptiveRecord(entry, ["entry_diagnostic"]), true);
   assert.equal(isValidXingceAdaptiveRecord({ record_id: "D02", role: "entry_diagnostic", title: "数字推理", prompt: "1，2，3，____", response_mode: "numeric" }, ["entry_diagnostic"]), true);
   assert.equal(isValidXingceAdaptiveRecord({ ...entry, answer_spec: { target: 12 } }, ["entry_diagnostic"]), false);
+});
+
+test("candidate labels are learner-visible hypotheses while internal routing remains rejected", () => {
+  const awaitingProbe = {
+    schema_version: "lumi.xingce-adaptive-session.v1",
+    session_id: sessionId,
+    state_version: 1,
+    stage: "awaiting_probe",
+    entry: { ...entry, selected_response: "B", correct: false, confidence: "medium", elapsed_seconds: 12 },
+    candidate_causes: causes,
+    probe,
+    next_step: "answer_probe",
+  };
+  assert.equal(isValidXingceAdaptiveSessionResult(awaitingProbe, { subtypeId, stages: ["awaiting_probe"] }), true);
+  assert.equal(isValidXingceAdaptiveSessionResult({ ...awaitingProbe, candidate_causes: [{ ...causes[0], route_probe_ids: ["P01"] }, causes[1]] }, { subtypeId, stages: ["awaiting_probe"] }), false);
 });
 
 test("replay restores only public, trace-verified generic learning states", () => {
