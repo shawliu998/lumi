@@ -33,39 +33,32 @@ columns.
 The workbook is evidence of a review decision, not a batch permission to claim
 that all 31 types are released. Review and release one concrete pack at a time.
 
-## 2. Write the reviewer attestation JSON
+## 2. Mechanically derive the reviewer attestation JSON
 
-Place this next to the completed workbook and replace every placeholder with
-facts entered by the two human reviewers:
+Do not hand-write a release attestation. After the two real reviewers have
+completed the rows and the signing row, derive it directly from that exact
+workbook:
 
-```json
-{
-  "release_version": "0.1.0-reviewed-local-YYYYMMDD",
-  "reviewer_attestations": [
-    {
-      "review_kind": "logic",
-      "reviewer_id": "stable-human-reviewer-id",
-      "reviewed_at": "YYYY-MM-DD",
-      "status": "approved"
-    },
-    {
-      "review_kind": "editorial_rights",
-      "reviewer_id": "a-different-stable-human-reviewer-id",
-      "reviewed_at": "YYYY-MM-DD",
-      "status": "approved"
-    }
-  ]
-}
+```bash
+PYTHONPATH=domains python3 domains/tools/verify_xingce_review_workbook.py \
+  --source domains/content/xingce/<module>/<pack-id> \
+  --review-workbook /absolute/path/to/completed-review.xlsx \
+  --release-version 0.1.0-reviewed-local-YYYYMMDD \
+  --output /absolute/path/to/attestations.json
 ```
 
-Do not invent IDs, dates, or approvals. Do not mark a row as approved merely to
-clear a formula. If either reviewer asks for revision, amend the draft, refresh
-its deterministic checksums, and review the amended payload again.
+The verifier requires every record of the selected pack exactly once, both
+row-level conclusions to be `Approved`, the two row-level reviewer IDs and
+dates to match the signing row, ISO dates, and two different reviewers. It
+also hashes the exact workbook and the exact source `records.json`. It creates
+the JSON only after all checks pass; it never fills in IDs, dates, or approvals.
+If either reviewer asks for revision, amend the draft, refresh its deterministic
+checksums, and review the amended payload again.
 
 ## 3. Produce a separate release copy
 
 The tool copies rather than mutates the authoring draft. Run it only after the
-workbook and JSON above are complete:
+workbook verifier above created the JSON:
 
 ```bash
 PYTHONPATH=domains python3 domains/tools/create_reviewed_xingce_release.py \
@@ -76,8 +69,9 @@ PYTHONPATH=domains python3 domains/tools/create_reviewed_xingce_release.py \
 ```
 
 The command refuses a missing workbook, missing or duplicated reviewers,
-non-approved status, missing dates, invalid artifacts, or any reviewed manifest
-whose hash does not bind the two attestations. A successful output contains
+non-approved status, missing dates, a hand-authored or stale attestation file,
+invalid artifacts, or any reviewed manifest whose hash does not bind the two
+attestations. A successful output contains
 `review-evidence.json`, including the completed workbook SHA-256. It still needs
 the normal released-pack regression tests and a voluntary human-local browser
 walkthrough before the coverage matrix can move that subtype to `released`.
