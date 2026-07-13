@@ -3,14 +3,18 @@ from __future__ import annotations
 import hashlib
 import json
 import tempfile
+import threading
 import unittest
 from pathlib import Path
+from urllib.error import HTTPError
+from urllib.request import Request, urlopen
 
 from hermes_domains.xingce_coverage import load_coverage_matrix
 from xingce_adaptive_fixtures import documents_for
 from hermes_domains.xingce_adaptive_pack import record_sha256, reviewed_manifest_sha256
 from hermes_service.xingce_adaptive_session import XingceAdaptiveSessionConfig, XingceAdaptiveSessionService
 from hermes_service.application import SidecarApplication
+from hermes_service.api import create_server
 
 
 def reviewed_root(root: Path) -> Path:
@@ -74,6 +78,62 @@ class XingceAdaptiveSessionTests(unittest.TestCase):
         self.assertTrue(application.xingce_adaptive_workspace("xingce.verbal.logical_cloze")["available"])
         with self.assertRaises(Exception):
             application.xingce_adaptive_workspace("xingce.judgment.definition")
+
+    def test_http_contract_runs_the_evaluation_fixture_without_accepting_judgment_only_fields(self) -> None:
+        """HTTP checks use an isolated eval namespace, never a product learner."""
+        application = SidecarApplication(
+            Path(self.temp.name) / "http.sqlite3",
+            attempt_evidence_origin="evaluation_fixture",
+            evaluation_projection_enabled=True,
+            xingce_adaptive_session_services={"xingce.verbal.logical_cloze": self.service},
+        )
+        server = create_server(application, port=0)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            subtype = "xingce.verbal.logical_cloze"
+            status, workspace = self.http(server, "GET", f"/v1/xingce/adaptive/{subtype}/workspace")
+            self.assertEqual(status, 200)
+            self.assertNotIn("correct_option", workspace["entry_items"][0])
+            status, started = self.http(server, "POST", f"/v1/xingce/adaptive/{subtype}/sessions", {
+                "entry_record_id": "D01", "selected_response": "B", "confidence": "high", "elapsed_seconds": 8, "command_id": "c_" + "A" * 40,
+            })
+            self.assertEqual(status, 201)
+            status, invalid = self.http(server, "POST", f"/v1/xingce/adaptive/{subtype}/sessions/{started['session_id']}/probe", {
+                "expected_version": 1, "expected_stage": "awaiting_probe", "selected_response": "A", "confidence": "medium", "elapsed_seconds": 7, "command_id": "c_" + "B" * 40,
+            })
+            self.assertEqual(status, 400)
+            self.assertEqual(invalid["error"]["code"], "invalid_body")
+            status, probe = self.http(server, "POST", f"/v1/xingce/adaptive/{subtype}/sessions/{started['session_id']}/probe", {
+                "expected_version": 1, "selected_response": "A", "confidence": "medium", "elapsed_seconds": 7, "command_id": "c_" + "B" * 40,
+            })
+            self.assertEqual(status, 200)
+            self.assertEqual(probe["stage"], "awaiting_transfer")
+            status, completed = self.http(server, "POST", f"/v1/xingce/adaptive/{subtype}/sessions/{started['session_id']}/transfer", {
+                "expected_version": 2, "selected_response": "A", "confidence": "high", "elapsed_seconds": 9, "command_id": "c_" + "C" * 40,
+            })
+            self.assertEqual(status, 200)
+            self.assertEqual(completed["stage"], "completed")
+            status, replay = self.http(server, "GET", f"/v1/xingce/adaptive/{subtype}/sessions/{started['session_id']}/replay")
+            self.assertEqual(status, 200)
+            self.assertTrue(replay["trace_verified"])
+        finally:
+            server.shutdown(); server.server_close(); thread.join(timeout=2)
+
+    @staticmethod
+    def http(server: object, method: str, path: str, payload: dict | None = None) -> tuple[int, dict]:
+        port = server.server_address[1]  # type: ignore[attr-defined]
+        body = json.dumps(payload).encode("utf-8") if payload is not None else None
+        request = Request(f"http://127.0.0.1:{port}{path}", data=body, method=method)
+        if body is not None: request.add_header("Content-Type", "application/json")
+        try:
+            with urlopen(request, timeout=3) as response:
+                return response.status, json.loads(response.read().decode("utf-8"))
+        except HTTPError as error:
+            try:
+                return error.code, json.loads(error.read().decode("utf-8"))
+            finally:
+                error.close()
 
 
 if __name__ == "__main__": unittest.main()
