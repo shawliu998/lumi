@@ -1,0 +1,67 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-mao-thought-v0",
+  "pack_version": "0.1.0-draft",
+  "status": "draft_unreviewed",
+  "release_ready": false,
+  "runtime_registration": "forbidden_until_human_review",
+  "subtype_id": "xingce.political.mao_thought",
+  "module_id": "political_theory",
+  "form": "text_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "draft_no_distribution"
+  },
+  "content_evidence": {
+    "authoritative_source_snapshot": "共产党员网，《毛泽东思想的含义和主要内容是什么？》（2012-06-18），https://fuwu.12371.cn/2012/06/18/ARTI1340016435951404.shtml；《坚持和运用好毛泽东思想活的灵魂》（2014-02-01），https://news.12371.cn/2014/02/01/ARTI1391224895354878.shtml（accessed 2026-07-13）。",
+    "validity_cutoff": "2026-07-13; the draft uses only the named sources' bounded formulation of the living soul and its three aspects."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": false,
+    "required_reviews": [
+      {
+        "review_kind": "logic",
+        "status": "pending",
+        "required_checks": [
+          "unique_answer",
+          "formulation_attribution",
+          "chronology_scope",
+          "concept_boundary",
+          "transfer_independence"
+        ]
+      },
+      {
+        "review_kind": "editorial_rights",
+        "status": "pending",
+        "required_checks": [
+          "authoritative_source",
+          "original_wording",
+          "date_labeling",
+          "license_scope"
+        ]
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "03f82133c0d605b824553b2a57288b132824895f7b8b49329d64529c1ad18628"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "9cfd9090205cfbaec25a39d914c11402dd3a0849a8caf629c855d9326614fff0"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "40e94000c8f03c9bb1c76c7e5b3d15a147e9323ea1d6bbf995e8412e329c9fe6"
+    }
+  ]
+}

@@ -1,0 +1,224 @@
+{
+  "schema_version": "lumi.xingce-adaptive-records.v1",
+  "pack_id": "lumi-mao-thought-v0",
+  "pack_version": "0.1.0-draft",
+  "review_status": "draft_unreviewed",
+  "records": [
+    {
+      "record_id": "D01",
+      "role": "entry_diagnostic",
+      "title": "毛泽东思想：来源中的三项基本方面",
+      "target_skill_ids": [
+        "xingce.political.mao_thought.formulation",
+        "xingce.political.mao_thought.boundary"
+      ],
+      "candidate_misconception_ids": [
+        "M-FORM",
+        "M-BOUND"
+      ],
+      "independence_group": "mao-entry-living-soul",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "依据本题所列学习资料，毛泽东思想活的灵魂的三个基本方面是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "实事求是、群众路线、独立自主"
+        },
+        {
+          "label": "B",
+          "text": "任意三个未在来源列举的会议名称"
+        },
+        {
+          "label": "C",
+          "text": "一次具体事件的时间、地点和人数"
+        },
+        {
+          "label": "D",
+          "text": "只包括一个不需要来源核对的词语"
+        }
+      ],
+      "correct_option": "A",
+      "route_probe_ids": [
+        "P01"
+      ],
+      "record_sha256": "4f49fd94dc762f08435a0f020b4608f4141ff2e601bd56bd37ba56b6fc63d7ea"
+    },
+    {
+      "record_id": "P01",
+      "role": "probe",
+      "title": "最小探查：方法概括不被无关内容替换",
+      "target_skill_ids": [
+        "xingce.political.mao_thought.formulation",
+        "xingce.political.mao_thought.boundary"
+      ],
+      "candidate_misconception_ids": [
+        "M-FORM",
+        "M-BOUND"
+      ],
+      "independence_group": "mao-probe-boundary",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "依据所列资料，下列说法最稳妥的是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "应按来源把实事求是、群众路线和独立自主作为相互联系的三项基本方面核对"
+        },
+        {
+          "label": "B",
+          "text": "可用任何相近口号替换三项基本方面"
+        },
+        {
+          "label": "C",
+          "text": "三项基本方面只是某一件器物的属性"
+        },
+        {
+          "label": "D",
+          "text": "无需来源即可任意增减三项内容"
+        }
+      ],
+      "correct_option": "A",
+      "discriminates": [
+        "M-FORM",
+        "M-BOUND"
+      ],
+      "candidate_evidence_map": {
+        "M-FORM": {
+          "A": "refute",
+          "B": "support",
+          "C": "insufficient",
+          "D": "support"
+        },
+        "M-BOUND": {
+          "A": "refute",
+          "B": "support",
+          "C": "support",
+          "D": "support"
+        }
+      },
+      "record_sha256": "418855af10e82f9e29d7c1d0784c8fc64eeb8242a2dcc2c5ed6fbfb8b5667cf3"
+    },
+    {
+      "record_id": "T-FORM",
+      "role": "teaching_asset",
+      "title": "微课：三项基本方面要整体记忆",
+      "target_skill_ids": [
+        "xingce.political.mao_thought.formulation"
+      ],
+      "candidate_misconception_ids": [
+        "M-FORM"
+      ],
+      "independence_group": "mao-form-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-FORM"
+      ],
+      "teaching_content": "来源将实事求是、群众路线、独立自主并列为活的灵魂的三个基本方面。不要拆出一项当作全部，也不要用相近词替换；先回看固定的三项清单。",
+      "record_sha256": "267d35818cb6517b1bbd7736e1e7b745cd757ae9091acdfce2bb1e721fbe6dc0"
+    },
+    {
+      "record_id": "T-BOUND",
+      "role": "teaching_asset",
+      "title": "微课：概括不是历史细节列表",
+      "target_skill_ids": [
+        "xingce.political.mao_thought.boundary"
+      ],
+      "candidate_misconception_ids": [
+        "M-BOUND"
+      ],
+      "independence_group": "mao-boundary-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-BOUND"
+      ],
+      "teaching_content": "题目问的是来源如何概括方法，不是在问任一历史事件的所有细节。先确定问题层次，再用来源中的三项方法回答，排除无关的时间、物件或自行增加的口号。",
+      "record_sha256": "87bb072dfe94c0a84cb189c60fe9dce4fd7fa3fadfce0a63449a7f5c7a9826d3"
+    },
+    {
+      "record_id": "V01",
+      "role": "independent_transfer",
+      "title": "独立迁移：固定概括回查",
+      "target_skill_ids": [
+        "xingce.political.mao_thought.formulation",
+        "xingce.political.mao_thought.boundary"
+      ],
+      "candidate_misconception_ids": [
+        "M-FORM",
+        "M-BOUND"
+      ],
+      "independence_group": "mao-transfer-source",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "题目询问某来源列举的固定三项方法时，最可靠的答法是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "逐项回查来源所列的三项，并排除题干外的替换项"
+        },
+        {
+          "label": "B",
+          "text": "任选三个相关词凑成答案"
+        },
+        {
+          "label": "C",
+          "text": "把历史日期当作方法名称"
+        },
+        {
+          "label": "D",
+          "text": "忽略来源的限定"
+        }
+      ],
+      "correct_option": "A",
+      "requires_no_hints": true,
+      "record_sha256": "177f5af94fee2acad9d337275ca0f3265c44a74b4968e09ff8d6f76a70bc94f3"
+    },
+    {
+      "record_id": "R01",
+      "role": "delayed_review",
+      "title": "延迟复习：先分清所问层次",
+      "target_skill_ids": [
+        "xingce.political.mao_thought.boundary"
+      ],
+      "candidate_misconception_ids": [
+        "M-FORM",
+        "M-BOUND"
+      ],
+      "independence_group": "mao-review-boundary",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "若选项把来源的固定方法概括换成无关内容，应：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "按来源清单排除无关内容"
+        },
+        {
+          "label": "B",
+          "text": "因词语相近就接受替换"
+        },
+        {
+          "label": "C",
+          "text": "任意补足未给内容"
+        },
+        {
+          "label": "D",
+          "text": "忽略问题问的是方法还是事件"
+        }
+      ],
+      "correct_option": "A",
+      "requires_no_hints": true,
+      "scheduled_after_days": 4,
+      "eligible_after_transfer_ids": [
+        "V01"
+      ],
+      "record_sha256": "d4c1d4ea9d1d25549b198501e1c1ba539ecc532c69b1c786109abd92f3b15b38"
+    }
+  ]
+}
