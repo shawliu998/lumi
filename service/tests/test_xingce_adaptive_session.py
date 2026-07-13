@@ -15,10 +15,11 @@ from hermes_domains.xingce_adaptive_pack import record_sha256, reviewed_manifest
 from hermes_service.xingce_adaptive_session import XingceAdaptiveSessionConfig, XingceAdaptiveSessionService
 from hermes_service.application import SidecarApplication
 from hermes_service.api import create_server
+from hermes_runtime.store import EventStore
 
 
-def reviewed_root(root: Path) -> Path:
-    subtype = next(row for row in load_coverage_matrix()["subtypes"] if row["id"] == "xingce.verbal.logical_cloze")
+def reviewed_root(root: Path, subtype_id: str = "xingce.verbal.logical_cloze") -> Path:
+    subtype = next(row for row in load_coverage_matrix()["subtypes"] if row["id"] == subtype_id)
     manifest, records, skills, taxonomy = documents_for(subtype)
     manifest.update({"status": "release_ready", "release_ready": True, "runtime_registration": "allowed_after_human_review"})
     manifest["rights"]["distribution"] = "release_distribution_allowed"
@@ -68,6 +69,44 @@ class XingceAdaptiveSessionTests(unittest.TestCase):
             completed,
         )
         self.assertTrue(self.service.replay(entry["session_id"])["trace_verified"])
+
+    def test_transfer_recovers_after_persisting_command_before_receipt(self) -> None:
+        """A crash-recovery test in the isolated evaluation namespace only."""
+        entry = self.service.start(entry_record_id="D01", selected_response="B", confidence="high", elapsed_seconds=8, command_id="crash-entry")
+        self.service.answer_probe(session_id=entry["session_id"], expected_version=1, selected_response="A", confidence="medium", elapsed_seconds=7, command_id="crash-probe")
+        store = EventStore(self.service.database)
+        try:
+            store.append_if_version(
+                entry["session_id"],
+                2,
+                "xingce_adaptive_transfer",
+                self.service._payload(
+                    "committing_transfer",
+                    "crash-transfer",
+                    {"selected_response": "A", "confidence": "high", "elapsed_seconds": 9},
+                ),
+            )
+        finally:
+            store.close()
+        completed = self.service.answer_transfer(
+            session_id=entry["session_id"], expected_version=2, selected_response="A", confidence="high", elapsed_seconds=9, command_id="crash-transfer"
+        )
+        self.assertEqual(completed["stage"], "completed")
+        self.assertEqual(completed["state_version"], 4)
+        self.assertTrue(self.service.replay(entry["session_id"])["trace_verified"])
+
+    def test_same_command_id_cannot_collide_across_adaptive_subtypes(self) -> None:
+        """The run identifier binds the type as well as the local command."""
+        other_root = Path(self.temp.name) / "other-pack"; other_root.mkdir()
+        reviewed_root(other_root, "xingce.quantitative.number_sequence")
+        other = XingceAdaptiveSessionService(
+            Path(self.temp.name) / "state.sqlite3",
+            reviewed_pack_root=other_root,
+            config=XingceAdaptiveSessionConfig(namespace_id="eval:xingce-test", evidence_origin="evaluation_fixture"),
+        )
+        first = self.service.start(entry_record_id="D01", selected_response="B", confidence="high", elapsed_seconds=8, command_id="shared-command")
+        second = other.start(entry_record_id="D01", selected_response="12", confidence="high", elapsed_seconds=8, command_id="shared-command")
+        self.assertNotEqual(first["session_id"], second["session_id"])
 
     def test_sidecar_registers_only_the_bound_reviewed_subtype(self) -> None:
         application = SidecarApplication(

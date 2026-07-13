@@ -60,7 +60,9 @@ class XingceAdaptiveSessionService:
         entry = self._record(entry_record_id, {"entry_diagnostic", "routing_diagnostic"})
         observation = Observation(selected_response, confidence, elapsed_seconds, rationale=rationale)
         decision = diagnose_entry(self.records, scorer=self.pack["scorer"], entry_record_id=entry_record_id, observation=observation)
-        run_id = "xa_" + hashlib.sha256((self.config.namespace_id + "\x1f" + command_id).encode()).hexdigest()[:36]
+        run_id = "xa_" + hashlib.sha256(
+            (self.config.namespace_id + "\x1f" + self.pack["subtype_id"] + "\x1f" + command_id).encode()
+        ).hexdigest()[:36]
         public = self._entry_public(run_id, 1, entry, observation, decision)
         store, learner = EventStore(self.database), LearnerStateStore(self.database)
         try:
@@ -108,29 +110,171 @@ class XingceAdaptiveSessionService:
                 if transfer_event.payload.get("command_id") != command_id or transfer_event.payload.get("selected_response") != selected_response or transfer_event.payload.get("confidence") != confidence or transfer_event.payload.get("elapsed_seconds") != elapsed_seconds:
                     raise XingceAdaptiveSessionError("command id is already bound to a different transfer")
                 return receipt["public_result"]
+            if len(events) == 3 and events[-1].kind == "xingce_adaptive_transfer":
+                event = events[-1]
+                self._same_transfer_command(event, command_id, selected_response, confidence, elapsed_seconds)
+                return self._complete_transfer(store, learner, events, event)
+
             self._state(events, expected_version, "awaiting_transfer")
-            entry_event, probe_event = events[0], events[1]; entry_id = str(entry_event.payload["entry_record_id"])
-            entry_decision = diagnose_entry(self.records, scorer=self.pack["scorer"], entry_record_id=entry_id, observation=Observation(str(entry_event.payload["selected_response"]), str(entry_event.payload["confidence"]), float(entry_event.payload["elapsed_seconds"])))
-            probe_decision = resolve_probe(self.records, scorer=self.pack["scorer"], entry=entry_decision, observation=Observation(str(probe_event.payload["selected_response"]), str(probe_event.payload["confidence"]), float(probe_event.payload["elapsed_seconds"])))
-            observation = Observation(selected_response, confidence, elapsed_seconds)
-            proposal = independent_transfer_proposal(self.records, scorer=self.pack["scorer"], entry=entry_decision, probe=probe_decision, observation=observation)
-            transfer = self._record(probe_decision.transfer_record_id, {"independent_transfer"})
-            event = store.append_if_version(session_id, expected_version, "xingce_adaptive_transfer", self._payload("committing_transfer", command_id, {"selected_response": selected_response, "confidence": confidence, "elapsed_seconds": elapsed_seconds}))
-            transfer_correct = next(fact["value"] for fact in proposal["evidence"] if fact["kind"] == "correctness")
-            evidence_id = self._append_evidence(learner, event, transfer, observation, "verification", bool(transfer_correct))
-            receipts = []
-            for skill_id in transfer["target_skill_ids"]:
-                current = learner.current_snapshot(namespace_id=self.config.namespace_id, evidence_origin=self.config.evidence_origin, learner_id=self.config.learner_id, skill_id=skill_id)
-                receipts.append(learner.commit_verification(namespace_id=self.config.namespace_id, evidence_origin=self.config.evidence_origin, learner_id=self.config.learner_id, skill_id=skill_id, verification_id="vr_" + hashlib.sha256(f"{session_id}:{skill_id}".encode()).hexdigest()[:24], evidence_event_id=evidence_id, expected_state_version=int(current["state_version"]) if current else 0, outcome="passed" if transfer_correct else "failed", unseen_from_content_signatures=["sha256:" + self._record(entry_id, {"entry_diagnostic", "routing_diagnostic"})["record_sha256"], "sha256:" + self._record(probe_decision.probe_record_id, {"probe"})["record_sha256"]]))
-            review = self._review_task(session_id, transfer, bool(proposal["eligible"]))
-            learner.append_policy_decision({"schema_version":"lumi.policy-decision.v1","decision_id":"pd_"+hashlib.sha256(session_id.encode()).hexdigest()[:24],"namespace_id":self.config.namespace_id,"evidence_origin":self.config.evidence_origin,"learner_id":self.config.learner_id,"episode_id":"episode_"+session_id,"decision_type":"schedule_review","selected_action_id":review["task_id"],"evidence_refs":[evidence_id],"review_task":review})
-            public = {"schema_version":SCHEMA,"session_id":session_id,"state_version":expected_version+2,"stage":"completed","transfer":{**public_record_projection(transfer),"selected_response":selected_response,"correct":bool(proposal["eligible"])},"state_update": {"eligible":proposal["eligible"],"reason":proposal["reason"],"receipts":[{"skill_id":r["skill_id"],"state_version":r["state_version"],"state_delta":r["state_delta"]} for r in receipts]},"review_task":review,"next_step":"delayed_review" if proposal["eligible"] else "independent_retry"}
-            store.append_if_version(session_id, event.seq, "xingce_adaptive_receipt", self._payload("completed", command_id, {"public_result":public}))
-            return public
+            event = store.append_if_version(
+                session_id,
+                expected_version,
+                "xingce_adaptive_transfer",
+                self._payload(
+                    "committing_transfer",
+                    command_id,
+                    {
+                        "selected_response": selected_response,
+                        "confidence": confidence,
+                        "elapsed_seconds": elapsed_seconds,
+                    },
+                ),
+            )
+            return self._complete_transfer(store, learner, events + [event], event)
         except (XingceAdaptivePolicyError, LearnerStateError, TraceVersionConflict) as exc:
             raise XingceAdaptiveSessionError(str(exc)) from exc
         finally:
             learner.close(); store.close()
+
+    def _complete_transfer(self, store: EventStore, learner: LearnerStateStore, events: list, event: Any) -> dict[str, Any]:
+        """Finish a persisted transfer command, including after a sidecar crash.
+
+        The transfer trace event is the durable command boundary.  All learner
+        writes use deterministic identifiers, so re-entering this method is
+        safe whether the interruption occurred before, during, or after the
+        learner-state writes.  Only the missing trace receipt is appended.
+        """
+        entry_event, probe_event = events[0], events[1]
+        entry_id = str(entry_event.payload["entry_record_id"])
+        entry_decision = diagnose_entry(
+            self.records,
+            scorer=self.pack["scorer"],
+            entry_record_id=entry_id,
+            observation=Observation(
+                str(entry_event.payload["selected_response"]),
+                str(entry_event.payload["confidence"]),
+                float(entry_event.payload["elapsed_seconds"]),
+            ),
+        )
+        probe_decision = resolve_probe(
+            self.records,
+            scorer=self.pack["scorer"],
+            entry=entry_decision,
+            observation=Observation(
+                str(probe_event.payload["selected_response"]),
+                str(probe_event.payload["confidence"]),
+                float(probe_event.payload["elapsed_seconds"]),
+            ),
+        )
+        observation = Observation(
+            str(event.payload["selected_response"]),
+            str(event.payload["confidence"]),
+            float(event.payload["elapsed_seconds"]),
+        )
+        proposal = independent_transfer_proposal(
+            self.records,
+            scorer=self.pack["scorer"],
+            entry=entry_decision,
+            probe=probe_decision,
+            observation=observation,
+        )
+        transfer = self._record(probe_decision.transfer_record_id, {"independent_transfer"})
+        transfer_correct = next(
+            fact["value"] for fact in proposal["evidence"] if fact["kind"] == "correctness"
+        )
+        evidence_id = self._append_evidence(
+            learner, event, transfer, observation, "verification", bool(transfer_correct)
+        )
+        receipts = []
+        for skill_id in transfer["target_skill_ids"]:
+            current = learner.current_snapshot(
+                namespace_id=self.config.namespace_id,
+                evidence_origin=self.config.evidence_origin,
+                learner_id=self.config.learner_id,
+                skill_id=skill_id,
+            )
+            receipts.append(
+                learner.commit_verification(
+                    namespace_id=self.config.namespace_id,
+                    evidence_origin=self.config.evidence_origin,
+                    learner_id=self.config.learner_id,
+                    skill_id=skill_id,
+                    verification_id="vr_" + hashlib.sha256(f"{event.run_id}:{skill_id}".encode()).hexdigest()[:24],
+                    evidence_event_id=evidence_id,
+                    expected_state_version=int(current["state_version"]) if current else 0,
+                    outcome="passed" if transfer_correct else "failed",
+                    unseen_from_content_signatures=[
+                        "sha256:" + self._record(entry_id, {"entry_diagnostic", "routing_diagnostic"})["record_sha256"],
+                        "sha256:" + self._record(probe_decision.probe_record_id, {"probe"})["record_sha256"],
+                    ],
+                )
+            )
+        review = self._review_task(event.run_id, transfer, bool(proposal["eligible"]))
+        learner.append_policy_decision(
+            {
+                "schema_version": "lumi.policy-decision.v1",
+                "decision_id": "pd_" + hashlib.sha256(event.run_id.encode()).hexdigest()[:24],
+                "namespace_id": self.config.namespace_id,
+                "evidence_origin": self.config.evidence_origin,
+                "learner_id": self.config.learner_id,
+                "episode_id": "episode_" + event.run_id,
+                "decision_type": "schedule_review",
+                "selected_action_id": review["task_id"],
+                "evidence_refs": [evidence_id],
+                "review_task": review,
+            }
+        )
+        public = {
+            "schema_version": SCHEMA,
+            "session_id": event.run_id,
+            "state_version": event.seq + 1,
+            "stage": "completed",
+            "transfer": {
+                **public_record_projection(transfer),
+                "selected_response": observation.selected_response,
+                "correct": bool(proposal["eligible"]),
+            },
+            "state_update": {
+                "eligible": proposal["eligible"],
+                "reason": proposal["reason"],
+                "receipts": [
+                    {"skill_id": row["skill_id"], "state_version": row["state_version"], "state_delta": row["state_delta"]}
+                    for row in receipts
+                ],
+            },
+            "review_task": review,
+            "next_step": "delayed_review" if proposal["eligible"] else "independent_retry",
+        }
+        try:
+            store.append_if_version(
+                event.run_id,
+                event.seq,
+                "xingce_adaptive_receipt",
+                self._payload("completed", str(event.payload["command_id"]), {"public_result": public}),
+            )
+        except TraceVersionConflict:
+            after = self._events(store, event.run_id)
+            if len(after) >= 4 and after[-1].kind == "xingce_adaptive_receipt":
+                self._same_transfer_command(
+                    after[-2],
+                    str(event.payload["command_id"]),
+                    observation.selected_response,
+                    observation.confidence,
+                    observation.elapsed_seconds,
+                )
+                return after[-1].payload["public_result"]
+            raise
+        return public
+
+    @staticmethod
+    def _same_transfer_command(event: Any, command_id: str, selected_response: str, confidence: str, elapsed_seconds: float) -> None:
+        if (
+            event.payload.get("command_id") != command_id
+            or event.payload.get("selected_response") != selected_response
+            or event.payload.get("confidence") != confidence
+            or event.payload.get("elapsed_seconds") != elapsed_seconds
+        ):
+            raise XingceAdaptiveSessionError("command id is already bound to a different transfer")
 
     def replay(self, session_id: str) -> dict[str, Any]:
         store = EventStore(self.database)
