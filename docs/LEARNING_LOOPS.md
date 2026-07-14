@@ -101,10 +101,14 @@ answer is not mastery evidence.
 
 ## Active planning
 
-The daily planner balances expected learning gain, diagnostic information,
-forgetting risk, exam coverage, time budget, fatigue, and learner choice. It must
-explain recommendations in plain language and allow override. Scheduling is a
-tool call with a reason and expiry, not hidden calendar behavior.
+The target daily planner may eventually balance expected learning gain,
+diagnostic information, forgetting risk, exam coverage, time budget, fatigue,
+and learner choice. Current P0.2 does not compute gain, forgetting, or fatigue:
+it uses completed human-local traces, accepted commitments, exam date, a time
+budget, and fixed uncalibrated +1/+3 workload policy. It explains each current
+recommendation and allows bounded accept, complete, postpone, and skip actions.
+Scheduling is an explicit evidence-cited operation, not hidden calendar
+behavior.
 
 ## Reflection and memory promotion
 

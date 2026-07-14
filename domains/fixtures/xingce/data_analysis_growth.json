@@ -35,9 +35,50 @@
       {"cause_id": "ratio-growth-confusion", "label": "只算现期/基期而未减1", "synthetic_prior": 0.40, "evidence_refs": ["answer_incorrect", "reported_ratio_not_growth"], "is_ground_truth": false}
     ]
   },
-  "probe": {"prompt": "若只告诉你现期120、基期100，请先写出增长率公式，不计算。", "targets": ["denominator-current-base-confusion", "ratio-growth-confusion"]},
-  "teach": {"prompt": "用‘增长量÷基期量’的量纲解释公式，并让学习者标记基期。", "strategy": "worked-example-fading"},
-  "independent_verify": {"prompt": "某指标由80升到92，增长率是多少？", "response_mode": "single_choice", "pass_condition": {"correct_option": "C", "options": {"A": "12%", "B": "13%", "C": "15%", "D": "115%"}}},
+  "probe": {
+    "prompt": "若只告诉你现期120、基期100，请先写出增长率公式，不计算。",
+    "targets": ["denominator-current-base-confusion", "increment-rate-confusion", "ratio-growth-confusion"],
+    "assessment": {
+      "schema_version": "hermes.probe-assessment.v1",
+      "evaluator": "growth_formula_v1",
+      "cause_map": {
+        "denominator": "denominator-current-base-confusion",
+        "increment": "increment-rate-confusion",
+        "ratio": "ratio-growth-confusion"
+      },
+      "cause_samples": [
+        {"cause_id": "denominator-current-base-confusion", "supporting_response": "（120-100）÷120", "refuting_response": "（120-100）÷100", "ambiguous_response": "我还不能确定分母。"},
+        {"cause_id": "increment-rate-confusion", "supporting_response": "20", "refuting_response": "增长量除以基期量", "ambiguous_response": "我只知道要比较两个时期。"},
+        {"cause_id": "ratio-growth-confusion", "supporting_response": "120÷100", "refuting_response": "现期量除以基期量后减1", "ambiguous_response": "可能与120和100有关。"}
+      ]
+    }
+  },
+  "teach": {
+    "prompt": "用‘增长量÷基期量’的量纲解释公式，并让学习者标记基期。",
+    "strategy": "worked-example-fading",
+    "variants": [
+      {"cause_id": "denominator-current-base-confusion", "prompt": "对比30÷230与30÷200，解释为什么增长要相对变化起点衡量。", "strategy": "denominator-contrast"},
+      {"cause_id": "increment-rate-confusion", "prompt": "先区分30亿元与15%的量纲，再完成增长量到增长率的转换。", "strategy": "unit-contrast"},
+      {"cause_id": "ratio-growth-confusion", "prompt": "把现期/基期拆成原有100%与新增部分，练习由比值减1得到增长率。", "strategy": "ratio-decomposition"}
+    ]
+  },
+  "independent_verify": {
+    "prompt": "某指标由80升到92，增长率是多少？",
+    "response_mode": "single_choice",
+    "pass_condition": {"scorer": "exact_option_v1", "correct_option": "C", "options": {"A": "12%", "B": "13%", "C": "15%", "D": "115%"}},
+    "samples": {"passing_response": "C", "failing_response": "D"}
+  },
+  "assistance_ladder": {
+    "schema_version": "hermes.assistance-content.v1", "content_version": "growth-rate-help.v1",
+    "steps": [
+      {"action": "retry", "title": "再试一次", "content": "先不看选项，分别写出原来是多少、现在是多少、增加了多少、要和谁比较，再重新选择。", "target_cause_ids": ["denominator-current-base-confusion", "increment-rate-confusion", "ratio-growth-confusion"]},
+      {"action": "locate_evidence", "title": "定位信息", "content": "2024 年是比较起点，2025 年是变化后的数值。先只标出基期量和现期量，不计算。", "target_cause_ids": ["denominator-current-base-confusion"]},
+      {"action": "rule_hint", "title": "规则提示", "content": "增长率描述相对起点增加了多少：（现期量－基期量）÷基期量。分母是基期量。", "target_cause_ids": ["denominator-current-base-confusion", "ratio-growth-confusion"]},
+      {"action": "analogous_example", "title": "同类例子", "content": "某数值从 100 增至 120：增长量是 20，增长率是 20÷100=20%。照这个三步结构处理 200→230。", "target_cause_ids": ["increment-rate-confusion", "ratio-growth-confusion"]},
+      {"action": "worked_step", "title": "演示一步", "content": "本题增长量是 230－200=30。下一步只需用 30 除以基期量 200，再化成百分数。", "target_cause_ids": ["denominator-current-base-confusion", "increment-rate-confusion"]},
+      {"action": "full_explanation", "title": "完整说明", "content": "（230－200）÷200=15%，选 B。A 用现期量作分母；C 把增长量当增长率；D 算的是现期占基期比例，没有减去原来的 100%。", "target_cause_ids": ["denominator-current-base-confusion", "increment-rate-confusion", "ratio-growth-confusion"]}
+    ]
+  },
   "samples": {"passing_response": "B", "failing_response": "A"},
   "provenance": {"content_origin": "synthetic_original", "authoring_note": "自有合成数值，无外部题目文本", "prior_source": "synthetic_engineering_prior_v1"}
 }

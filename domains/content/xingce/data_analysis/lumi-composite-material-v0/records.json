@@ -1,0 +1,433 @@
+{
+  "schema_version": "lumi.xingce-adaptive-records.v1",
+  "pack_id": "lumi-composite-material-v0",
+  "pack_version": "0.1.0-draft",
+  "review_status": "draft_unreviewed",
+  "records": [
+    {
+      "record_id": "D01",
+      "role": "entry_diagnostic",
+      "title": "综合材料：说明与表格对齐",
+      "target_skill_ids": [
+        "xingce.data.composite_material.cross_source_alignment",
+        "xingce.data.composite_material.target_series",
+        "xingce.data.composite_material.denominator"
+      ],
+      "candidate_misconception_ids": [
+        "M-ALIGN",
+        "M-SER",
+        "M-DEN",
+        "M-SCOPE"
+      ],
+      "independence_group": "composite-training-entry",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "source_material": {
+        "kind": "composite",
+        "title": "职业培训项目年度记录",
+        "scope_note": "范围：同一职业培训项目；表格为报名并完成资格审核的人员。",
+        "parts": [
+          {
+            "kind": "text",
+            "title": "统计说明",
+            "body": "“完成资格审核”仅指材料审核通过，不等同于最终获得培训证书。以下人数均为当年新报名人员。",
+            "scope_note": "单位：人；范围：当年新报名人员。"
+          },
+          {
+            "kind": "table",
+            "title": "年度项目数据",
+            "columns": [
+              "年度",
+              "报名人数",
+              "完成资格审核人数",
+              "最终获得证书人数"
+            ],
+            "rows": [
+              [
+                "2024年",
+                400,
+                300,
+                240
+              ],
+              [
+                "2025年",
+                500,
+                420,
+                336
+              ]
+            ],
+            "scope_note": "单位：人；范围：同一项目两个年度的新报名人员。"
+          }
+        ]
+      },
+      "prompt": "2025年完成资格审核人数约占2025年报名人数的：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "67.2%"
+        },
+        {
+          "label": "B",
+          "text": "80%"
+        },
+        {
+          "label": "C",
+          "text": "84%"
+        },
+        {
+          "label": "D",
+          "text": "125%"
+        }
+      ],
+      "correct_option": "C",
+      "route_probe_ids": [
+        "P01"
+      ],
+      "record_sha256": "311e4bad575c613026b6e5f5047cd3c1b2114a3926795aae4ae398f380dcf71a"
+    },
+    {
+      "record_id": "P01",
+      "role": "probe",
+      "title": "最小探查：先用说明锁定统计对象",
+      "target_skill_ids": [
+        "xingce.data.composite_material.cross_source_alignment",
+        "xingce.data.composite_material.target_series",
+        "xingce.data.composite_material.denominator",
+        "xingce.data.composite_material.time_range"
+      ],
+      "candidate_misconception_ids": [
+        "M-ALIGN",
+        "M-SER",
+        "M-DEN",
+        "M-SCOPE"
+      ],
+      "independence_group": "composite-library-probe",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "source_material": {
+        "kind": "composite",
+        "title": "阅读推广活动记录",
+        "scope_note": "范围：同一阅读推广活动；“完成”指至少参加两次，不是仅报名。",
+        "parts": [
+          {
+            "kind": "text",
+            "title": "统计说明",
+            "body": "活动报名后，至少参加两次才计入“完成活动”。表格中的人数均为当年首次报名者。",
+            "scope_note": "单位：人；范围：当年首次报名者。"
+          },
+          {
+            "kind": "table",
+            "title": "分组活动数据",
+            "columns": [
+              "年度",
+              "报名人数",
+              "完成活动人数"
+            ],
+            "rows": [
+              [
+                "2024年",
+                200,
+                120
+              ],
+              [
+                "2025年",
+                250,
+                175
+              ]
+            ],
+            "scope_note": "单位：人；范围：同一活动两个年度。"
+          }
+        ]
+      },
+      "prompt": "2025年完成活动人数约占2025年报名人数的：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "60%"
+        },
+        {
+          "label": "B",
+          "text": "70%"
+        },
+        {
+          "label": "C",
+          "text": "87.5%"
+        },
+        {
+          "label": "D",
+          "text": "142.9%"
+        }
+      ],
+      "correct_option": "B",
+      "discriminates": [
+        "M-ALIGN",
+        "M-SER",
+        "M-DEN",
+        "M-SCOPE"
+      ],
+      "candidate_evidence_map": {
+        "M-ALIGN": {
+          "A": "support",
+          "B": "refute",
+          "C": "support",
+          "D": "insufficient"
+        },
+        "M-SER": {
+          "A": "support",
+          "B": "refute",
+          "C": "support",
+          "D": "insufficient"
+        },
+        "M-DEN": {
+          "A": "support",
+          "B": "refute",
+          "C": "insufficient",
+          "D": "support"
+        },
+        "M-SCOPE": {
+          "A": "support",
+          "B": "refute",
+          "C": "support",
+          "D": "insufficient"
+        }
+      },
+      "record_sha256": "792076c002b17c94b27c3e97d50d43b079be4a50e53245053bef98bc171373da"
+    },
+    {
+      "record_id": "T-ALIGN",
+      "role": "teaching_asset",
+      "title": "微课：说明文字决定表格口径",
+      "target_skill_ids": [
+        "xingce.data.composite_material.cross_source_alignment"
+      ],
+      "candidate_misconception_ids": [
+        "M-ALIGN"
+      ],
+      "independence_group": "composite-align-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-ALIGN"
+      ],
+      "teaching_content": "综合材料先读说明，再读数字。说明若说“完成”需要至少两次参与，就不能把报名人数当完成量；它规定了每一列到底在统计谁。",
+      "record_sha256": "ef3aa4606a9ed702b13d26618f365a9349f45c9327c1188adcb84327c021494a"
+    },
+    {
+      "record_id": "T-SER",
+      "role": "teaching_asset",
+      "title": "微课：为每个数字标注“哪年、哪列、哪类人”",
+      "target_skill_ids": [
+        "xingce.data.composite_material.target_series"
+      ],
+      "candidate_misconception_ids": [
+        "M-SER"
+      ],
+      "independence_group": "composite-series-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-SER"
+      ],
+      "teaching_content": "多段材料中数字很多时，给候选数字写三张标签：年度、指标列、统计对象。只有三张标签都与题干相同，才能进入算式。",
+      "record_sha256": "0e71f6f8d94bad7abb6ec41a12d0632850921ff493524e3361cd43e7f982841e"
+    },
+    {
+      "record_id": "T-DEN",
+      "role": "teaching_asset",
+      "title": "微课：问“完成占报名”就写完成÷报名",
+      "target_skill_ids": [
+        "xingce.data.composite_material.denominator"
+      ],
+      "candidate_misconception_ids": [
+        "M-DEN"
+      ],
+      "independence_group": "composite-denominator-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-DEN"
+      ],
+      "teaching_content": "把问法改成箭头：完成的人是部分，报名的人是总体，所以完成÷报名。若算出超过100%，先回头检查比例方向与是否混入另一个年度。",
+      "record_sha256": "6a2337a26908696607d2f61439d3209c73c1b4bf7a9170e60babf5798286223e"
+    },
+    {
+      "record_id": "T-SCOPE",
+      "role": "teaching_asset",
+      "title": "微课：横向比较先统一年度",
+      "target_skill_ids": [
+        "xingce.data.composite_material.time_range"
+      ],
+      "candidate_misconception_ids": [
+        "M-SCOPE"
+      ],
+      "independence_group": "composite-scope-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-SCOPE"
+      ],
+      "teaching_content": "当题干限定2025年，分子与分母都从2025年行读取。只有题目明确比较增长时才引入上一年，并把上一年固定放在增长率的分母。",
+      "record_sha256": "e5e6e751e0d5133b4698e61c80617d0dfb5938527d90af5b680afaf2887ecdc2"
+    },
+    {
+      "record_id": "V01",
+      "role": "independent_transfer",
+      "title": "独立迁移：说明口径下的完成比例",
+      "target_skill_ids": [
+        "xingce.data.composite_material.cross_source_alignment",
+        "xingce.data.composite_material.denominator",
+        "xingce.data.composite_material.time_range"
+      ],
+      "candidate_misconception_ids": [
+        "M-ALIGN",
+        "M-SER",
+        "M-DEN",
+        "M-SCOPE"
+      ],
+      "independence_group": "composite-volunteer-transfer",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "source_material": {
+        "kind": "composite",
+        "title": "志愿服务项目记录",
+        "scope_note": "范围：同一志愿服务项目；完成服务者需在本年度累计服务至少8小时。",
+        "parts": [
+          {
+            "kind": "text",
+            "title": "统计说明",
+            "body": "“完成服务”指累计服务时长达到8小时及以上；尚未达到8小时的报名者不计入完成数。",
+            "scope_note": "单位：人；范围：当年首次报名志愿者。"
+          },
+          {
+            "kind": "table",
+            "title": "年度志愿服务数据",
+            "columns": [
+              "年度",
+              "报名志愿者",
+              "完成服务志愿者"
+            ],
+            "rows": [
+              [
+                "2024年",
+                150,
+                90
+              ],
+              [
+                "2025年",
+                180,
+                126
+              ]
+            ],
+            "scope_note": "单位：人；范围：同一项目两个年度。"
+          }
+        ]
+      },
+      "prompt": "2025年完成服务志愿者约占2025年报名志愿者的：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "60%"
+        },
+        {
+          "label": "B",
+          "text": "70%"
+        },
+        {
+          "label": "C",
+          "text": "75%"
+        },
+        {
+          "label": "D",
+          "text": "142.9%"
+        }
+      ],
+      "correct_option": "B",
+      "requires_no_hints": true,
+      "record_sha256": "eb1616a59e403ddf604a358699eadd8ad1b6dd295a10e1b05c31dcc7235b5b74"
+    },
+    {
+      "record_id": "R01",
+      "role": "delayed_review",
+      "title": "延迟复习：同口径的参与比例",
+      "target_skill_ids": [
+        "xingce.data.composite_material.cross_source_alignment",
+        "xingce.data.composite_material.target_series",
+        "xingce.data.composite_material.denominator"
+      ],
+      "candidate_misconception_ids": [
+        "M-ALIGN",
+        "M-SER",
+        "M-DEN",
+        "M-SCOPE"
+      ],
+      "independence_group": "composite-workshop-review",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "source_material": {
+        "kind": "composite",
+        "title": "技能工作坊报名记录",
+        "scope_note": "范围：同一工作坊；“结业”指完成全部课程与作业。",
+        "parts": [
+          {
+            "kind": "text",
+            "title": "统计说明",
+            "body": "仅完成全部课程和作业的报名者计入“结业”。",
+            "scope_note": "单位：人；范围：本季度报名者。"
+          },
+          {
+            "kind": "table",
+            "title": "季度数据",
+            "columns": [
+              "季度",
+              "报名人数",
+              "结业人数"
+            ],
+            "rows": [
+              [
+                "一季度",
+                80,
+                56
+              ],
+              [
+                "二季度",
+                100,
+                75
+              ]
+            ],
+            "scope_note": "单位：人；范围：同一工作坊两个季度。"
+          }
+        ]
+      },
+      "prompt": "二季度结业人数约占二季度报名人数的：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "56%"
+        },
+        {
+          "label": "B",
+          "text": "70%"
+        },
+        {
+          "label": "C",
+          "text": "75%"
+        },
+        {
+          "label": "D",
+          "text": "133.3%"
+        }
+      ],
+      "correct_option": "C",
+      "requires_no_hints": true,
+      "scheduled_after_days": 4,
+      "eligible_after_transfer_ids": [
+        "V01"
+      ],
+      "record_sha256": "e2156aecfd94db355d49b732c3981d87cb90e88027bf83c7d8e5dd877b78ff94"
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-management-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "status": "release_ready",
+  "release_ready": true,
+  "runtime_registration": "allowed_after_human_review",
+  "subtype_id": "xingce.common.management",
+  "module_id": "common_knowledge",
+  "form": "text_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "release_distribution_allowed"
+  },
+  "content_evidence": {
+    "fact_source_snapshot": "Original Lumi management scenarios: each item supplies its own operational definitions and rule boundary in records.json.",
+    "validity_cutoff": "2026-07-13; this draft tests scenario reasoning, not current policy or office-holder facts."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": true,
+    "review_attestations": [
+      {
+        "review_kind": "logic",
+        "reviewer_id": "1",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "43a31e2eb77e7810d72f306aab98d1ecc52cb464087bdd120205efede1f1a978"
+      },
+      {
+        "review_kind": "editorial_rights",
+        "reviewer_id": "2",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "43a31e2eb77e7810d72f306aab98d1ecc52cb464087bdd120205efede1f1a978"
+      }
+    ]
+  },
+  "product_release": {
+    "state": "released",
+    "acceptance_basis": "owner_acceptance_waiver",
+    "accepted_at": "2026-07-14",
+    "waived_gate": "type_by_type_human_local_browser_acceptance",
+    "human_effect_evidence": "unavailable",
+    "claim_scope": "content_and_mechanism_availability_only"
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "33646eb24fe3de33525a252ab69123f953376604272de270e5bf318f4a418369"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "9df8ccf87a33845df8cb3856b17af83df426f55936fc79c69b39a747c1c8abfa"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "7805929af23ced8e30eb734c1ad13b1f758032c6245f461fe8970926bab002af"
+    },
+    {
+      "path": "review-evidence.json",
+      "sha256": "9cdb4d0ad6814126a968356e6218d9b3245b40ec82bdc79feb3f1ac79a11d1ba"
+    }
+  ]
+}

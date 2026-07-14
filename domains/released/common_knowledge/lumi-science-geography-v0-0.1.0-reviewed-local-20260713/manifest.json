@@ -1,0 +1,72 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-science-geography-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "status": "release_ready",
+  "release_ready": true,
+  "runtime_registration": "allowed_after_human_review",
+  "subtype_id": "xingce.common.science_geography",
+  "module_id": "common_knowledge",
+  "form": "text_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "release_distribution_allowed"
+  },
+  "content_evidence": {
+    "fact_source_snapshot": "NOAA Ocean Service, What is the difference between weather and climate?, https://oceanservice.noaa.gov/facts/weather_climate.html (last updated 2024-06-16); U.S. Geological Survey, The Science of Earthquakes, https://www.usgs.gov/programs/earthquake-hazards/science-earthquakes (accessed 2026-07-13). The authored items paraphrase only the bounded distinctions recorded in those sources.",
+    "validity_cutoff": "2026-07-13; no item depends on a live forecast, event list, or changing geographic statistic."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": true,
+    "review_attestations": [
+      {
+        "review_kind": "logic",
+        "reviewer_id": "1",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "252c154709382da001ebfd29653013ef1cf91e7db9d2b244e34c666bfcff782a"
+      },
+      {
+        "review_kind": "editorial_rights",
+        "reviewer_id": "2",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "252c154709382da001ebfd29653013ef1cf91e7db9d2b244e34c666bfcff782a"
+      }
+    ]
+  },
+  "product_release": {
+    "state": "released",
+    "acceptance_basis": "owner_acceptance_waiver",
+    "accepted_at": "2026-07-14",
+    "waived_gate": "type_by_type_human_local_browser_acceptance",
+    "human_effect_evidence": "unavailable",
+    "claim_scope": "content_and_mechanism_availability_only"
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "32eb00b741112a690c8064f8781a52e7998279794bb389cd8b221aa368d8a26d"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "21bc0e369ee7d764cb706f9a84c9ac6e42e01daa2e7f3ea1021abf882c74bdad"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "d54a5ef007bb73b7dba2177bea2aa065e364df1deb99877ae690c1c3d437c858"
+    },
+    {
+      "path": "review-evidence.json",
+      "sha256": "eb021dee212e3c647806e4bd497ef287ee5da9e5df752b1ad5db6cb6548016be"
+    }
+  ]
+}

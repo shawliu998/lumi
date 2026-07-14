@@ -1,0 +1,72 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-history-humanity-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "status": "release_ready",
+  "release_ready": true,
+  "runtime_registration": "allowed_after_human_review",
+  "subtype_id": "xingce.common.history_humanity",
+  "module_id": "common_knowledge",
+  "form": "text_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "release_distribution_allowed"
+  },
+  "content_evidence": {
+    "fact_source_snapshot": "中国国家博物馆，《“后母戊”青铜方鼎》，https://www.chnmuseum.cn/zp/zpml/kgfjp/202008/t20200824_247255.shtml (accessed 2026-07-13); UNESCO Intangible Cultural Heritage, Traditional tea processing techniques and associated social practices in China, https://ich.unesco.org/en/RL/traditional-tea-processing-techniques-and-associated-social-practices-in-china-01884 (accessed 2026-07-13). Items use original wording and only paraphrase the listed source facts.",
+    "validity_cutoff": "2026-07-13; the pack names source-specific historical and cultural facts, not a live exhibition or ranking."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": true,
+    "review_attestations": [
+      {
+        "review_kind": "logic",
+        "reviewer_id": "1",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "d5c8a42337dcb32837b01f1c8ddd3f9955662542b96465fd41db078636bbbb0d"
+      },
+      {
+        "review_kind": "editorial_rights",
+        "reviewer_id": "2",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "d5c8a42337dcb32837b01f1c8ddd3f9955662542b96465fd41db078636bbbb0d"
+      }
+    ]
+  },
+  "product_release": {
+    "state": "released",
+    "acceptance_basis": "owner_acceptance_waiver",
+    "accepted_at": "2026-07-14",
+    "waived_gate": "type_by_type_human_local_browser_acceptance",
+    "human_effect_evidence": "unavailable",
+    "claim_scope": "content_and_mechanism_availability_only"
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "1fd130ee35f23fe1f799d47affaa66cb1db9b9d377771c459a3bf2a84ae207fc"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "d12b8958ca0b7b5b0cb3b369bd9af5916d7f6c299a6e27629e15278e726cc3a7"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "274eb7d3a72ffcba37ccc83706d92a8009720c2529487483b4fd13088efab2c3"
+    },
+    {
+      "path": "review-evidence.json",
+      "sha256": "743e9ec4eb45a888cd2b279a01610c98b308c56855019b479995b9dd189b4649"
+    }
+  ]
+}

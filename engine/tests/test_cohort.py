@@ -51,7 +51,8 @@ class CohortPriorTests(unittest.TestCase):
             build.priors,
         )
         self.assertIn("cohort_prior", result.hypotheses[0].evidence)
-        self.assertEqual(result.provenance["cohort_sources"][0]["sample_size"], 200)
+        self.assertEqual(result.provenance["prior_sources"][0]["sample_size"], 200)
+        self.assertEqual(result.provenance["prior_sources"][0]["kind"], "cohort_prior")
 
     def test_small_cohort_fails_closed_without_exposing_counts(self):
         build = build_cohort_priors(

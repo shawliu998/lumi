@@ -1,0 +1,67 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-science-geography-v0",
+  "pack_version": "0.1.0-draft",
+  "status": "draft_unreviewed",
+  "release_ready": false,
+  "runtime_registration": "forbidden_until_human_review",
+  "subtype_id": "xingce.common.science_geography",
+  "module_id": "common_knowledge",
+  "form": "text_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "draft_no_distribution"
+  },
+  "content_evidence": {
+    "fact_source_snapshot": "NOAA Ocean Service, What is the difference between weather and climate?, https://oceanservice.noaa.gov/facts/weather_climate.html (last updated 2024-06-16); U.S. Geological Survey, The Science of Earthquakes, https://www.usgs.gov/programs/earthquake-hazards/science-earthquakes (accessed 2026-07-13). The authored items paraphrase only the bounded distinctions recorded in those sources.",
+    "validity_cutoff": "2026-07-13; no item depends on a live forecast, event list, or changing geographic statistic."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": false,
+    "required_reviews": [
+      {
+        "review_kind": "logic",
+        "status": "pending",
+        "required_checks": [
+          "unique_answer",
+          "fact_scope",
+          "mechanism_accuracy",
+          "candidate_discrimination",
+          "transfer_independence"
+        ]
+      },
+      {
+        "review_kind": "editorial_rights",
+        "status": "pending",
+        "required_checks": [
+          "source_attribution",
+          "original_wording",
+          "plain_language",
+          "license_scope"
+        ]
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "aef128922c28d6308c4b42d23efb99370dc56b03554c2a8aaa1cbe5895e61383"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "4437cd1469852af0dc857ca792229503da5069579204954a400aa66e2251653a"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "6deb8f5a1f88c6fcb33e9f14abd7d044e7207d4a014ee3dee40e6d23b45a320b"
+    }
+  ]
+}

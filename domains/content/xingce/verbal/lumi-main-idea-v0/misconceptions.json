@@ -1,0 +1,6 @@
+{"schema_version":"lumi.xingce-adaptive-misconceptions.v1","pack_id":"lumi-main-idea-v0","pack_version":"0.1.0-draft","review_status":"draft_unreviewed","candidate_misconceptions":[
+ {"cause_id":"M-EXAMPLE","label":"候选：把材料中的例子或细节当作中心主张", "status":"unconfirmed","is_ground_truth":false,"target_skill_ids":["xingce.verbal.main_idea.evidence_role"]},
+ {"cause_id":"M-PART","label":"候选：用段落局部内容替代整体关系", "status":"unconfirmed","is_ground_truth":false,"target_skill_ids":["xingce.verbal.main_idea.central_claim","xingce.verbal.main_idea.scope"]},
+ {"cause_id":"M-OVER","label":"候选：选择超过原文证据强度的概括", "status":"unconfirmed","is_ground_truth":false,"target_skill_ids":["xingce.verbal.main_idea.claim_strength"]},
+ {"cause_id":"M-SCOPE","label":"候选：遗漏或扩大文本限定的对象和范围", "status":"unconfirmed","is_ground_truth":false,"target_skill_ids":["xingce.verbal.main_idea.scope"]}
+]}

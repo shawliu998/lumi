@@ -1,0 +1,67 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-economics-v0",
+  "pack_version": "0.1.0-draft",
+  "status": "draft_unreviewed",
+  "release_ready": false,
+  "runtime_registration": "forbidden_until_human_review",
+  "subtype_id": "xingce.common.economics",
+  "module_id": "common_knowledge",
+  "form": "text_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "draft_no_distribution"
+  },
+  "content_evidence": {
+    "fact_source_snapshot": "Original Lumi economic scenarios: every item defines its own ceteris-paribus condition, comparison group, and requested variable in records.json; no live market figure, policy rate, or forecast is asserted.",
+    "validity_cutoff": "2026-07-13; this draft evaluates reading of explicitly stated economic relations, not current market conditions or investment advice."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": false,
+    "required_reviews": [
+      {
+        "review_kind": "logic",
+        "status": "pending",
+        "required_checks": [
+          "unique_answer",
+          "ceteris_paribus_scope",
+          "mechanism_direction",
+          "indicator_boundary",
+          "transfer_independence"
+        ]
+      },
+      {
+        "review_kind": "editorial_rights",
+        "status": "pending",
+        "required_checks": [
+          "original_wording",
+          "neutral_scenario",
+          "non_advice_boundary",
+          "license_scope"
+        ]
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "1486a40f309c82622bd92837576299e00ec1ec07cc9a166d55f1e2bce6d08bf1"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "6c04aa003f1d7f4155d195631eb49f562990892ba212806eddba3ed4dd26a7c4"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "816d1d96385d89793f1b758f31b97e4fd85b3b06c398df7dc8ac0f503012eb3d"
+    }
+  ]
+}

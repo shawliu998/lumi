@@ -15,3 +15,6 @@ Rules:
 3. Show uncertainty and failed/pending gates in the demo.
 4. Preserve redacted inputs, versions, hashes, and the exact evaluation command.
 5. Treat the production Shenlun repository as read-only context, never as a demo dependency.
+6. Treat +1/+3 windows, durations, same-fixture retests, and user-marked
+   completion as engineering mechanics, not calibrated retention or
+   learning-effect evidence.

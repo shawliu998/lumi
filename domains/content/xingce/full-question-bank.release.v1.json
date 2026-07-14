@@ -1,0 +1,41 @@
+{
+  "schema_version": "lumi.xingce-full-bank-release.v1",
+  "release_id": "lumi-xingce-cleaned17-v2",
+  "release_decision": {
+    "decision": "owner_acceptance_waiver",
+    "accepted_at": "2026-07-14",
+    "waived_gate": "human_local_browser_learning_loop_acceptance",
+    "human_effect_evidence": "unavailable",
+    "claim_scope": "versioned local question-bank access and practice mechanics only"
+  },
+  "export": {
+    "export_id": "lumi-xingce-cleaned17-v2",
+    "export_version": "cleaned17-v2",
+    "manifest_schema": "lumi.xingce-full-bank-export.v1",
+    "manifest_sha256": "9dc08ab266a2cc8fd078e28fb67cb7ef4b9ba8b3c7fe57579dbf2f7c9f98232f",
+    "database_filename": "lumi-question-bank.sqlite3",
+    "database_bytes": 728154112,
+    "database_sha256": "9b41ddabc967e8263357aa4ec2a08b55c9fb2b5a09570d32e78ef1b612701c49",
+    "schema_sha256": "dd6a60fbeb7f1525de5eb9b0be36ef2e4b4d6e635f365b12f419eb60de7be9f0"
+  },
+  "counts": {
+    "questions_total": 78179,
+    "questions_ready": 77695,
+    "questions_needs_review": 484,
+    "direct_practice_ready": 60696,
+    "asset_gated": 16999,
+    "pre_answer_safety_quarantined": 9,
+    "mapped_to_released_subtype": 28821,
+    "unclassified": 49358
+  },
+  "product_policy": {
+    "ready_only": true,
+    "needs_review_quarantined": true,
+    "practice_mode": "practice_only",
+    "writes_learner_state": false,
+    "evidence_proposal_only": true,
+    "implicit_network_assets": false,
+    "asset_gated_attempts": false,
+    "unclassified_policy": "visible_without_fabricated_subtype"
+  }
+}

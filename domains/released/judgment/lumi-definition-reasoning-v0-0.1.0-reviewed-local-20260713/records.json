@@ -1,0 +1,234 @@
+{
+  "schema_version": "lumi.xingce-adaptive-records.v1",
+  "pack_id": "lumi-definition-reasoning-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "review_status": "release_ready",
+  "definition_feature_maps": {
+    "D01": [
+      "在公共场所",
+      "对设施进行维护或改善",
+      "未经管理方同意"
+    ],
+    "V01": [
+      "在共同使用的工作区域",
+      "主动整理并标示共享物品",
+      "供他人后续取用"
+    ]
+  },
+  "records": [
+    {
+      "record_id": "D01",
+      "role": "entry_diagnostic",
+      "title": "定义判断：完整特征",
+      "target_skill_ids": [
+        "xingce.judgment.definition.necessary_features",
+        "xingce.judgment.definition.boundary"
+      ],
+      "candidate_misconception_ids": [
+        "M-NF",
+        "M-BO",
+        "M-SS"
+      ],
+      "independence_group": "definition-public-facility-entry",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "prompt": "“擅自改造”是指：行为人在公共场所，未经管理方同意，对既有设施进行维护以外的改动或增设。下列属于擅自改造的是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "物业人员按报修单更换楼道损坏的灯泡。"
+        },
+        {
+          "label": "B",
+          "text": "住户未经同意，在公共走廊加装固定鞋柜。"
+        },
+        {
+          "label": "C",
+          "text": "住户在自家客厅移动可折叠书架。"
+        },
+        {
+          "label": "D",
+          "text": "商户经书面批准，在店内安装可拆卸展架。"
+        }
+      ],
+      "correct_option": "B",
+      "route_probe_ids": [
+        "P01"
+      ],
+      "record_sha256": "d885426af56dc38a8d9185fca5d5ce2d6c17e9e4ce15082f7f1f09fe6fa6da79"
+    },
+    {
+      "record_id": "P01",
+      "role": "probe",
+      "title": "最小探查：必要特征",
+      "target_skill_ids": [
+        "xingce.judgment.definition.necessary_features",
+        "xingce.judgment.definition.boundary"
+      ],
+      "candidate_misconception_ids": [
+        "M-NF",
+        "M-BO",
+        "M-SS"
+      ],
+      "independence_group": "definition-feature-probe",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "prompt": "仍以“擅自改造”为准。若某人未经同意，只是擦拭公共走廊的栏杆，最直接说明它不属于该定义的是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "该行为没有对既有设施作维护以外的改动或增设。"
+        },
+        {
+          "label": "B",
+          "text": "该行为发生在公共场所。"
+        },
+        {
+          "label": "C",
+          "text": "该行为没有得到管理方同意。"
+        },
+        {
+          "label": "D",
+          "text": "栏杆可能被其他人使用。"
+        }
+      ],
+      "correct_option": "A",
+      "discriminates": [
+        "M-NF",
+        "M-BO",
+        "M-SS"
+      ],
+      "candidate_evidence_map": {
+        "M-NF": {
+          "A": "refute",
+          "B": "support",
+          "C": "support",
+          "D": "support"
+        },
+        "M-BO": {
+          "A": "refute",
+          "B": "insufficient",
+          "C": "support",
+          "D": "insufficient"
+        },
+        "M-SS": {
+          "A": "refute",
+          "B": "insufficient",
+          "C": "insufficient",
+          "D": "support"
+        }
+      },
+      "record_sha256": "bb366eb12e5ae51bc681c92ef1308f24a4b393c240aff7513329db585bc4a037"
+    },
+    {
+      "record_id": "T01",
+      "role": "teaching_asset",
+      "title": "微课：逐项核对，不凭印象",
+      "target_skill_ids": [
+        "xingce.judgment.definition.necessary_features",
+        "xingce.judgment.definition.boundary"
+      ],
+      "candidate_misconception_ids": [
+        "M-NF",
+        "M-BO",
+        "M-SS"
+      ],
+      "independence_group": "definition-feature-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "target_candidate_ids": [
+        "M-NF",
+        "M-BO",
+        "M-SS"
+      ],
+      "teaching_content": "把定义拆成不可缺少的条件，再逐项核对事例。任意一个必要条件缺失，就不能因为地点、对象或动作“看起来相像”而归入定义。先写出缺失的那一项，再作选择。",
+      "record_sha256": "921251ad6fbf9deedf7dbeb2cebe2d0e6d187928c01420e4a3d5ad2e0c3667ce"
+    },
+    {
+      "record_id": "V01",
+      "role": "independent_transfer",
+      "title": "独立迁移：共享区域整理",
+      "target_skill_ids": [
+        "xingce.judgment.definition.necessary_features",
+        "xingce.judgment.definition.boundary"
+      ],
+      "candidate_misconception_ids": [
+        "M-NF",
+        "M-BO",
+        "M-SS"
+      ],
+      "independence_group": "definition-shared-workspace-transfer",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "prompt": "“共享整理”是指：在共同使用的工作区域，成员主动整理并标示共享物品，以便其他成员后续取用。下列属于共享整理的是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "小李把自己抽屉里的私人物品分类收好。"
+        },
+        {
+          "label": "B",
+          "text": "小周将会议室共用的线缆归类、贴签后放回公共柜。"
+        },
+        {
+          "label": "C",
+          "text": "小陈把借来的投影仪带回家保管。"
+        },
+        {
+          "label": "D",
+          "text": "小王在工位旁堆放待处理的个人文件。"
+        }
+      ],
+      "correct_option": "B",
+      "requires_no_hints": true,
+      "record_sha256": "162de56843a2c42bf59f86c043dc1c305f55d7e2b79d0410f6580e1696fccf38"
+    },
+    {
+      "record_id": "R01",
+      "role": "delayed_review",
+      "title": "延迟复习：定义特征复核",
+      "target_skill_ids": [
+        "xingce.judgment.definition.necessary_features",
+        "xingce.judgment.definition.boundary"
+      ],
+      "candidate_misconception_ids": [
+        "M-NF",
+        "M-BO",
+        "M-SS"
+      ],
+      "independence_group": "definition-delayed-review",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "prompt": "“协作提醒”是指：成员发现共同任务可能偏离要求后，向相关成员提供可执行的纠正信息。下列属于协作提醒的是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "小赵发现表格单位不一致，告知负责人并说明应统一为“万元”。"
+        },
+        {
+          "label": "B",
+          "text": "小钱在群里转发一张与任务无关的海报。"
+        },
+        {
+          "label": "C",
+          "text": "小孙把自己已经完成的笔记存入私人文件夹。"
+        },
+        {
+          "label": "D",
+          "text": "小吴说“大家加油”，但未指出任何可纠正事项。"
+        }
+      ],
+      "correct_option": "A",
+      "requires_no_hints": true,
+      "scheduled_after_days": 3,
+      "eligible_after_transfer_ids": [
+        "V01"
+      ],
+      "record_sha256": "c17025b665a5607938ed6c1c1a7d796932ae2895858dfbe8db93aa9283314280"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{"schema_version":"lumi.xingce-adaptive-skills.v1","pack_id":"lumi-graphic-reasoning-v0","pack_version":"0.1.0-draft","review_status":"draft_unreviewed","skills":[
+ {"skill_id":"xingce.judgment.graphic_reasoning.feature_selection","label":"区分图形的稳定与变化属性","mastery_claim":"能分别记录形状、填充、位置与数量等属性；仅由无提示迁移更新。"},
+ {"skill_id":"xingce.judgment.graphic_reasoning.transform_direction","label":"保持变化方向与顺序","mastery_claim":"能识别增加、减少、交替等方向并保持顺序；仅由无提示迁移更新。"},
+ {"skill_id":"xingce.judgment.graphic_reasoning.composition_operator","label":"识别组成规则","mastery_claim":"能判断逐项添加、替换或交替的组成操作；仅由无提示迁移更新。"},
+ {"skill_id":"xingce.judgment.graphic_reasoning.attribute_count","label":"核对图形属性数量","mastery_claim":"能在作答前核对元素数量及其属性；仅由无提示迁移更新。"}
+]}

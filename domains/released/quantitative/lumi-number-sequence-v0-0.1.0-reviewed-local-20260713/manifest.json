@@ -1,0 +1,71 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-number-sequence-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "status": "release_ready",
+  "release_ready": true,
+  "runtime_registration": "allowed_after_human_review",
+  "subtype_id": "xingce.quantitative.number_sequence",
+  "module_id": "quantitative",
+  "form": "numeric_or_mcq",
+  "scorer": "authored_numeric_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "release_distribution_allowed"
+  },
+  "content_evidence": {
+    "explicit_solution_steps": "records.json#/solution_notes"
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": true,
+    "review_attestations": [
+      {
+        "review_kind": "logic",
+        "reviewer_id": "1",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "8f7199ccff15e6c92336d0661b8497d5e95b1b64fc90aa667faa06d2637abee4"
+      },
+      {
+        "review_kind": "editorial_rights",
+        "reviewer_id": "2",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "8f7199ccff15e6c92336d0661b8497d5e95b1b64fc90aa667faa06d2637abee4"
+      }
+    ]
+  },
+  "product_release": {
+    "state": "released",
+    "acceptance_basis": "owner_acceptance_waiver",
+    "accepted_at": "2026-07-14",
+    "waived_gate": "type_by_type_human_local_browser_acceptance",
+    "human_effect_evidence": "unavailable",
+    "claim_scope": "content_and_mechanism_availability_only"
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "8479a89f08c079e5076cc691ea6e7dba87bd8829c8a6c797c13c6c2a06d94c80"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "ffeb1560afa6371dc9dd559b62fd4fc44f264a98a2c1eb378d9a317518631db4"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "62fee93dda588d75ef2685d4cc1be70bd7379029abf6ec7c2309f61408c5098f"
+    },
+    {
+      "path": "review-evidence.json",
+      "sha256": "335daa49390815695b53c48c465c4e4131cc0367cc2a2705c082286e07cafa56"
+    }
+  ]
+}

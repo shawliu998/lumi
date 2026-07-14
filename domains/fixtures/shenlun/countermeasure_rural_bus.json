@@ -31,9 +31,56 @@
       {"cause_id": "slogan-without-mechanism", "label": "只写加强管理而缺少执行机制", "synthetic_prior": 0.23, "evidence_refs": ["criterion_missing:dynamic-scheduling"], "is_ground_truth": false}
     ]
   },
-  "probe": {"prompt": "建立三行表：材料问题、服务对象、可执行动作；检查是否一一对应。", "targets": ["solution-problem-mismatch", "digital-only-assumption"]},
-  "teach": {"prompt": "用‘主体+动作+对象/场景+机制’改写泛化对策。", "strategy": "actionability-rewrite"},
-  "independent_verify": {"prompt": "针对社区食堂客流波动、不会扫码、菜单牌模糊提出三条对应措施。", "response_mode": "short_text", "pass_condition": {"minimum_mapped_actions": 3}},
-  "samples": {"passing_response": "根据客流动态调度，赶集日增班；增设电话查询等适老服务；建立巡检台账及时修复站牌。", "failing_response": "加强宣传和管理，开发更好的线上小程序。"},
+  "probe": {
+    "prompt": "建立三行表：材料问题、服务对象、执行主体与可执行动作；检查是否一一对应。",
+    "targets": ["solution-problem-mismatch", "digital-only-assumption", "slogan-without-mechanism"],
+    "assessment": {
+      "schema_version": "hermes.probe-assessment.v1", "evaluator": "authored_terms_v1",
+      "rules": [
+        {"cause_id": "solution-problem-mismatch", "support_if": {"all_terms": ["统一加强管理", "不用逐项对应问题"]}, "refute_if": {"all_terms": ["客流适老站牌逐项对应", "每个问题一条措施"]}},
+        {"cause_id": "digital-only-assumption", "support_if": {"all_terms": ["只开发小程序", "老人也必须线上查询"]}, "refute_if": {"all_terms": ["保留电话查询", "提供线下兜底"]}},
+        {"cause_id": "slogan-without-mechanism", "support_if": {"all_terms": ["加强管理完善服务", "无需执行主体机制"]}, "refute_if": {"all_terms": ["明确交通部门", "写出动态增班巡检台账"]}}
+      ],
+      "cause_samples": [
+        {"cause_id": "solution-problem-mismatch", "supporting_response": "统一加强管理即可，不用逐项对应问题。", "refuting_response": "客流适老站牌逐项对应，每个问题一条措施。", "ambiguous_response": "可以提出若干建议。"},
+        {"cause_id": "digital-only-assumption", "supporting_response": "只开发小程序，老人也必须线上查询。", "refuting_response": "应保留电话查询，提供线下兜底。", "ambiguous_response": "可以优化信息服务。"},
+        {"cause_id": "slogan-without-mechanism", "supporting_response": "加强管理完善服务即可，无需执行主体机制。", "refuting_response": "明确交通部门，并写出动态增班巡检台账。", "ambiguous_response": "有关部门要重视。"}
+      ]
+    }
+  },
+  "teach": {
+    "prompt": "用‘主体+动作+对象/场景+机制’改写泛化对策。", "strategy": "actionability-rewrite",
+    "variants": [
+      {"cause_id": "solution-problem-mismatch", "prompt": "将三条材料问题逐行配对措施，禁止一条空泛建议覆盖全部问题。", "strategy": "one-problem-one-action"},
+      {"cause_id": "digital-only-assumption", "prompt": "以不会扫码的老人完成一次服务旅程，补出电话与现场兜底。", "strategy": "offline-fallback-journey"},
+      {"cause_id": "slogan-without-mechanism", "prompt": "把‘加强管理’改写成执行主体、动作、频次和反馈闭环。", "strategy": "mechanism-expansion"}
+    ]
+  },
+  "independent_verify": {
+    "prompt": "针对社区食堂客流波动、部分老人不会扫码、菜单牌模糊，提出三条对应措施。",
+    "response_mode": "short_text",
+    "pass_condition": {
+      "scorer": "authored_slots_v1",
+      "required_slots": [
+        {"slot_id": "demand_schedule", "aliases": ["按客流调整供餐", "动态调整供餐", "预约备餐", "错峰供餐"]},
+        {"slot_id": "offline_access", "aliases": ["人工登记", "现场协助", "电话预订", "线下登记"]},
+        {"slot_id": "menu_visibility", "aliases": ["更换菜单牌", "放大菜单", "更新菜单牌", "巡检菜单牌"]}
+      ],
+      "minimum_slots": 3
+    },
+    "samples": {"passing_response": "食堂按客流调整供餐；为老人提供人工登记；更换并定期巡检菜单牌。", "failing_response": "加强管理，开发更方便的扫码小程序。", "adversarial_negation_response": "不应按客流调整供餐，也不要人工登记，更反对更换菜单牌；以上措施都不应做。"}
+  },
+  "assistance_ladder": {
+    "schema_version": "hermes.assistance-content.v1", "content_version": "countermeasure-mapping-help.v1",
+    "steps": [
+      {"action": "retry", "title": "再试一次", "content": "把每条材料问题单独编号，再给每个编号写一条能由明确主体执行的动作。", "target_cause_ids": ["solution-problem-mismatch", "digital-only-assumption", "slogan-without-mechanism"]},
+      {"action": "locate_evidence", "title": "定位对象", "content": "材料分别涉及班次与需求不匹配、老年人不会使用线上工具、站牌维护不及时，三类问题不能共用一句对策。", "target_cause_ids": ["solution-problem-mismatch", "digital-only-assumption"]},
+      {"action": "rule_hint", "title": "对策规则", "content": "用“主体+动作+对象或场景+运行机制”检查每条对策，避免只写加强、完善、宣传。", "target_cause_ids": ["slogan-without-mechanism"]},
+      {"action": "analogous_example", "title": "同类例子", "content": "面对不会扫码，不能只说优化小程序；还可由运营方增设电话查询和现场协助，形成线下兜底。", "target_cause_ids": ["digital-only-assumption"]},
+      {"action": "worked_step", "title": "演示一条", "content": "针对赶集日客流集中，可写“交通部门依据客流监测在赶集日动态增班”，问题、主体、动作和机制一一对应。", "target_cause_ids": ["solution-problem-mismatch", "slogan-without-mechanism"]},
+      {"action": "full_explanation", "title": "完整说明", "content": "应按问题逐项提出：根据客流动态增班；增设电话查询等适老服务；建立站牌巡检台账并限时修复。每条都能落到执行主体和机制。", "target_cause_ids": ["solution-problem-mismatch", "digital-only-assumption", "slogan-without-mechanism"]}
+    ]
+  },
+  "samples": {"passing_response": "根据客流动态调度，赶集日增班；增设电话查询等适老服务；建立巡检台账及时修复站牌。", "failing_response": "加强宣传和管理，开发更好的线上小程序。", "adversarial_negation_response": "不应赶集日增班，也不要动态调度或预约响应；没有电话查询、线下告知和适老服务；不修复站牌、不巡检站牌、不维护站点。"},
   "provenance": {"content_origin": "synthetic_original", "authoring_note": "合成乡村交通情境", "prior_source": "synthetic_engineering_prior_v1"}
 }

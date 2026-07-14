@@ -1,0 +1,44 @@
+{
+  "schema_version": "lumi.xingce-adaptive-misconceptions.v1",
+  "pack_id": "lumi-chart-material-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "review_status": "release_ready",
+  "candidate_misconceptions": [
+    {
+      "cause_id": "M-SER",
+      "label": "候选：将图例中的另一条序列当作目标序列",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": [
+        "xingce.data.chart_material.target_series"
+      ]
+    },
+    {
+      "cause_id": "M-UNIT",
+      "label": "候选：未核对图例、单位或统计口径",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": [
+        "xingce.data.chart_material.legend_unit"
+      ]
+    },
+    {
+      "cause_id": "M-BASE",
+      "label": "候选：增长或比例比较时误用基期/对象",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": [
+        "xingce.data.chart_material.base_comparison"
+      ]
+    },
+    {
+      "cause_id": "M-SCALE",
+      "label": "候选：依据视觉长度印象而未按数值核算",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": [
+        "xingce.data.chart_material.visual_scale"
+      ]
+    }
+  ]
+}

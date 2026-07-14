@@ -1,0 +1,68 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-graphic-reasoning-v0",
+  "pack_version": "0.1.0-draft",
+  "status": "draft_unreviewed",
+  "release_ready": false,
+  "runtime_registration": "forbidden_until_human_review",
+  "subtype_id": "xingce.judgment.graphic_reasoning",
+  "module_id": "judgment",
+  "form": "visual_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "draft_no_distribution"
+  },
+  "content_evidence": {
+    "immutable_visual_asset": "records.json#source_material; compact vector-like token panels are immutable record content",
+    "asset_checksum": "4c61e23e4d67af1c3aa4f15de9ce66e40ce85edb4aeaaa8f7d241d7de3d5cf40",
+    "meaningful_alt_text": "Every token diagram has a learner-visible structural alternative description."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": false,
+    "required_reviews": [
+      {
+        "review_kind": "logic",
+        "status": "pending",
+        "required_checks": [
+          "unique_answer",
+          "visual_rule",
+          "option_distinction",
+          "probe_discrimination",
+          "transfer_independence"
+        ]
+      },
+      {
+        "review_kind": "editorial_rights",
+        "status": "pending",
+        "required_checks": [
+          "original_visual_design",
+          "alt_text",
+          "legibility",
+          "license_scope"
+        ]
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "962d3ba2b5d410479973d9c903b20a64448c7ea5dd10dac7957a7016eb5c5b70"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "02824e2f14b78b904e0500a6884d1b86dbd3b0173eee04566d5a8168cfd10c53"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "8e55db95fb89d49c4936b335fdaa66e0b9ad004985f5cd7bce30b7b86e788a3c"
+    }
+  ]
+}

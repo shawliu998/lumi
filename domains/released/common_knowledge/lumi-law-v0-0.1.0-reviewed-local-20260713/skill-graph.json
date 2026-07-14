@@ -1,0 +1,23 @@
+{
+  "schema_version": "lumi.xingce-adaptive-skills.v1",
+  "pack_id": "lumi-law-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "review_status": "release_ready",
+  "skills": [
+    {
+      "skill_id": "xingce.common.law.rule_scope",
+      "label": "按条文限定条件适用规则",
+      "mastery_claim": "能保留条文中的法域、行为类别、时间和例外条件；仅由无提示迁移更新。"
+    },
+    {
+      "skill_id": "xingce.common.law.legal_subject",
+      "label": "区分权利能力与行为能力的法定表述",
+      "mastery_claim": "能区分自然人的权利能力起止、年龄规则和特别保护的适用范围；仅由无提示迁移更新。"
+    },
+    {
+      "skill_id": "xingce.common.law.exception",
+      "label": "识别一般规则与明示例外",
+      "mastery_claim": "能在同一条文中识别一般期限、明确延长条件和法律另有规定的边界；仅由无提示迁移更新。"
+    }
+  ]
+}

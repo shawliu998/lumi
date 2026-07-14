@@ -1,0 +1,67 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-management-v0",
+  "pack_version": "0.1.0-draft",
+  "status": "draft_unreviewed",
+  "release_ready": false,
+  "runtime_registration": "forbidden_until_human_review",
+  "subtype_id": "xingce.common.management",
+  "module_id": "common_knowledge",
+  "form": "text_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "draft_no_distribution"
+  },
+  "content_evidence": {
+    "fact_source_snapshot": "Original Lumi management scenarios: each item supplies its own operational definitions and rule boundary in records.json.",
+    "validity_cutoff": "2026-07-13; this draft tests scenario reasoning, not current policy or office-holder facts."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": false,
+    "required_reviews": [
+      {
+        "review_kind": "logic",
+        "status": "pending",
+        "required_checks": [
+          "unique_answer",
+          "concept_boundary",
+          "process_order",
+          "role_boundary",
+          "probe_discrimination"
+        ]
+      },
+      {
+        "review_kind": "editorial_rights",
+        "status": "pending",
+        "required_checks": [
+          "original_wording",
+          "scenario_clarity",
+          "neutral_context",
+          "license_scope"
+        ]
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "11bed931aa7142968b075e6925fba7fcab18c256c45ba67a2c2b2589cf4f7098"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "b3f3e753a9a9d203494f56b9c94508c944565ef431e515cec00630f266a415c9"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "67ec65bed28ee1d7e8bf91b02ac2e8abecb197630d2acdc86ffb129594a64c3f"
+    }
+  ]
+}

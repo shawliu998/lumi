@@ -1,0 +1,27 @@
+{
+  "schema_version": "lumi.xingce-adaptive-misconceptions.v1",
+  "pack_id": "lumi-economics-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "review_status": "release_ready",
+  "candidate_misconceptions": [
+    {
+      "cause_id": "M-DIRECTION",
+      "label": "候选：在其他条件不变时把供给或需求变化的方向读反",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": [
+        "xingce.common.economics.mechanism_direction"
+      ]
+    },
+    {
+      "cause_id": "M-INDICATOR",
+      "label": "候选：把局部市场变化直接外推为未给出的总体指标",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": [
+        "xingce.common.economics.concept_boundary",
+        "xingce.common.economics.indicator_scope"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lumi.local/contracts/study-artifact-content.schema.json",
+  "title": "Lumi private Study Pack artifact content",
+  "oneOf": [
+    {"$ref": "#/$defs/notes_content"},
+    {"$ref": "#/$defs/card_content"},
+    {"$ref": "#/$defs/practice_content"},
+    {"$ref": "#/$defs/review_content"}
+  ],
+  "$defs": {
+    "citation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["field_pointer", "span_ref"],
+      "properties": {
+        "field_pointer": {"type": "string", "pattern": "^/"},
+        "span_ref": {"type": "string", "pattern": "^s_[A-P]{40}$"}
+      }
+    },
+    "citation_array": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "items": {"$ref": "#/$defs/citation"}
+    },
+    "notes_content": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "title", "claims", "citations"],
+      "properties": {
+        "schema_version": {"const": "study_pack.one_page_notes.v1"},
+        "title": {"type": "string", "minLength": 1, "maxLength": 120},
+        "claims": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 5,
+          "items": {"type": "string", "minLength": 8, "maxLength": 2000}
+        },
+        "citations": {"$ref": "#/$defs/citation_array"}
+      }
+    },
+    "card_content": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "question", "answer", "citations"],
+      "properties": {
+        "schema_version": {"const": "study_pack.knowledge_card.v1"},
+        "question": {"type": "string", "minLength": 1, "maxLength": 500},
+        "answer": {"type": "string", "minLength": 1, "maxLength": 2000},
+        "citations": {"$ref": "#/$defs/citation_array"}
+      }
+    },
+    "practice_content": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "item_kind",
+        "prompt",
+        "scorer",
+        "answer",
+        "explanation",
+        "citations"
+      ],
+      "properties": {
+        "schema_version": {"const": "study_pack.practice_item.v1"},
+        "item_kind": {"enum": ["cloze_exact_v1", "normalized_exact_v1"]},
+        "prompt": {"type": "string", "minLength": 1, "maxLength": 1000},
+        "scorer": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "version"],
+          "properties": {
+            "kind": {"enum": ["cloze_exact_v1", "normalized_exact_v1"]},
+            "version": {"const": "1.0.0"}
+          }
+        },
+        "answer": {"type": "string", "minLength": 1, "maxLength": 2000},
+        "explanation": {"type": "string", "minLength": 1, "maxLength": 2000},
+        "citations": {"$ref": "#/$defs/citation_array"}
+      }
+    },
+    "review_content": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "instruction",
+        "citations",
+        "scope",
+        "schedule_write_capability"
+      ],
+      "properties": {
+        "schema_version": {"const": "study_pack.review_task.v1"},
+        "instruction": {"type": "string", "minLength": 1, "maxLength": 2500},
+        "citations": {"$ref": "#/$defs/citation_array"},
+        "scope": {"const": "pack_local_only"},
+        "schedule_write_capability": {"const": false}
+      }
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{"schema_version":"lumi.xingce-adaptive-skills.v1","pack_id":"lumi-composite-material-v0","pack_version":"0.1.0-draft","review_status":"draft_unreviewed","skills":[
+ {"skill_id":"xingce.data.composite_material.cross_source_alignment","label":"把叙述口径与表格指标对齐","mastery_claim":"能依据材料说明确定表格指标的对象和口径；仅由无提示迁移更新。"},
+ {"skill_id":"xingce.data.composite_material.target_series","label":"锁定综合材料的目标系列","mastery_claim":"能在多段材料中定位题目所问的目标数字；仅由无提示迁移更新。"},
+ {"skill_id":"xingce.data.composite_material.denominator","label":"保持综合材料的比例方向","mastery_claim":"能依据问题明确部分、总体和分母；仅由无提示迁移更新。"},
+ {"skill_id":"xingce.data.composite_material.time_range","label":"在组合材料中保持时间对齐","mastery_claim":"能确保比较量来自同一统计周期或明确的基期；仅由无提示迁移更新。"}
+]}

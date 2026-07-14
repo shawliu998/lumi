@@ -11,7 +11,7 @@
   "task": {
     "prompt": "社区上线工具共享柜后，居民借用电钻、梯子等低频用品，不再人人购买。柜子虽小，却减少闲置，也让邻里因归还和维护产生更多协作。这段文字意在说明什么？",
     "response_mode": "single_choice",
-    "options": {"A": "共享柜能节省社区空间", "B": "低频工具不值得个人购买", "C": "共享工具兼具资源与社区价值", "D": "居民应负责工具维护"}
+    "options": {"A": "共享柜能减少工具闲置", "B": "低频工具不值得个人购买", "C": "共享工具兼具资源与社区价值", "D": "居民应负责工具维护"}
   },
   "skills": [{"skill_id": "xingce.verbal.main-idea.integrate", "weight": 0.7}, {"skill_id": "xingce.verbal.scope-control", "weight": 0.3}],
   "scoring": {"adapter": "xingce_mcq_v1", "max_score": 1, "pass_score": 1, "correct_option": "C", "distractor_evidence": {"A": "captured_single_benefit", "B": "overgeneralized_detail", "D": "treated_detail_as-thesis"}},
@@ -29,9 +29,48 @@
       {"cause_id": "detail-as-main", "label": "没有区分支撑细节与中心结论", "synthetic_prior": 0.22, "evidence_refs": ["answer_incorrect", "treated_detail_as-thesis"], "is_ground_truth": false}
     ]
   },
-  "probe": {"prompt": "分别用四字概括文段中的两个效果，再合并成一句话。", "targets": ["benefit-integration-missed", "detail-as-main"]},
-  "teach": {"prompt": "标出‘减少闲置’与‘促进协作’两个并列结果，练习选择覆盖面最完整的表述。", "strategy": "coverage-comparison"},
-  "independent_verify": {"prompt": "合成短文同时写到夜市延长营业增加收入、也激活街区交往；选择同时覆盖经济与社会效果的选项。", "response_mode": "single_choice", "pass_condition": {"correct_option": "D"}},
+  "probe": {
+    "prompt": "分别用四字概括文段中的两个效果，再合并成一句话；同时说明低频用品、归还维护能否单独作为主旨。",
+    "targets": ["benefit-integration-missed", "detail-overgeneralization", "detail-as-main"],
+    "assessment": {
+      "schema_version": "hermes.probe-assessment.v1", "evaluator": "authored_terms_v1",
+      "rules": [
+        {"cause_id": "benefit-integration-missed", "support_if": {"all_terms": ["只写减少闲置", "这就是全部主旨"]}, "refute_if": {"all_terms": ["减少闲置", "邻里协作"]}},
+        {"cause_id": "detail-overgeneralization", "support_if": {"all_terms": ["低频用品", "都不值得个人购买"]}, "refute_if": {"all_terms": ["低频用品只是例子", "不能扩大为绝对结论"]}},
+        {"cause_id": "detail-as-main", "support_if": {"all_terms": ["归还维护", "就是文章中心"]}, "refute_if": {"all_terms": ["归还维护只是细节", "中心是双重价值"]}}
+      ],
+      "cause_samples": [
+        {"cause_id": "benefit-integration-missed", "supporting_response": "我只写减少闲置，这就是全部主旨。", "refuting_response": "两个效果是减少闲置和邻里协作。", "ambiguous_response": "共享柜有一些好处。"},
+        {"cause_id": "detail-overgeneralization", "supporting_response": "文中提到低频用品，说明它们都不值得个人购买。", "refuting_response": "低频用品只是例子，不能扩大为绝对结论。", "ambiguous_response": "文中列举了电钻和梯子。"},
+        {"cause_id": "detail-as-main", "supporting_response": "归还维护就是文章中心。", "refuting_response": "归还维护只是细节，中心是双重价值。", "ambiguous_response": "居民需要归还工具。"}
+      ]
+    }
+  },
+  "teach": {
+    "prompt": "标出‘减少闲置’与‘促进协作’两个并列结果，练习选择覆盖面最完整的表述。", "strategy": "coverage-comparison",
+    "variants": [
+      {"cause_id": "benefit-integration-missed", "prompt": "用并列括号同时圈出资源效益与协作效益，再合成上位概念。", "strategy": "parallel-benefit-integration"},
+      {"cause_id": "detail-overgeneralization", "prompt": "比较原文限定语与选项绝对词，练习缩回材料允许的范围。", "strategy": "scope-calibration"},
+      {"cause_id": "detail-as-main", "prompt": "把工具、归还、维护标作例证，再寻找统摄这些细节的中心句。", "strategy": "detail-thesis-separation"}
+    ]
+  },
+  "independent_verify": {
+    "prompt": "夜市延长营业时间后，摊主收入有所增加，街坊也更常在公共空间交流。这段文字意在说明什么？",
+    "response_mode": "single_choice",
+    "pass_condition": {"scorer": "exact_option_v1", "correct_option": "D", "options": {"A": "夜市应延长营业时间", "B": "夜市主要增加摊主收入", "C": "公共空间适合邻里交流", "D": "夜市兼具经济与社会价值"}},
+    "samples": {"passing_response": "D", "failing_response": "B"}
+  },
+  "assistance_ladder": {
+    "schema_version": "hermes.assistance-content.v1", "content_version": "main-idea-help.v1",
+    "steps": [
+      {"action": "retry", "title": "再试一次", "content": "逐句只保留“对象+作用”，再检查你的选项是否同时覆盖文段并列的两个结果。", "target_cause_ids": ["benefit-integration-missed", "detail-overgeneralization", "detail-as-main"]},
+      {"action": "locate_evidence", "title": "定位主线", "content": "文段一处写减少闲置，另一处写促进协作；二者是并列效果，不是谁解释谁。", "target_cause_ids": ["benefit-integration-missed"]},
+      {"action": "rule_hint", "title": "规则提示", "content": "主旨选项要覆盖核心对象和主要关系；只复述例子或只保留一个并列分句都会缩小范围。", "target_cause_ids": ["benefit-integration-missed", "detail-as-main"]},
+      {"action": "analogous_example", "title": "同类例子", "content": "若文段说公园既降温又提供社交空间，主旨应概括生态与社交双重价值，而不是只说树荫。", "target_cause_ids": ["benefit-integration-missed", "detail-overgeneralization"]},
+      {"action": "worked_step", "title": "演示一步", "content": "先写两个四字短语：“减少闲置”“邻里协作”，再找能把二者放进同一句的选项。", "target_cause_ids": ["benefit-integration-missed"]},
+      {"action": "full_explanation", "title": "完整说明", "content": "文段中心是共享机制同时减少资源闲置并促进协作。正确选项须完整概括双重效果；只谈某个细节或夸大到文段外都不合适。", "target_cause_ids": ["benefit-integration-missed", "detail-overgeneralization", "detail-as-main"]}
+    ]
+  },
   "samples": {"passing_response": "C", "failing_response": "A"},
   "provenance": {"content_origin": "synthetic_original", "authoring_note": "自有合成短文", "prior_source": "synthetic_engineering_prior_v1"}
 }

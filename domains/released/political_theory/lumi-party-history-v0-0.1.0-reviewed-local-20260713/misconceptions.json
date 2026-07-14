@@ -1,0 +1,26 @@
+{
+  "schema_version": "lumi.xingce-adaptive-misconceptions.v1",
+  "pack_id": "lumi-party-history-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "review_status": "release_ready",
+  "candidate_misconceptions": [
+    {
+      "cause_id": "M-CHRON",
+      "label": "候选：混淆来源所述会议的日期、地点或会址变化",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": [
+        "xingce.political.party_history.chronology"
+      ]
+    },
+    {
+      "cause_id": "M-INST",
+      "label": "候选：混淆会议、纲领决议与组织成立的关系",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": [
+        "xingce.political.party_history.institution"
+      ]
+    }
+  ]
+}

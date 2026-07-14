@@ -1,0 +1,44 @@
+{
+  "schema_version": "lumi.xingce-adaptive-misconceptions.v1",
+  "pack_id": "lumi-composite-material-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "review_status": "release_ready",
+  "candidate_misconceptions": [
+    {
+      "cause_id": "M-ALIGN",
+      "label": "候选：未按叙述说明对齐表格指标口径",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": [
+        "xingce.data.composite_material.cross_source_alignment"
+      ]
+    },
+    {
+      "cause_id": "M-SER",
+      "label": "候选：在多段材料中取错目标序列",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": [
+        "xingce.data.composite_material.target_series"
+      ]
+    },
+    {
+      "cause_id": "M-DEN",
+      "label": "候选：比例计算时混淆部分与总体",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": [
+        "xingce.data.composite_material.denominator"
+      ]
+    },
+    {
+      "cause_id": "M-SCOPE",
+      "label": "候选：跨材料比较时混入不同年度或范围",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": [
+        "xingce.data.composite_material.time_range"
+      ]
+    }
+  ]
+}

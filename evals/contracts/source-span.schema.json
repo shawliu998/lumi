@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lumi.local/contracts/source-span.schema.json",
+  "title": "Lumi immutable Study Pack source span",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "span_id",
+    "document_id",
+    "source_version",
+    "normalized_source_sha256",
+    "locator_kind",
+    "locator_index",
+    "start_offset",
+    "end_offset",
+    "slice_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "lumi.source-span.v1"},
+    "span_id": {"type": "string", "pattern": "^s_[A-P]{40}$"},
+    "document_id": {"type": "string", "pattern": "^d_[A-P]{40}$"},
+    "source_version": {"type": "integer", "minimum": 1},
+    "normalized_source_sha256": {"$ref": "#/$defs/sha256"},
+    "locator_kind": {"enum": ["page", "section"]},
+    "locator_index": {"type": "integer", "minimum": 1, "maximum": 120},
+    "start_offset": {"type": "integer", "minimum": 0, "maximum": 250000},
+    "end_offset": {"type": "integer", "minimum": 1, "maximum": 250000},
+    "slice_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

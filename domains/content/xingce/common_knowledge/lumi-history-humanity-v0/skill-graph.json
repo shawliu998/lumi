@@ -1,0 +1,11 @@
+{
+  "schema_version": "lumi.xingce-adaptive-skills.v1",
+  "pack_id": "lumi-history-humanity-v0",
+  "pack_version": "0.1.0-draft",
+  "review_status": "draft_unreviewed",
+  "skills": [
+    {"skill_id": "xingce.common.history_humanity.source_attribution", "label": "按来源核对文物与文化事实", "mastery_claim": "能把题干中的名称、时代与来源限定在明确证据内；仅由无提示迁移更新。"},
+    {"skill_id": "xingce.common.history_humanity.chronology", "label": "识别题干给出的时间定位", "mastery_claim": "能不把来源给出的年代、登记年份或历史阶段互相替换；仅由无提示迁移更新。"},
+    {"skill_id": "xingce.common.history_humanity.concept_boundary", "label": "区分器物事实与文化名录事实", "mastery_claim": "能区分文物本体、命名与非物质文化遗产名录的不同事实类型；仅由无提示迁移更新。"}
+  ]
+}

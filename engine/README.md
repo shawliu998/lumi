@@ -10,9 +10,14 @@ The engine combines three interpretable signals:
 - PFA: success/failure practice counts;
 - Rasch/1PL IRT: learner ability relative to item difficulty.
 
-Misconception diagnosis combines a cohort prior, a learner-specific Dirichlet
-posterior, and evidence likelihoods such as the selected distractor, timing, and
-self-reported confidence. Every output includes provenance and uncertainty.
+Misconception diagnosis combines one versioned prior, a learner-history
+likelihood ratio, and evidence likelihoods such as an authored distractor
+pattern. The v3 output uses neutral `prior_*` fields: sample-zero synthetic
+taxonomies are labelled `engineering_prior`, while `cohort_prior` is reserved
+for privacy-reviewed aggregates that pass the minimum-sample policy. The
+formula avoids accidentally squaring the cold-start prior.
+Every output includes provenance and uncertainty and remains a ranked
+hypothesis, never a causal label.
 
 `hermes_kt.cohort.build_cohort_priors` accepts privacy-reviewed aggregate cause
 counts only. It applies a minimum-attempt threshold and empirical-Bayes
@@ -29,6 +34,12 @@ python -m unittest discover -s tests -v
 `hermes_kt.tool_api.HermesKTTool` is a JSON-friendly boundary for a future Agent
 tool. Production persistence and model calibration are deliberately outside this
 baseline.
+
+`hermes_kt.assistance` defines the six-level evidence policy. Its weights are
+explicit engineering policy values, not population calibration. Assisted or
+hinted verification returns an inconclusive result and leaves the authoritative
+mastery state unchanged; a fresh independent item is required for transfer
+credit.
 
 Model routing is policy-only: complex or ambiguous diagnosis is routed to a
 strong model, ordinary explanation to a balanced model, and low-cost output is

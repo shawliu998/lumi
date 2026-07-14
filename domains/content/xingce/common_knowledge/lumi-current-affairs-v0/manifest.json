@@ -1,0 +1,67 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-current-affairs-v0",
+  "pack_version": "0.1.0-draft",
+  "status": "draft_unreviewed",
+  "release_ready": false,
+  "runtime_registration": "forbidden_until_human_review",
+  "subtype_id": "xingce.common.current_affairs",
+  "module_id": "common_knowledge",
+  "form": "text_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "draft_no_distribution"
+  },
+  "content_evidence": {
+    "authoritative_source_snapshot": "中国人大网，《第十四届全国人民代表大会第四次会议关于政府工作报告的决议》（2026-03-12），https://www.npc.gov.cn/npc/c2/c30834/202603/t20260313_453190.html；中国政府网，《政府工作报告》（2026-03-13，报告于2026-03-05作出），https://www.gov.cn/yaowen/liebiao/202603/content_7062625.htm（accessed 2026-07-13）。",
+    "validity_cutoff": "2026-07-13; all questions are frozen to this named meeting and documents. The pack must not be used to imply later policy changes or an open-ended current-affairs feed."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": false,
+    "required_reviews": [
+      {
+        "review_kind": "logic",
+        "status": "pending",
+        "required_checks": [
+          "unique_answer",
+          "date_attribution",
+          "document_scope",
+          "source_wording",
+          "transfer_independence"
+        ]
+      },
+      {
+        "review_kind": "editorial_rights",
+        "status": "pending",
+        "required_checks": [
+          "authoritative_source",
+          "original_wording",
+          "date_labeling",
+          "license_scope"
+        ]
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "704b2dc6a6405dfc1f190a11d8ec3448e851321687e2675b9666c2027a206a4c"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "154099ac782f11f90016e96d290432798fd905080960bf6002958dfa58ef7be1"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "b78e63d8b7e450a8ed79de1eb89fa34f77cf2809b997717ddf8edf550aaa8371"
+    }
+  ]
+}

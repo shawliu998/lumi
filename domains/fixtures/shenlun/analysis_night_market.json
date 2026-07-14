@@ -31,9 +31,56 @@
       {"cause_id": "analysis-without-judgment", "label": "罗列现象后缺少评价标准与结论", "synthetic_prior": 0.24, "evidence_refs": ["criterion_missing:qualified-conclusion"], "is_ground_truth": false}
     ]
   },
-  "probe": {"prompt": "分别写出该观点成立的一个条件和不成立的一个情形。", "targets": ["absolute-claim-unchecked", "single-sided-analysis"]},
-  "teach": {"prompt": "用‘解释观点—肯定合理性—指出边界—形成判断’四步分析。", "strategy": "claim-boundary-framework"},
-  "independent_verify": {"prompt": "分析‘共享单车投放越多，绿色出行越成功’，要求同时说明价值、成本与条件。", "response_mode": "short_text", "pass_condition": {"required_dimensions": ["value", "cost", "qualified_conclusion"], "minimum_dimensions": 3}},
-  "samples": {"passing_response": "夜市能增加收入、激活消费，但噪声和垃圾也会扰民，因此不能只看热闹，应以精细治理平衡活力与秩序。", "failing_response": "夜市很热闹，能够增加收入，所以这句话完全正确。"},
+  "probe": {
+    "prompt": "分别写出该观点成立的一个条件和不成立的一个情形，并据此给出判断。",
+    "targets": ["absolute-claim-unchecked", "single-sided-analysis", "analysis-without-judgment"],
+    "assessment": {
+      "schema_version": "hermes.probe-assessment.v1", "evaluator": "authored_terms_v1",
+      "rules": [
+        {"cause_id": "single-sided-analysis", "support_if": {"all_terms": ["只看增加收入", "无需考虑噪声垃圾"]}, "refute_if": {"all_terms": ["既有增收价值", "也有噪声垃圾成本"]}},
+        {"cause_id": "absolute-claim-unchecked", "support_if": {"all_terms": ["越热闹就一定越成功", "没有适用条件"]}, "refute_if": {"all_terms": ["热闹不能等同治理成功", "取决于活力秩序平衡"]}},
+        {"cause_id": "analysis-without-judgment", "support_if": {"all_terms": ["只罗列正反现象", "不需要给出结论"]}, "refute_if": {"all_terms": ["评价标准是活力秩序平衡", "结论是有条件肯定"]}}
+      ],
+      "cause_samples": [
+        {"cause_id": "single-sided-analysis", "supporting_response": "只看增加收入即可，无需考虑噪声垃圾。", "refuting_response": "夜市既有增收价值，也有噪声垃圾成本。", "ambiguous_response": "夜市有好处也有问题。"},
+        {"cause_id": "absolute-claim-unchecked", "supporting_response": "越热闹就一定越成功，这个判断没有适用条件。", "refuting_response": "热闹不能等同治理成功，取决于活力秩序平衡。", "ambiguous_response": "有些地方可能适用。"},
+        {"cause_id": "analysis-without-judgment", "supporting_response": "只罗列正反现象，不需要给出结论。", "refuting_response": "评价标准是活力秩序平衡，结论是有条件肯定。", "ambiguous_response": "还需要进一步分析。"}
+      ]
+    }
+  },
+  "teach": {
+    "prompt": "用‘解释观点—肯定合理性—指出边界—形成判断’四步分析。", "strategy": "claim-boundary-framework",
+    "variants": [
+      {"cause_id": "single-sided-analysis", "prompt": "把收入活力与噪声垃圾分列两栏，再说明两者如何共同影响治理评价。", "strategy": "two-sided-evidence-table"},
+      {"cause_id": "absolute-claim-unchecked", "prompt": "圈出‘越…越…’，为结论补上承载力和治理能力两个成立条件。", "strategy": "absolute-claim-boundary"},
+      {"cause_id": "analysis-without-judgment", "prompt": "先确定活力与秩序的评价标准，再写一条有条件的最终判断。", "strategy": "criterion-to-judgment"}
+    ]
+  },
+  "independent_verify": {
+    "prompt": "分析‘共享单车投放越多，绿色出行越成功’，要求同时说明价值、成本与条件。",
+    "response_mode": "short_text",
+    "pass_condition": {
+      "scorer": "authored_dimensions_v1",
+      "required_dimensions": [
+        {"dimension_id": "value", "aliases": ["绿色出行", "出行便利", "减少排放", "替代汽车"]},
+        {"dimension_id": "cost", "aliases": ["占道", "乱停", "运维成本", "挤占空间", "安全隐患"]},
+        {"dimension_id": "qualified_conclusion", "aliases": ["不能越多越好", "适量投放", "按需投放", "平衡便利与秩序", "精细治理"]}
+      ],
+      "minimum_dimensions": 3
+    },
+    "samples": {"passing_response": "共享单车便利绿色出行，但过量投放会占道，应根据需求适量投放，不能越多越好。", "failing_response": "共享单车越多越方便，所以投放越多越成功。", "adversarial_negation_response": "共享单车并不便利绿色出行，也不存在占道问题；我反对适量投放，也不应主张不能越多越好。"}
+  },
+  "assistance_ladder": {
+    "schema_version": "hermes.assistance-content.v1", "content_version": "qualified-analysis-help.v1",
+    "steps": [
+      {"action": "retry", "title": "再试一次", "content": "分别写一句“这句话为何有道理”和“它在什么条件下不成立”，最后再给出你的判断。", "target_cause_ids": ["single-sided-analysis", "absolute-claim-unchecked", "analysis-without-judgment"]},
+      {"action": "locate_evidence", "title": "定位两面", "content": "材料既有收入和消费活力，也有噪声、垃圾等治理成本；两组证据都要进入分析。", "target_cause_ids": ["single-sided-analysis"]},
+      {"action": "rule_hint", "title": "分析框架", "content": "先解释观点，再肯定合理性、指出适用边界，最后形成有条件的结论。", "target_cause_ids": ["absolute-claim-unchecked", "analysis-without-judgment"]},
+      {"action": "analogous_example", "title": "同类例子", "content": "“游客越多越好”只在承载力和治理跟得上时成立；否则拥堵与生态成本会抵消收益。", "target_cause_ids": ["absolute-claim-unchecked"]},
+      {"action": "worked_step", "title": "演示一层", "content": "先写边界句：“夜市热闹能否说明治理成功，取决于增收活力能否与噪声、垃圾等治理成本取得平衡。”", "target_cause_ids": ["absolute-claim-unchecked", "analysis-without-judgment"]},
+      {"action": "full_explanation", "title": "完整说明", "content": "夜市能增加收入、激发活力，但也可能带来噪声和垃圾，因而不能把热闹直接等同于治理成功。应以精细治理平衡活力与秩序，作出有条件的判断。", "target_cause_ids": ["single-sided-analysis", "absolute-claim-unchecked", "analysis-without-judgment"]}
+    ]
+  },
+  "samples": {"passing_response": "夜市能增加收入、激活消费，但噪声和垃圾也会扰民，因此不能只看热闹，应以精细治理平衡活力与秩序。", "failing_response": "夜市很热闹，能够增加收入，所以这句话完全正确。", "adversarial_negation_response": "夜市没有增加收入，也未激活消费；不存在噪声、垃圾或扰民。我反对不能只看热闹，也不应精细治理，更不要平衡活力与秩序。"},
   "provenance": {"content_origin": "synthetic_original", "authoring_note": "合成城市治理情境", "prior_source": "synthetic_engineering_prior_v1"}
 }

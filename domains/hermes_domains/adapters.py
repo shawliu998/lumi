@@ -6,10 +6,26 @@ from typing import Any, Mapping
 
 from .contract import validate_fixture
 from .models import CauseCandidate, ScoreObservation, ScoreResult
+from .text_semantics import has_affirmed_alias
+
+
+def _validate_scoring_activity(fixture: Mapping[str, Any]) -> None:
+    provenance = fixture.get("provenance")
+    if (
+        isinstance(provenance, Mapping)
+        and provenance.get("content_origin") == "local_versioned_export"
+    ):
+        # Imported lazily to keep the representative synthetic contract and
+        # product-content contract separate without introducing an import cycle.
+        from .product_activity import validate_product_activity_runtime
+
+        validate_product_activity_runtime(fixture)
+        return
+    validate_fixture(fixture)
 
 
 def _contains(text: str, term: str) -> bool:
-    return term.casefold() in text.casefold()
+    return has_affirmed_alias(text, (term,))
 
 
 def _normalise_candidates(
@@ -20,10 +36,13 @@ def _normalise_candidates(
         matched = tuple(ref for ref in raw["evidence_refs"] if ref in active_evidence)
         if not matched:
             continue
-        # Evidence is deliberately a weak likelihood multiplier.  This produces
-        # rankings for the next probe, not a causal label.
+        # A generic incorrect-answer flag is weak. An authored distractor or
+        # rubric pattern is more discriminating, but still produces only a
+        # candidate for the next probe rather than a causal label.
         prior = float(raw["synthetic_prior"])
-        likelihood = 1.0 + 0.45 * len(matched)
+        generic_count = sum(ref == "answer_incorrect" for ref in matched)
+        specific_count = len(matched) - generic_count
+        likelihood = 1.0 + 0.10 * generic_count + 2.0 * specific_count
         candidates.append((raw, matched, max(1e-9, prior * likelihood)))
     total = sum(score for _, _, score in candidates)
     if not candidates or total <= 0:
@@ -117,7 +136,7 @@ def _result(
 def score_attempt(fixture: Mapping[str, Any], response: str) -> ScoreResult:
     """Score one response with the fixture-selected deterministic adapter."""
 
-    validate_fixture(fixture)
+    _validate_scoring_activity(fixture)
     adapter = fixture["scoring"]["adapter"]
     if adapter == "xingce_mcq_v1":
         return _score_xingce(fixture, response)
@@ -126,3 +145,37 @@ def score_attempt(fixture: Mapping[str, Any], response: str) -> ScoreResult:
     if adapter == "interview_rubric_v1":
         return _rubric_score(fixture, response, interview=True)
     raise ValueError(f"unsupported adapter: {adapter}")
+
+
+def score_verification_response(
+    fixture: Mapping[str, Any], response: str
+) -> tuple[bool, str]:
+    """Score an authored independent-transfer response deterministically.
+
+    The aliases live in the fixture rather than in one global keyword table so
+    each transfer task remains inspectable, versionable, and domain specific.
+    """
+
+    _validate_scoring_activity(fixture)
+    condition = fixture["independent_verify"]["pass_condition"]
+    scorer = str(condition["scorer"])
+    folded = response.strip().casefold()
+    if scorer == "exact_option_v1":
+        return (
+            folded == str(condition["correct_option"]).strip().casefold(),
+            scorer,
+        )
+    if scorer == "authored_dimensions_v1":
+        matched = _matched_authored_groups(folded, condition["required_dimensions"])
+        return matched >= int(condition["minimum_dimensions"]), scorer
+    if scorer == "authored_slots_v1":
+        matched = _matched_authored_groups(folded, condition["required_slots"])
+        return matched >= int(condition["minimum_slots"]), scorer
+    raise ValueError(f"unsupported independent verification scorer: {scorer}")
+
+
+def _matched_authored_groups(text: str, groups: list[Mapping[str, Any]]) -> int:
+    return sum(
+        has_affirmed_alias(text, (str(alias) for alias in group["aliases"]))
+        for group in groups
+    )

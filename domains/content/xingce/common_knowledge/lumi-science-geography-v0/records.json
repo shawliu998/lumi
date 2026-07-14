@@ -1,0 +1,253 @@
+{
+  "schema_version": "lumi.xingce-adaptive-records.v1",
+  "pack_id": "lumi-science-geography-v0",
+  "pack_version": "0.1.0-draft",
+  "review_status": "draft_unreviewed",
+  "records": [
+    {
+      "record_id": "D01",
+      "role": "entry_diagnostic",
+      "title": "科技地理：天气与气候不能互换",
+      "target_skill_ids": [
+        "xingce.common.science_geography.time_scale",
+        "xingce.common.science_geography.tectonic_mechanism",
+        "xingce.common.science_geography.location_term"
+      ],
+      "candidate_misconception_ids": [
+        "M-TIME",
+        "M-MECH",
+        "M-LOC"
+      ],
+      "independence_group": "science-entry-weather",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "下列关于天气、气候和地震的说法，正确的是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "某地今天出现强降雨，描述的是短期天气；判断气候需查看较长时期的统计特征"
+        },
+        {
+          "label": "B",
+          "text": "板块边界受摩擦阻滞时不会积累应力"
+        },
+        {
+          "label": "C",
+          "text": "震中是地下岩块开始突然错动的位置"
+        },
+        {
+          "label": "D",
+          "text": "一次强降雨足以证明该地气候类型已经改变"
+        }
+      ],
+      "correct_option": "A",
+      "route_probe_ids": [
+        "P01"
+      ],
+      "record_sha256": "438a6a0ac2cd871d4dba48eb14652f26cc4681b7c2aaba3d9ae963223fa1c94e"
+    },
+    {
+      "record_id": "P01",
+      "role": "probe",
+      "title": "最小探查：时间、机制和位置各有边界",
+      "target_skill_ids": [
+        "xingce.common.science_geography.time_scale",
+        "xingce.common.science_geography.tectonic_mechanism",
+        "xingce.common.science_geography.location_term"
+      ],
+      "candidate_misconception_ids": [
+        "M-TIME",
+        "M-MECH",
+        "M-LOC"
+      ],
+      "independence_group": "science-probe-boundary",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "关于地震术语与机制，下列说法正确的是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "地下岩块开始突然错动的位置可称为震源；其正上方地表位置为震中"
+        },
+        {
+          "label": "B",
+          "text": "震中是地下开始错动的位置，震源是其正上方地表位置"
+        },
+        {
+          "label": "C",
+          "text": "板块停止运动后，摩擦自动消失，所以不会积累能量"
+        },
+        {
+          "label": "D",
+          "text": "一次地震可由单日天气直接决定"
+        }
+      ],
+      "correct_option": "A",
+      "discriminates": [
+        "M-TIME",
+        "M-MECH",
+        "M-LOC"
+      ],
+      "candidate_evidence_map": {
+        "M-TIME": {
+          "A": "refute",
+          "B": "insufficient",
+          "C": "insufficient",
+          "D": "support"
+        },
+        "M-MECH": {
+          "A": "refute",
+          "B": "insufficient",
+          "C": "support",
+          "D": "insufficient"
+        },
+        "M-LOC": {
+          "A": "refute",
+          "B": "support",
+          "C": "insufficient",
+          "D": "insufficient"
+        }
+      },
+      "record_sha256": "501a7dff98c3e51cf371eabc3b528027e192055e7522a935eda2cd3eee35954b"
+    },
+    {
+      "record_id": "T-TIME",
+      "role": "teaching_asset",
+      "title": "微课：先问时间尺度",
+      "target_skill_ids": [
+        "xingce.common.science_geography.time_scale"
+      ],
+      "candidate_misconception_ids": [
+        "M-TIME"
+      ],
+      "independence_group": "science-time-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-TIME"
+      ],
+      "teaching_content": "题干说“今天、明天、这一场”时，先把它当作天气线索；气候描述的是一个地点在较长时间内温度、降水等的典型统计特征。一次事件不能单独推出长期结论。",
+      "record_sha256": "93d0e1c0da1f9fc9e75e6f06b33f821cf0780510dd7c46019204b5125e22d587"
+    },
+    {
+      "record_id": "T-MECH",
+      "role": "teaching_asset",
+      "title": "微课：慢运动、受阻与突然释放",
+      "target_skill_ids": [
+        "xingce.common.science_geography.tectonic_mechanism"
+      ],
+      "candidate_misconception_ids": [
+        "M-MECH"
+      ],
+      "independence_group": "science-mechanism-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-MECH"
+      ],
+      "teaching_content": "板块可以缓慢移动，边界或断层处却可能因摩擦受阻；应力累积到足以克服摩擦时，突然错动并以地震波释放能量。不要把“长期缓慢运动”误写成“没有能量变化”。",
+      "record_sha256": "3d25de8826d3a19a7b97c55bc38bafe9d795e6b07fa152e955ddb3dddba07b8c"
+    },
+    {
+      "record_id": "T-LOC",
+      "role": "teaching_asset",
+      "title": "微课：地下起点与地表投影",
+      "target_skill_ids": [
+        "xingce.common.science_geography.location_term"
+      ],
+      "candidate_misconception_ids": [
+        "M-LOC"
+      ],
+      "independence_group": "science-location-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-LOC"
+      ],
+      "teaching_content": "用一条竖直线记忆：地下开始错动的位置是震源；从该点向上投到地表的位置是震中。题目若问“地表”，优先排除地下术语。",
+      "record_sha256": "53d53e30d32c4f56203354226d8f5c17977db8b446a422d96bda0c1ec675aeeb"
+    },
+    {
+      "record_id": "V01",
+      "role": "independent_transfer",
+      "title": "独立迁移：不要用单次现象替代长期统计",
+      "target_skill_ids": [
+        "xingce.common.science_geography.time_scale",
+        "xingce.common.science_geography.tectonic_mechanism"
+      ],
+      "candidate_misconception_ids": [
+        "M-TIME"
+      ],
+      "independence_group": "science-transfer-coast",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "某沿海城市连续两天降温。要判断该地长期气候特征，下列做法最合适的是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "只用这两天的气温直接给出长期气候结论"
+        },
+        {
+          "label": "B",
+          "text": "查看该地较长时期的温度、降水等统计资料，再作判断"
+        },
+        {
+          "label": "C",
+          "text": "把地震震中的位置当作气候指标"
+        },
+        {
+          "label": "D",
+          "text": "认为板块运动会使短期天气记录失效"
+        }
+      ],
+      "correct_option": "B",
+      "requires_no_hints": true,
+      "record_sha256": "802f93c440dd5281bdf79052ad1c3890099b67ec1f9b9c5d47f503639e61427e"
+    },
+    {
+      "record_id": "R01",
+      "role": "delayed_review",
+      "title": "延迟复习：地表位置术语",
+      "target_skill_ids": [
+        "xingce.common.science_geography.location_term",
+        "xingce.common.science_geography.tectonic_mechanism"
+      ],
+      "candidate_misconception_ids": [
+        "M-LOC"
+      ],
+      "independence_group": "science-review-location",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "某次地震的地下起始位置已被测定。若研究者要标注其正上方的地表位置，应标注：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "震中"
+        },
+        {
+          "label": "B",
+          "text": "震源"
+        },
+        {
+          "label": "C",
+          "text": "板块边界的全部范围"
+        },
+        {
+          "label": "D",
+          "text": "该地当天的天气"
+        }
+      ],
+      "correct_option": "A",
+      "requires_no_hints": true,
+      "scheduled_after_days": 4,
+      "eligible_after_transfer_ids": [
+        "V01"
+      ],
+      "record_sha256": "2edb23138284dcf3cb11a57f50461f8c03feda9482f7c1b69869c1ae80c6d9b2"
+    }
+  ]
+}

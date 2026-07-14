@@ -38,8 +38,13 @@ def update_skill_state(
 
     if state.skill_id != params.skill_id:
         raise ValueError("state and parameters refer to different skills")
-    if not 0 < skill_weight <= 1:
-        raise ValueError("skill_weight must be in (0, 1]")
+    if not 0 <= skill_weight <= 1:
+        raise ValueError("skill_weight must be in [0, 1]")
+    # Zero-credit observations are recorded outside the authoritative skill
+    # state. Returning the original immutable value avoids false precision from
+    # changing mastery, effective counts, or uncertainty after a full solution.
+    if skill_weight == 0:
+        return state
 
     bkt_observed = _bkt_update(state.bkt_mastery, attempt.correct, params)
     bkt = state.bkt_mastery + skill_weight * (bkt_observed - state.bkt_mastery)

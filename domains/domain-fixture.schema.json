@@ -6,7 +6,8 @@
   "required": [
     "schema_version", "fixture_id", "domain", "path", "mode", "module",
     "scenario_response", "execution", "expected_semantics", "task", "skills",
-    "scoring", "diagnosis", "probe", "teach", "independent_verify", "provenance"
+    "scoring", "diagnosis", "probe", "teach", "independent_verify",
+    "assistance_ladder", "samples", "provenance"
   ],
   "properties": {
     "schema_version": {"const": "hermes.domain-fixture.v1"},
@@ -22,6 +23,7 @@
       "properties": {
         "connectivity": {"enum": ["local", "offline"]},
         "cloud_calls_expected": {"type": "integer", "minimum": 0},
+        "provider_invoked": {"const": false},
         "fallback": {"enum": ["not_needed", "deterministic_local"]},
         "scorer": {"const": "deterministic_local"}
       }
@@ -74,13 +76,43 @@
         }
       }
     },
-    "probe": {"$ref": "#/$defs/promptNode"},
-    "teach": {"$ref": "#/$defs/promptNode"},
-    "independent_verify": {
+    "probe": {
       "allOf": [
         {"$ref": "#/$defs/promptNode"},
-        {"type": "object", "required": ["pass_condition"]}
+        {
+          "type": "object",
+          "required": ["targets", "assessment"],
+          "properties": {
+            "targets": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+            "assessment": {"$ref": "#/$defs/probeAssessment"}
+          }
+        }
       ]
+    },
+    "teach": {"$ref": "#/$defs/teachNode"},
+    "independent_verify": {"$ref": "#/$defs/independentVerify"},
+    "assistance_ladder": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "content_version", "steps"],
+      "properties": {
+        "schema_version": {"const": "hermes.assistance-content.v1"},
+        "content_version": {"type": "string", "minLength": 1},
+        "steps": {
+          "type": "array", "minItems": 6, "maxItems": 6,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["action", "title", "content", "target_cause_ids"],
+            "properties": {
+              "action": {"enum": ["retry", "locate_evidence", "rule_hint", "analogous_example", "worked_step", "full_explanation"]},
+              "title": {"type": "string", "minLength": 1},
+              "content": {"type": "string", "minLength": 1},
+              "target_cause_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+            }
+          }
+        }
+      }
     },
     "provenance": {
       "type": "object", "required": ["content_origin", "prior_source"],
@@ -88,12 +120,162 @@
         "content_origin": {"const": "synthetic_original"},
         "prior_source": {"type": "string"}
       }
-    }
+    },
+    "samples": {"$ref": "#/$defs/responseSamples"}
   },
   "$defs": {
     "promptNode": {
       "type": "object", "required": ["prompt"],
       "properties": {"prompt": {"type": "string", "minLength": 1}}
+    },
+    "teachNode": {
+      "allOf": [
+        {"$ref": "#/$defs/promptNode"},
+        {
+          "type": "object",
+          "required": ["strategy", "variants"],
+          "properties": {
+            "strategy": {"type": "string", "minLength": 1},
+            "variants": {
+              "type": "array", "minItems": 1,
+              "items": {
+                "type": "object", "additionalProperties": false,
+                "required": ["cause_id", "prompt", "strategy"],
+                "properties": {
+                  "cause_id": {"type": "string", "minLength": 1},
+                  "prompt": {"type": "string", "minLength": 1},
+                  "strategy": {"type": "string", "minLength": 1}
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "independentVerify": {
+      "allOf": [
+        {"$ref": "#/$defs/promptNode"},
+        {
+          "type": "object",
+          "required": ["response_mode", "pass_condition", "samples"],
+          "properties": {
+            "response_mode": {"enum": ["single_choice", "short_text", "long_text", "spoken_text"]},
+            "pass_condition": {"$ref": "#/$defs/verificationCondition"},
+            "samples": {"$ref": "#/$defs/responseSamples"}
+          }
+        }
+      ]
+    },
+    "responseSamples": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["passing_response", "failing_response"],
+      "properties": {
+        "passing_response": {"type": "string", "minLength": 1},
+        "failing_response": {"type": "string", "minLength": 1},
+        "adversarial_negation_response": {"type": "string", "minLength": 1}
+      }
+    },
+    "verificationCondition": {
+      "oneOf": [
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["scorer", "correct_option", "options"],
+          "properties": {
+            "scorer": {"const": "exact_option_v1"},
+            "correct_option": {"type": "string", "minLength": 1},
+            "options": {"type": "object", "minProperties": 2, "additionalProperties": {"type": "string", "minLength": 1}}
+          }
+        },
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["scorer", "required_dimensions", "minimum_dimensions"],
+          "properties": {
+            "scorer": {"const": "authored_dimensions_v1"},
+            "required_dimensions": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/dimensionGroup"}},
+            "minimum_dimensions": {"type": "integer", "minimum": 1}
+          }
+        },
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["scorer", "required_slots", "minimum_slots"],
+          "properties": {
+            "scorer": {"const": "authored_slots_v1"},
+            "required_slots": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/slotGroup"}},
+            "minimum_slots": {"type": "integer", "minimum": 1}
+          }
+        }
+      ]
+    },
+    "dimensionGroup": {
+      "type": "object", "additionalProperties": false,
+      "required": ["dimension_id", "aliases"],
+      "properties": {
+        "dimension_id": {"type": "string", "minLength": 1},
+        "aliases": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "slotGroup": {
+      "type": "object", "additionalProperties": false,
+      "required": ["slot_id", "aliases"],
+      "properties": {
+        "slot_id": {"type": "string", "minLength": 1},
+        "aliases": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "probeAssessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "evaluator", "cause_samples"],
+      "properties": {
+        "schema_version": {"const": "hermes.probe-assessment.v1"},
+        "evaluator": {"enum": ["authored_terms_v1", "growth_formula_v1"]},
+        "cause_map": {
+          "type": "object", "additionalProperties": false,
+          "required": ["denominator", "increment", "ratio"],
+          "properties": {
+            "denominator": {"type": "string", "minLength": 1},
+            "increment": {"type": "string", "minLength": 1},
+            "ratio": {"type": "string", "minLength": 1}
+          }
+        },
+        "cause_samples": {
+          "type": "array", "minItems": 1,
+          "items": {"$ref": "#/$defs/probeCauseSample"}
+        },
+        "rules": {
+          "type": "array", "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["cause_id"],
+            "properties": {
+              "cause_id": {"type": "string", "minLength": 1},
+              "support_if": {"$ref": "#/$defs/textCondition"},
+              "refute_if": {"$ref": "#/$defs/textCondition"}
+            }
+          }
+        }
+      }
+    },
+    "probeCauseSample": {
+      "type": "object", "additionalProperties": false,
+      "required": ["cause_id", "supporting_response", "refuting_response", "ambiguous_response"],
+      "properties": {
+        "cause_id": {"type": "string", "minLength": 1},
+        "supporting_response": {"type": "string", "minLength": 1},
+        "refuting_response": {"type": "string", "minLength": 1},
+        "ambiguous_response": {"type": "string", "minLength": 1}
+      }
+    },
+    "textCondition": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "all_terms": {"type": "array", "minItems": 2, "items": {"type": "string", "minLength": 3}},
+        "any_terms": {"type": "array", "items": {"type": "string", "minLength": 3}},
+        "none_terms": {"type": "array", "items": {"type": "string", "minLength": 3}}
+      }
     }
   }
 }

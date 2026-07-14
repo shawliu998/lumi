@@ -1,0 +1,228 @@
+{
+  "schema_version": "lumi.xingce-adaptive-records.v1",
+  "pack_id": "lumi-history-humanity-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "review_status": "release_ready",
+  "records": [
+    {
+      "record_id": "D01",
+      "role": "entry_diagnostic",
+      "title": "历史人文：把器物属性放回来源",
+      "target_skill_ids": [
+        "xingce.common.history_humanity.source_attribution",
+        "xingce.common.history_humanity.chronology",
+        "xingce.common.history_humanity.concept_boundary"
+      ],
+      "candidate_misconception_ids": [
+        "M-ATTR",
+        "M-CHRON"
+      ],
+      "independence_group": "history-entry-bronze",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "prompt": "依据中国国家博物馆关于“后母戊”青铜方鼎的介绍，下列说法正确的是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "该器曾称“司母戊鼎”，器腹内壁铸有“后母戊”铭文"
+        },
+        {
+          "label": "B",
+          "text": "该器是以纸张制成的近代书法作品"
+        },
+        {
+          "label": "C",
+          "text": "该器以二十一世纪网络命名为唯一依据"
+        },
+        {
+          "label": "D",
+          "text": "该器属于联合国非物质文化遗产名录中的制茶技艺"
+        }
+      ],
+      "correct_option": "A",
+      "route_probe_ids": [
+        "P01"
+      ],
+      "record_sha256": "d4e67be48847148aea11c949d88592970c2d50d97b5b9147704661d8843a0144"
+    },
+    {
+      "record_id": "P01",
+      "role": "probe",
+      "title": "最小探查：名录年份不是器物时代",
+      "target_skill_ids": [
+        "xingce.common.history_humanity.source_attribution",
+        "xingce.common.history_humanity.chronology",
+        "xingce.common.history_humanity.concept_boundary"
+      ],
+      "candidate_misconception_ids": [
+        "M-ATTR",
+        "M-CHRON"
+      ],
+      "independence_group": "history-probe-tea",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "prompt": "UNESCO 页面说明“中国传统制茶技艺及其相关习俗”在 2022 年列入代表作名录。由此可直接得出的是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "2022 年是该项目列入该名录的年份，不等同于所有相关制茶传统的起源年份"
+        },
+        {
+          "label": "B",
+          "text": "所有制茶传统都在 2022 年才出现"
+        },
+        {
+          "label": "C",
+          "text": "该名录记录的是一件商代青铜器"
+        },
+        {
+          "label": "D",
+          "text": "列入名录后即可忽略该项目的具体名称和范围"
+        }
+      ],
+      "correct_option": "A",
+      "discriminates": [
+        "M-ATTR",
+        "M-CHRON"
+      ],
+      "candidate_evidence_map": {
+        "M-ATTR": {
+          "A": "refute",
+          "B": "insufficient",
+          "C": "support",
+          "D": "support"
+        },
+        "M-CHRON": {
+          "A": "refute",
+          "B": "support",
+          "C": "insufficient",
+          "D": "insufficient"
+        }
+      },
+      "record_sha256": "f0bca16aafaf80b149ad85814cc2b9725e7e3d44bdb9587c6f2796c9d6ec25e3"
+    },
+    {
+      "record_id": "T-ATTR",
+      "role": "teaching_asset",
+      "title": "微课：先圈出来源限定词",
+      "target_skill_ids": [
+        "xingce.common.history_humanity.source_attribution",
+        "xingce.common.history_humanity.concept_boundary"
+      ],
+      "candidate_misconception_ids": [
+        "M-ATTR"
+      ],
+      "independence_group": "history-attribution-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "target_candidate_ids": [
+        "M-ATTR"
+      ],
+      "teaching_content": "历史人文题先分三格核对：对象是什么、来源怎么称呼它、来源实际说了什么。器物介绍、名录项目和由此联想到的常识不是同一类证据；题干没有给出的属性不能补写进去。",
+      "record_sha256": "f1e95d624041886786c8693bedfe6553a31f044374f607d7248d556a5cb67b8c"
+    },
+    {
+      "record_id": "T-CHRON",
+      "role": "teaching_asset",
+      "title": "微课：登记时间不等于起源时间",
+      "target_skill_ids": [
+        "xingce.common.history_humanity.chronology"
+      ],
+      "candidate_misconception_ids": [
+        "M-CHRON"
+      ],
+      "independence_group": "history-chronology-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "target_candidate_ids": [
+        "M-CHRON"
+      ],
+      "teaching_content": "看到“列入、登记、公布”要把它标为制度或名录动作的日期；看到朝代、年代或考古分期才是在说对象的历史定位。两类时间都可能正确，但不能互相替代。",
+      "record_sha256": "c247c067d0bec212fdeb56cda7bad211aea49b71f22626fc24455a8032150536"
+    },
+    {
+      "record_id": "V01",
+      "role": "independent_transfer",
+      "title": "独立迁移：记录年份的边界",
+      "target_skill_ids": [
+        "xingce.common.history_humanity.chronology",
+        "xingce.common.history_humanity.concept_boundary"
+      ],
+      "candidate_misconception_ids": [
+        "M-ATTR",
+        "M-CHRON"
+      ],
+      "independence_group": "history-transfer-record",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "prompt": "一份文化项目说明写道“该项目于某年被登记入名录”。下列判断最稳妥的是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "该年就是项目所涉及全部传统开始形成的年份"
+        },
+        {
+          "label": "B",
+          "text": "该年首先说明登记动作发生的时间，起源时间还需另有证据"
+        },
+        {
+          "label": "C",
+          "text": "该项目必然是一件可称重的器物"
+        },
+        {
+          "label": "D",
+          "text": "登记年份使项目名称不再重要"
+        }
+      ],
+      "correct_option": "B",
+      "requires_no_hints": true,
+      "record_sha256": "263924d1dc305add3b28e4eaa3e6ac9148853d6384dee6606735aeb768a8be45"
+    },
+    {
+      "record_id": "R01",
+      "role": "delayed_review",
+      "title": "延迟复习：对象、来源和时间",
+      "target_skill_ids": [
+        "xingce.common.history_humanity.source_attribution",
+        "xingce.common.history_humanity.chronology"
+      ],
+      "candidate_misconception_ids": [
+        "M-ATTR",
+        "M-CHRON"
+      ],
+      "independence_group": "history-review-source",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "prompt": "阅读一则文物或文化项目介绍时，若题目问“哪项可由来源直接支持”，优先应：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "核对对象、原文限定词和所给时间的含义"
+        },
+        {
+          "label": "B",
+          "text": "用相似对象的常识替代来源"
+        },
+        {
+          "label": "C",
+          "text": "把登记年份一律当作起源年份"
+        },
+        {
+          "label": "D",
+          "text": "不区分器物和文化项目的证据类型"
+        }
+      ],
+      "correct_option": "A",
+      "requires_no_hints": true,
+      "scheduled_after_days": 4,
+      "eligible_after_transfer_ids": [
+        "V01"
+      ],
+      "record_sha256": "53ce47086b1f43d2b9018f0c1176d3e528b4d6929d84fc9e7d7966f647e4cfe6"
+    }
+  ]
+}

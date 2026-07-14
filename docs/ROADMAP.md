@@ -34,20 +34,25 @@ Deliver:
 Exit: frozen synthetic cases execute observe → diagnose → probe → teach → verify
 → update with deterministic replay and evidence-complete state changes.
 
-## Phase 2 — Xingce breadth slice
+## Phase 2 — Xingce complete coverage
 
 Deliver:
 
-- a small validated content package for one subtype in each major module;
+- a reviewed immutable content package for every subtype in the canonical
+  [Xingce coverage matrix](XINGCE_COVERAGE_V1.md), beginning with the released
+  conditional-logic reference pack;
 - subtype-specific misconception trees and distractor mappings;
 - answer/process/confidence capture and deterministic scoring;
 - micro-lessons, probes, transfer items, and spaced review;
 - first item/distractor/cohort analytics in DuckDB.
 
-Start with data analysis as the deepest reference implementation, then prove the
-contract on verbal, judgment, quantitative, and common/political knowledge.
+Start with text-choice types, then add material and visual asset contracts,
+then time-sensitive common/political knowledge. The previous representative
+fixture matrix remains mechanism coverage only; it does not make a subtype
+available to learners.
 
-Exit: all Xingce rows in the representative matrix pass release gates.
+Exit: all 31 coverage-matrix rows have a type-specific release pack, isolated
+evaluation, human-local browser acceptance and Mac delivery evidence.
 
 ## Phase 3 — independent Shenlun module
 

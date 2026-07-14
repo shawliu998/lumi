@@ -1,0 +1,73 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-graphic-reasoning-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "status": "release_ready",
+  "release_ready": true,
+  "runtime_registration": "allowed_after_human_review",
+  "subtype_id": "xingce.judgment.graphic_reasoning",
+  "module_id": "judgment",
+  "form": "visual_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "release_distribution_allowed"
+  },
+  "content_evidence": {
+    "immutable_visual_asset": "records.json#source_material; compact vector-like token panels are immutable record content",
+    "asset_checksum": "4c61e23e4d67af1c3aa4f15de9ce66e40ce85edb4aeaaa8f7d241d7de3d5cf40",
+    "meaningful_alt_text": "Every token diagram has a learner-visible structural alternative description."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": true,
+    "review_attestations": [
+      {
+        "review_kind": "logic",
+        "reviewer_id": "1",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "ca06d025c6637bc26fd5d56ed89c04a29b2c32b734726d70bf1f0a2721eec186"
+      },
+      {
+        "review_kind": "editorial_rights",
+        "reviewer_id": "2",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "ca06d025c6637bc26fd5d56ed89c04a29b2c32b734726d70bf1f0a2721eec186"
+      }
+    ]
+  },
+  "product_release": {
+    "state": "released",
+    "acceptance_basis": "owner_acceptance_waiver",
+    "accepted_at": "2026-07-14",
+    "waived_gate": "type_by_type_human_local_browser_acceptance",
+    "human_effect_evidence": "unavailable",
+    "claim_scope": "content_and_mechanism_availability_only"
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "bb3d20c1efe72133b6d198511e7c6c4910997804c99348276e1672dcaff7f1ac"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "a67536938aaca4b4cbc4240e95b376b4d09dffb8226af07b2452baac7aa1b211"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "106c73495f21c5d23b2e554427100c493d795d92b9991fdcc6e76f0fa0b8f792"
+    },
+    {
+      "path": "review-evidence.json",
+      "sha256": "56a2515ee07408d721d991f5dc274224cde9763892eb3d3de75a8105d390ceae"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "schema_version": "lumi.xingce-offline-assets-release.v1",
+  "release_id": "lumi-xingce-assets-cleaned17-v2-local-assets-v1",
+  "release_decision": {
+    "decision": "owner_local_asset_release",
+    "accepted_at": "2026-07-14",
+    "claim_scope": "local offline rendering for checksum-bound question assets only",
+    "public_distribution_rights": "not_claimed"
+  },
+  "export": {
+    "export_id": "lumi-xingce-assets-cleaned17-v2-local-assets-v1",
+    "export_version": "cleaned17-v2-local-assets-v1",
+    "manifest_schema": "lumi.xingce-offline-assets-export.v1",
+    "manifest_sha256": "9b69052bf25ac23c424e295b96c893a624f6b92493ef988061173e4fd0ab4e40",
+    "schema_sha256": "09ba1cea7d85235d2b1d8fde515800f5a4bf36019cca1d6ae63df1628e58169a",
+    "catalog_filename": "lumi-question-assets.sqlite3",
+    "catalog_sha256": "579c9c6632d42bdce50912821e258f242212d5ed813479fa369db1351081a9d9",
+    "checksum_index_sha256": "d2e18f88bd415fd58dce777b84f5954a6e2ed93b8cf355c48f49299693173363",
+    "source_question_database_sha256": "9b41ddabc967e8263357aa4ec2a08b55c9fb2b5a09570d32e78ef1b612701c49"
+  },
+  "counts": {
+    "flagged_asset_questions": 16999,
+    "attempt_unlocked": 7625,
+    "attempt_blocked": 9374,
+    "bundled_complete": 3822,
+    "not_required_for_attempt": 3803,
+    "required_remote": 8143,
+    "required_mixed": 1222,
+    "required_local_unavailable": 9,
+    "blob_files": 1887,
+    "blob_bytes": 401978549
+  },
+  "product_policy": {
+    "implicit_network_fetch": false,
+    "placeholder_assets_rejected": true,
+    "source_paths_exposed": false,
+    "remote_urls_exposed": false,
+    "asset_response_origin": "loopback_only"
+  }
+}

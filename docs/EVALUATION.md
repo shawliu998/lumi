@@ -1,5 +1,13 @@
 # Lumi v0 evaluation plan
 
+> **Scope note — 2026-07-13.** The active application programme is the 31-row
+> Xingce coverage contract in [XINGCE_COVERAGE_V1.md](XINGCE_COVERAGE_V1.md).
+> Conditional logic is the only released row. References below to the 42
+> representative fixtures, Shenlun, Interview, or the earlier data-analysis
+> activity are historical mechanism coverage, not evidence that another
+> learner-facing subtype exists. Each new row needs its own deterministic and
+> human-local acceptance evidence; no learning-effect claim is in scope.
+
 ## Evaluation philosophy
 
 Lumi is evaluated as a learning system and as an agent. A fluent explanation is
@@ -46,6 +54,75 @@ pass only when the versioned HTTP contract proves legal state order,
 optimistic-concurrency rejection, redacted response persistence, and independent
 verification. The initial-attempt gate alone is not evidence that this
 multi-step contract works.
+
+### 2.1.1 Judgment-reasoning synthetic policy experiment
+
+`evals/judgment_experiment` is a deterministic, **synthetic-only** mechanics
+runner for the active judgment-reasoning charter. It compares the four frozen
+policy identifiers from `JUDGMENT_REASONING_EXPERIMENT_PROTOCOL.md` using one
+fresh `synthetic:` SQLite database per `(seed, policy)` arm. Its report contains
+only redacted traces, paired per-seed descriptive outcomes, manifest/hash
+bindings, and independent-transfer state receipts. It cannot use a human
+namespace, write a learner-facing projection, approve a draft Domain Pack, or
+support any human-learning, calibration, cohort, causal, or fairness claim.
+
+### 2.2 Explainable TodayPlan and independent ReviewSchedule
+
+`today_plan_schedule` is a separate machine-executable release gate. It uses the
+real loopback HTTP router and a temporary local database; an injected local-date
+provider advances deterministic test days without changing production policy.
+The gate must prove all of the following:
+
+- no learner evidence yields an honest empty plan and empty review schedule;
+- completed `human_local_interactive` attempt traces produce the three authored
+  branches: +1 unconfirmed cause probe, +3 delayed-retention review after
+  successful independent verification, and +1 generic retry after a correct
+  first answer but failed verification;
+- batch/demo/synthetic-origin runs cannot seed a learner plan;
+- every task contains an executable immutable activity reference and structured
+  evidence references that resolve to the cited trace event, hash, and JSON
+  pointer. The current activity is explicitly
+  `same_fixture_retest_not_novel_item`; its success criterion says it is a
+  same-fixture independent retest and not transfer to an unseen parallel item;
+- candidate causes remain explicitly unconfirmed, while durations and +1/+3
+  windows remain labeled as fixed, unvalidated engineering policy;
+- overdue evidence is not discarded after 14 days. `base_due_on`,
+  `initial_due_on`, `policy_offset_days`, and `scheduling_adjustment` must make an
+  `overdue_catch_up` distinguishable from delivery on the original window;
+- the daily budget and recovery-load presentation limit never delete review
+  tasks: three recent failed attempts remain three ReviewSchedule records while
+  `max_non_accepted_tasks` limits only the non-accepted Today selection. Every
+  due accepted commitment is shown first and does not consume that cap. A budget
+  below the total accepted duration returns the closed 409 error
+  `budget_below_accepted_commitment`, creates no plan or task mutation, and may
+  be retried with the same command ID and a sufficient budget. Its response is
+  the closed `error.{code,message,request_id}` envelope, not a partial TodayPlan.
+  Repeated skips rotate fairly, accepted work carries into the next day ahead of
+  competing work, and the oldest skipped task returns within the bounded
+  eight-day dynamic-arrival probe even when a new failed run arrives every day;
+- strict request fields, sensitive-ID rejection, persisted command receipt
+  replay, command conflict, task-version checks, and cross-instance CAS fail
+  closed without partial writes;
+- skip and postpone keep work eligible in ReviewSchedule without promising it
+  will be displayed the next day; `postpone_until` is the earliest due/queue
+  date. Historical plans remain read-only even when two live Sidecars disagree
+  about the local date, and event replay verifies both the hash chain and current
+  projection;
+- restart repairs a deliberately partial five-field schedule migration, upgrades
+  the pre-novelty activity/success/skip contract with an auditable migration
+  record, rebuilds historical task snapshots, and then proves a healthy second
+  reopen performs zero data changes. Legacy create/transition receipts remain
+  immutable but retry as `command_conflict` so stale task copy is never replayed;
+- `user_marked_not_learning_evidence` completion changes only scheduling state.
+  The originating learning trace and skill/KT projection remain byte-for-byte
+  unchanged. The next day reports `no_pending_review_tasks`, and a completed
+  overdue task is excluded from the pending catch-up count.
+
+The contracts in `evals/contracts/today-plan.schema.json` and
+`evals/contracts/review-schedule.schema.json` are closed objects. Neither
+contract permits peer/cohort rates, forgetting probability, fatigue score, or a
+mastery-gain claim. Population evidence is `unavailable` and schedule commands
+have no mastery-write capability.
 
 ### 3. Diagnosis quality
 
@@ -127,7 +204,8 @@ A v0 milestone is complete only when:
 ## Portfolio demonstration
 
 The demo should show one deliberately ambiguous error. Lumi displays competing
-hypotheses, chooses a probe, revises probabilities, teaches, verifies transfer,
-updates mastery, schedules review, and then opens the exact trajectory in Agent
-Lab. A second demo shows offline degradation and an unresolved item being safely
-quarantined.
+hypotheses, chooses a probe, revises probabilities, teaches, records an
+independent verification response, updates per-run mastery, and schedules
+review. The exact trace and replay evidence are then inspected through the
+current evidence surfaces; Agent Lab remains a future product surface. A second
+demo shows offline degradation and an unresolved item being safely quarantined.

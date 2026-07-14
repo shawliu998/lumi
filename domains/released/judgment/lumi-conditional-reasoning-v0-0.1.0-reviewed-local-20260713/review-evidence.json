@@ -1,0 +1,58 @@
+{
+  "schema_version": "lumi.reasoning-review-evidence.v1",
+  "pack_id": "lumi-conditional-reasoning-v0",
+  "source_pack_version": "0.1.0-draft",
+  "source_manifest_sha256": "502ff0ceb49aeda4016efa71a8307e6e6c219a38949ccdbcbcb40bf6709bd53e",
+  "source_artifact_hashes": {
+    "LICENSE-CONTENT.md": "7ebd943de88d3d59c81060fbefd0cb7bb579ffb654205d0f353c339de80241c0",
+    "README.md": "ee64ac33820e5a42e2e3b23645526449ea812bad25b8afe866350d23a1a48e2b",
+    "skill-graph.json": "a5f3454a28d6726580152374018fcd32ea7d591c64d78f63f7e35739c2e6689e",
+    "misconception-taxonomy.json": "fed38066cc90a031bd9251bb92ed6e5c9bcbdf35af2c3257d8bc08e47db3aba0",
+    "records.json": "758182201844ca78c7214e1eb1a383507d92820dabbf1abb8b5f9c391dd01847"
+  },
+  "source_record_hashes": {
+    "D01": "a9f6d4c4a543bc2831ab0867b3b9ab8eb0c4c6a9486afb86c6cceffe41f9f830",
+    "D02": "374ed0c422f72106753452e911eddfdf6abe4ab0f95cf91c3121f2dd7c47ec99",
+    "P01": "61ddc8a86db983df1f759e75eab903b151f58a2183d2cebbcf6ac6900723fbca",
+    "P02": "67f62efda086beda2f79d4c3a1368aa313ee38c236d622251b759e5ca26494f3",
+    "P03": "5c1001d040b1af51ebf1abc02f8566223ffc2213919cba5a410810a072765cf0",
+    "T01": "9c25cdd95ef70cf81ce6a0391f79a7a81b4382a550f4e6085d7e15dc4b5d8909",
+    "T02": "8f8fa3f593cc4529b1b4e4f570ca0454b00d8f715beae1acaccb0e248bd8c659",
+    "T03": "e552a5bb444596a9b29d532b378cac41c83f24999449486239cd008ee20ed619",
+    "V01": "d2040461c2d6f899cdaf99875e0a3b127cadaa769ac5d08de90b3554ed9cedc8",
+    "V02": "f61300428a700d30a365bab19754d672d2fe6d0f6665f7cb8959e1a33dcc2a7d",
+    "R01": "938676bc2f7a14f5f0a70d49400960ee1695cdecf19b112b67f130c32ea81e0b",
+    "R02": "fc2ddf16cbc2da69fc4377e575104ffee4a08442ae7dc491a157ec62363f7797"
+  },
+  "manual_review_workbook": {
+    "name": "Lumi_条件逻辑题包_人工审核_第三稿.xlsx",
+    "sha256": "8c15f42756fd84c3581358c0b09f3018ef879f93a81bd59b30c044a7a7d5fb67"
+  },
+  "owner_release_authorization": {
+    "kind": "repository_owner_direct_release",
+    "recorded_at": "2026-07-13T03:29:35Z",
+    "scope": "local_controlled_release"
+  },
+  "reviewer_transcriptions": [
+    {
+      "review_kind": "logic",
+      "reviewer_id": "1",
+      "reviewed_at": "2026-07-12",
+      "reviewed_at_precision": "day",
+      "decision": "已审核",
+      "signature": "确认",
+      "hash_confirmation": "一致",
+      "notes": "无"
+    },
+    {
+      "review_kind": "editorial_rights",
+      "reviewer_id": "2",
+      "reviewed_at": "2026-07-13",
+      "reviewed_at_precision": "day",
+      "decision": "已审核",
+      "signature": "确认",
+      "hash_confirmation": "一致",
+      "notes": "无"
+    }
+  ]
+}

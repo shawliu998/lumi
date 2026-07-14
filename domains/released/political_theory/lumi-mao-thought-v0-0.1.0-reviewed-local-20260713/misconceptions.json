@@ -1,0 +1,26 @@
+{
+  "schema_version": "lumi.xingce-adaptive-misconceptions.v1",
+  "pack_id": "lumi-mao-thought-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "review_status": "release_ready",
+  "candidate_misconceptions": [
+    {
+      "cause_id": "M-FORM",
+      "label": "候选：混淆来源列举的活的灵魂三项基本方面",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": [
+        "xingce.political.mao_thought.formulation"
+      ]
+    },
+    {
+      "cause_id": "M-BOUND",
+      "label": "候选：把活的灵魂的三项方法与无关概念或历史事件混同",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": [
+        "xingce.political.mao_thought.boundary"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "schema_version": "lumi.xingce-adaptive-skills.v1",
+  "pack_id": "lumi-main-idea-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "review_status": "release_ready",
+  "skills": [
+    {
+      "skill_id": "xingce.verbal.main_idea.central_claim",
+      "label": "定位段落中心主张",
+      "mastery_claim": "能区分中心观点和支撑材料；仅由无提示迁移更新。"
+    },
+    {
+      "skill_id": "xingce.verbal.main_idea.scope",
+      "label": "保持概括范围",
+      "mastery_claim": "能让概括覆盖段落对象、关系和边界；仅由无提示迁移更新。"
+    },
+    {
+      "skill_id": "xingce.verbal.main_idea.evidence_role",
+      "label": "识别例证与论点的角色",
+      "mastery_claim": "能不把例子、原因或对策误作全文主旨；仅由无提示迁移更新。"
+    },
+    {
+      "skill_id": "xingce.verbal.main_idea.claim_strength",
+      "label": "控制概括的断言强度",
+      "mastery_claim": "能排除无依据的绝对化、扩大化概括；仅由无提示迁移更新。"
+    }
+  ]
+}

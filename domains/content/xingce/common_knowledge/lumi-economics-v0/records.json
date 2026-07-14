@@ -1,0 +1,228 @@
+{
+  "schema_version": "lumi.xingce-adaptive-records.v1",
+  "pack_id": "lumi-economics-v0",
+  "pack_version": "0.1.0-draft",
+  "review_status": "draft_unreviewed",
+  "records": [
+    {
+      "record_id": "D01",
+      "role": "entry_diagnostic",
+      "title": "经济常识：先保留“其他条件不变”",
+      "target_skill_ids": [
+        "xingce.common.economics.concept_boundary",
+        "xingce.common.economics.mechanism_direction",
+        "xingce.common.economics.indicator_scope"
+      ],
+      "candidate_misconception_ids": [
+        "M-DIRECTION",
+        "M-INDICATOR"
+      ],
+      "independence_group": "economics-entry-vegetable",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "某市场中，其他条件不变，某种蔬菜的种植成本下降。仅就该题设的供给关系，最稳妥的判断是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "供给者在各价格水平更愿意提供该商品，供给增加"
+        },
+        {
+          "label": "B",
+          "text": "需求一定减少，且全国物价一定下降"
+        },
+        {
+          "label": "C",
+          "text": "成本下降只能说明消费者偏好改变"
+        },
+        {
+          "label": "D",
+          "text": "无需看其他条件，价格和数量一定同时上升"
+        }
+      ],
+      "correct_option": "A",
+      "route_probe_ids": [
+        "P01"
+      ],
+      "record_sha256": "9f91dccc0c211c3186214c052d7652acb29d0074dc1ef59d0a00d825d8c51b0b"
+    },
+    {
+      "record_id": "P01",
+      "role": "probe",
+      "title": "最小探查：方向与外推要分开",
+      "target_skill_ids": [
+        "xingce.common.economics.concept_boundary",
+        "xingce.common.economics.mechanism_direction",
+        "xingce.common.economics.indicator_scope"
+      ],
+      "candidate_misconception_ids": [
+        "M-DIRECTION",
+        "M-INDICATOR"
+      ],
+      "independence_group": "economics-probe-ticket",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "某活动门票在其他条件不变时更受消费者欢迎。下列判断最符合题设的是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "该门票的需求增加；题设本身不能推出所有消费品价格的变化"
+        },
+        {
+          "label": "B",
+          "text": "该门票的供给一定减少，且所有行业需求一定上升"
+        },
+        {
+          "label": "C",
+          "text": "消费者偏好变化等同于生产成本下降"
+        },
+        {
+          "label": "D",
+          "text": "单一门票需求变化可直接证明宏观经济指标的数值"
+        }
+      ],
+      "correct_option": "A",
+      "discriminates": [
+        "M-DIRECTION",
+        "M-INDICATOR"
+      ],
+      "candidate_evidence_map": {
+        "M-DIRECTION": {
+          "A": "refute",
+          "B": "support",
+          "C": "support",
+          "D": "insufficient"
+        },
+        "M-INDICATOR": {
+          "A": "refute",
+          "B": "support",
+          "C": "insufficient",
+          "D": "support"
+        }
+      },
+      "record_sha256": "4d9826d0f2b637a6166d6edef84340753d5aab9c1098d580b561c43cf81bdfc2"
+    },
+    {
+      "record_id": "T-DIRECTION",
+      "role": "teaching_asset",
+      "title": "微课：先写清“谁在变、什么在变”",
+      "target_skill_ids": [
+        "xingce.common.economics.concept_boundary",
+        "xingce.common.economics.mechanism_direction"
+      ],
+      "candidate_misconception_ids": [
+        "M-DIRECTION"
+      ],
+      "independence_group": "economics-direction-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-DIRECTION"
+      ],
+      "teaching_content": "把题干改写成箭头：生产成本下降，是供给侧条件变化；消费者更愿意购买，是需求侧条件变化。先识别主体和变量，再在“其他条件不变”的范围内判断方向，不额外添加题干未给的变化。",
+      "record_sha256": "dcd1a2c99fb94e3ae545cd767e4645b9aa268c729ae735ce34263189504418f5"
+    },
+    {
+      "record_id": "T-INDICATOR",
+      "role": "teaching_asset",
+      "title": "微课：局部情境不能自动变成宏观指标",
+      "target_skill_ids": [
+        "xingce.common.economics.indicator_scope"
+      ],
+      "candidate_misconception_ids": [
+        "M-INDICATOR"
+      ],
+      "independence_group": "economics-indicator-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-INDICATOR"
+      ],
+      "teaching_content": "题干只给一个市场、一个商品或一段关系时，结论也先停在该范围。价格总水平、产出等总体指标需要额外定义和数据；不能从一个局部变化直接写出宏观结论。",
+      "record_sha256": "915edfb23f15bb286eab68825f461ce92ca166f4d9fa944d3e704d9a6beebba5"
+    },
+    {
+      "record_id": "V01",
+      "role": "independent_transfer",
+      "title": "独立迁移：限定范围内的需求判断",
+      "target_skill_ids": [
+        "xingce.common.economics.concept_boundary",
+        "xingce.common.economics.mechanism_direction"
+      ],
+      "candidate_misconception_ids": [
+        "M-DIRECTION",
+        "M-INDICATOR"
+      ],
+      "independence_group": "economics-transfer-book",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "其他条件不变时，某种学习资料因内容更适配而被更多学习者选择。最直接的判断是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "该资料的需求增加"
+        },
+        {
+          "label": "B",
+          "text": "所有资料的生产成本都下降"
+        },
+        {
+          "label": "C",
+          "text": "全国总体价格必然改变"
+        },
+        {
+          "label": "D",
+          "text": "该资料的供给一定减少"
+        }
+      ],
+      "correct_option": "A",
+      "requires_no_hints": true,
+      "record_sha256": "658cdf83a2eb7cacd28b3c6585557285f58e3c8ff22985f544021b68c30cb04d"
+    },
+    {
+      "record_id": "R01",
+      "role": "delayed_review",
+      "title": "延迟复习：结论不能超过题干",
+      "target_skill_ids": [
+        "xingce.common.economics.indicator_scope",
+        "xingce.common.economics.concept_boundary"
+      ],
+      "candidate_misconception_ids": [
+        "M-DIRECTION",
+        "M-INDICATOR"
+      ],
+      "independence_group": "economics-review-scope",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "一道题只描述单个商品在其他条件不变下的变化。下列哪项结论最应谨慎对待？",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "该题可直接证明所有宏观经济指标的方向和幅度"
+        },
+        {
+          "label": "B",
+          "text": "应先判断题干具体变化的是供给还是需求"
+        },
+        {
+          "label": "C",
+          "text": "应保留“其他条件不变”的限定"
+        },
+        {
+          "label": "D",
+          "text": "局部结论应停在题干给定范围内"
+        }
+      ],
+      "correct_option": "A",
+      "requires_no_hints": true,
+      "scheduled_after_days": 4,
+      "eligible_after_transfer_ids": [
+        "V01"
+      ],
+      "record_sha256": "f48f7f3942172d296c5d63591a17e65e2cb62856b6e45b111fcf928f43b6493d"
+    }
+  ]
+}

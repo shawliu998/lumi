@@ -1,0 +1,70 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-table-material-v0",
+  "pack_version": "0.1.0-draft",
+  "status": "draft_unreviewed",
+  "release_ready": false,
+  "runtime_registration": "forbidden_until_human_review",
+  "subtype_id": "xingce.data.table_material",
+  "module_id": "data_analysis",
+  "form": "material_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "draft_no_distribution"
+  },
+  "content_evidence": {
+    "immutable_material": "records.json#source_material; record and artifact checksums bind every table",
+    "material_checksum": "24ea3c78a0e0568ea1e0a4168485498208363d0c9500142fed42d1a786b34aac",
+    "accessible_table": "Each table has headers, captioned unit/scope, and plain-text cells.",
+    "unit_and_scope_metadata": "Every table caption names its unit and scope."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": false,
+    "required_reviews": [
+      {
+        "review_kind": "logic",
+        "status": "pending",
+        "required_checks": [
+          "unique_answer",
+          "table_reading",
+          "unit_scope",
+          "rounding",
+          "probe_discrimination",
+          "transfer_independence"
+        ]
+      },
+      {
+        "review_kind": "editorial_rights",
+        "status": "pending",
+        "required_checks": [
+          "original_wording",
+          "table_accessibility",
+          "neutral_context",
+          "license_scope"
+        ]
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "1befcc8ed93dfa98000938030b3fc0fd7f769678737d7f4fe72c0d94a34099ee"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "66390828b4397476be4f1188c18218a718efe43cd16afff213be5cedcc943729"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "3a011e13b5303af43631c592d23ff7ad195ea98407935c2c6ce3403f40f6ac29"
+    }
+  ]
+}

@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lumi.local/contracts/study-pack-attempt-result.schema.json",
+  "title": "Lumi learner-facing post-answer Study Pack result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "pack_id",
+    "pack_version",
+    "attempt",
+    "result",
+    "answer",
+    "explanation",
+    "cited_source_context",
+    "learning_projection_writes",
+    "idempotent_replay",
+    "links"
+  ],
+  "properties": {
+    "schema_version": {"const": "lumi.study-pack-attempt-result.v1"},
+    "pack_id": {"type": "string", "pattern": "^p_[A-P]{40}$"},
+    "pack_version": {"type": "integer", "minimum": 2},
+    "attempt": {"$ref": "#/$defs/attempt"},
+    "result": {"$ref": "#/$defs/result"},
+    "answer": {"type": "string", "minLength": 1, "maxLength": 2000},
+    "explanation": {"type": "string", "minLength": 1, "maxLength": 2000},
+    "cited_source_context": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 16,
+      "items": {"$ref": "#/$defs/context"}
+    },
+    "learning_projection_writes": {"$ref": "#/$defs/zero_writes"},
+    "idempotent_replay": {"type": "boolean"},
+    "links": {"$ref": "#/$defs/links"}
+  },
+  "$defs": {
+    "attempt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "attempt_id",
+        "pack_id",
+        "artifact_id",
+        "artifact_version",
+        "answer_digest",
+        "correct",
+        "score",
+        "evidence_origin",
+        "activity_kind",
+        "scorer_id"
+      ],
+      "properties": {
+        "schema_version": {"const": "lumi.study-pack-attempt.v1"},
+        "attempt_id": {"type": "string", "pattern": "^t_[A-P]{40}$"},
+        "pack_id": {"type": "string", "pattern": "^p_[A-P]{40}$"},
+        "artifact_id": {"type": "string", "pattern": "^a_[A-P]{40}$"},
+        "artifact_version": {"type": "integer", "minimum": 1},
+        "answer_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "correct": {"type": "boolean"},
+        "score": {"type": "number", "minimum": 0, "maximum": 1},
+        "evidence_origin": {
+          "enum": ["human_local_interactive", "evaluation_fixture"]
+        },
+        "activity_kind": {"const": "within_pack_practice"},
+        "scorer_id": {"enum": ["cloze_exact_v1@1.0.0", "normalized_exact_v1@1.0.0"]}
+      }
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["correct", "score", "max_score"],
+      "properties": {
+        "correct": {"type": "boolean"},
+        "score": {"type": "number", "minimum": 0, "maximum": 1},
+        "max_score": {"const": 1.0}
+      }
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "field_pointer",
+        "span_id",
+        "locator_kind",
+        "locator_index",
+        "start_offset",
+        "end_offset",
+        "excerpt"
+      ],
+      "properties": {
+        "field_pointer": {"type": "string", "pattern": "^/"},
+        "span_id": {"type": "string", "pattern": "^s_[A-P]{40}$"},
+        "locator_kind": {"enum": ["page", "section"]},
+        "locator_index": {"type": "integer", "minimum": 1, "maximum": 120},
+        "start_offset": {"type": "integer", "minimum": 0, "maximum": 250000},
+        "end_offset": {"type": "integer", "minimum": 1, "maximum": 250000},
+        "excerpt": {"type": "string", "minLength": 1, "maxLength": 2000}
+      }
+    },
+    "zero_writes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kt", "misconception", "today_plan", "review_schedule"],
+      "properties": {
+        "kt": {"const": false},
+        "misconception": {"const": false},
+        "today_plan": {"const": false},
+        "review_schedule": {"const": false}
+      }
+    },
+    "links": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pack", "replay"],
+      "properties": {
+        "pack": {"type": "string", "pattern": "^/v1/study-packs/p_[A-P]{40}$"},
+        "replay": {"type": "string", "pattern": "^/v1/study-packs/p_[A-P]{40}/replay$"}
+      }
+    },
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

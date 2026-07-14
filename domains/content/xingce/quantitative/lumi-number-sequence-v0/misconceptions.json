@@ -1,0 +1,29 @@
+{
+  "schema_version": "lumi.xingce-adaptive-misconceptions.v1",
+  "pack_id": "lumi-number-sequence-v0",
+  "pack_version": "0.1.0-draft",
+  "review_status": "draft_unreviewed",
+  "candidate_misconceptions": [
+    {
+      "cause_id": "M-ALT",
+      "label": "候选：过早假设奇偶项交替规律",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": ["xingce.quantitative.number_sequence.rule_selection"]
+    },
+    {
+      "cause_id": "M-OP",
+      "label": "候选：把增量规律误作乘除或固定运算",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": ["xingce.quantitative.number_sequence.rule_selection", "xingce.quantitative.number_sequence.first_difference"]
+    },
+    {
+      "cause_id": "M-STEP",
+      "label": "候选：已识别增量却未继续更新步长",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": ["xingce.quantitative.number_sequence.first_difference", "xingce.quantitative.number_sequence.extension"]
+    }
+  ]
+}

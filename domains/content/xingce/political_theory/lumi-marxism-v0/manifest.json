@@ -1,0 +1,67 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-marxism-v0",
+  "pack_version": "0.1.0-draft",
+  "status": "draft_unreviewed",
+  "release_ready": false,
+  "runtime_registration": "forbidden_until_human_review",
+  "subtype_id": "xingce.political.marxism",
+  "module_id": "political_theory",
+  "form": "text_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "draft_no_distribution"
+  },
+  "content_evidence": {
+    "authoritative_source_snapshot": "共产党员网，《坚持和发展对真理标准的科学认识》（2018-11-13），https://www.12371.cn/2018/11/13/ARTI1542101837805784.shtml；《真理的检验标准》（2020-04-30），https://www.12371.cn/2020/04/30/VIDE1588241161444831.shtml（accessed 2026-07-13）。",
+    "validity_cutoff": "2026-07-13; this draft uses only the named source's bounded statement about practice and truth, not an open-ended philosophical adjudication."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": false,
+    "required_reviews": [
+      {
+        "review_kind": "logic",
+        "status": "pending",
+        "required_checks": [
+          "unique_answer",
+          "principle_accuracy",
+          "application_scope",
+          "relation_direction",
+          "transfer_independence"
+        ]
+      },
+      {
+        "review_kind": "editorial_rights",
+        "status": "pending",
+        "required_checks": [
+          "authoritative_source",
+          "original_wording",
+          "plain_language",
+          "license_scope"
+        ]
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "c87350e3ba86a3a126fde665a4c5ee26a75d83213327a21c5aad0cae73e9507f"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "bee59513646431f4f17fabab7e220362d919dbaf102e784de03b8d2e1cb50cc2"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "afce40f69b85aea1dc90a5c5cbc91ac233800bc46a6d63304f97b48a65c5316c"
+    }
+  ]
+}

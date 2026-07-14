@@ -1,0 +1,74 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-table-material-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "status": "release_ready",
+  "release_ready": true,
+  "runtime_registration": "allowed_after_human_review",
+  "subtype_id": "xingce.data.table_material",
+  "module_id": "data_analysis",
+  "form": "material_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "release_distribution_allowed"
+  },
+  "content_evidence": {
+    "immutable_material": "records.json#source_material; record and artifact checksums bind every table",
+    "material_checksum": "24ea3c78a0e0568ea1e0a4168485498208363d0c9500142fed42d1a786b34aac",
+    "accessible_table": "Each table has headers, captioned unit/scope, and plain-text cells.",
+    "unit_and_scope_metadata": "Every table caption names its unit and scope."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": true,
+    "review_attestations": [
+      {
+        "review_kind": "logic",
+        "reviewer_id": "1",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "2efb110b0cc8ac5836131e4e4a577656edddbf602e7702241c2b0af61ed50a0d"
+      },
+      {
+        "review_kind": "editorial_rights",
+        "reviewer_id": "2",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "2efb110b0cc8ac5836131e4e4a577656edddbf602e7702241c2b0af61ed50a0d"
+      }
+    ]
+  },
+  "product_release": {
+    "state": "released",
+    "acceptance_basis": "owner_acceptance_waiver",
+    "accepted_at": "2026-07-14",
+    "waived_gate": "type_by_type_human_local_browser_acceptance",
+    "human_effect_evidence": "unavailable",
+    "claim_scope": "content_and_mechanism_availability_only"
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "26e2c431bf86bf841ee083a312bea863032e45095120fa298cd5802bc1284e0d"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "d2b043cd74ea3d23cda3efe9603c038348e5bdaa9067ece0bcc941dfe90b3ff4"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "a27edf27936ae6e5689fce7aa762d7dd36ac82da9d306e9045190c1d406060d8"
+    },
+    {
+      "path": "review-evidence.json",
+      "sha256": "429b3954b0c716549646496af17effd17fb006c2ec42baa604bbce7813c5fa26"
+    }
+  ]
+}

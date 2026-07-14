@@ -1,0 +1,11 @@
+{
+  "schema_version": "lumi.xingce-adaptive-skills.v1",
+  "pack_id": "lumi-economics-v0",
+  "pack_version": "0.1.0-draft",
+  "review_status": "draft_unreviewed",
+  "skills": [
+    {"skill_id": "xingce.common.economics.concept_boundary", "label": "识别供给、需求与价格的题干边界", "mastery_claim": "能先确定题目变化的是供给、需求、价格还是数量；仅由无提示迁移更新。"},
+    {"skill_id": "xingce.common.economics.mechanism_direction", "label": "在其他条件不变下判断方向", "mastery_claim": "能在明确的其他条件不变前提下判断给定变量的方向关系；仅由无提示迁移更新。"},
+    {"skill_id": "xingce.common.economics.indicator_scope", "label": "不把局部情境外推成宏观结论", "mastery_claim": "能分辨题干的单一市场情境与未被给出的总体指标；仅由无提示迁移更新。"}
+  ]
+}

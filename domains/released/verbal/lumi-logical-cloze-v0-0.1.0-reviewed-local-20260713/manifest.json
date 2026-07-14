@@ -1,0 +1,69 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-logical-cloze-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "status": "release_ready",
+  "release_ready": true,
+  "runtime_registration": "allowed_after_human_review",
+  "subtype_id": "xingce.verbal.logical_cloze",
+  "module_id": "verbal",
+  "form": "text_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "release_distribution_allowed"
+  },
+  "content_evidence": {},
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": true,
+    "review_attestations": [
+      {
+        "review_kind": "logic",
+        "reviewer_id": "1",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "2823c409bc5a6b09548eabb1298a0796ad7a5bf9df7271aa6a1dc052593e3f9c"
+      },
+      {
+        "review_kind": "editorial_rights",
+        "reviewer_id": "2",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "2823c409bc5a6b09548eabb1298a0796ad7a5bf9df7271aa6a1dc052593e3f9c"
+      }
+    ]
+  },
+  "product_release": {
+    "state": "released",
+    "acceptance_basis": "owner_acceptance_waiver",
+    "accepted_at": "2026-07-14",
+    "waived_gate": "type_by_type_human_local_browser_acceptance",
+    "human_effect_evidence": "unavailable",
+    "claim_scope": "content_and_mechanism_availability_only"
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "d1dd0523831c54d76b9a5033ce27ea14d07e8a7683ed67acf8b43fe1cc540afd"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "f924ab15165f6ea8d1bfc61360eb86678e0a56d7761460187e6ebcee2cadd202"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "8148b2209e7082cc4eac7b2854ebb8e29aec715316bac99e19ad9deb65bde24b"
+    },
+    {
+      "path": "review-evidence.json",
+      "sha256": "fbe4d186897e97bca7e98377b6f9d5222a8b548b443cb1fdc12070561f72e533"
+    }
+  ]
+}

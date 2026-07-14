@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lumi.local/contracts/study-candidate-skill-link.schema.json",
+  "title": "Lumi unconfirmed Study Pack candidate skill link",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_id",
+    "skill_id",
+    "label",
+    "status",
+    "taxonomy_version",
+    "taxonomy_digest"
+  ],
+  "properties": {
+    "artifact_id": {"type": "string", "pattern": "^a_[A-P]{40}$"},
+    "skill_id": {
+      "oneOf": [
+        {"type": "null"},
+        {"type": "string", "minLength": 1, "maxLength": 200}
+      ]
+    },
+    "label": {"type": "string", "minLength": 1, "maxLength": 120},
+    "status": {"const": "unconfirmed_candidate"},
+    "taxonomy_version": {
+      "oneOf": [
+        {"type": "null"},
+        {"type": "string", "minLength": 1, "maxLength": 80}
+      ]
+    },
+    "taxonomy_digest": {
+      "oneOf": [
+        {"type": "null"},
+        {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      ]
+    }
+  }
+}

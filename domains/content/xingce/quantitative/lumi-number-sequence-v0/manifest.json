@@ -1,0 +1,66 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-number-sequence-v0",
+  "pack_version": "0.1.0-draft",
+  "status": "draft_unreviewed",
+  "release_ready": false,
+  "runtime_registration": "forbidden_until_human_review",
+  "subtype_id": "xingce.quantitative.number_sequence",
+  "module_id": "quantitative",
+  "form": "numeric_or_mcq",
+  "scorer": "authored_numeric_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "draft_no_distribution"
+  },
+  "content_evidence": {
+    "explicit_solution_steps": "records.json#/solution_notes"
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": false,
+    "required_reviews": [
+      {
+        "review_kind": "logic",
+        "status": "pending",
+        "required_checks": [
+          "unique_numeric_answer",
+          "rule_derivation",
+          "probe_discrimination",
+          "transfer_independence",
+          "solution_steps"
+        ]
+      },
+      {
+        "review_kind": "editorial_rights",
+        "status": "pending",
+        "required_checks": [
+          "original_wording",
+          "notation_clarity",
+          "neutral_context",
+          "license_scope"
+        ]
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "ca6ad7773b7e533bdbc06e1eaad2fce9169ec582b0ece1766a4d6e0074bc7a0a"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "3ab2ebb5e130f3b8ecd7a8e8f35e32a15eef88c4641fb36bc7d4735824536d34"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "28c76b237ac8933d2f7884a2428347c53f77006702149ec38b6e5433c0947f5f"
+    }
+  ]
+}

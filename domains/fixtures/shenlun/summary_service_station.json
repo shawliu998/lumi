@@ -31,9 +31,56 @@
       {"cause_id": "stakeholder-accessibility-missed", "label": "忽略老年群体的信息可达性", "synthetic_prior": 0.27, "evidence_refs": ["criterion_missing:inaccessible-guidance"], "is_ground_truth": false}
     ]
   },
-  "probe": {"prompt": "按‘地点布局、信息呈现、系统衔接’三栏回看材料，每栏只填一个问题。", "targets": ["parallel-point-omission", "example-not-abstracted"]},
-  "teach": {"prompt": "示范用‘领域标签+具体表现’压缩材料，再让学习者补第三栏。", "strategy": "category-grid-fading"},
-  "independent_verify": {"prompt": "合成材料写到咨询电话多头、表格术语难懂、部门数据重复录入；请独立概括三类问题。", "response_mode": "short_text", "pass_condition": {"required_concepts": ["渠道分散", "表述难懂", "数据不共享"], "minimum_points": 2}},
-  "samples": {"passing_response": "窗口分散导致重复排队；指引不醒目，老人看不清；预约与叫号不互通，线上线下不衔接。", "failing_response": "群众办事体验不好，经常需要排队。"},
+  "probe": {
+    "prompt": "按‘地点布局、信息呈现、系统衔接’三栏回看材料，每栏概括一个问题，并写明信息呈现问题影响的群体。",
+    "targets": ["parallel-point-omission", "example-not-abstracted", "stakeholder-accessibility-missed"],
+    "assessment": {
+      "schema_version": "hermes.probe-assessment.v1", "evaluator": "authored_terms_v1",
+      "rules": [
+        {"cause_id": "parallel-point-omission", "support_if": {"all_terms": ["只概括窗口问题", "另外两类可以省略"]}, "refute_if": {"all_terms": ["布局信息系统三类", "三栏都要覆盖"]}},
+        {"cause_id": "example-not-abstracted", "support_if": {"all_terms": ["只抄重复排队", "不需要归纳类别"]}, "refute_if": {"all_terms": ["服务布局分散", "由事实提炼类别"]}},
+        {"cause_id": "stakeholder-accessibility-missed", "support_if": {"all_terms": ["老人看不清不算问题", "无需单独概括"]}, "refute_if": {"all_terms": ["指引不醒目", "影响老人识读"]}}
+      ],
+      "cause_samples": [
+        {"cause_id": "parallel-point-omission", "supporting_response": "只概括窗口问题，另外两类可以省略。", "refuting_response": "布局信息系统三类都要列出，三栏都要覆盖。", "ambiguous_response": "材料有好几个问题。"},
+        {"cause_id": "example-not-abstracted", "supporting_response": "只抄重复排队，不需要归纳类别。", "refuting_response": "应概括为服务布局分散，由事实提炼类别。", "ambiguous_response": "群众重复排队。"},
+        {"cause_id": "stakeholder-accessibility-missed", "supporting_response": "老人看不清不算问题，无需单独概括。", "refuting_response": "指引不醒目，影响老人识读。", "ambiguous_response": "墙角贴有指引。"}
+      ]
+    }
+  },
+  "teach": {
+    "prompt": "示范用‘领域标签+具体表现’压缩材料，再让学习者补第三栏。", "strategy": "category-grid-fading",
+    "variants": [
+      {"cause_id": "parallel-point-omission", "prompt": "用三栏扫描表逐句归位，检查每个并列问题是否都有落点。", "strategy": "parallel-scan-grid"},
+      {"cause_id": "example-not-abstracted", "prompt": "把原句压缩成‘领域标签+具体表现’，对比照抄与概括。", "strategy": "abstraction-fading"},
+      {"cause_id": "stakeholder-accessibility-missed", "prompt": "沿‘信息呈现—受影响群体—具体障碍’补全老年人可达性要点。", "strategy": "stakeholder-impact-chain"}
+    ]
+  },
+  "independent_verify": {
+    "prompt": "合成材料写到咨询电话多头、表格术语难懂、部门数据重复录入；请独立概括三类问题。",
+    "response_mode": "short_text",
+    "pass_condition": {
+      "scorer": "authored_dimensions_v1",
+      "required_dimensions": [
+        {"dimension_id": "channel_fragmentation", "aliases": ["渠道分散", "咨询多头", "电话多头"]},
+        {"dimension_id": "language_barrier", "aliases": ["表述难懂", "术语晦涩", "术语难懂"]},
+        {"dimension_id": "data_disconnect", "aliases": ["数据不共享", "数据壁垒", "重复录入"]}
+      ],
+      "minimum_dimensions": 3
+    },
+    "samples": {"passing_response": "咨询渠道分散，表格术语难懂，部门数据不共享、重复录入。", "failing_response": "咨询渠道分散，群众办事不方便。", "adversarial_negation_response": "不存在渠道分散，也不是表述难懂，更没有数据不共享；以上都不应作为问题。"}
+  },
+  "assistance_ladder": {
+    "schema_version": "hermes.assistance-content.v1", "content_version": "summary-problems-help.v1",
+    "steps": [
+      {"action": "retry", "title": "再试一次", "content": "回到材料逐句标出“发生在哪里、谁受影响、具体有什么不便”，相同层级的信息再合并。", "target_cause_ids": ["parallel-point-omission", "example-not-abstracted", "stakeholder-accessibility-missed"]},
+      {"action": "locate_evidence", "title": "定位材料", "content": "按地点布局、信息呈现、系统衔接三栏扫描；每栏先找一个事实，不急着写总评。", "target_cause_ids": ["parallel-point-omission"]},
+      {"action": "rule_hint", "title": "概括规则", "content": "每个要点写成“领域标签+具体表现”，既不能只抄例子，也不能只写‘体验不好’。", "target_cause_ids": ["example-not-abstracted"]},
+      {"action": "analogous_example", "title": "同类例子", "content": "‘电话分属多个部门、群众反复拨打’可概括为‘咨询渠道分散，办事成本高’。", "target_cause_ids": ["example-not-abstracted"]},
+      {"action": "worked_step", "title": "演示一点", "content": "先把“窗口分散、重复排队”压缩为“服务布局分散，群众重复排队”，再用同样结构处理另两栏。", "target_cause_ids": ["parallel-point-omission", "example-not-abstracted"]},
+      {"action": "full_explanation", "title": "完整说明", "content": "三类问题分别是窗口布局分散造成重复排队，指引不醒目影响老年人识读，预约与叫号系统不互通导致线上线下脱节。", "target_cause_ids": ["parallel-point-omission", "example-not-abstracted", "stakeholder-accessibility-missed"]}
+    ]
+  },
+  "samples": {"passing_response": "窗口分散导致重复排队；指引不醒目，老人看不清；预约与叫号不互通，线上线下不衔接。", "failing_response": "群众办事体验不好，经常需要排队。", "adversarial_negation_response": "不存在窗口分散，也没有重复排队；并非指引不醒目，老人也不是看不清；并非预约与叫号不互通，也并非线上线下不衔接。"},
   "provenance": {"content_origin": "synthetic_original", "authoring_note": "合成公共服务情境，未复制外部材料", "prior_source": "synthetic_engineering_prior_v1"}
 }

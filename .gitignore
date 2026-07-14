@@ -16,5 +16,6 @@ target/
 *.db-shm
 *.db-wal
 artifacts/
+domains/local_content/
 reports/local/
 evals/reports/release-*.json

@@ -1,0 +1,74 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-composite-material-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "status": "release_ready",
+  "release_ready": true,
+  "runtime_registration": "allowed_after_human_review",
+  "subtype_id": "xingce.data.composite_material",
+  "module_id": "data_analysis",
+  "form": "material_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "release_distribution_allowed"
+  },
+  "content_evidence": {
+    "immutable_material": "records.json#source_material; text/table combinations are immutable record content",
+    "material_checksum": "0c77d257eb4aa8242eb6211ad6b731495acd49c80687ac299ee6fd72afb890ed",
+    "cross_material_reference_map": "Each composite record supplies its narrative definition and its aligned data table together.",
+    "unit_and_scope_metadata": "Every part carries a unit and time/population scope."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": true,
+    "review_attestations": [
+      {
+        "review_kind": "logic",
+        "reviewer_id": "1",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "1b97018da7e8deb37f9ef29d374e2638d0f5b24932aa01edfb0dcd1364d0135b"
+      },
+      {
+        "review_kind": "editorial_rights",
+        "reviewer_id": "2",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "1b97018da7e8deb37f9ef29d374e2638d0f5b24932aa01edfb0dcd1364d0135b"
+      }
+    ]
+  },
+  "product_release": {
+    "state": "released",
+    "acceptance_basis": "owner_acceptance_waiver",
+    "accepted_at": "2026-07-14",
+    "waived_gate": "type_by_type_human_local_browser_acceptance",
+    "human_effect_evidence": "unavailable",
+    "claim_scope": "content_and_mechanism_availability_only"
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "78d2b86616063ff80bb3713ab86a9620ccf421b1f9a9c1690ce77a4ed3556cb8"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "21547c58bfa3c8780a0a7f2f86e3df83ee3581a8464e1049559958e74062bad5"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "f9447b7527be61571c8a1b8e134cf47240073b1b8e57f71828796b50a5a31850"
+    },
+    {
+      "path": "review-evidence.json",
+      "sha256": "54bd8c1bdf6e51b2671025d37ad7441ccf9c7e1504d89ff687455cb178554d80"
+    }
+  ]
+}

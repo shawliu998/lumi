@@ -1,0 +1,19 @@
+{
+  "release_version": "0.1.0-reviewed-local-YYYYMMDD",
+  "reviewer_attestations": [
+    {
+      "review_kind": "logic",
+      "reviewer_id": "填写稳定审核人标识",
+      "status": "approved",
+      "reviewed_at": "YYYY-MM-DD",
+      "notes": "填写审核结论或修订确认"
+    },
+    {
+      "review_kind": "editorial_rights",
+      "reviewer_id": "填写另一位稳定审核人标识",
+      "status": "approved",
+      "reviewed_at": "YYYY-MM-DD",
+      "notes": "填写原创、清晰度与权属确认"
+    }
+  ]
+}

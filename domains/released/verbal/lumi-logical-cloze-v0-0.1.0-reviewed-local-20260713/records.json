@@ -1,0 +1,227 @@
+{
+  "schema_version": "lumi.xingce-adaptive-records.v1",
+  "pack_id": "lumi-logical-cloze-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "review_status": "release_ready",
+  "records": [
+    {
+      "record_id": "D01",
+      "role": "entry_diagnostic",
+      "title": "逻辑填空：证据强度与结论边界",
+      "target_skill_ids": [
+        "xingce.verbal.logical_cloze.semantic_collocation",
+        "xingce.verbal.logical_cloze.context_relation",
+        "xingce.verbal.logical_cloze.word_style"
+      ],
+      "candidate_misconception_ids": [
+        "M-SC",
+        "M-CR",
+        "M-WS"
+      ],
+      "independence_group": "logical-cloze-evidence-entry",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "prompt": "在环境监测通报中，结论必须以连续观测数据为____，不能仅凭一次异常读数作出____判断。",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "依据；绝对"
+        },
+        {
+          "label": "B",
+          "text": "结果；随意"
+        },
+        {
+          "label": "C",
+          "text": "前提；热烈"
+        },
+        {
+          "label": "D",
+          "text": "方式；偶然"
+        }
+      ],
+      "correct_option": "A",
+      "route_probe_ids": [
+        "P01"
+      ],
+      "record_sha256": "b1557a177f5a2ab4a898054ada3d54acf34bd12db7bcd64dbc8982a314219c1f"
+    },
+    {
+      "record_id": "P01",
+      "role": "probe",
+      "title": "最小探查：句间关系",
+      "target_skill_ids": [
+        "xingce.verbal.logical_cloze.semantic_collocation",
+        "xingce.verbal.logical_cloze.context_relation",
+        "xingce.verbal.logical_cloze.word_style"
+      ],
+      "candidate_misconception_ids": [
+        "M-SC",
+        "M-CR",
+        "M-WS"
+      ],
+      "independence_group": "logical-cloze-relation-probe",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "prompt": "这项制度不是为了限制创新，____为了让不同参与者在同一规则下协作。横线处填入最恰当的一项是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "而是"
+        },
+        {
+          "label": "B",
+          "text": "因此"
+        },
+        {
+          "label": "C",
+          "text": "即使"
+        },
+        {
+          "label": "D",
+          "text": "例如"
+        }
+      ],
+      "correct_option": "A",
+      "discriminates": [
+        "M-SC",
+        "M-CR",
+        "M-WS"
+      ],
+      "candidate_evidence_map": {
+        "M-SC": {
+          "A": "refute",
+          "B": "insufficient",
+          "C": "support",
+          "D": "insufficient"
+        },
+        "M-CR": {
+          "A": "refute",
+          "B": "support",
+          "C": "support",
+          "D": "insufficient"
+        },
+        "M-WS": {
+          "A": "refute",
+          "B": "insufficient",
+          "C": "insufficient",
+          "D": "support"
+        }
+      },
+      "record_sha256": "c86bfc08adc49c9c7c6e8850638e85cb0e5eb11ebe24ebe77b9f8693867e17ee"
+    },
+    {
+      "record_id": "T01",
+      "role": "teaching_asset",
+      "title": "微课：先读关系，再看词语",
+      "target_skill_ids": [
+        "xingce.verbal.logical_cloze.semantic_collocation",
+        "xingce.verbal.logical_cloze.context_relation",
+        "xingce.verbal.logical_cloze.word_style"
+      ],
+      "candidate_misconception_ids": [
+        "M-SC",
+        "M-CR",
+        "M-WS"
+      ],
+      "independence_group": "logical-cloze-relation-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "target_candidate_ids": [
+        "M-SC",
+        "M-CR",
+        "M-WS"
+      ],
+      "teaching_content": "先把横线前后的关系说清楚：题干中的“不是……，____……”构成否定前项、肯定后项的转折纠正，优先寻找能成对呼应的连接词。再检查词语是否能和对象稳定搭配，最后才比较语体。不要只凭某个词“听起来正式”作答。",
+      "record_sha256": "207029a94735cbb94ec1df956580b06932d574867be4aacb253b41c54afc2a9b"
+    },
+    {
+      "record_id": "V01",
+      "role": "independent_transfer",
+      "title": "独立迁移：处理顺序",
+      "target_skill_ids": [
+        "xingce.verbal.logical_cloze.semantic_collocation",
+        "xingce.verbal.logical_cloze.context_relation",
+        "xingce.verbal.logical_cloze.word_style"
+      ],
+      "candidate_misconception_ids": [
+        "M-SC",
+        "M-CR",
+        "M-WS"
+      ],
+      "independence_group": "logical-cloze-process-transfer",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "prompt": "面对跨部门数据口径不一的情况，负责人先确认统计范围，____再比较结果。横线处填入最恰当的一项是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "以便"
+        },
+        {
+          "label": "B",
+          "text": "然后"
+        },
+        {
+          "label": "C",
+          "text": "即使"
+        },
+        {
+          "label": "D",
+          "text": "除非"
+        }
+      ],
+      "correct_option": "B",
+      "requires_no_hints": true,
+      "record_sha256": "1821733f736981c7bf8aa45c405277dbb0ee3a04772e957758aa5719ef0addbc"
+    },
+    {
+      "record_id": "R01",
+      "role": "delayed_review",
+      "title": "延迟复习：结果关系",
+      "target_skill_ids": [
+        "xingce.verbal.logical_cloze.semantic_collocation",
+        "xingce.verbal.logical_cloze.context_relation",
+        "xingce.verbal.logical_cloze.word_style"
+      ],
+      "candidate_misconception_ids": [
+        "M-SC",
+        "M-CR",
+        "M-WS"
+      ],
+      "independence_group": "logical-cloze-publication-review",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "prompt": "对外发布材料时，数字应与表格逐项核对，____避免因为表述不一致引发误读。横线处填入最恰当的一项是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "从而"
+        },
+        {
+          "label": "B",
+          "text": "尽管"
+        },
+        {
+          "label": "C",
+          "text": "反而"
+        },
+        {
+          "label": "D",
+          "text": "即使"
+        }
+      ],
+      "correct_option": "A",
+      "requires_no_hints": true,
+      "scheduled_after_days": 3,
+      "eligible_after_transfer_ids": [
+        "V01"
+      ],
+      "record_sha256": "b7b47af36d50b0b49114c84228acb35134eee0fece01c8cafc627aa073f0bcb3"
+    }
+  ]
+}

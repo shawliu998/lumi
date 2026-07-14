@@ -1,0 +1,224 @@
+{
+  "schema_version": "lumi.xingce-adaptive-records.v1",
+  "pack_id": "lumi-xi-thought-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "review_status": "release_ready",
+  "records": [
+    {
+      "record_id": "D01",
+      "role": "entry_diagnostic",
+      "title": "理论学习：先辨认来源的三组概括",
+      "target_skill_ids": [
+        "xingce.political.xi_thought.formulation",
+        "xingce.political.xi_thought.boundary"
+      ],
+      "candidate_misconception_ids": [
+        "M-FORM",
+        "M-BOUND"
+      ],
+      "independence_group": "xi-entry-framework",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "prompt": "依据本题列出的学习资料，下列关于主要内容的概括正确的是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "“十个明确”“十四个坚持”“十三个方面成就”共同构成资料所述主要内容的概括"
+        },
+        {
+          "label": "B",
+          "text": "资料只用一个固定数字概括全部内容"
+        },
+        {
+          "label": "C",
+          "text": "“十四个坚持”是对一件历史文物的名称"
+        },
+        {
+          "label": "D",
+          "text": "“十三个方面成就”可以不经来源核对而替代任何政策细节"
+        }
+      ],
+      "correct_option": "A",
+      "route_probe_ids": [
+        "P01"
+      ],
+      "record_sha256": "920036417201c01605495c171c338bbec0745f5b910d21b9dfb9e5db2826b1b5"
+    },
+    {
+      "record_id": "P01",
+      "role": "probe",
+      "title": "最小探查：主要观点和实践要求不混用",
+      "target_skill_ids": [
+        "xingce.political.xi_thought.formulation",
+        "xingce.political.xi_thought.boundary"
+      ],
+      "candidate_misconception_ids": [
+        "M-FORM",
+        "M-BOUND"
+      ],
+      "independence_group": "xi-probe-function",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "prompt": "依据所列学习资料，下列对应最稳妥的是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "“十个明确”用于概括主要观点，“十四个坚持”概括实践要求，二者应联系理解但不能混写"
+        },
+        {
+          "label": "B",
+          "text": "“十四个坚持”仅是十三项历史事件的日期列表"
+        },
+        {
+          "label": "C",
+          "text": "“十个明确”只说明某一项具体工作已经完成"
+        },
+        {
+          "label": "D",
+          "text": "三组概括不需要再查看来源即可随意增删"
+        }
+      ],
+      "correct_option": "A",
+      "discriminates": [
+        "M-FORM",
+        "M-BOUND"
+      ],
+      "candidate_evidence_map": {
+        "M-FORM": {
+          "A": "refute",
+          "B": "support",
+          "C": "support",
+          "D": "insufficient"
+        },
+        "M-BOUND": {
+          "A": "refute",
+          "B": "insufficient",
+          "C": "support",
+          "D": "support"
+        }
+      },
+      "record_sha256": "475c51bb9c5e00e5571aa7c84c4fa08797ec35ab29567354e18c3c4b6d852b2c"
+    },
+    {
+      "record_id": "T-FORM",
+      "role": "teaching_asset",
+      "title": "微课：名称、数量和出处三点对齐",
+      "target_skill_ids": [
+        "xingce.political.xi_thought.formulation"
+      ],
+      "candidate_misconception_ids": [
+        "M-FORM"
+      ],
+      "independence_group": "xi-form-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "target_candidate_ids": [
+        "M-FORM"
+      ],
+      "teaching_content": "遇到成套表述，先用“名称—数量—来源”核对。不要因为词语相近就交换十个明确、十四个坚持和十三个方面成就；答案必须回到冻结的来源文本。",
+      "record_sha256": "4cafa563a69f94ff10fae38dd55ee0082e4011a5a78675e03634cca5e3072ee5"
+    },
+    {
+      "record_id": "T-BOUND",
+      "role": "teaching_asset",
+      "title": "微课：概括层次要保留",
+      "target_skill_ids": [
+        "xingce.political.xi_thought.boundary"
+      ],
+      "candidate_misconception_ids": [
+        "M-BOUND"
+      ],
+      "independence_group": "xi-boundary-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "target_candidate_ids": [
+        "M-BOUND"
+      ],
+      "teaching_content": "同一来源可以同时说明主要观点、实践要求和成就概括。题目问哪一层就答哪一层；“彼此联系”不等于可以让任一层替代另一层。",
+      "record_sha256": "17ff3b5b37bb07b8b075dcd7c879487c1a3fe5e8361b01b463fc3c810fa4276a"
+    },
+    {
+      "record_id": "V01",
+      "role": "independent_transfer",
+      "title": "独立迁移：先回到指定文本",
+      "target_skill_ids": [
+        "xingce.political.xi_thought.formulation",
+        "xingce.political.xi_thought.boundary"
+      ],
+      "candidate_misconception_ids": [
+        "M-FORM",
+        "M-BOUND"
+      ],
+      "independence_group": "xi-transfer-source",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "prompt": "题目给出一份理论学习材料并询问其中一组固定概括时，最可靠的做法是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "依据给定来源核对名称、数量和所问层次"
+        },
+        {
+          "label": "B",
+          "text": "只凭相似词语任意拼接概括"
+        },
+        {
+          "label": "C",
+          "text": "将实践要求直接当作一段未经给出的成就数据"
+        },
+        {
+          "label": "D",
+          "text": "忽略材料的发布日期和版本"
+        }
+      ],
+      "correct_option": "A",
+      "requires_no_hints": true,
+      "record_sha256": "1ea9872b2e059d28b68ce73475b3e7cf1dc117899fba11049040d4e1bf6075a6"
+    },
+    {
+      "record_id": "R01",
+      "role": "delayed_review",
+      "title": "延迟复习：框架的可解释边界",
+      "target_skill_ids": [
+        "xingce.political.xi_thought.formulation"
+      ],
+      "candidate_misconception_ids": [
+        "M-FORM",
+        "M-BOUND"
+      ],
+      "independence_group": "xi-review-framework",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "prompt": "当选项把来源中不同层次的框架名称互换时，最合适的处理是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "回查来源中的名称和功能，排除互换后的表述"
+        },
+        {
+          "label": "B",
+          "text": "认为数字相近就可以互换"
+        },
+        {
+          "label": "C",
+          "text": "把未列出的内容补到来源里"
+        },
+        {
+          "label": "D",
+          "text": "把文件发布日期当作框架名称"
+        }
+      ],
+      "correct_option": "A",
+      "requires_no_hints": true,
+      "scheduled_after_days": 4,
+      "eligible_after_transfer_ids": [
+        "V01"
+      ],
+      "record_sha256": "976a7a83889cb8d855458aaed0982b03ce9e551b982c8cfae7d0fbf66105f28f"
+    }
+  ]
+}

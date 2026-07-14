@@ -1,0 +1,70 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-composite-material-v0",
+  "pack_version": "0.1.0-draft",
+  "status": "draft_unreviewed",
+  "release_ready": false,
+  "runtime_registration": "forbidden_until_human_review",
+  "subtype_id": "xingce.data.composite_material",
+  "module_id": "data_analysis",
+  "form": "material_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "draft_no_distribution"
+  },
+  "content_evidence": {
+    "immutable_material": "records.json#source_material; text/table combinations are immutable record content",
+    "material_checksum": "0c77d257eb4aa8242eb6211ad6b731495acd49c80687ac299ee6fd72afb890ed",
+    "cross_material_reference_map": "Each composite record supplies its narrative definition and its aligned data table together.",
+    "unit_and_scope_metadata": "Every part carries a unit and time/population scope."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": false,
+    "required_reviews": [
+      {
+        "review_kind": "logic",
+        "status": "pending",
+        "required_checks": [
+          "unique_answer",
+          "cross_source_alignment",
+          "unit_scope",
+          "calculation",
+          "probe_discrimination",
+          "transfer_independence"
+        ]
+      },
+      {
+        "review_kind": "editorial_rights",
+        "status": "pending",
+        "required_checks": [
+          "original_wording",
+          "part_clarity",
+          "neutral_context",
+          "license_scope"
+        ]
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "863c22df70623027643398d44730b89385f958d5051bff83dba6bd721c3165bf"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "e96d8ccff6776929f456190ce104ad9ae7580c4d2a0197f401bba1ac7d6f565a"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "89273023debb35147aeff512aeea62376c55de8d3acd1eea4537106d2836a2cb"
+    }
+  ]
+}

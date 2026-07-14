@@ -1,0 +1,73 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-text-material-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "status": "release_ready",
+  "release_ready": true,
+  "runtime_registration": "allowed_after_human_review",
+  "subtype_id": "xingce.data.text_material",
+  "module_id": "data_analysis",
+  "form": "material_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "release_distribution_allowed"
+  },
+  "content_evidence": {
+    "immutable_material": "records.json#source_material; every learner-visible material is bound to its record and artifact checksum",
+    "material_checksum": "dd34451b8750be4e8d644a0591e59b76984e1548bb57dda084cefcb1d3d1b521",
+    "unit_and_scope_metadata": "Every material states a unit and population/time scope in learner-visible text."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": true,
+    "review_attestations": [
+      {
+        "review_kind": "logic",
+        "reviewer_id": "1",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "5f587041a84559f7060987e1b884938da6f1a88e78f88b6bfbfbe4cbf004653f"
+      },
+      {
+        "review_kind": "editorial_rights",
+        "reviewer_id": "2",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "5f587041a84559f7060987e1b884938da6f1a88e78f88b6bfbfbe4cbf004653f"
+      }
+    ]
+  },
+  "product_release": {
+    "state": "released",
+    "acceptance_basis": "owner_acceptance_waiver",
+    "accepted_at": "2026-07-14",
+    "waived_gate": "type_by_type_human_local_browser_acceptance",
+    "human_effect_evidence": "unavailable",
+    "claim_scope": "content_and_mechanism_availability_only"
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "df5f90e23c8aab311eaa8c55c09b0a5c45aba90efc28cf7b8ab63aa977697140"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "18b0ca8e821c772d5a9ab2d662098faadc369d50ab16ecabf5cbf41ea1737ff2"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "c195faadabbdf6ad3739e08886500f8f0cdca4c0eb4098a72d4d1f49ed4b52b8"
+    },
+    {
+      "path": "review-evidence.json",
+      "sha256": "9a5ab64d7b83696b8b9926908857a65943959522da9356f971af9be27a68cb53"
+    }
+  ]
+}

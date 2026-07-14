@@ -29,9 +29,48 @@
       {"cause_id": "conditional-rule-not-applied", "label": "未把‘只有…才…’转换为后件推出前件", "synthetic_prior": 0.25, "evidence_refs": ["answer_incorrect", "ignored-rule"], "is_ground_truth": false}
     ]
   },
-  "probe": {"prompt": "把‘只有有票才能入场’写成箭头关系，并判断已入场者是否有票。", "targets": ["necessary-sufficient-reversal"]},
-  "teach": {"prompt": "用门票作为必要条件，固定练习‘结果发生→必要条件成立’。", "strategy": "analogy-and-symbolization"},
-  "independent_verify": {"prompt": "只有注册后才能提交。小李已提交，哪个结论必真？", "response_mode": "single_choice", "pass_condition": {"correct_option": "A"}},
+  "probe": {
+    "prompt": "把‘只有有票才能入场’写成箭头关系，判断已入场者是否有票，并说明能否补入个人偏好等题干外信息。",
+    "targets": ["necessary-sufficient-reversal", "unsupported-premise", "conditional-rule-not-applied"],
+    "assessment": {
+      "schema_version": "hermes.probe-assessment.v1", "evaluator": "authored_terms_v1",
+      "rules": [
+        {"cause_id": "necessary-sufficient-reversal", "support_if": {"all_terms": ["有票就能入场", "箭头从有票指向入场"]}, "refute_if": {"all_terms": ["入场推出有票", "有票不能推出入场"]}},
+        {"cause_id": "unsupported-premise", "support_if": {"all_terms": ["他喜欢活动", "所以一定有票"]}, "refute_if": {"all_terms": ["只依据题干规则", "不补充个人偏好"]}},
+        {"cause_id": "conditional-rule-not-applied", "support_if": {"all_terms": ["已入场也不能判断有票", "这条规则无法使用"]}, "refute_if": {"all_terms": ["已入场", "必然有票"]}}
+      ],
+      "cause_samples": [
+        {"cause_id": "necessary-sufficient-reversal", "supporting_response": "有票就能入场，箭头从有票指向入场。", "refuting_response": "应由入场推出有票，有票不能推出入场。", "ambiguous_response": "有票和入场存在关系。"},
+        {"cause_id": "unsupported-premise", "supporting_response": "他喜欢活动，所以一定有票。", "refuting_response": "只依据题干规则，不补充个人偏好。", "ambiguous_response": "还要看这个人的情况。"},
+        {"cause_id": "conditional-rule-not-applied", "supporting_response": "已入场也不能判断有票，这条规则无法使用。", "refuting_response": "题干给出已入场，因此必然有票。", "ambiguous_response": "我暂时不会画箭头。"}
+      ]
+    }
+  },
+  "teach": {
+    "prompt": "用门票作为必要条件，固定练习‘结果发生→必要条件成立’。", "strategy": "analogy-and-symbolization",
+    "variants": [
+      {"cause_id": "necessary-sufficient-reversal", "prompt": "并排画出B→A与错误的A→B，用反例检验反向推理。", "strategy": "arrow-counterexample"},
+      {"cause_id": "unsupported-premise", "prompt": "把题干信息与个人想象分栏，只允许前一栏进入推理链。", "strategy": "premise-boundary"},
+      {"cause_id": "conditional-rule-not-applied", "prompt": "从已发生的后件出发逐步匹配必要条件，完成一次规则代入。", "strategy": "rule-instantiation"}
+    ]
+  },
+  "independent_verify": {
+    "prompt": "只有注册后才能提交。小李已提交，哪个结论必真？",
+    "response_mode": "single_choice",
+    "pass_condition": {"scorer": "exact_option_v1", "correct_option": "A", "options": {"A": "小李已经注册", "B": "注册者一定会提交", "C": "小李提交的内容一定正确", "D": "未注册者也可以提交"}},
+    "samples": {"passing_response": "A", "failing_response": "B"}
+  },
+  "assistance_ladder": {
+    "schema_version": "hermes.assistance-content.v1", "content_version": "necessary-condition-help.v1",
+    "steps": [
+      {"action": "retry", "title": "再试一次", "content": "先圈出“只有……才……”，分别写出条件和结果，再从已经发生的事实向前检查。", "target_cause_ids": ["necessary-sufficient-reversal", "unsupported-premise", "conditional-rule-not-applied"]},
+      {"action": "locate_evidence", "title": "定位条件", "content": "在“只有有票才能入场”中，先圈出“有票”和“入场”，判断哪一项是另一项不可缺少的前提；暂不画箭头。", "target_cause_ids": ["necessary-sufficient-reversal", "conditional-rule-not-applied"]},
+      {"action": "rule_hint", "title": "规则提示", "content": "只有 A 才 B 表示 B→A。能从 B 推出 A，不能仅凭 A 推出 B，也不能补入题干没有给出的偏好或常识。", "target_cause_ids": ["necessary-sufficient-reversal", "unsupported-premise"]},
+      {"action": "analogous_example", "title": "同类例子", "content": "只有登录后才能付款：已付款的人一定登录过；登录过的人不一定已经付款。", "target_cause_ids": ["necessary-sufficient-reversal"]},
+      {"action": "worked_step", "title": "演示一步", "content": "把“入场”写在箭头左侧，“有票”写在右侧：入场→有票。再对照题干事实。", "target_cause_ids": ["conditional-rule-not-applied"]},
+      {"action": "full_explanation", "title": "完整说明", "content": "规则是入场→有票。题干若给出某人已入场，就能推出其有票；反向由有票推出入场属于必要、充分条件倒置，个人偏好等题干外信息也不能作为结论。", "target_cause_ids": ["necessary-sufficient-reversal", "unsupported-premise", "conditional-rule-not-applied"]}
+    ]
+  },
   "samples": {"passing_response": "A", "failing_response": "B"},
   "provenance": {"content_origin": "synthetic_original", "authoring_note": "自有合成逻辑题", "prior_source": "synthetic_engineering_prior_v1"}
 }

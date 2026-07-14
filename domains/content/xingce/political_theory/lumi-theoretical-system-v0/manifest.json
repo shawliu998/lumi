@@ -1,0 +1,67 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-theoretical-system-v0",
+  "pack_version": "0.1.0-draft",
+  "status": "draft_unreviewed",
+  "release_ready": false,
+  "runtime_registration": "forbidden_until_human_review",
+  "subtype_id": "xingce.political.theoretical_system",
+  "module_id": "political_theory",
+  "form": "text_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "draft_no_distribution"
+  },
+  "content_evidence": {
+    "authoritative_source_snapshot": "共产党员网，《党史百问｜中国特色社会主义理论体系的概括提出有何重大意义？》（2022-08-29），https://www.12371.cn/2022/08/29/ARTI1661761939373251.shtml；《习近平：关于中国特色社会主义理论体系的体会和认识》（2015-12-15），https://news.12371.cn/2015/12/15/ARTI1450154207109802.shtml（accessed 2026-07-13）。",
+    "validity_cutoff": "2026-07-13; the draft tests only names and relations explicitly stated by the named sources."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": false,
+    "required_reviews": [
+      {
+        "review_kind": "logic",
+        "status": "pending",
+        "required_checks": [
+          "unique_answer",
+          "formulation_attribution",
+          "concept_boundary",
+          "relation_direction",
+          "transfer_independence"
+        ]
+      },
+      {
+        "review_kind": "editorial_rights",
+        "status": "pending",
+        "required_checks": [
+          "authoritative_source",
+          "original_wording",
+          "date_labeling",
+          "license_scope"
+        ]
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "d0d949b4d0cb35d4a65d3b9403d6843108d9427d089e9e73dc37fab452e54ab0"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "be0ecf0c6da2e407a68ea6675659f99b4fbd7fc3ec398fe52c233d12076c263f"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "577df2870a8ced95c6cc4f7a4323b98982480f88a10ab9e57a2b97d5960e59c7"
+    }
+  ]
+}

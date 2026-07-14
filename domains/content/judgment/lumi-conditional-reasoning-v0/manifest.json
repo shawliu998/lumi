@@ -1,0 +1,93 @@
+{
+  "schema_version": "lumi.reasoning-domain-pack.v0",
+  "pack_id": "lumi-conditional-reasoning-v0",
+  "pack_version": "0.1.0-draft",
+  "status": "draft_unreviewed",
+  "release_ready": false,
+  "runtime_registration": "forbidden_until_human_review",
+  "purpose": "Inspectable Adaptive Learning Agent demo: conditional direction, necessary versus sufficient roles, and valid conditional inference.",
+  "scope": {
+    "included": [
+      "只有 A，才 B",
+      "只要 A，就 B",
+      "necessary versus sufficient conditions",
+      "direct and contrapositive inference"
+    ],
+    "excluded": [
+      "除非",
+      "biconditionals as a target skill (they may appear only as explicitly labelled distractors)",
+      "multi-premise arguments",
+      "truth-teller puzzles",
+      "set relations",
+      "external exam-question-bank content"
+    ]
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "external_source_materials": "none",
+    "license": "CC-BY-4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "copyright_notice": "Copyright 2026 Lumi contributors.",
+    "distribution": "draft_no_distribution",
+    "prohibited_materials": [
+      "copied exam wording",
+      "screenshots",
+      "third-party answer keys",
+      "unlicensed question-bank material"
+    ]
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": false,
+    "policy": "No generated or imported content may be release-ready until logic and editorial/rights review both bind a reviewer identity, timestamp, and the reviewed content hashes.",
+    "required_reviews": [
+      {
+        "review_kind": "logic",
+        "status": "pending",
+        "required_checks": [
+          "unique_answer",
+          "formalization",
+          "distractor_mapping",
+          "transfer_independence"
+        ]
+      },
+      {
+        "review_kind": "editorial_rights",
+        "status": "pending",
+        "required_checks": [
+          "original_wording",
+          "clarity",
+          "neutral_context",
+          "license_scope"
+        ]
+      }
+    ]
+  },
+  "checksum_policy": {
+    "artifact_algorithm": "sha256-utf8-bytes-v1",
+    "record_algorithm": "sha256-canonical-json-without-record_sha256-v1",
+    "canonical_json": "utf-8, ensure_ascii=false, sort_keys=true, separators=(',', ':')"
+  },
+  "artifacts": [
+    {
+      "path": "LICENSE-CONTENT.md",
+      "sha256": "7ebd943de88d3d59c81060fbefd0cb7bb579ffb654205d0f353c339de80241c0"
+    },
+    {
+      "path": "README.md",
+      "sha256": "ee64ac33820e5a42e2e3b23645526449ea812bad25b8afe866350d23a1a48e2b"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "a5f3454a28d6726580152374018fcd32ea7d591c64d78f63f7e35739c2e6689e"
+    },
+    {
+      "path": "misconception-taxonomy.json",
+      "sha256": "fed38066cc90a031bd9251bb92ed6e5c9bcbdf35af2c3257d8bc08e47db3aba0"
+    },
+    {
+      "path": "records.json",
+      "sha256": "758182201844ca78c7214e1eb1a383507d92820dabbf1abb8b5f9c391dd01847"
+    }
+  ]
+}

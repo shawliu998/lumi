@@ -1,0 +1,44 @@
+{
+  "schema_version": "lumi.xingce-adaptive-misconceptions.v1",
+  "pack_id": "lumi-detail-inference-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "review_status": "release_ready",
+  "candidate_misconceptions": [
+    {
+      "cause_id": "M-UNSTATED",
+      "label": "候选：把文本未提及的信息补成结论",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": [
+        "xingce.verbal.detail_inference.textual_support"
+      ]
+    },
+    {
+      "cause_id": "M-SCOPE",
+      "label": "候选：将局部对象或限定情形扩大",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": [
+        "xingce.verbal.detail_inference.scope"
+      ]
+    },
+    {
+      "cause_id": "M-CAUSE",
+      "label": "候选：将共同出现或先后关系认定为因果",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": [
+        "xingce.verbal.detail_inference.causality"
+      ]
+    },
+    {
+      "cause_id": "M-ABS",
+      "label": "候选：接受超过原文强度的绝对化表述",
+      "status": "unconfirmed",
+      "is_ground_truth": false,
+      "target_skill_ids": [
+        "xingce.verbal.detail_inference.strength"
+      ]
+    }
+  ]
+}

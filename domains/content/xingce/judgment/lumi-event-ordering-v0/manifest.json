@@ -1,0 +1,66 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-event-ordering-v0",
+  "pack_version": "0.1.0-draft",
+  "status": "draft_unreviewed",
+  "release_ready": false,
+  "runtime_registration": "forbidden_until_human_review",
+  "subtype_id": "xingce.judgment.event_ordering",
+  "module_id": "judgment",
+  "form": "text_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "draft_no_distribution"
+  },
+  "content_evidence": {
+    "ordering_constraints": "records.json#ordering_proofs: every item binds trigger, prerequisite, response, and completion order."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": false,
+    "required_reviews": [
+      {
+        "review_kind": "logic",
+        "status": "pending",
+        "required_checks": [
+          "unique_order",
+          "prerequisite",
+          "causal_direction",
+          "probe_discrimination",
+          "transfer_independence"
+        ]
+      },
+      {
+        "review_kind": "editorial_rights",
+        "status": "pending",
+        "required_checks": [
+          "original_wording",
+          "clarity",
+          "neutral_context",
+          "license_scope"
+        ]
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "a1b81e2209ef99b74b8135a07917202865c266da8b57c24db6cd0dcaf294a71a"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "98f0f7761b35804132e7d7e5dae3bf40808afea76d90279032b06a32252ec988"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "e5c19a5c9143e0419d2b7a3c31b4ed7a2f88263c89c13f57265b99899d8372f2"
+    }
+  ]
+}

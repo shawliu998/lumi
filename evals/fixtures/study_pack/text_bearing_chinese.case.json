@@ -1,0 +1,801 @@
+{
+  "artifacts": [
+    {
+      "artifact_id": "a_BMJPNFEFGHKKPEHKCANLMINHCJCFIEGBDDPCNKIA",
+      "artifact_type": "study_pack.one_page_notes",
+      "artifact_version": 1,
+      "content_digest": "bbe16939057c47e6619eed8970b2bd29583eb283d698cff9dd7ce59cd397d879",
+      "generator_id": "extractive-local@1",
+      "generator_metadata": {
+        "generator_id": "extractive-local@1",
+        "mode": "deterministic_extractive",
+        "model_calls": 0,
+        "network_calls": 0,
+        "ocr_calls": 0,
+        "source_normalized_sha256": "c49c0108901ff0be26a81f749d11cfd5d1c0ca5a0cb1a065691912680ef17762"
+      },
+      "lifecycle": "published",
+      "pack_id": "p_FHHPBOKACIDLDAIBONDFMFFMMLJKPCALIKADGGED"
+    },
+    {
+      "artifact_id": "a_BDIFIBLDDBMGOCILLOPGOOOGPOBNIOABEOGLAEKI",
+      "artifact_type": "study_pack.knowledge_card",
+      "artifact_version": 1,
+      "content_digest": "0101acfcf3616ca958a60fae5cd004577205054d9e7375bfdcf4347da7b83c7e",
+      "generator_id": "extractive-local@1",
+      "generator_metadata": {
+        "generator_id": "extractive-local@1",
+        "mode": "deterministic_extractive",
+        "model_calls": 0,
+        "network_calls": 0,
+        "ocr_calls": 0,
+        "source_normalized_sha256": "c49c0108901ff0be26a81f749d11cfd5d1c0ca5a0cb1a065691912680ef17762"
+      },
+      "lifecycle": "published",
+      "pack_id": "p_FHHPBOKACIDLDAIBONDFMFFMMLJKPCALIKADGGED"
+    },
+    {
+      "artifact_id": "a_MIMPOLCMBFDHEFHLJCHENJNIIDHFCFBAPDGDKFML",
+      "artifact_type": "study_pack.knowledge_card",
+      "artifact_version": 1,
+      "content_digest": "a5287cbf57fe9a58b3fafe1e1f037a848b8ceac22672b00e5c543a40eeec9170",
+      "generator_id": "extractive-local@1",
+      "generator_metadata": {
+        "generator_id": "extractive-local@1",
+        "mode": "deterministic_extractive",
+        "model_calls": 0,
+        "network_calls": 0,
+        "ocr_calls": 0,
+        "source_normalized_sha256": "c49c0108901ff0be26a81f749d11cfd5d1c0ca5a0cb1a065691912680ef17762"
+      },
+      "lifecycle": "published",
+      "pack_id": "p_FHHPBOKACIDLDAIBONDFMFFMMLJKPCALIKADGGED"
+    },
+    {
+      "artifact_id": "a_PJCHJFMEEOLFPLFCGEPCBOIGPMPFCLDPMMLLLCPA",
+      "artifact_type": "study_pack.knowledge_card",
+      "artifact_version": 1,
+      "content_digest": "6c2f0db69d30a6f859ae40175eb5545d794a7e2291c2c17358bd4b04a08dcdc4",
+      "generator_id": "extractive-local@1",
+      "generator_metadata": {
+        "generator_id": "extractive-local@1",
+        "mode": "deterministic_extractive",
+        "model_calls": 0,
+        "network_calls": 0,
+        "ocr_calls": 0,
+        "source_normalized_sha256": "c49c0108901ff0be26a81f749d11cfd5d1c0ca5a0cb1a065691912680ef17762"
+      },
+      "lifecycle": "published",
+      "pack_id": "p_FHHPBOKACIDLDAIBONDFMFFMMLJKPCALIKADGGED"
+    },
+    {
+      "artifact_id": "a_KIIDELHPCIAJHDKDKADPFNHMLPMGPKBIBGFLEHLN",
+      "artifact_type": "study_pack.knowledge_card",
+      "artifact_version": 1,
+      "content_digest": "6c9613e241eeb3cd619ec5fd5f367c1b5426f72899dc8fdab349c1c2fc7a5863",
+      "generator_id": "extractive-local@1",
+      "generator_metadata": {
+        "generator_id": "extractive-local@1",
+        "mode": "deterministic_extractive",
+        "model_calls": 0,
+        "network_calls": 0,
+        "ocr_calls": 0,
+        "source_normalized_sha256": "c49c0108901ff0be26a81f749d11cfd5d1c0ca5a0cb1a065691912680ef17762"
+      },
+      "lifecycle": "published",
+      "pack_id": "p_FHHPBOKACIDLDAIBONDFMFFMMLJKPCALIKADGGED"
+    },
+    {
+      "artifact_id": "a_JPIBHKPIPGLEMOPJBKKIFPEJBNPEHDKCJBBJPMNF",
+      "artifact_type": "study_pack.knowledge_card",
+      "artifact_version": 1,
+      "content_digest": "1951c5b92fd760a4fc4c5737137ea8e96d769a71cce44c2c6e003b0213989f4d",
+      "generator_id": "extractive-local@1",
+      "generator_metadata": {
+        "generator_id": "extractive-local@1",
+        "mode": "deterministic_extractive",
+        "model_calls": 0,
+        "network_calls": 0,
+        "ocr_calls": 0,
+        "source_normalized_sha256": "c49c0108901ff0be26a81f749d11cfd5d1c0ca5a0cb1a065691912680ef17762"
+      },
+      "lifecycle": "published",
+      "pack_id": "p_FHHPBOKACIDLDAIBONDFMFFMMLJKPCALIKADGGED"
+    },
+    {
+      "artifact_id": "a_PMCIKDKJCBKGPIHLLHNDPFJPGOCAECJHKFMEGDLO",
+      "artifact_type": "study_pack.practice_item",
+      "artifact_version": 1,
+      "content_digest": "fe9146fe2a9fc8d4fcf6fc1306cf98526da6c222488d0052a9a1780995b2233a",
+      "generator_id": "extractive-local@1",
+      "generator_metadata": {
+        "generator_id": "extractive-local@1",
+        "mode": "deterministic_extractive",
+        "model_calls": 0,
+        "network_calls": 0,
+        "ocr_calls": 0,
+        "source_normalized_sha256": "c49c0108901ff0be26a81f749d11cfd5d1c0ca5a0cb1a065691912680ef17762"
+      },
+      "lifecycle": "published",
+      "pack_id": "p_FHHPBOKACIDLDAIBONDFMFFMMLJKPCALIKADGGED"
+    },
+    {
+      "artifact_id": "a_PDECILDAAOCNAPGFJGMPLEIGKMOFFFHGECMJKMNJ",
+      "artifact_type": "study_pack.practice_item",
+      "artifact_version": 1,
+      "content_digest": "62637047caff773bb70611caa95b458f26a7a2879f12737db0202af876350469",
+      "generator_id": "extractive-local@1",
+      "generator_metadata": {
+        "generator_id": "extractive-local@1",
+        "mode": "deterministic_extractive",
+        "model_calls": 0,
+        "network_calls": 0,
+        "ocr_calls": 0,
+        "source_normalized_sha256": "c49c0108901ff0be26a81f749d11cfd5d1c0ca5a0cb1a065691912680ef17762"
+      },
+      "lifecycle": "published",
+      "pack_id": "p_FHHPBOKACIDLDAIBONDFMFFMMLJKPCALIKADGGED"
+    },
+    {
+      "artifact_id": "a_CAAIJBEDNKLNJMLICKAIOBEFOJBOFNPBOOPDMLLO",
+      "artifact_type": "study_pack.practice_item",
+      "artifact_version": 1,
+      "content_digest": "121f50991af921b31e70754170e2e9bc7bb49c86e3a0fc2f46ba000fae216573",
+      "generator_id": "extractive-local@1",
+      "generator_metadata": {
+        "generator_id": "extractive-local@1",
+        "mode": "deterministic_extractive",
+        "model_calls": 0,
+        "network_calls": 0,
+        "ocr_calls": 0,
+        "source_normalized_sha256": "c49c0108901ff0be26a81f749d11cfd5d1c0ca5a0cb1a065691912680ef17762"
+      },
+      "lifecycle": "published",
+      "pack_id": "p_FHHPBOKACIDLDAIBONDFMFFMMLJKPCALIKADGGED"
+    },
+    {
+      "artifact_id": "a_DAGGDOAJILDOEAIAGMGLNEBBEBMDKBAGCDCIHPGE",
+      "artifact_type": "study_pack.review_task",
+      "artifact_version": 1,
+      "content_digest": "d89f9eb58a3d5e884045bae43cf2974e44cd6df321d43c5c666fef7e079e0e9f",
+      "generator_id": "extractive-local@1",
+      "generator_metadata": {
+        "generator_id": "extractive-local@1",
+        "mode": "deterministic_extractive",
+        "model_calls": 0,
+        "network_calls": 0,
+        "ocr_calls": 0,
+        "source_normalized_sha256": "c49c0108901ff0be26a81f749d11cfd5d1c0ca5a0cb1a065691912680ef17762"
+      },
+      "lifecycle": "published",
+      "pack_id": "p_FHHPBOKACIDLDAIBONDFMFFMMLJKPCALIKADGGED"
+    }
+  ],
+  "candidate_skill_links": [
+    {
+      "artifact_id": "a_BMJPNFEFGHKKPEHKCANLMINHCJCFIEGBDDPCNKIA",
+      "label": "材料要点复述",
+      "skill_id": "study.source-recall",
+      "status": "unconfirmed_candidate",
+      "taxonomy_digest": "2f94434fde218644f66d52c49c22849db6e6ab35d6ade150fd57e7678c287ea1",
+      "taxonomy_version": "lumi-taxonomy-seed.v1"
+    },
+    {
+      "artifact_id": "a_BDIFIBLDDBMGOCILLOPGOOOGPOBNIOABEOGLAEKI",
+      "label": "材料要点复述",
+      "skill_id": "study.source-recall",
+      "status": "unconfirmed_candidate",
+      "taxonomy_digest": "2f94434fde218644f66d52c49c22849db6e6ab35d6ade150fd57e7678c287ea1",
+      "taxonomy_version": "lumi-taxonomy-seed.v1"
+    },
+    {
+      "artifact_id": "a_MIMPOLCMBFDHEFHLJCHENJNIIDHFCFBAPDGDKFML",
+      "label": "材料要点复述",
+      "skill_id": "study.source-recall",
+      "status": "unconfirmed_candidate",
+      "taxonomy_digest": "2f94434fde218644f66d52c49c22849db6e6ab35d6ade150fd57e7678c287ea1",
+      "taxonomy_version": "lumi-taxonomy-seed.v1"
+    },
+    {
+      "artifact_id": "a_PJCHJFMEEOLFPLFCGEPCBOIGPMPFCLDPMMLLLCPA",
+      "label": "材料要点复述",
+      "skill_id": "study.source-recall",
+      "status": "unconfirmed_candidate",
+      "taxonomy_digest": "2f94434fde218644f66d52c49c22849db6e6ab35d6ade150fd57e7678c287ea1",
+      "taxonomy_version": "lumi-taxonomy-seed.v1"
+    },
+    {
+      "artifact_id": "a_KIIDELHPCIAJHDKDKADPFNHMLPMGPKBIBGFLEHLN",
+      "label": "材料要点复述",
+      "skill_id": "study.source-recall",
+      "status": "unconfirmed_candidate",
+      "taxonomy_digest": "2f94434fde218644f66d52c49c22849db6e6ab35d6ade150fd57e7678c287ea1",
+      "taxonomy_version": "lumi-taxonomy-seed.v1"
+    },
+    {
+      "artifact_id": "a_JPIBHKPIPGLEMOPJBKKIFPEJBNPEHDKCJBBJPMNF",
+      "label": "材料要点复述",
+      "skill_id": "study.source-recall",
+      "status": "unconfirmed_candidate",
+      "taxonomy_digest": "2f94434fde218644f66d52c49c22849db6e6ab35d6ade150fd57e7678c287ea1",
+      "taxonomy_version": "lumi-taxonomy-seed.v1"
+    },
+    {
+      "artifact_id": "a_PMCIKDKJCBKGPIHLLHNDPFJPGOCAECJHKFMEGDLO",
+      "label": "材料要点复述",
+      "skill_id": "study.source-recall",
+      "status": "unconfirmed_candidate",
+      "taxonomy_digest": "2f94434fde218644f66d52c49c22849db6e6ab35d6ade150fd57e7678c287ea1",
+      "taxonomy_version": "lumi-taxonomy-seed.v1"
+    },
+    {
+      "artifact_id": "a_PDECILDAAOCNAPGFJGMPLEIGKMOFFFHGECMJKMNJ",
+      "label": "材料要点复述",
+      "skill_id": "study.source-recall",
+      "status": "unconfirmed_candidate",
+      "taxonomy_digest": "2f94434fde218644f66d52c49c22849db6e6ab35d6ade150fd57e7678c287ea1",
+      "taxonomy_version": "lumi-taxonomy-seed.v1"
+    },
+    {
+      "artifact_id": "a_CAAIJBEDNKLNJMLICKAIOBEFOJBOFNPBOOPDMLLO",
+      "label": "材料要点复述",
+      "skill_id": "study.source-recall",
+      "status": "unconfirmed_candidate",
+      "taxonomy_digest": "2f94434fde218644f66d52c49c22849db6e6ab35d6ade150fd57e7678c287ea1",
+      "taxonomy_version": "lumi-taxonomy-seed.v1"
+    },
+    {
+      "artifact_id": "a_DAGGDOAJILDOEAIAGMGLNEBBEBMDKBAGCDCIHPGE",
+      "label": "材料要点复述",
+      "skill_id": "study.source-recall",
+      "status": "unconfirmed_candidate",
+      "taxonomy_digest": "2f94434fde218644f66d52c49c22849db6e6ab35d6ade150fd57e7678c287ea1",
+      "taxonomy_version": "lumi-taxonomy-seed.v1"
+    }
+  ],
+  "case_id": "text-pdf-chinese-v1",
+  "fixture_semantics": {
+    "attempt_evidence_origin": "evaluation_fixture",
+    "calibration_eligible": false,
+    "causal_claim_eligible": false,
+    "cohort_denominator_eligible": false,
+    "fairness_claim_eligible": false,
+    "human_learner_projection_eligible": false,
+    "learning_effect_claim_eligible": false,
+    "synthetic": true,
+    "synthetic_scope": "engineering_fixture_only"
+  },
+  "pack": {
+    "artifact_counts": {
+      "knowledge_card": 5,
+      "one_page_notes": 1,
+      "practice_item": 3,
+      "review_task": 1,
+      "total": 10
+    },
+    "artifact_refs": [
+      {
+        "artifact_id": "a_BMJPNFEFGHKKPEHKCANLMINHCJCFIEGBDDPCNKIA",
+        "artifact_type": "study_pack.one_page_notes",
+        "artifact_version": 1,
+        "content_digest": "bbe16939057c47e6619eed8970b2bd29583eb283d698cff9dd7ce59cd397d879",
+        "lifecycle": "published",
+        "verification_decision": "accepted"
+      },
+      {
+        "artifact_id": "a_BDIFIBLDDBMGOCILLOPGOOOGPOBNIOABEOGLAEKI",
+        "artifact_type": "study_pack.knowledge_card",
+        "artifact_version": 1,
+        "content_digest": "0101acfcf3616ca958a60fae5cd004577205054d9e7375bfdcf4347da7b83c7e",
+        "lifecycle": "published",
+        "verification_decision": "accepted"
+      },
+      {
+        "artifact_id": "a_MIMPOLCMBFDHEFHLJCHENJNIIDHFCFBAPDGDKFML",
+        "artifact_type": "study_pack.knowledge_card",
+        "artifact_version": 1,
+        "content_digest": "a5287cbf57fe9a58b3fafe1e1f037a848b8ceac22672b00e5c543a40eeec9170",
+        "lifecycle": "published",
+        "verification_decision": "accepted"
+      },
+      {
+        "artifact_id": "a_PJCHJFMEEOLFPLFCGEPCBOIGPMPFCLDPMMLLLCPA",
+        "artifact_type": "study_pack.knowledge_card",
+        "artifact_version": 1,
+        "content_digest": "6c2f0db69d30a6f859ae40175eb5545d794a7e2291c2c17358bd4b04a08dcdc4",
+        "lifecycle": "published",
+        "verification_decision": "accepted"
+      },
+      {
+        "artifact_id": "a_KIIDELHPCIAJHDKDKADPFNHMLPMGPKBIBGFLEHLN",
+        "artifact_type": "study_pack.knowledge_card",
+        "artifact_version": 1,
+        "content_digest": "6c9613e241eeb3cd619ec5fd5f367c1b5426f72899dc8fdab349c1c2fc7a5863",
+        "lifecycle": "published",
+        "verification_decision": "accepted"
+      },
+      {
+        "artifact_id": "a_JPIBHKPIPGLEMOPJBKKIFPEJBNPEHDKCJBBJPMNF",
+        "artifact_type": "study_pack.knowledge_card",
+        "artifact_version": 1,
+        "content_digest": "1951c5b92fd760a4fc4c5737137ea8e96d769a71cce44c2c6e003b0213989f4d",
+        "lifecycle": "published",
+        "verification_decision": "accepted"
+      },
+      {
+        "artifact_id": "a_PMCIKDKJCBKGPIHLLHNDPFJPGOCAECJHKFMEGDLO",
+        "artifact_type": "study_pack.practice_item",
+        "artifact_version": 1,
+        "content_digest": "fe9146fe2a9fc8d4fcf6fc1306cf98526da6c222488d0052a9a1780995b2233a",
+        "lifecycle": "published",
+        "verification_decision": "accepted"
+      },
+      {
+        "artifact_id": "a_PDECILDAAOCNAPGFJGMPLEIGKMOFFFHGECMJKMNJ",
+        "artifact_type": "study_pack.practice_item",
+        "artifact_version": 1,
+        "content_digest": "62637047caff773bb70611caa95b458f26a7a2879f12737db0202af876350469",
+        "lifecycle": "published",
+        "verification_decision": "accepted"
+      },
+      {
+        "artifact_id": "a_CAAIJBEDNKLNJMLICKAIOBEFOJBOFNPBOOPDMLLO",
+        "artifact_type": "study_pack.practice_item",
+        "artifact_version": 1,
+        "content_digest": "121f50991af921b31e70754170e2e9bc7bb49c86e3a0fc2f46ba000fae216573",
+        "lifecycle": "published",
+        "verification_decision": "accepted"
+      },
+      {
+        "artifact_id": "a_DAGGDOAJILDOEAIAGMGLNEBBEBMDKBAGCDCIHPGE",
+        "artifact_type": "study_pack.review_task",
+        "artifact_version": 1,
+        "content_digest": "d89f9eb58a3d5e884045bae43cf2974e44cd6df321d43c5c666fef7e079e0e9f",
+        "lifecycle": "published",
+        "verification_decision": "accepted"
+      }
+    ],
+    "authority": "independent_study_pack_store",
+    "created_at": "2026-07-11T00:00:00Z",
+    "event_stream": {
+      "projection_verified": true,
+      "stream_id": "p_FHHPBOKACIDLDAIBONDFMFFMMLJKPCALIKADGGED",
+      "stream_type": "study_pack",
+      "trace_verified": true,
+      "version": 3
+    },
+    "generator_ref": {
+      "generator_id": "extractive-local@1",
+      "mode": "deterministic_extractive",
+      "model_calls": 0,
+      "network_calls": 0,
+      "ocr_calls": 0
+    },
+    "learning_effect_evidence": "unavailable",
+    "lifecycle": "published",
+    "links": {
+      "citation_template": "/v1/study-packs/p_FHHPBOKACIDLDAIBONDFMFFMMLJKPCALIKADGGED/citations/{span_id}",
+      "replay": "/v1/study-packs/p_FHHPBOKACIDLDAIBONDFMFFMMLJKPCALIKADGGED/replay",
+      "self": "/v1/study-packs/p_FHHPBOKACIDLDAIBONDFMFFMMLJKPCALIKADGGED"
+    },
+    "pack_id": "p_FHHPBOKACIDLDAIBONDFMFFMMLJKPCALIKADGGED",
+    "population_evidence": "unavailable",
+    "schema_version": "lumi.study-pack.v1",
+    "source_ref": {
+      "document_id": "d_NECEAFOILLKNPNDNHKKEEFODFONDOJBGKDDMCCGM",
+      "input_kind": "text_pdf",
+      "normalized_sha256": "c49c0108901ff0be26a81f749d11cfd5d1c0ca5a0cb1a065691912680ef17762",
+      "original_sha256": "dd598f6127e24836e0a77a45aeb474802436b99aff0d4b02dc51795aceb5de4a",
+      "source_version": 1
+    },
+    "title": "证据式学习规则",
+    "updated_at": "2026-07-11T00:00:00Z",
+    "verifier_summary": {
+      "accepted_count": 10,
+      "artifact_count": 10,
+      "quarantined_count": 0,
+      "reviewed_at": "2026-07-11T00:00:00Z",
+      "reviewed_content_digest": "616adae5b4377c6d291853e8d1c374732da60247fdf3b308e38b4c1ef72f6085",
+      "status": "accepted",
+      "verifier_id": "study-pack-deterministic-verifier@1"
+    },
+    "version": 3,
+    "write_capabilities": {
+      "kt": false,
+      "misconception_dossier": false,
+      "review_schedule": false,
+      "today_plan": false
+    }
+  },
+  "private_artifact_contents": [
+    {
+      "artifact_id": "a_BMJPNFEFGHKKPEHKCANLMINHCJCFIEGBDDPCNKIA",
+      "content": {
+        "citations": [
+          {
+            "field_pointer": "/claims/0",
+            "span_ref": "s_ACEMJOHNNNJLOINPKCBGIMDCIGHPJANIGNHIDIAG"
+          },
+          {
+            "field_pointer": "/claims/1",
+            "span_ref": "s_EPAGCGANEEGHGFEPLDIOIJNGNHBEMMHNOOGCGBFI"
+          },
+          {
+            "field_pointer": "/claims/2",
+            "span_ref": "s_DOKOLNONHAKIDLKEPFIKJHCLJAEBCMCOJCOBHKKC"
+          },
+          {
+            "field_pointer": "/claims/3",
+            "span_ref": "s_KONEONFNIHOMBOGLHMALENNIIJCBIOPAHIIAHELA"
+          },
+          {
+            "field_pointer": "/claims/4",
+            "span_ref": "s_BKKJNLKBJFCCBPJCPEJBHKCINJAGEBMOHJGGFMOA"
+          }
+        ],
+        "claims": [
+          "证据定位要求回答前先找到材料中的原句。",
+          "独立作答要求提示结束后在没有帮助的情况下重新回答。",
+          "复习记录只说明任务完成，不能直接证明已经掌握。",
+          "候选技能链接必须保持未确认，直到版本化技能表能够解析。",
+          "生成题必须能够从引用材料中找到确定答案。"
+        ],
+        "schema_version": "study_pack.one_page_notes.v1",
+        "title": "一页笔记"
+      }
+    },
+    {
+      "artifact_id": "a_BDIFIBLDDBMGOCILLOPGOOOGPOBNIOABEOGLAEKI",
+      "content": {
+        "answer": "证据定位要求回答前先找到材料中的原句。",
+        "citations": [
+          {
+            "field_pointer": "/answer",
+            "span_ref": "s_ACEMJOHNNNJLOINPKCBGIMDCIGHPJANIGNHIDIAG"
+          }
+        ],
+        "question": "材料中的第 1 条核心表述是什么？",
+        "schema_version": "study_pack.knowledge_card.v1"
+      }
+    },
+    {
+      "artifact_id": "a_MIMPOLCMBFDHEFHLJCHENJNIIDHFCFBAPDGDKFML",
+      "content": {
+        "answer": "独立作答要求提示结束后在没有帮助的情况下重新回答。",
+        "citations": [
+          {
+            "field_pointer": "/answer",
+            "span_ref": "s_EPAGCGANEEGHGFEPLDIOIJNGNHBEMMHNOOGCGBFI"
+          }
+        ],
+        "question": "材料中的第 2 条核心表述是什么？",
+        "schema_version": "study_pack.knowledge_card.v1"
+      }
+    },
+    {
+      "artifact_id": "a_PJCHJFMEEOLFPLFCGEPCBOIGPMPFCLDPMMLLLCPA",
+      "content": {
+        "answer": "复习记录只说明任务完成，不能直接证明已经掌握。",
+        "citations": [
+          {
+            "field_pointer": "/answer",
+            "span_ref": "s_DOKOLNONHAKIDLKEPFIKJHCLJAEBCMCOJCOBHKKC"
+          }
+        ],
+        "question": "材料中的第 3 条核心表述是什么？",
+        "schema_version": "study_pack.knowledge_card.v1"
+      }
+    },
+    {
+      "artifact_id": "a_KIIDELHPCIAJHDKDKADPFNHMLPMGPKBIBGFLEHLN",
+      "content": {
+        "answer": "候选技能链接必须保持未确认，直到版本化技能表能够解析。",
+        "citations": [
+          {
+            "field_pointer": "/answer",
+            "span_ref": "s_KONEONFNIHOMBOGLHMALENNIIJCBIOPAHIIAHELA"
+          }
+        ],
+        "question": "材料中的第 4 条核心表述是什么？",
+        "schema_version": "study_pack.knowledge_card.v1"
+      }
+    },
+    {
+      "artifact_id": "a_JPIBHKPIPGLEMOPJBKKIFPEJBNPEHDKCJBBJPMNF",
+      "content": {
+        "answer": "生成题必须能够从引用材料中找到确定答案。",
+        "citations": [
+          {
+            "field_pointer": "/answer",
+            "span_ref": "s_BKKJNLKBJFCCBPJCPEJBHKCINJAGEBMOHJGGFMOA"
+          }
+        ],
+        "question": "材料中的第 5 条核心表述是什么？",
+        "schema_version": "study_pack.knowledge_card.v1"
+      }
+    },
+    {
+      "artifact_id": "a_PMCIKDKJCBKGPIHLLHNDPFJPGOCAECJHKFMEGDLO",
+      "content": {
+        "answer": "证据定位要求回答前先找到材料中的原句。",
+        "citations": [
+          {
+            "field_pointer": "/answer",
+            "span_ref": "s_ACEMJOHNNNJLOINPKCBGIMDCIGHPJANIGNHIDIAG"
+          },
+          {
+            "field_pointer": "/explanation",
+            "span_ref": "s_ACEMJOHNNNJLOINPKCBGIMDCIGHPJANIGNHIDIAG"
+          }
+        ],
+        "explanation": "证据定位要求回答前先找到材料中的原句。",
+        "item_kind": "normalized_exact_v1",
+        "prompt": "根据本地材料，完整输入第 1 条核心表述。",
+        "schema_version": "study_pack.practice_item.v1",
+        "scorer": {
+          "kind": "normalized_exact_v1",
+          "version": "1.0.0"
+        }
+      }
+    },
+    {
+      "artifact_id": "a_PDECILDAAOCNAPGFJGMPLEIGKMOFFFHGECMJKMNJ",
+      "content": {
+        "answer": "独立作答要求提示结束后在没有帮助的情况下重新回答。",
+        "citations": [
+          {
+            "field_pointer": "/answer",
+            "span_ref": "s_EPAGCGANEEGHGFEPLDIOIJNGNHBEMMHNOOGCGBFI"
+          },
+          {
+            "field_pointer": "/explanation",
+            "span_ref": "s_EPAGCGANEEGHGFEPLDIOIJNGNHBEMMHNOOGCGBFI"
+          }
+        ],
+        "explanation": "独立作答要求提示结束后在没有帮助的情况下重新回答。",
+        "item_kind": "normalized_exact_v1",
+        "prompt": "根据本地材料，完整输入第 2 条核心表述。",
+        "schema_version": "study_pack.practice_item.v1",
+        "scorer": {
+          "kind": "normalized_exact_v1",
+          "version": "1.0.0"
+        }
+      }
+    },
+    {
+      "artifact_id": "a_CAAIJBEDNKLNJMLICKAIOBEFOJBOFNPBOOPDMLLO",
+      "content": {
+        "answer": "复习记录只说明任务完成，不能直接证明已经掌握。",
+        "citations": [
+          {
+            "field_pointer": "/answer",
+            "span_ref": "s_DOKOLNONHAKIDLKEPFIKJHCLJAEBCMCOJCOBHKKC"
+          },
+          {
+            "field_pointer": "/explanation",
+            "span_ref": "s_DOKOLNONHAKIDLKEPFIKJHCLJAEBCMCOJCOBHKKC"
+          }
+        ],
+        "explanation": "复习记录只说明任务完成，不能直接证明已经掌握。",
+        "item_kind": "normalized_exact_v1",
+        "prompt": "根据本地材料，完整输入第 3 条核心表述。",
+        "schema_version": "study_pack.practice_item.v1",
+        "scorer": {
+          "kind": "normalized_exact_v1",
+          "version": "1.0.0"
+        }
+      }
+    },
+    {
+      "artifact_id": "a_DAGGDOAJILDOEAIAGMGLNEBBEBMDKBAGCDCIHPGE",
+      "content": {
+        "citations": [
+          {
+            "field_pointer": "/instruction",
+            "span_ref": "s_ACEMJOHNNNJLOINPKCBGIMDCIGHPJANIGNHIDIAG"
+          }
+        ],
+        "instruction": "复习并独立复述这一材料要点：证据定位要求回答前先找到材料中的原句。",
+        "schedule_write_capability": false,
+        "schema_version": "study_pack.review_task.v1",
+        "scope": "pack_local_only"
+      }
+    }
+  ],
+  "schema_version": "lumi.study-pack-contract-fixture.v1",
+  "scorer_vector": {
+    "artifact_id": "a_PMCIKDKJCBKGPIHLLHNDPFJPGOCAECJHKFMEGDLO",
+    "artifact_version": 1,
+    "candidate_answer_digest": "c6ef5c624589d2a48a0381eba7dd93bb0332431611192e1e18aeae7b4f45e23c",
+    "evidence_origin": "evaluation_fixture",
+    "expected_correct": true,
+    "expected_score": 1.0,
+    "human_learner_projection_eligible": false,
+    "product_attempt_record": false,
+    "scorer_id": "normalized_exact_v1@1.0.0",
+    "synthetic_test_input": true
+  },
+  "source_document": {
+    "byte_count": 3566,
+    "codepoint_count": 359,
+    "document_id": "d_NECEAFOILLKNPNDNHKKEEFODFONDOJBGKDDMCCGM",
+    "extraction_state": "accepted",
+    "input_kind": "text_pdf",
+    "locator_count": 2,
+    "media_type": "application/pdf",
+    "normalization_name": "unicode-nfc-canonical-newline",
+    "normalization_version": "1.0.0",
+    "normalized_sha256": "c49c0108901ff0be26a81f749d11cfd5d1c0ca5a0cb1a065691912680ef17762",
+    "original_sha256": "dd598f6127e24836e0a77a45aeb474802436b99aff0d4b02dc51795aceb5de4a",
+    "pack_id": "p_FHHPBOKACIDLDAIBONDFMFFMMLJKPCALIKADGGED",
+    "parser_name": "pypdf",
+    "parser_version": "6.10.0",
+    "schema_version": "lumi.source-document.v1",
+    "source_version": 1,
+    "warning_codes": []
+  },
+  "source_spans": [
+    {
+      "document_id": "d_NECEAFOILLKNPNDNHKKEEFODFONDOJBGKDDMCCGM",
+      "end_offset": 32,
+      "locator_index": 1,
+      "locator_kind": "page",
+      "normalized_source_sha256": "c49c0108901ff0be26a81f749d11cfd5d1c0ca5a0cb1a065691912680ef17762",
+      "schema_version": "lumi.source-span.v1",
+      "slice_sha256": "c6ef5c624589d2a48a0381eba7dd93bb0332431611192e1e18aeae7b4f45e23c",
+      "source_version": 1,
+      "span_id": "s_ACEMJOHNNNJLOINPKCBGIMDCIGHPJANIGNHIDIAG",
+      "start_offset": 13
+    },
+    {
+      "document_id": "d_NECEAFOILLKNPNDNHKKEEFODFONDOJBGKDDMCCGM",
+      "end_offset": 59,
+      "locator_index": 1,
+      "locator_kind": "page",
+      "normalized_source_sha256": "c49c0108901ff0be26a81f749d11cfd5d1c0ca5a0cb1a065691912680ef17762",
+      "schema_version": "lumi.source-span.v1",
+      "slice_sha256": "c490e345370ede8d981c911381fc4d1b0ecdb596cfaf5cabaab0832f13612aee",
+      "source_version": 1,
+      "span_id": "s_EPAGCGANEEGHGFEPLDIOIJNGNHBEMMHNOOGCGBFI",
+      "start_offset": 34
+    },
+    {
+      "document_id": "d_NECEAFOILLKNPNDNHKKEEFODFONDOJBGKDDMCCGM",
+      "end_offset": 84,
+      "locator_index": 1,
+      "locator_kind": "page",
+      "normalized_source_sha256": "c49c0108901ff0be26a81f749d11cfd5d1c0ca5a0cb1a065691912680ef17762",
+      "schema_version": "lumi.source-span.v1",
+      "slice_sha256": "50fb41062888fc1fc36d1cf554a8f31a70fa6f98da94498ef7d5c5cb4a85a029",
+      "source_version": 1,
+      "span_id": "s_DOKOLNONHAKIDLKEPFIKJHCLJAEBCMCOJCOBHKKC",
+      "start_offset": 61
+    },
+    {
+      "document_id": "d_NECEAFOILLKNPNDNHKKEEFODFONDOJBGKDDMCCGM",
+      "end_offset": 40,
+      "locator_index": 2,
+      "locator_kind": "page",
+      "normalized_source_sha256": "c49c0108901ff0be26a81f749d11cfd5d1c0ca5a0cb1a065691912680ef17762",
+      "schema_version": "lumi.source-span.v1",
+      "slice_sha256": "44907d9dc2d40f9098205c347abeb1eac5dddaf8c2403230c2faea56dfca0cbb",
+      "source_version": 1,
+      "span_id": "s_KONEONFNIHOMBOGLHMALENNIIJCBIOPAHIIAHELA",
+      "start_offset": 13
+    },
+    {
+      "document_id": "d_NECEAFOILLKNPNDNHKKEEFODFONDOJBGKDDMCCGM",
+      "end_offset": 62,
+      "locator_index": 2,
+      "locator_kind": "page",
+      "normalized_source_sha256": "c49c0108901ff0be26a81f749d11cfd5d1c0ca5a0cb1a065691912680ef17762",
+      "schema_version": "lumi.source-span.v1",
+      "slice_sha256": "eb3bbff45a0c6d5c4ea558be37228df7e226a43a3e933eddbfd2d50acb1e214c",
+      "source_version": 1,
+      "span_id": "s_BKKJNLKBJFCCBPJCPEJBHKCINJAGEBMOHJGGFMOA",
+      "start_offset": 42
+    }
+  ],
+  "verifier_decisions": [
+    {
+      "accepted": true,
+      "artifact_digest": "bbe16939057c47e6619eed8970b2bd29583eb283d698cff9dd7ce59cd397d879",
+      "artifact_id": "a_BMJPNFEFGHKKPEHKCANLMINHCJCFIEGBDDPCNKIA",
+      "artifact_version": 1,
+      "decision_id": "v_MFNHEIEJGFEBADCHMDAGBLABCLICOMGNAGGCIEOL",
+      "pack_id": "p_FHHPBOKACIDLDAIBONDFMFFMMLJKPCALIKADGGED",
+      "reason_codes": [],
+      "verifier_id": "study-pack-deterministic-verifier@1"
+    },
+    {
+      "accepted": true,
+      "artifact_digest": "0101acfcf3616ca958a60fae5cd004577205054d9e7375bfdcf4347da7b83c7e",
+      "artifact_id": "a_BDIFIBLDDBMGOCILLOPGOOOGPOBNIOABEOGLAEKI",
+      "artifact_version": 1,
+      "decision_id": "v_FKBOAJJJECLDGFHPNIHBDMOEGMGOLKOPAFIGAIGM",
+      "pack_id": "p_FHHPBOKACIDLDAIBONDFMFFMMLJKPCALIKADGGED",
+      "reason_codes": [],
+      "verifier_id": "study-pack-deterministic-verifier@1"
+    },
+    {
+      "accepted": true,
+      "artifact_digest": "a5287cbf57fe9a58b3fafe1e1f037a848b8ceac22672b00e5c543a40eeec9170",
+      "artifact_id": "a_MIMPOLCMBFDHEFHLJCHENJNIIDHFCFBAPDGDKFML",
+      "artifact_version": 1,
+      "decision_id": "v_IFOMHKDMKELCBGHIEAMJMNKMBOPFOIFMKCGAFMBI",
+      "pack_id": "p_FHHPBOKACIDLDAIBONDFMFFMMLJKPCALIKADGGED",
+      "reason_codes": [],
+      "verifier_id": "study-pack-deterministic-verifier@1"
+    },
+    {
+      "accepted": true,
+      "artifact_digest": "6c2f0db69d30a6f859ae40175eb5545d794a7e2291c2c17358bd4b04a08dcdc4",
+      "artifact_id": "a_PJCHJFMEEOLFPLFCGEPCBOIGPMPFCLDPMMLLLCPA",
+      "artifact_version": 1,
+      "decision_id": "v_JIMPKIJICFJILHLDBKJHGMAMOFIGJKNEJNMAOMOJ",
+      "pack_id": "p_FHHPBOKACIDLDAIBONDFMFFMMLJKPCALIKADGGED",
+      "reason_codes": [],
+      "verifier_id": "study-pack-deterministic-verifier@1"
+    },
+    {
+      "accepted": true,
+      "artifact_digest": "6c9613e241eeb3cd619ec5fd5f367c1b5426f72899dc8fdab349c1c2fc7a5863",
+      "artifact_id": "a_KIIDELHPCIAJHDKDKADPFNHMLPMGPKBIBGFLEHLN",
+      "artifact_version": 1,
+      "decision_id": "v_NDBHCNFNLHAKJDDAMBCAGBMEKJJHLOIBMNJLOLMC",
+      "pack_id": "p_FHHPBOKACIDLDAIBONDFMFFMMLJKPCALIKADGGED",
+      "reason_codes": [],
+      "verifier_id": "study-pack-deterministic-verifier@1"
+    },
+    {
+      "accepted": true,
+      "artifact_digest": "1951c5b92fd760a4fc4c5737137ea8e96d769a71cce44c2c6e003b0213989f4d",
+      "artifact_id": "a_JPIBHKPIPGLEMOPJBKKIFPEJBNPEHDKCJBBJPMNF",
+      "artifact_version": 1,
+      "decision_id": "v_PNOFPIHKGNLOGLGPIPLEPCNFMALFAPIKPKKAKEPH",
+      "pack_id": "p_FHHPBOKACIDLDAIBONDFMFFMMLJKPCALIKADGGED",
+      "reason_codes": [],
+      "verifier_id": "study-pack-deterministic-verifier@1"
+    },
+    {
+      "accepted": true,
+      "artifact_digest": "fe9146fe2a9fc8d4fcf6fc1306cf98526da6c222488d0052a9a1780995b2233a",
+      "artifact_id": "a_PMCIKDKJCBKGPIHLLHNDPFJPGOCAECJHKFMEGDLO",
+      "artifact_version": 1,
+      "decision_id": "v_CDBNFGPPOOHKDFICIHFOOGKOEHIHAMEMNAJIOMPK",
+      "pack_id": "p_FHHPBOKACIDLDAIBONDFMFFMMLJKPCALIKADGGED",
+      "reason_codes": [],
+      "verifier_id": "study-pack-deterministic-verifier@1"
+    },
+    {
+      "accepted": true,
+      "artifact_digest": "62637047caff773bb70611caa95b458f26a7a2879f12737db0202af876350469",
+      "artifact_id": "a_PDECILDAAOCNAPGFJGMPLEIGKMOFFFHGECMJKMNJ",
+      "artifact_version": 1,
+      "decision_id": "v_JNKBGKBMIBBHDGLIKFPLNPOAELAIIANDBKHAPENK",
+      "pack_id": "p_FHHPBOKACIDLDAIBONDFMFFMMLJKPCALIKADGGED",
+      "reason_codes": [],
+      "verifier_id": "study-pack-deterministic-verifier@1"
+    },
+    {
+      "accepted": true,
+      "artifact_digest": "121f50991af921b31e70754170e2e9bc7bb49c86e3a0fc2f46ba000fae216573",
+      "artifact_id": "a_CAAIJBEDNKLNJMLICKAIOBEFOJBOFNPBOOPDMLLO",
+      "artifact_version": 1,
+      "decision_id": "v_FFCCPEPJNICFCKNEKBCJOFGHCNNADDOCOEHJEKGO",
+      "pack_id": "p_FHHPBOKACIDLDAIBONDFMFFMMLJKPCALIKADGGED",
+      "reason_codes": [],
+      "verifier_id": "study-pack-deterministic-verifier@1"
+    },
+    {
+      "accepted": true,
+      "artifact_digest": "d89f9eb58a3d5e884045bae43cf2974e44cd6df321d43c5c666fef7e079e0e9f",
+      "artifact_id": "a_DAGGDOAJILDOEAIAGMGLNEBBEBMDKBAGCDCIHPGE",
+      "artifact_version": 1,
+      "decision_id": "v_OMFCDIDKDFFEGELPOPANOPLDODNKJPDFKMDBIGFA",
+      "pack_id": "p_FHHPBOKACIDLDAIBONDFMFFMMLJKPCALIKADGGED",
+      "reason_codes": [],
+      "verifier_id": "study-pack-deterministic-verifier@1"
+    }
+  ]
+}

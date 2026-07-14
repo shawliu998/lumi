@@ -1,0 +1,313 @@
+{
+  "schema_version": "lumi.xingce-adaptive-records.v1",
+  "pack_id": "lumi-text-material-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "review_status": "release_ready",
+  "records": [
+    {
+      "record_id": "D01",
+      "role": "entry_diagnostic",
+      "title": "文字材料：同期占比",
+      "target_skill_ids": [
+        "xingce.data.text_material.target_series",
+        "xingce.data.text_material.time_range",
+        "xingce.data.text_material.denominator"
+      ],
+      "candidate_misconception_ids": [
+        "M-SER",
+        "M-SCOPE",
+        "M-DEN",
+        "M-BASE"
+      ],
+      "independence_group": "text-library-entry",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "source_material": {
+        "kind": "text",
+        "title": "市公共图书馆年度服务简报",
+        "body": "2023年到馆读者为120万人次，其中未成年人为36万人次。2024年到馆读者为144万人次，其中未成年人为48万人次；当年新增图书8万册。",
+        "scope_note": "单位：万人次、万册；范围：该市公共图书馆年度服务，比较期为2023年与2024年。"
+      },
+      "prompt": "2024年未成年人到馆读者约占当年总到馆读者的：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "25%"
+        },
+        {
+          "label": "B",
+          "text": "30%"
+        },
+        {
+          "label": "C",
+          "text": "33.3%"
+        },
+        {
+          "label": "D",
+          "text": "40%"
+        }
+      ],
+      "correct_option": "C",
+      "route_probe_ids": [
+        "P01"
+      ],
+      "record_sha256": "622cbaf42c1c69d2331b2fa0277dd2cc5cbe8c8bb281c6eb01e8b60fe8085675"
+    },
+    {
+      "record_id": "P01",
+      "role": "probe",
+      "title": "最小探查：同年分子与分母",
+      "target_skill_ids": [
+        "xingce.data.text_material.target_series",
+        "xingce.data.text_material.time_range",
+        "xingce.data.text_material.denominator",
+        "xingce.data.text_material.base_comparison"
+      ],
+      "candidate_misconception_ids": [
+        "M-SER",
+        "M-SCOPE",
+        "M-DEN",
+        "M-BASE"
+      ],
+      "independence_group": "text-community-probe",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "source_material": {
+        "kind": "text",
+        "title": "区文化中心活动记录",
+        "body": "该中心2023年服务居民160万人次，其中青少年40万人次；2024年服务居民200万人次，其中青少年50万人次。",
+        "scope_note": "单位：万人次；范围：同一文化中心，两个完整年度。"
+      },
+      "prompt": "2024年青少年服务人次占2024年服务居民总人次的比重是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "20%"
+        },
+        {
+          "label": "B",
+          "text": "25%"
+        },
+        {
+          "label": "C",
+          "text": "31.25%"
+        },
+        {
+          "label": "D",
+          "text": "400%"
+        }
+      ],
+      "correct_option": "B",
+      "discriminates": [
+        "M-SER",
+        "M-SCOPE",
+        "M-DEN",
+        "M-BASE"
+      ],
+      "candidate_evidence_map": {
+        "M-SER": {
+          "A": "support",
+          "B": "refute",
+          "C": "support",
+          "D": "insufficient"
+        },
+        "M-SCOPE": {
+          "A": "insufficient",
+          "B": "refute",
+          "C": "support",
+          "D": "insufficient"
+        },
+        "M-DEN": {
+          "A": "support",
+          "B": "refute",
+          "C": "insufficient",
+          "D": "support"
+        },
+        "M-BASE": {
+          "A": "support",
+          "B": "refute",
+          "C": "support",
+          "D": "insufficient"
+        }
+      },
+      "record_sha256": "67383b86f2e16d7ff8b43dd1c1fb2b7d508cfad51eea44cc2b2b4506cf92410f"
+    },
+    {
+      "record_id": "T-SER",
+      "role": "teaching_asset",
+      "title": "微课：先圈出“谁占谁”",
+      "target_skill_ids": [
+        "xingce.data.text_material.target_series"
+      ],
+      "candidate_misconception_ids": [
+        "M-SER"
+      ],
+      "independence_group": "text-series-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "target_candidate_ids": [
+        "M-SER"
+      ],
+      "teaching_content": "先把问题改写成一个短句：本题是“未成年人占总到馆读者”，不是“总到馆读者占未成年人”，也不是新增图书占读者。先在材料中给分子和分母各画一次同样的时间标签，再写算式。",
+      "record_sha256": "7b03c4c5e6e0a6bcf82ed2361afb8a13162f8dc131d6442d5b3e563dff45bc85"
+    },
+    {
+      "record_id": "T-SCOPE",
+      "role": "teaching_asset",
+      "title": "微课：占比的两个数先对齐年份",
+      "target_skill_ids": [
+        "xingce.data.text_material.time_range"
+      ],
+      "candidate_misconception_ids": [
+        "M-SCOPE"
+      ],
+      "independence_group": "text-scope-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "target_candidate_ids": [
+        "M-SCOPE"
+      ],
+      "teaching_content": "问“2024年占比”时，分子和分母都必须来自2024年。把每个数字旁边标上年份；只要一个数字没有同样的年份标签，就先不要相除。",
+      "record_sha256": "9ac4be17e1ea6f5161a923471a666cf32133049b8be9ba7157082b85192e112b"
+    },
+    {
+      "record_id": "T-DEN",
+      "role": "teaching_asset",
+      "title": "微课：分母由“占谁”决定",
+      "target_skill_ids": [
+        "xingce.data.text_material.denominator"
+      ],
+      "candidate_misconception_ids": [
+        "M-DEN"
+      ],
+      "independence_group": "text-denominator-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "target_candidate_ids": [
+        "M-DEN"
+      ],
+      "teaching_content": "“甲占乙的比重”固定写为甲÷乙。遇到百分数很大或超过100%，先检查有没有把分子和分母倒置；再回到题目中的“占”“比”“相对于”这些词确认对象。",
+      "record_sha256": "72397d972385d33f4e65aaef3110c93e42347289398e3e3953357cccd3d7fc79"
+    },
+    {
+      "record_id": "T-BASE",
+      "role": "teaching_asset",
+      "title": "微课：比率和差额不能互换",
+      "target_skill_ids": [
+        "xingce.data.text_material.base_comparison"
+      ],
+      "candidate_misconception_ids": [
+        "M-BASE"
+      ],
+      "independence_group": "text-base-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "target_candidate_ids": [
+        "M-BASE"
+      ],
+      "teaching_content": "先问题目要的是“占比、增长率还是增加量”。占比只看同一时期的部分和总体；增长率才需要以上期为基期。两类问题不能把差额直接当成百分比。",
+      "record_sha256": "4ff1744c21c4e0d3f3f4634dc48b7b21b66c9245751c61774c33f2be72936ab0"
+    },
+    {
+      "record_id": "V01",
+      "role": "independent_transfer",
+      "title": "独立迁移：另一类服务对象占比",
+      "target_skill_ids": [
+        "xingce.data.text_material.target_series",
+        "xingce.data.text_material.time_range",
+        "xingce.data.text_material.denominator"
+      ],
+      "candidate_misconception_ids": [
+        "M-SER",
+        "M-SCOPE",
+        "M-DEN",
+        "M-BASE"
+      ],
+      "independence_group": "text-science-center-transfer",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "source_material": {
+        "kind": "text",
+        "title": "县科技馆开放统计",
+        "body": "2025年该馆接待参观者250万人次，其中参加讲解活动的参观者60万人次。2024年接待参观者200万人次，其中参加讲解活动的参观者45万人次。",
+        "scope_note": "单位：万人次；范围：同一科技馆完整年度统计。"
+      },
+      "prompt": "2025年参加讲解活动的参观者约占当年参观者的：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "20%"
+        },
+        {
+          "label": "B",
+          "text": "24%"
+        },
+        {
+          "label": "C",
+          "text": "30%"
+        },
+        {
+          "label": "D",
+          "text": "75%"
+        }
+      ],
+      "correct_option": "B",
+      "requires_no_hints": true,
+      "record_sha256": "78bb9c2d0d47888b6fa04899cdceca40f605de9e1378740d91fd4b70b5d980f6"
+    },
+    {
+      "record_id": "R01",
+      "role": "delayed_review",
+      "title": "延迟复习：同年结构比",
+      "target_skill_ids": [
+        "xingce.data.text_material.time_range",
+        "xingce.data.text_material.denominator"
+      ],
+      "candidate_misconception_ids": [
+        "M-SER",
+        "M-SCOPE",
+        "M-DEN",
+        "M-BASE"
+      ],
+      "independence_group": "text-sports-center-review",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "source_material": {
+        "kind": "text",
+        "title": "社区运动中心课程记录",
+        "body": "本年度共开设课程90期，其中面向青少年的课程27期；上一年度共开设80期，其中面向青少年的课程20期。",
+        "scope_note": "单位：期；范围：同一社区运动中心完整年度课程。"
+      },
+      "prompt": "本年度面向青少年的课程约占本年度全部课程的：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "22.5%"
+        },
+        {
+          "label": "B",
+          "text": "27%"
+        },
+        {
+          "label": "C",
+          "text": "30%"
+        },
+        {
+          "label": "D",
+          "text": "33.8%"
+        }
+      ],
+      "correct_option": "C",
+      "requires_no_hints": true,
+      "scheduled_after_days": 4,
+      "eligible_after_transfer_ids": [
+        "V01"
+      ],
+      "record_sha256": "11a805346d4ddf02b9c30fc096010f81b609a7776d09b4d4ebda213f3453fa6a"
+    }
+  ]
+}

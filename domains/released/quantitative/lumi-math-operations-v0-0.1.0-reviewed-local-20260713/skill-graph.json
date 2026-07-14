@@ -1,0 +1,23 @@
+{
+  "schema_version": "lumi.xingce-adaptive-skills.v1",
+  "pack_id": "lumi-math-operations-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "review_status": "release_ready",
+  "skills": [
+    {
+      "skill_id": "xingce.quantitative.math_operations.rate_model",
+      "label": "把总量、时间和单位率写成关系式",
+      "mastery_claim": "能从题干拆出总量、时间、单位率与目标量的关系；仅由无提示迁移证据更新。"
+    },
+    {
+      "skill_id": "xingce.quantitative.math_operations.rate_change",
+      "label": "把效率变化换为正确倍率",
+      "mastery_claim": "能把提高或降低的百分比作用在正确的单位率上；仅由无提示迁移证据更新。"
+    },
+    {
+      "skill_id": "xingce.quantitative.math_operations.unit_scope",
+      "label": "保持单位与目标时间范围一致",
+      "mastery_claim": "能在计算中保持小时、天数与目标时间窗口一致；仅由无提示迁移证据更新。"
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-text-material-v0",
+  "pack_version": "0.1.0-draft",
+  "status": "draft_unreviewed",
+  "release_ready": false,
+  "runtime_registration": "forbidden_until_human_review",
+  "subtype_id": "xingce.data.text_material",
+  "module_id": "data_analysis",
+  "form": "material_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "draft_no_distribution"
+  },
+  "content_evidence": {
+    "immutable_material": "records.json#source_material; every learner-visible material is bound to its record and artifact checksum",
+    "material_checksum": "dd34451b8750be4e8d644a0591e59b76984e1548bb57dda084cefcb1d3d1b521",
+    "unit_and_scope_metadata": "Every material states a unit and population/time scope in learner-visible text."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": false,
+    "required_reviews": [
+      {
+        "review_kind": "logic",
+        "status": "pending",
+        "required_checks": [
+          "unique_answer",
+          "unit_scope",
+          "calculation",
+          "probe_discrimination",
+          "transfer_independence"
+        ]
+      },
+      {
+        "review_kind": "editorial_rights",
+        "status": "pending",
+        "required_checks": [
+          "original_wording",
+          "material_clarity",
+          "neutral_context",
+          "license_scope"
+        ]
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "950a96d437b7ed66279b037e6a40132734997d4a08a2fe08a369f02ecc0736b2"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "02f7cd64e15521b94491408c2d4dd310d2f761a880114f7c21f45822bb36d049"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "3c03941ab12d358bbb3237e5a13d83b8ee8a1f02a09bb51c34c2721eaf7b98ca"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": "lumi.xingce-adaptive-skills.v1",
+  "pack_id": "lumi-definition-reasoning-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "review_status": "release_ready",
+  "skills": [
+    {
+      "skill_id": "xingce.judgment.definition.necessary_features",
+      "label": "提取定义的必要特征",
+      "mastery_claim": "能以定义中的全部必要特征检验一个具体事例；仅由无提示迁移证据更新。"
+    },
+    {
+      "skill_id": "xingce.judgment.definition.boundary",
+      "label": "识别定义边界",
+      "mastery_claim": "能区分表面相似但缺少必要特征、或超出适用范围的事例；仅由无提示迁移证据更新。"
+    }
+  ]
+}

@@ -1,0 +1,235 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lumi.local/contracts/study-pack.schema.json",
+  "title": "Lumi Study Pack projection",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "pack_id",
+    "version",
+    "title",
+    "lifecycle",
+    "source_ref",
+    "generator_ref",
+    "artifact_counts",
+    "artifact_refs",
+    "verifier_summary",
+    "authority",
+    "write_capabilities",
+    "population_evidence",
+    "learning_effect_evidence",
+    "created_at",
+    "updated_at",
+    "links",
+    "event_stream"
+  ],
+  "properties": {
+    "schema_version": {"const": "lumi.study-pack.v1"},
+    "pack_id": {"$ref": "#/$defs/pack_id"},
+    "version": {"type": "integer", "minimum": 1},
+    "title": {"type": "string", "minLength": 1, "maxLength": 200},
+    "lifecycle": {"enum": ["draft", "review", "published", "quarantined"]},
+    "source_ref": {"$ref": "#/$defs/source_ref"},
+    "generator_ref": {"$ref": "#/$defs/generator_ref"},
+    "artifact_counts": {"$ref": "#/$defs/artifact_counts"},
+    "artifact_refs": {
+      "type": "array",
+      "minItems": 8,
+      "maxItems": 10,
+      "items": {"$ref": "#/$defs/artifact_ref"}
+    },
+    "verifier_summary": {"$ref": "#/$defs/verifier_summary"},
+    "authority": {"const": "independent_study_pack_store"},
+    "write_capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kt", "misconception_dossier", "today_plan", "review_schedule"],
+      "properties": {
+        "kt": {"const": false},
+        "misconception_dossier": {"const": false},
+        "today_plan": {"const": false},
+        "review_schedule": {"const": false}
+      }
+    },
+    "population_evidence": {"const": "unavailable"},
+    "learning_effect_evidence": {"const": "unavailable"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "updated_at": {"type": "string", "format": "date-time"},
+    "links": {"$ref": "#/$defs/links"},
+    "event_stream": {"$ref": "#/$defs/event_stream"}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"lifecycle": {"const": "published"}},
+        "required": ["lifecycle"]
+      },
+      "then": {
+        "properties": {
+          "artifact_refs": {
+            "items": {
+              "allOf": [
+                {"$ref": "#/$defs/artifact_ref"},
+                {
+                  "properties": {
+                    "lifecycle": {"const": "published"},
+                    "verification_decision": {"const": "accepted"}
+                  }
+                }
+              ]
+            }
+          },
+          "verifier_summary": {
+            "allOf": [
+              {"$ref": "#/$defs/verifier_summary"},
+              {"properties": {"status": {"const": "accepted"}}}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"lifecycle": {"const": "quarantined"}},
+        "required": ["lifecycle"]
+      },
+      "then": {
+        "properties": {
+          "verifier_summary": {
+            "allOf": [
+              {"$ref": "#/$defs/verifier_summary"},
+              {"properties": {"status": {"const": "quarantined"}}}
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "pack_id": {"type": "string", "pattern": "^p_[A-P]{40}$"},
+    "document_id": {"type": "string", "pattern": "^d_[A-P]{40}$"},
+    "artifact_id": {"type": "string", "pattern": "^a_[A-P]{40}$"},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "source_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["document_id", "source_version", "original_sha256", "normalized_sha256", "input_kind"],
+      "properties": {
+        "document_id": {"$ref": "#/$defs/document_id"},
+        "source_version": {"type": "integer", "minimum": 1},
+        "original_sha256": {"$ref": "#/$defs/sha256"},
+        "normalized_sha256": {"$ref": "#/$defs/sha256"},
+        "input_kind": {"enum": ["pasted_text", "text_pdf"]}
+      }
+    },
+    "generator_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["generator_id", "mode", "model_calls", "network_calls", "ocr_calls"],
+      "properties": {
+        "generator_id": {"const": "extractive-local@1"},
+        "mode": {"const": "deterministic_extractive"},
+        "model_calls": {"const": 0},
+        "network_calls": {"const": 0},
+        "ocr_calls": {"const": 0}
+      }
+    },
+    "artifact_counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["one_page_notes", "knowledge_card", "practice_item", "review_task", "total"],
+      "properties": {
+        "one_page_notes": {"const": 1},
+        "knowledge_card": {"type": "integer", "minimum": 3, "maximum": 5},
+        "practice_item": {"const": 3},
+        "review_task": {"const": 1},
+        "total": {"type": "integer", "minimum": 8, "maximum": 10}
+      }
+    },
+    "artifact_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_id",
+        "artifact_version",
+        "artifact_type",
+        "content_digest",
+        "lifecycle",
+        "verification_decision"
+      ],
+      "properties": {
+        "artifact_id": {"$ref": "#/$defs/artifact_id"},
+        "artifact_version": {"type": "integer", "minimum": 1},
+        "artifact_type": {
+          "enum": [
+            "study_pack.one_page_notes",
+            "study_pack.knowledge_card",
+            "study_pack.practice_item",
+            "study_pack.review_task"
+          ]
+        },
+        "content_digest": {"$ref": "#/$defs/sha256"},
+        "lifecycle": {"enum": ["draft", "review", "published", "quarantined"]},
+        "verification_decision": {"enum": ["pending", "accepted", "quarantined"]}
+      }
+    },
+    "verifier_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "artifact_count",
+        "accepted_count",
+        "quarantined_count",
+        "verifier_id",
+        "reviewed_content_digest",
+        "reviewed_at"
+      ],
+      "properties": {
+        "status": {"enum": ["pending", "accepted", "quarantined"]},
+        "artifact_count": {"type": "integer", "minimum": 0, "maximum": 10},
+        "accepted_count": {"type": "integer", "minimum": 0, "maximum": 10},
+        "quarantined_count": {"type": "integer", "minimum": 0, "maximum": 10},
+        "verifier_id": {"const": "study-pack-deterministic-verifier@1"},
+        "reviewed_content_digest": {
+          "oneOf": [
+            {"type": "null"},
+            {"$ref": "#/$defs/sha256"}
+          ]
+        },
+        "reviewed_at": {
+          "oneOf": [
+            {"type": "null"},
+            {"type": "string", "format": "date-time"}
+          ]
+        }
+      }
+    },
+    "links": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["self", "replay", "citation_template"],
+      "properties": {
+        "self": {"type": "string", "pattern": "^/v1/study-packs/p_[A-P]{40}$"},
+        "replay": {"type": "string", "pattern": "^/v1/study-packs/p_[A-P]{40}/replay$"},
+        "citation_template": {
+          "type": "string",
+          "pattern": "^/v1/study-packs/p_[A-P]{40}/citations/\\{span_id\\}$"
+        }
+      }
+    },
+    "event_stream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stream_type", "stream_id", "version", "trace_verified", "projection_verified"],
+      "properties": {
+        "stream_type": {"const": "study_pack"},
+        "stream_id": {"$ref": "#/$defs/pack_id"},
+        "version": {"type": "integer", "minimum": 1},
+        "trace_verified": {"const": true},
+        "projection_verified": {"const": true}
+      }
+    }
+  }
+}

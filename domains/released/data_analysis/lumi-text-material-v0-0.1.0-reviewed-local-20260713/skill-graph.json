@@ -1,0 +1,28 @@
+{
+  "schema_version": "lumi.xingce-adaptive-skills.v1",
+  "pack_id": "lumi-text-material-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "review_status": "release_ready",
+  "skills": [
+    {
+      "skill_id": "xingce.data.text_material.target_series",
+      "label": "锁定文字材料中的目标序列",
+      "mastery_claim": "能区分总量、子群体和题干所指的目标序列；仅由无提示迁移更新。"
+    },
+    {
+      "skill_id": "xingce.data.text_material.time_range",
+      "label": "保持数据的时间范围",
+      "mastery_claim": "能将分子与分母放在同一时间范围内；仅由无提示迁移更新。"
+    },
+    {
+      "skill_id": "xingce.data.text_material.denominator",
+      "label": "按问题所求选取分母",
+      "mastery_claim": "能将“占比”“增长率”等问题翻译为可检查的分子和分母；仅由无提示迁移更新。"
+    },
+    {
+      "skill_id": "xingce.data.text_material.base_comparison",
+      "label": "保持比较基期",
+      "mastery_claim": "能识别比较对象和基期，避免把同期量、上期量或目标量混用；仅由无提示迁移更新。"
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-political-current-affairs-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "status": "release_ready",
+  "release_ready": true,
+  "runtime_registration": "allowed_after_human_review",
+  "subtype_id": "xingce.political.current_affairs",
+  "module_id": "political_theory",
+  "form": "text_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "release_distribution_allowed"
+  },
+  "content_evidence": {
+    "authoritative_source_snapshot": "中国政府网转载，《中国共产党第二十届中央委员会第四次全体会议公报》（2025-10-23），https://www.bjstb.gov.cn/bjtb/ywdt/szyw/1356436/index.html；国家统计局转载全文，https://www.stats.gov.cn/zs/tjwh/tjkw/tjqk/zgxxb/202510/P020251024400652692329.pdf（accessed 2026-07-13）。",
+    "validity_cutoff": "2026-07-13; all questions are frozen to the named 2025 communique and must not imply facts beyond that text."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": true,
+    "review_attestations": [
+      {
+        "review_kind": "logic",
+        "reviewer_id": "1",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "5c867a7e9aa8ffb5b11ea0913bdb21fee87821fca2302bc695e91618b00f9195"
+      },
+      {
+        "review_kind": "editorial_rights",
+        "reviewer_id": "2",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "5c867a7e9aa8ffb5b11ea0913bdb21fee87821fca2302bc695e91618b00f9195"
+      }
+    ]
+  },
+  "product_release": {
+    "state": "released",
+    "acceptance_basis": "owner_acceptance_waiver",
+    "accepted_at": "2026-07-14",
+    "waived_gate": "type_by_type_human_local_browser_acceptance",
+    "human_effect_evidence": "unavailable",
+    "claim_scope": "content_and_mechanism_availability_only"
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "c6e61f287c654507e413a19c7579c3ea4a42a1cafd778c9647c75399cabf8a0f"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "1023f290c7f5a84e780e7f0dcf35aa0153acd6c48f4eca3f5deb79e8dbfdcff3"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "b066b9a5a6f2fc25fb8d3eef1f0ba24540c0d0b26f0bdf82c61aefa533e32d4f"
+    },
+    {
+      "path": "review-evidence.json",
+      "sha256": "a88b4e3a991a74cdc1bc9ba6f649ccfeb31b44ac316d8afe1729479a78a0076e"
+    }
+  ]
+}

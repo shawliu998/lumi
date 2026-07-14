@@ -1,0 +1,67 @@
+{
+  "schema_version": "lumi.product-activity-overlay.v1",
+  "release_id": "p031-data-analysis-v1",
+  "release_manifest_sha256": "c52d7466382701554a0b791488b5ce864f2b50b9cf1ef1523878aa4d90a15f16",
+  "activities": [
+    {
+      "activity_id": "xingce.data-analysis.base-amount.p031-v1",
+      "first_question_id": "q_70b9e63de33ef42509e4",
+      "transfer_question_id": "q_b1cb2eb7c07136fa2b07",
+      "module": "资料分析/基期量与增长变化",
+      "path": "data_analysis",
+      "skills": [
+        {"skill_id": "xingce.data.base_amount.relationship_selection", "weight": 1.0, "review_status": "engineering_reviewed"}
+      ],
+      "diagnosis": {
+        "semantics": "ranked_unconfirmed_hypotheses",
+        "evidence_catalog": [
+          {"evidence_id": "answer_incorrect", "description": "首答选项与本地校验键不一致；该事实本身不能确认错因"}
+        ],
+        "candidate_causes": [
+          {"cause_id": "base-current-time-direction-confusion", "label": "可能没有先辨认现期与基期的时间方向", "engineering_prior": 0.45, "evidence_refs": ["answer_incorrect"]},
+          {"cause_id": "growth-rate-formula-selection-confusion", "label": "可能混淆已知现期量时的基期量关系式", "engineering_prior": 0.35, "evidence_refs": ["answer_incorrect"]},
+          {"cause_id": "percentage-decimal-conversion-slip", "label": "可能在百分数与小数换算中出现失误", "engineering_prior": 0.2, "evidence_refs": ["answer_incorrect"]}
+        ]
+      },
+      "probe": {
+        "prompt": "先不代入数字：已知现期量和同比增长率，要求基期量时，你会用“现期量÷（1＋增长率）”还是“现期量×（1＋增长率）”？请选一个，并用一句话说明时间关系。",
+        "targets": ["base-current-time-direction-confusion", "growth-rate-formula-selection-confusion", "percentage-decimal-conversion-slip"],
+        "assessment": {
+          "schema_version": "hermes.probe-assessment.v1",
+          "evaluator": "authored_terms_v1",
+          "rules": [
+            {"cause_id": "base-current-time-direction-confusion", "support_if": {"all_terms": ["现期在后", "基期在前"], "none_terms": ["时间无关"]}, "refute_if": {"all_terms": ["先看时间", "辨认基期"]}},
+            {"cause_id": "growth-rate-formula-selection-confusion", "support_if": {"all_terms": ["现期量×", "1＋增长率"]}, "refute_if": {"all_terms": ["现期量÷", "1＋增长率"]}},
+            {"cause_id": "percentage-decimal-conversion-slip", "support_if": {"all_terms": ["百分数直接", "不化小数"]}, "refute_if": {"all_terms": ["百分数化", "小数计算"]}}
+          ],
+          "cause_samples": [
+            {"cause_id": "base-current-time-direction-confusion", "supporting_response": "我没有分清现期在后、基期在前。", "refuting_response": "我会先看时间并辨认基期。", "ambiguous_response": "我不确定两个时期怎么放。"},
+            {"cause_id": "growth-rate-formula-selection-confusion", "supporting_response": "我会用现期量×（1＋增长率）。", "refuting_response": "我会用现期量÷（1＋增长率）。", "ambiguous_response": "我记得有一加增长率，但不确定乘除。"},
+            {"cause_id": "percentage-decimal-conversion-slip", "supporting_response": "我把百分数直接代入，不化小数。", "refuting_response": "我先把百分数化成小数计算。", "ambiguous_response": "我可能会在百分号这里算错。"}
+          ]
+        }
+      },
+      "teach": {
+        "prompt": "先在时间轴上标出基期和现期，再从“现期量＝基期量×（1＋增长率）”反推；最后单独检查百分号是否已化为小数。",
+        "strategy": "time-axis-equation-fading",
+        "variants": [
+          {"cause_id": "base-current-time-direction-confusion", "prompt": "只画两个时间点，先说清哪个是变化前、哪个是变化后，再决定要求哪个量。", "strategy": "time-axis-contrast"},
+          {"cause_id": "growth-rate-formula-selection-confusion", "prompt": "从“现期量＝基期量×（1＋增长率）”开始，只做一次等式变形，不先代数字。", "strategy": "equation-rearrangement"},
+          {"cause_id": "percentage-decimal-conversion-slip", "prompt": "把百分率先写成小数，再单独估计结果应比现期量大还是小。", "strategy": "unit-and-magnitude-check"}
+        ]
+      },
+      "assistance_ladder": {
+        "schema_version": "hermes.assistance-content.v1",
+        "content_version": "base-amount-local-overlay.v1",
+        "steps": [
+          {"action": "retry", "title": "再看一次时间", "content": "先圈出材料年份和题目所求年份，再判断题目要的是变化前还是变化后的量。", "target_cause_ids": ["base-current-time-direction-confusion"]},
+          {"action": "locate_evidence", "title": "定位两个已知量", "content": "只找出现期量与同比变化率，暂时不要计算，也不要查看解析。", "target_cause_ids": ["base-current-time-direction-confusion", "growth-rate-formula-selection-confusion"]},
+          {"action": "rule_hint", "title": "关系式提示", "content": "先写“现期量＝基期量×（1＋增长率）”，再根据所求量决定如何移项。", "target_cause_ids": ["growth-rate-formula-selection-confusion"]},
+          {"action": "analogous_example", "title": "换一组数", "content": "若某量由100增长10%得到110，那么由110反求变化前的量，应把110与1.10建立什么关系？", "target_cause_ids": ["growth-rate-formula-selection-confusion", "percentage-decimal-conversion-slip"]},
+          {"action": "worked_step", "title": "只演示列式", "content": "把百分率化成小数，写成“现期量÷（1＋增长率）”，先估计结果应略小于现期量。", "target_cause_ids": ["growth-rate-formula-selection-confusion", "percentage-decimal-conversion-slip"]},
+          {"action": "full_explanation", "title": "完整方法", "content": "辨认时间方向，定位现期量与变化率，用现期量除以一加增长率反求基期量，再用数量级和选项核对。", "target_cause_ids": ["base-current-time-direction-confusion", "growth-rate-formula-selection-confusion", "percentage-decimal-conversion-slip"]}
+        ]
+      }
+    }
+  ]
+}

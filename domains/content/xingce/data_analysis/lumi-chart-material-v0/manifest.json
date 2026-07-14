@@ -1,0 +1,70 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-chart-material-v0",
+  "pack_version": "0.1.0-draft",
+  "status": "draft_unreviewed",
+  "release_ready": false,
+  "runtime_registration": "forbidden_until_human_review",
+  "subtype_id": "xingce.data.chart_material",
+  "module_id": "data_analysis",
+  "form": "material_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "draft_no_distribution"
+  },
+  "content_evidence": {
+    "immutable_visual_asset": "records.json#source_material; chart values and accessible description are immutable record payloads",
+    "asset_checksum": "7c911e9ae69f372c6918958c377a67b9f243cc612ee20ea036a323e4409d2db3",
+    "meaningful_alt_text": "Every chart includes a concise textual description of series, direction, unit and scope.",
+    "unit_and_scope_metadata": "Every chart displays its unit and population/time scope."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": false,
+    "required_reviews": [
+      {
+        "review_kind": "logic",
+        "status": "pending",
+        "required_checks": [
+          "unique_answer",
+          "series_mapping",
+          "chart_scale",
+          "unit_scope",
+          "probe_discrimination",
+          "transfer_independence"
+        ]
+      },
+      {
+        "review_kind": "editorial_rights",
+        "status": "pending",
+        "required_checks": [
+          "original_wording",
+          "chart_alt_text",
+          "neutral_context",
+          "license_scope"
+        ]
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "54a1d947d695886f7d19211c2b4f046bf0236318d7a5cb86dab2d2d0a88b910e"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "dcdd186d6f5b56fa8645e4f761534cc669c9c54a47c18016303f7c53de301135"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "b32c811133719c23da4c862f7dd3ffad05fa45158dfe5b214a907f4c63a4fd67"
+    }
+  ]
+}

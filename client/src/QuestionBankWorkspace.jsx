@@ -1,0 +1,403 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  ArrowClockwise,
+  CaretLeft,
+  CaretRight,
+  CheckCircle,
+  Database,
+  ListBullets,
+  MagnifyingGlass,
+  Notebook,
+  ShieldCheck,
+  Target,
+  WarningCircle,
+  XCircle,
+} from "@phosphor-icons/react";
+
+import {
+  fetchQuestionBankQuestion,
+  fetchQuestionBankPapers,
+  fetchQuestionBankStatus,
+  questionBankAssetUrl,
+  searchQuestionBank,
+  submitQuestionBankAttempt,
+} from "./questionBankApi.js";
+import { createCommandId } from "./publicLearningId.js";
+
+const EMPTY_LIST = { items: [], pagination: { page: 1, page_size: 20, total_items: 0, total_pages: 0 } };
+const EMPTY_PAPERS = { items: [], pagination: { page: 1, page_size: 24, total_items: 0, total_pages: 0 } };
+
+function countText(value) {
+  return new Intl.NumberFormat("zh-CN").format(Number(value) || 0);
+}
+
+function errorCopy(error, fallback) {
+  if (error?.code === "question_bank_unavailable") return "本机尚未安装经过校验的题库导出。";
+  if (error?.kind === "unavailable") return "本机服务未连接，题库不会读取缓存或演示数据。";
+  return error?.message || fallback;
+}
+
+function QuestionAssets({ assets, placement, optionLabel = "", label, onAssetError }) {
+  const visible = assets.filter((asset) => asset.placements.some((item) => (
+    item.placement === placement && item.option_label === optionLabel
+  )));
+  if (visible.length === 0) return null;
+  return (
+    <div className={`bank-assets bank-assets-${placement}`}>
+      {visible.map((asset, index) => (
+        <img
+          key={asset.asset_id}
+          src={questionBankAssetUrl(asset)}
+          alt={`${label}${visible.length > 1 ? ` ${index + 1}` : ""}`}
+          loading="lazy"
+          decoding="async"
+          onError={() => onAssetError(asset.asset_id)}
+        />
+      ))}
+    </div>
+  );
+}
+
+function QuestionList({ state, activeId, onSelect }) {
+  if (state.phase === "select-filter") return <div className="bank-list-state"><Target size={17} />请先选择一个知识点</div>;
+  if (state.phase === "loading") return <div className="bank-list-state"><span className="bank-loading-dot" />正在读取本机索引</div>;
+  if (state.phase === "error") return <div className="bank-list-state error"><WarningCircle size={17} />{errorCopy(state.error, "题目列表读取失败。")}</div>;
+  if (state.data.items.length === 0) return <div className="bank-list-state"><MagnifyingGlass size={17} />没有符合条件的题目</div>;
+  return (
+    <nav className="bank-question-list" aria-label="题目列表">
+      {state.data.items.map((item) => (
+        <button
+          key={item.question_id}
+          type="button"
+          className={activeId === item.question_id ? "bank-question-row active" : "bank-question-row"}
+          onClick={() => onSelect(item.question_id)}
+          aria-current={activeId === item.question_id ? "true" : undefined}
+        >
+          <span className="bank-question-meta"><strong>{item.subtype_name}</strong><small>{item.year || "年份未知"} · {item.region || "地区未知"}</small></span>
+          <span className="bank-question-preview">{item.stem_preview}</span>
+          <span className="bank-question-source">{item.paper_title}{item.question_number ? ` · 第 ${item.question_number} 题` : ""}</span>
+        </button>
+      ))}
+    </nav>
+  );
+}
+
+function PaperList({ state, onSelect }) {
+  if (state.phase === "loading") return <div className="bank-paper-state"><span className="bank-loading-dot" />正在读取套卷目录</div>;
+  if (state.phase === "error") return <div className="bank-paper-state error"><WarningCircle size={17} />{errorCopy(state.error, "套卷目录读取失败。")}</div>;
+  if (state.data.items.length === 0) return <div className="bank-paper-state"><Notebook size={20} />没有符合条件的套卷</div>;
+  return (
+    <div className="bank-paper-grid" role="list" aria-label="套卷目录">
+      {state.data.items.map((paper) => (
+        <button key={paper.paper_id} type="button" role="listitem" className="bank-paper-card" disabled={!paper.paper_practice_available} onClick={() => onSelect(paper)}>
+          <span className="bank-paper-card-meta"><strong>{paper.year}</strong><span>{paper.region} · {paper.exam_type}</span></span>
+          <h2>{paper.title}</h2>
+          <span className="bank-paper-card-count">
+            已收录 {countText(paper.ready_question_count)} 道可浏览题{paper.all_collected_records_ready ? "" : ` · ${countText(paper.source_question_count - paper.ready_question_count)} 道隔离未展示`}
+          </span>
+          <small>{!paper.paper_practice_available ? "题序待核验，整卷入口暂不可用" : paper.asset_flagged_question_count > 0 ? `含 ${countText(paper.asset_flagged_question_count)} 道资源题，打开时逐题核验` : "题序已核验 · 全部为文本题"}</small>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function QuestionDetail({ state, answer, setAnswer, confidence, setConfidence, onSubmit, onNext, onRetry, positionLabel = "", allowSkip = false, isLast = false }) {
+  const [failedAssetIds, setFailedAssetIds] = useState(() => new Set());
+  const resultRef = useRef(null);
+  const questionId = state.data?.question?.question_id || "";
+
+  useEffect(() => {
+    setFailedAssetIds(new Set());
+  }, [questionId]);
+
+  useEffect(() => {
+    if (!state.result || !resultRef.current) return;
+    resultRef.current.focus({ preventScroll: true });
+    resultRef.current.scrollIntoView({ block: "nearest", behavior: "auto" });
+  }, [state.result]);
+
+  const handleAssetError = useCallback((assetId) => {
+    setFailedAssetIds((current) => new Set([...current, assetId]));
+    setAnswer("");
+    setConfidence("");
+  }, [setAnswer, setConfidence]);
+
+  if (state.phase === "idle") return <div className="bank-detail-empty"><Database size={24} /><strong>从左侧选择一道题</strong><p>题目与评分均来自本机只读索引。</p></div>;
+  if (state.phase === "loading") return <div className="bank-detail-empty"><span className="bank-loading-dot" /><strong>正在核对题目签名</strong></div>;
+  if (state.phase === "error") return <div className="bank-detail-empty error"><WarningCircle size={22} /><strong>题目未载入</strong><p>{errorCopy(state.error, "题目内容未通过校验。")}</p></div>;
+
+  const question = state.data.question;
+  const attempt = state.data.attempt;
+  const result = state.result;
+  const assetRenderFailed = failedAssetIds.size > 0;
+  const canAttempt = attempt.allowed && !assetRenderFailed;
+  const multiple = ["multiple", "multi", "multiple_choice"].includes(question.question_type);
+  const selected = new Set(answer ? answer.split("|") : []);
+  const toggle = (label) => {
+    if (!multiple) return setAnswer(label);
+    if (selected.has(label)) selected.delete(label);
+    else selected.add(label);
+    setAnswer([...selected].sort().join("|"));
+  };
+
+  return (
+    <article className="bank-question-detail" aria-labelledby="bank-question-title">
+      <header className="bank-detail-header">
+        <div><span>{question.subtype_name}</span><h2 id="bank-question-title">{question.paper_title}</h2></div>
+        <small>{question.year || "年份未知"} · {question.region || "地区未知"}{question.question_number ? ` · 第 ${question.question_number} 题` : ""}{positionLabel ? ` · ${positionLabel}` : ""}</small>
+      </header>
+      <div className="bank-detail-scroll">
+        {!attempt.allowed && <div className="bank-asset-notice"><WarningCircle size={16} /><span>本题仍缺少作答必需的图像或公式资源。安装或修复离线资源包后可重新核对；Lumi 不会隐式联网，也不会在题目不完整时评分。</span></div>}
+        {assetRenderFailed && <div className="bank-asset-notice" role="alert"><WarningCircle size={16} /><span>本机图片未能完整载入，本题已停止作答。请重新核对离线资源，Lumi 不会用残缺题目评分。</span></div>}
+        {(question.material || question.assets.some((asset) => asset.placements.some((item) => item.placement === "material"))) && <section className="bank-material"><small>材料</small>{question.material && <p>{question.material}</p>}<QuestionAssets assets={question.assets} placement="material" label="题目材料图" onAssetError={handleAssetError} /></section>}
+        {(question.stem || question.assets.some((asset) => asset.placements.some((item) => item.placement === "stem"))) && <section className="bank-stem"><small>题目</small>{question.stem && <p>{question.stem}</p>}<QuestionAssets assets={question.assets} placement="stem" label="题干图" onAssetError={handleAssetError} /></section>}
+        {(question.requirement || question.assets.some((asset) => asset.placements.some((item) => item.placement === "requirement"))) && <section className="bank-requirement"><small>作答要求</small>{question.requirement && <p>{question.requirement}</p>}<QuestionAssets assets={question.assets} placement="requirement" label="作答要求图" onAssetError={handleAssetError} /></section>}
+        <fieldset className="bank-options" disabled={!canAttempt || Boolean(result) || state.submitting}>
+          <legend className="sr-only">选择答案</legend>
+          {question.options.map((option) => (
+            <label key={option.label} className={selected.has(option.label) ? "selected" : ""}>
+              <input type={multiple ? "checkbox" : "radio"} name="bank-answer" checked={selected.has(option.label)} onChange={() => toggle(option.label)} />
+              <span>{option.label}</span>
+              <div className="bank-option-copy">
+                <p>{option.text}</p>
+                <QuestionAssets assets={question.assets} placement="option" optionLabel={option.label} label={`选项 ${option.label} 配图`} onAssetError={handleAssetError} />
+              </div>
+            </label>
+          ))}
+        </fieldset>
+        {!result && canAttempt && (
+          <label className="bank-confidence"><span>作答信心</span><select value={confidence} onChange={(event) => setConfidence(event.target.value)}><option value="">请选择</option><option value="high">高</option><option value="medium">中</option><option value="low">低</option></select></label>
+        )}
+        {state.errorAfterSubmit && <p className="bank-attempt-error" role="alert">{errorCopy(state.errorAfterSubmit, "答案未提交，可安全重试。")}</p>}
+        {result && (
+          <section ref={resultRef} tabIndex="-1" className={result.correct ? "bank-result correct" : "bank-result incorrect"} aria-live="polite">
+            <header>{result.correct ? <CheckCircle size={18} weight="fill" /> : <XCircle size={18} weight="fill" />}<strong>{result.correct ? "回答正确" : "这次没有答对"}</strong><span>正确答案 {result.answer}</span></header>
+            <p>{result.explanation || "本题暂无额外解析。"}</p>
+            {result.explanation_media_status === "text_only" && <p className="bank-result-media-note">解析中的图片尚未在答后视图展示；以上文字解析仍可阅读。</p>}
+            <div><ShieldCheck size={14} /><span>本次仅记录普通练习结果；不会直接更新 KT，也不会把一次答错解释成已确认错因。</span></div>
+          </section>
+        )}
+      </div>
+      <footer className="bank-detail-actions">
+        {result ? <button type="button" className="button primary" onClick={onNext}>{isLast ? "结束本卷" : "下一题"}<CaretRight size={13} /></button> : canAttempt ? <button type="button" className="button primary" disabled={!answer || !confidence || state.submitting} onClick={onSubmit}>{state.submitting ? "正在本机评分" : "提交答案"}</button> : <><button type="button" className="button secondary" onClick={() => onRetry(question.question_id)}>重新核对离线资源</button>{allowSkip && <button type="button" className="button secondary" onClick={onNext}>{isLast ? "结束本卷" : "跳过本题"}<CaretRight size={13} /></button>}</>}
+      </footer>
+    </article>
+  );
+}
+
+export function QuestionBankWorkspace() {
+  const [status, setStatus] = useState({ phase: "loading", data: null, error: null });
+  const [mode, setMode] = useState("papers");
+  const [papers, setPapers] = useState({ phase: "idle", data: EMPTY_PAPERS, error: null });
+  const [list, setList] = useState({ phase: "idle", data: EMPTY_LIST, error: null });
+  const [detail, setDetail] = useState({ phase: "idle", data: null, result: null, submitting: false, error: null, errorAfterSubmit: null });
+  const [selectedPaper, setSelectedPaper] = useState(null);
+  const [paperComplete, setPaperComplete] = useState(false);
+  const [completedQuestionIds, setCompletedQuestionIds] = useState(() => new Set());
+  const [queryDraft, setQueryDraft] = useState("");
+  const [query, setQuery] = useState("");
+  const [year, setYear] = useState("");
+  const [region, setRegion] = useState("");
+  const [examType, setExamType] = useState("");
+  const [moduleId, setModuleId] = useState("");
+  const [subtypeId, setSubtypeId] = useState("");
+  const [page, setPage] = useState(1);
+  const [paperPage, setPaperPage] = useState(1);
+  const [answer, setAnswer] = useState("");
+  const [confidence, setConfidence] = useState("");
+  const [startedAt, setStartedAt] = useState(Date.now());
+  const commandId = useRef(createCommandId());
+
+  const loadStatus = useCallback(async () => {
+    setStatus({ phase: "loading", data: null, error: null });
+    try {
+      const data = await fetchQuestionBankStatus();
+      setStatus({ phase: data.available ? "available" : "unavailable", data, error: null });
+    } catch (error) {
+      setStatus({ phase: "error", data: null, error });
+    }
+  }, []);
+
+  useEffect(() => { loadStatus(); }, [loadStatus]);
+
+  const clearQuestion = useCallback(() => {
+    setDetail({ phase: "idle", data: null, result: null, submitting: false, error: null, errorAfterSubmit: null });
+    setAnswer("");
+    setConfidence("");
+    setPaperComplete(false);
+  }, []);
+
+  const selectQuestion = useCallback(async (questionId) => {
+    setDetail({ phase: "loading", data: null, result: null, submitting: false, error: null, errorAfterSubmit: null });
+    setPaperComplete(false);
+    setAnswer("");
+    setConfidence("");
+    setStartedAt(Date.now());
+    commandId.current = createCommandId();
+    try {
+      const data = await fetchQuestionBankQuestion(questionId);
+      setDetail({ phase: "ready", data, result: null, submitting: false, error: null, errorAfterSubmit: null });
+    } catch (error) {
+      setDetail({ phase: "error", data: null, result: null, submitting: false, error, errorAfterSubmit: null });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (status.phase !== "available" || mode !== "papers") return;
+    let active = true;
+    setPapers((current) => ({ ...current, phase: "loading", error: null }));
+    fetchQuestionBankPapers({ year, region, examType, query, page: paperPage, pageSize: 24 })
+      .then((data) => active && setPapers({ phase: "ready", data, error: null }))
+      .catch((error) => active && setPapers({ phase: "error", data: EMPTY_PAPERS, error }));
+    return () => { active = false; };
+  }, [examType, mode, paperPage, query, region, status.phase, year]);
+
+  useEffect(() => {
+    if (status.phase !== "available") return;
+    if (mode === "papers" && !selectedPaper) {
+      setList({ phase: "idle", data: EMPTY_LIST, error: null });
+      return;
+    }
+    if (mode === "knowledge" && !subtypeId) {
+      setList({ phase: "select-filter", data: EMPTY_LIST, error: null });
+      clearQuestion();
+      return;
+    }
+    let active = true;
+    setList((current) => ({ ...current, phase: "loading", error: null }));
+    const paperMode = mode === "papers";
+    searchQuestionBank({
+      paperId: paperMode ? selectedPaper.paper_id : "",
+      moduleId: mode === "types" ? moduleId : "",
+      subtypeId: mode === "knowledge" ? subtypeId : "",
+      year: paperMode ? null : year,
+      region: paperMode ? "" : region,
+      query: paperMode ? "" : query,
+      page: paperMode ? 1 : page,
+      pageSize: paperMode ? 200 : 20,
+    })
+      .then((data) => {
+        if (!active) return;
+        setList({ phase: "ready", data, error: null });
+        if (paperMode && data.items[0]) selectQuestion(data.items[0].question_id);
+      })
+      .catch((error) => active && setList({ phase: "error", data: EMPTY_LIST, error }));
+    return () => { active = false; };
+  }, [clearQuestion, mode, moduleId, page, query, region, selectedPaper, selectQuestion, status.phase, subtypeId, year]);
+
+  const submit = useCallback(async () => {
+    const questionId = detail.data?.question?.question_id;
+    if (!questionId) return;
+    setDetail((current) => ({ ...current, submitting: true, errorAfterSubmit: null }));
+    try {
+      const result = await submitQuestionBankAttempt({
+        questionId,
+        selectedResponse: answer,
+        confidence,
+        elapsedSeconds: Math.min(7200, Math.max(0, (Date.now() - startedAt) / 1000)),
+        commandId: commandId.current,
+      });
+      setDetail((current) => ({ ...current, result, submitting: false, errorAfterSubmit: null }));
+      setCompletedQuestionIds((current) => new Set([...current, questionId]));
+    } catch (error) {
+      setDetail((current) => ({ ...current, submitting: false, errorAfterSubmit: error }));
+    }
+  }, [answer, confidence, detail.data, startedAt]);
+
+  const activeId = detail.data?.question?.question_id || "";
+  const activeIndex = useMemo(() => list.data.items.findIndex((item) => item.question_id === activeId), [activeId, list.data.items]);
+  const next = useCallback(() => {
+    const candidate = list.data.items[activeIndex + 1];
+    if (candidate) return selectQuestion(candidate.question_id);
+    if (mode === "papers") {
+      clearQuestion();
+      setPaperComplete(true);
+      return;
+    }
+    if (list.data.items[0]) selectQuestion(list.data.items[0].question_id);
+  }, [activeIndex, clearQuestion, list.data.items, mode, selectQuestion]);
+
+  const changeMode = useCallback((nextMode) => {
+    setMode(nextMode);
+    setSelectedPaper(null);
+    setCompletedQuestionIds(new Set());
+    setPage(1);
+    setPaperPage(1);
+    setQueryDraft("");
+    setQuery("");
+    clearQuestion();
+  }, [clearQuestion]);
+
+  const resetFilters = useCallback(() => {
+    setSelectedPaper(null);
+    setCompletedQuestionIds(new Set());
+    setPage(1);
+    setPaperPage(1);
+    clearQuestion();
+  }, [clearQuestion]);
+
+  const selectPaper = useCallback((paper) => {
+    if (!paper.paper_practice_available) return;
+    setSelectedPaper(paper);
+    setCompletedQuestionIds(new Set());
+    clearQuestion();
+  }, [clearQuestion]);
+
+  if (status.phase === "loading") return <div className="bank-shell bank-centered"><span className="bank-loading-dot" /><strong>正在核对本地题库</strong></div>;
+  if (status.phase === "error" || status.phase === "unavailable") {
+    return <div className="bank-shell bank-centered"><Database size={27} /><strong>完整题库尚未连接</strong><p>{status.phase === "error" ? errorCopy(status.error, "题库状态读取失败。") : "请先安装经过校验的版本化本地导出。Lumi 不会读取可变工作文件。"}</p><button type="button" className="button secondary" onClick={loadStatus}><ArrowClockwise size={13} />重新检查</button></div>;
+  }
+
+  const bank = status.data.export;
+  const facets = bank.facets;
+  const positionLabel = mode === "papers" && activeIndex >= 0
+    ? `${activeIndex + 1} / ${list.data.items.length}`
+    : "";
+  const searchPlaceholder = mode === "papers" ? "搜索套卷名称" : "搜索题干或试卷";
+  return (
+    <div className="bank-shell">
+      <header className="bank-page-header">
+        <div><small>本机只读资源</small><h1>完整行测题库</h1><p>{countText(bank.access_counts.direct_practice_ready)} 道可直接练习 · {countText(bank.access_counts.asset_gated)} 道等待离线资源 · {countText(bank.counts.needs_review)} 道隔离待复核</p></div>
+        <span><Database size={14} />{bank.export_version}</span>
+      </header>
+      <nav className="bank-mode-tabs" aria-label="练习方式">
+        <button type="button" className={mode === "papers" ? "active" : ""} aria-pressed={mode === "papers"} onClick={() => changeMode("papers")}><Notebook size={16} /><span>套卷练习</span><small>按年份、省份</small></button>
+        <button type="button" className={mode === "types" ? "active" : ""} aria-pressed={mode === "types"} onClick={() => changeMode("types")}><ListBullets size={16} /><span>题型练习</span><small>按六大模块</small></button>
+        <button type="button" className={mode === "knowledge" ? "active" : ""} aria-pressed={mode === "knowledge"} onClick={() => changeMode("knowledge")}><Target size={16} /><span>知识点练习</span><small>仅可靠映射</small></button>
+      </nav>
+      {selectedPaper ? (
+        <section className="bank-paper-session-bar" aria-label="当前套卷">
+          <button type="button" onClick={() => { setSelectedPaper(null); clearQuestion(); }}><CaretLeft size={14} />返回套卷目录</button>
+          <div><strong>{selectedPaper.title}</strong><small>{countText(completedQuestionIds.size)} 题已提交 · 已收录 {countText(selectedPaper.ready_question_count)} 道可浏览题</small></div>
+        </section>
+      ) : (
+        <section className="bank-controls" aria-label="题库筛选">
+          <form onSubmit={(event) => { event.preventDefault(); resetFilters(); setQuery(queryDraft.trim()); }}>
+            <MagnifyingGlass size={14} /><label className="sr-only" htmlFor="question-bank-search">{searchPlaceholder}</label><input id="question-bank-search" value={queryDraft} onChange={(event) => setQueryDraft(event.target.value)} placeholder={searchPlaceholder} maxLength={100} /><button type="submit">搜索</button>
+          </form>
+          <label><span className="sr-only">年份</span><select value={year} onChange={(event) => { setYear(event.target.value); resetFilters(); }}><option value="">全部年份</option>{facets.years.map((row) => <option key={row.value} value={row.value}>{row.value}（{countText(row.ready_count)}）</option>)}</select></label>
+          <label><span className="sr-only">地区</span><select value={region} onChange={(event) => { setRegion(event.target.value); resetFilters(); }}><option value="">全部地区</option>{facets.regions.map((row) => <option key={row.value} value={row.value}>{row.value}（{countText(row.ready_count)}）</option>)}</select></label>
+          {mode === "papers" && <label><span className="sr-only">考试类型</span><select value={examType} onChange={(event) => { setExamType(event.target.value); resetFilters(); }}><option value="">全部考试</option>{facets.exam_types.map((row) => <option key={row.value} value={row.value}>{row.value}（{countText(row.ready_count)}）</option>)}</select></label>}
+          {mode === "types" && <label><span className="sr-only">题型</span><select value={moduleId} onChange={(event) => { setModuleId(event.target.value); resetFilters(); }}><option value="">全部题型</option>{facets.modules.map((row) => <option key={row.module_id} value={row.module_id}>{row.name}（{countText(row.ready_count)}）</option>)}</select></label>}
+          {mode === "knowledge" && <label><span className="sr-only">知识点</span><select value={subtypeId} onChange={(event) => { setSubtypeId(event.target.value); resetFilters(); }}><option value="">选择知识点</option>{facets.knowledge_points.map((row) => <option key={row.subtype_id} value={row.subtype_id}>{row.name}（{countText(row.ready_count)}）</option>)}</select></label>}
+        </section>
+      )}
+      {mode === "knowledge" && !selectedPaper && <p className="bank-filter-note">只列出已有确定性映射的知识点；未分类题仍可通过套卷和题型入口练习。</p>}
+      {mode === "papers" && !selectedPaper ? (
+        <section className="bank-paper-directory">
+          <PaperList state={papers} onSelect={selectPaper} />
+          <footer className="bank-pagination"><button type="button" aria-label="上一页套卷" disabled={paperPage <= 1 || papers.phase !== "ready"} onClick={() => setPaperPage((value) => value - 1)}><CaretLeft size={13} /></button><span>{papers.data.pagination.page} / {Math.max(1, papers.data.pagination.total_pages)}</span><button type="button" aria-label="下一页套卷" disabled={paperPage >= papers.data.pagination.total_pages || papers.phase !== "ready"} onClick={() => setPaperPage((value) => value + 1)}><CaretRight size={13} /></button></footer>
+        </section>
+      ) : (
+        <div className="bank-workspace">
+          <aside className="bank-browser">
+            <QuestionList state={list} activeId={activeId} onSelect={selectQuestion} />
+            {mode !== "papers" && <footer className="bank-pagination"><button type="button" aria-label="上一页" disabled={page <= 1 || list.phase !== "ready"} onClick={() => setPage((value) => value - 1)}><CaretLeft size={13} /></button><span>{list.data.pagination.page} / {Math.max(1, list.data.pagination.total_pages)}</span><button type="button" aria-label="下一页" disabled={page >= list.data.pagination.total_pages || list.phase !== "ready"} onClick={() => setPage((value) => value + 1)}><CaretRight size={13} /></button></footer>}
+          </aside>
+          {paperComplete ? <section className="bank-paper-complete"><CheckCircle size={28} weight="fill" /><strong>本卷已浏览完成</strong><p>本次提交了 {countText(completedQuestionIds.size)} 道题。资源不完整或未作答的题没有被伪造为完成。</p><button type="button" className="button secondary" onClick={() => { setSelectedPaper(null); clearQuestion(); }}>返回套卷目录</button></section> : <QuestionDetail state={detail} answer={answer} setAnswer={setAnswer} confidence={confidence} setConfidence={setConfidence} onSubmit={submit} onNext={next} onRetry={selectQuestion} positionLabel={positionLabel} allowSkip={mode === "papers"} isLast={mode === "papers" && activeIndex === list.data.items.length - 1} />}
+        </div>
+      )}
+    </div>
+  );
+}

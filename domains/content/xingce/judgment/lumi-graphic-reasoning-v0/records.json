@@ -1,0 +1,403 @@
+{
+  "schema_version": "lumi.xingce-adaptive-records.v1",
+  "pack_id": "lumi-graphic-reasoning-v0",
+  "pack_version": "0.1.0-draft",
+  "review_status": "draft_unreviewed",
+  "records": [
+    {
+      "record_id": "D01",
+      "role": "entry_diagnostic",
+      "title": "图形推理：逐项增加并交替填充",
+      "target_skill_ids": [
+        "xingce.judgment.graphic_reasoning.feature_selection",
+        "xingce.judgment.graphic_reasoning.transform_direction",
+        "xingce.judgment.graphic_reasoning.composition_operator",
+        "xingce.judgment.graphic_reasoning.attribute_count"
+      ],
+      "candidate_misconception_ids": [
+        "M-FEATURE",
+        "M-DIR",
+        "M-OP",
+        "M-COUNT"
+      ],
+      "independence_group": "graphic-dot-entry",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "source_material": {
+        "kind": "diagram",
+        "title": "点阵序列",
+        "alt_text": "图一为一个实心圆；图二从左到右为实心、空心两个圆；图三从左到右为实心、空心、实心三个圆。每步在右侧增加一个圆，并保持实心、空心交替。",
+        "panels": [
+          {
+            "label": "图一",
+            "tokens": [
+              "●"
+            ]
+          },
+          {
+            "label": "图二",
+            "tokens": [
+              "●",
+              "○"
+            ]
+          },
+          {
+            "label": "图三",
+            "tokens": [
+              "●",
+              "○",
+              "●"
+            ]
+          }
+        ]
+      },
+      "prompt": "按同一规则，下一图应为：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "● ● ● ●"
+        },
+        {
+          "label": "B",
+          "text": "● ○ ●"
+        },
+        {
+          "label": "C",
+          "text": "● ○ ● ○"
+        },
+        {
+          "label": "D",
+          "text": "○ ● ○ ●"
+        }
+      ],
+      "correct_option": "C",
+      "route_probe_ids": [
+        "P01"
+      ],
+      "record_sha256": "14b261b0621730de1f80a252fa71ac280ee43053568dca549e954cac227515fc"
+    },
+    {
+      "record_id": "P01",
+      "role": "probe",
+      "title": "最小探查：数量与交替属性分开看",
+      "target_skill_ids": [
+        "xingce.judgment.graphic_reasoning.feature_selection",
+        "xingce.judgment.graphic_reasoning.transform_direction",
+        "xingce.judgment.graphic_reasoning.composition_operator",
+        "xingce.judgment.graphic_reasoning.attribute_count"
+      ],
+      "candidate_misconception_ids": [
+        "M-FEATURE",
+        "M-DIR",
+        "M-OP",
+        "M-COUNT"
+      ],
+      "independence_group": "graphic-square-probe",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "source_material": {
+        "kind": "diagram",
+        "title": "方形序列",
+        "alt_text": "图一为一个实心方形；图二为实心、空心两个方形；图三为实心、空心、实心三个方形。",
+        "panels": [
+          {
+            "label": "图一",
+            "tokens": [
+              "■"
+            ]
+          },
+          {
+            "label": "图二",
+            "tokens": [
+              "■",
+              "□"
+            ]
+          },
+          {
+            "label": "图三",
+            "tokens": [
+              "■",
+              "□",
+              "■"
+            ]
+          }
+        ]
+      },
+      "prompt": "下一图应为：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "□ ■ □ ■"
+        },
+        {
+          "label": "B",
+          "text": "■ □ ■ □"
+        },
+        {
+          "label": "C",
+          "text": "■ □ ■"
+        },
+        {
+          "label": "D",
+          "text": "■ ■ ■ ■"
+        }
+      ],
+      "correct_option": "B",
+      "discriminates": [
+        "M-FEATURE",
+        "M-DIR",
+        "M-OP",
+        "M-COUNT"
+      ],
+      "candidate_evidence_map": {
+        "M-FEATURE": {
+          "A": "insufficient",
+          "B": "refute",
+          "C": "insufficient",
+          "D": "support"
+        },
+        "M-DIR": {
+          "A": "support",
+          "B": "refute",
+          "C": "support",
+          "D": "insufficient"
+        },
+        "M-OP": {
+          "A": "support",
+          "B": "refute",
+          "C": "support",
+          "D": "support"
+        },
+        "M-COUNT": {
+          "A": "insufficient",
+          "B": "refute",
+          "C": "support",
+          "D": "insufficient"
+        }
+      },
+      "record_sha256": "26c8eba13523254c73012d9ca80f54f98762e1b6e31aa5f726a84962becd4677"
+    },
+    {
+      "record_id": "T-FEATURE",
+      "role": "teaching_asset",
+      "title": "微课：把“数量”和“属性”分成两行",
+      "target_skill_ids": [
+        "xingce.judgment.graphic_reasoning.feature_selection"
+      ],
+      "candidate_misconception_ids": [
+        "M-FEATURE"
+      ],
+      "independence_group": "graphic-feature-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-FEATURE"
+      ],
+      "teaching_content": "不要只数有几个图形。把观察写成两行：第一行记录数量，第二行记录实心/空心、形状或位置。只有两行都能延续，选项才匹配。",
+      "record_sha256": "1c906518ddc55c9a240825972796e9ec4bf0f90408abd18d721fc67601f17f35"
+    },
+    {
+      "record_id": "T-DIR",
+      "role": "teaching_asset",
+      "title": "微课：从已知图按方向延长一步",
+      "target_skill_ids": [
+        "xingce.judgment.graphic_reasoning.transform_direction"
+      ],
+      "candidate_misconception_ids": [
+        "M-DIR"
+      ],
+      "independence_group": "graphic-direction-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-DIR"
+      ],
+      "teaching_content": "先从图一到图二说出“右侧增加一个”，再从图二到图三复核同一方向。不要只看结果像不像；把最后一个已知图向同一方向延长一步。",
+      "record_sha256": "6273f8b7d751629d53cce3579afbc06c0c1cba580f22865ecee2b7420bfd74eb"
+    },
+    {
+      "record_id": "T-OP",
+      "role": "teaching_asset",
+      "title": "微课：区分添加与替换",
+      "target_skill_ids": [
+        "xingce.judgment.graphic_reasoning.composition_operator"
+      ],
+      "candidate_misconception_ids": [
+        "M-OP"
+      ],
+      "independence_group": "graphic-operator-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-OP"
+      ],
+      "teaching_content": "本题旧元素没有消失，新增元素接在右侧，所以操作是“添加”。若图中数量不变而某个元素变色，才是替换；若前后成组切换，才是交替。",
+      "record_sha256": "73065a3776cb36fa70ebbd214012e8917773aaa93d7585781429874464c17390"
+    },
+    {
+      "record_id": "T-COUNT",
+      "role": "teaching_asset",
+      "title": "微课：提交前做一次数量核对",
+      "target_skill_ids": [
+        "xingce.judgment.graphic_reasoning.attribute_count"
+      ],
+      "candidate_misconception_ids": [
+        "M-COUNT"
+      ],
+      "independence_group": "graphic-count-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-COUNT"
+      ],
+      "teaching_content": "在每一图下写出元素数：1、2、3，所以候选必须有4个元素。数量核对先排除少一个、没增加或多加的选项，再核对属性顺序。",
+      "record_sha256": "4b15b90b408c4f15c2082f74883f09a1a043749c96709799d46107a50a7c73f0"
+    },
+    {
+      "record_id": "V01",
+      "role": "independent_transfer",
+      "title": "独立迁移：另一种形状的交替序列",
+      "target_skill_ids": [
+        "xingce.judgment.graphic_reasoning.feature_selection",
+        "xingce.judgment.graphic_reasoning.transform_direction",
+        "xingce.judgment.graphic_reasoning.composition_operator",
+        "xingce.judgment.graphic_reasoning.attribute_count"
+      ],
+      "candidate_misconception_ids": [
+        "M-FEATURE",
+        "M-DIR",
+        "M-OP",
+        "M-COUNT"
+      ],
+      "independence_group": "graphic-triangle-transfer",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "source_material": {
+        "kind": "diagram",
+        "title": "三角形序列",
+        "alt_text": "图一为一个实心三角形；图二为实心、空心两个三角形；图三为实心、空心、实心三个三角形。",
+        "panels": [
+          {
+            "label": "图一",
+            "tokens": [
+              "▲"
+            ]
+          },
+          {
+            "label": "图二",
+            "tokens": [
+              "▲",
+              "△"
+            ]
+          },
+          {
+            "label": "图三",
+            "tokens": [
+              "▲",
+              "△",
+              "▲"
+            ]
+          }
+        ]
+      },
+      "prompt": "下一图应为：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "▲ △ ▲ △"
+        },
+        {
+          "label": "B",
+          "text": "△ ▲ △ ▲"
+        },
+        {
+          "label": "C",
+          "text": "▲ ▲ ▲ ▲"
+        },
+        {
+          "label": "D",
+          "text": "▲ △ ▲"
+        }
+      ],
+      "correct_option": "A",
+      "requires_no_hints": true,
+      "record_sha256": "43079c2915ed178be90b6201495ab864ada60fe52d6ac2b567a9911f11199d9f"
+    },
+    {
+      "record_id": "R01",
+      "role": "delayed_review",
+      "title": "延迟复习：数量增加与填充交替",
+      "target_skill_ids": [
+        "xingce.judgment.graphic_reasoning.feature_selection",
+        "xingce.judgment.graphic_reasoning.attribute_count"
+      ],
+      "candidate_misconception_ids": [
+        "M-FEATURE",
+        "M-DIR",
+        "M-OP",
+        "M-COUNT"
+      ],
+      "independence_group": "graphic-diamond-review",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "source_material": {
+        "kind": "diagram",
+        "title": "菱形序列",
+        "alt_text": "图一为一个空心菱形；图二为空心、实心两个菱形；图三为空心、实心、空心三个菱形。",
+        "panels": [
+          {
+            "label": "图一",
+            "tokens": [
+              "◇"
+            ]
+          },
+          {
+            "label": "图二",
+            "tokens": [
+              "◇",
+              "◆"
+            ]
+          },
+          {
+            "label": "图三",
+            "tokens": [
+              "◇",
+              "◆",
+              "◇"
+            ]
+          }
+        ]
+      },
+      "prompt": "下一图应为：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "◇ ◆ ◇ ◆"
+        },
+        {
+          "label": "B",
+          "text": "◆ ◇ ◆ ◇"
+        },
+        {
+          "label": "C",
+          "text": "◇ ◇ ◇ ◇"
+        },
+        {
+          "label": "D",
+          "text": "◇ ◆ ◇"
+        }
+      ],
+      "correct_option": "A",
+      "requires_no_hints": true,
+      "scheduled_after_days": 4,
+      "eligible_after_transfer_ids": [
+        "V01"
+      ],
+      "record_sha256": "c5e2ac6241681719b6b66e5d15ebd9a2653791b58da9ea896500527e74ed8a7a"
+    }
+  ]
+}

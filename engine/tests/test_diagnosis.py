@@ -26,12 +26,16 @@ class DiagnosisTests(unittest.TestCase):
         self.assertGreaterEqual(result.uncertainty, 0.0)
         self.assertLessEqual(result.uncertainty, 1.0)
         self.assertEqual(result.provenance["attempt"]["selected_option"], "B")
-        self.assertEqual(result.provenance["cohort_sources"][0]["sample_size"], 840)
+        self.assertEqual(result.provenance["prior_sources"][0]["sample_size"], 0)
+        self.assertEqual(result.provenance["prior_sources"][0]["kind"], "engineering_prior")
 
     def test_tool_boundary_is_json_friendly(self):
         output = HermesKTTool().diagnose(self.payload)
         json.dumps(output)
-        self.assertEqual(output["model_version"], "hierarchical-cause-baseline-v1")
+        self.assertEqual(output["model_version"], "hierarchical-cause-baseline-v3")
+        serialized = json.dumps(output, ensure_ascii=False)
+        self.assertNotIn("cohort_component", serialized)
+        self.assertNotIn("cohort_sources", serialized)
 
     def test_invalid_empty_prior_is_rejected(self):
         with self.assertRaises(ValueError):

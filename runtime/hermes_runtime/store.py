@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import sqlite3
+import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -22,16 +23,72 @@ class TraceEvent:
     event_hash: str
 
 
+class TraceVersionConflict(RuntimeError):
+    def __init__(self, expected_version: int, actual_version: int) -> None:
+        super().__init__(
+            f"trace version conflict: expected {expected_version}, actual {actual_version}"
+        )
+        self.expected_version = expected_version
+        self.actual_version = actual_version
+
+
+def retry_sqlite_locked(operation: Any) -> Any:
+    """Retry only SQLite's short-lived initialization lock contention.
+
+    Setting WAL mode and idempotent DDL can raise ``database is locked``
+    immediately even when the connection has a busy timeout.  The local
+    sidecar may open trace and schedule stores concurrently, so initialization
+    must be restartable instead of leaking a transient lock as HTTP 500.
+    """
+
+    delays = (0.01, 0.02, 0.05, 0.1, 0.2, 0.4, 0.8, 1.0)
+    for attempt in range(len(delays) + 1):
+        try:
+            return operation()
+        except sqlite3.OperationalError as exc:
+            message = str(exc).lower()
+            if (
+                attempt == len(delays)
+                or ("locked" not in message and "busy" not in message)
+            ):
+                raise
+            time.sleep(delays[attempt])
+    raise AssertionError("unreachable SQLite retry state")
+
+
+def open_sqlite_connection(path: str | Path) -> sqlite3.Connection:
+    """Open one local SQLite connection with race-safe WAL initialization."""
+
+    connection = sqlite3.connect(str(path), timeout=10, isolation_level=None)
+    connection.row_factory = sqlite3.Row
+    connection.execute("PRAGMA foreign_keys = ON")
+    connection.execute("PRAGMA busy_timeout = 10000")
+
+    def ensure_wal() -> None:
+        current = str(connection.execute("PRAGMA journal_mode").fetchone()[0]).lower()
+        if current in {"wal", "memory"}:
+            return
+        result = str(
+            connection.execute("PRAGMA journal_mode = WAL").fetchone()[0]
+        ).lower()
+        if result != "wal":
+            raise sqlite3.OperationalError("unable to enable SQLite WAL mode")
+
+    try:
+        retry_sqlite_locked(ensure_wal)
+    except Exception:
+        connection.close()
+        raise
+    return connection
+
+
 class EventStore:
     """SQLite append-only trace store with a per-run tamper-evident hash chain."""
 
     def __init__(self, path: str | Path = ":memory:") -> None:
         self.path = str(path)
-        self._connection = sqlite3.connect(self.path, timeout=10, isolation_level=None)
-        self._connection.row_factory = sqlite3.Row
-        self._connection.execute("PRAGMA foreign_keys = ON")
-        self._connection.execute("PRAGMA journal_mode = WAL")
-        self._create_schema()
+        self._connection = open_sqlite_connection(self.path)
+        retry_sqlite_locked(self._create_schema)
 
     def close(self) -> None:
         self._connection.close()
@@ -60,6 +117,20 @@ class EventStore:
             BEFORE DELETE ON trace_events BEGIN
                 SELECT RAISE(ABORT, 'trace_events is append-only');
             END;
+            CREATE TABLE IF NOT EXISTS content_snapshots (
+                content_hash TEXT PRIMARY KEY,
+                kind TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                content_json TEXT NOT NULL
+            );
+            CREATE TRIGGER IF NOT EXISTS content_snapshots_no_update
+            BEFORE UPDATE ON content_snapshots BEGIN
+                SELECT RAISE(ABORT, 'content_snapshots is immutable');
+            END;
+            CREATE TRIGGER IF NOT EXISTS content_snapshots_no_delete
+            BEFORE DELETE ON content_snapshots BEGIN
+                SELECT RAISE(ABORT, 'content_snapshots is immutable');
+            END;
             """
         )
 
@@ -87,11 +158,94 @@ class EventStore:
             raise
         return TraceEvent(run_id, seq, occurred_at, kind, safe_payload, previous_hash, event_hash)
 
+    def append_if_version(
+        self,
+        run_id: str,
+        expected_version: int,
+        kind: str,
+        payload: Mapping[str, Any],
+    ) -> TraceEvent:
+        """Atomically compare the latest sequence and append one event.
+
+        This is the persistence-level CAS used by learner continuations and
+        assistance delivery. It remains correct if two local SidecarApplication
+        instances point at the same SQLite file; the process-local lock alone
+        cannot provide that guarantee.
+        """
+
+        if expected_version < 0:
+            raise ValueError("expected_version cannot be negative")
+        safe_payload = redact(dict(payload))
+        encoded = json.dumps(safe_payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        connection = self._connection
+        connection.execute("BEGIN IMMEDIATE")
+        try:
+            row = connection.execute(
+                "SELECT seq, event_hash FROM trace_events WHERE run_id = ? ORDER BY seq DESC LIMIT 1",
+                (run_id,),
+            ).fetchone()
+            actual_version = int(row["seq"]) if row else 0
+            if actual_version != expected_version:
+                raise TraceVersionConflict(expected_version, actual_version)
+            seq = actual_version + 1
+            previous_hash = str(row["event_hash"]) if row else "GENESIS"
+            occurred_at = datetime.now(timezone.utc).isoformat()
+            event_hash = _event_hash(run_id, seq, occurred_at, kind, encoded, previous_hash)
+            connection.execute(
+                "INSERT INTO trace_events VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (run_id, seq, occurred_at, kind, encoded, previous_hash, event_hash),
+            )
+            connection.execute("COMMIT")
+        except Exception:
+            connection.execute("ROLLBACK")
+            raise
+        return TraceEvent(run_id, seq, occurred_at, kind, safe_payload, previous_hash, event_hash)
+
     def events(self, run_id: str) -> list[TraceEvent]:
         rows = self._connection.execute(
             "SELECT * FROM trace_events WHERE run_id = ? ORDER BY seq", (run_id,)
         ).fetchall()
         return [_row_to_event(row) for row in rows]
+
+    def put_content_snapshot(self, kind: str, content: Mapping[str, Any]) -> str:
+        """Persist one immutable, private content snapshot by canonical hash."""
+
+        if not kind or len(kind) > 80:
+            raise ValueError("snapshot kind must be a short non-empty string")
+        safe_content = redact(dict(content))
+        encoded = json.dumps(
+            safe_content, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+        )
+        content_hash = hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+        created_at = datetime.now(timezone.utc).isoformat()
+        self._connection.execute(
+            "INSERT OR IGNORE INTO content_snapshots VALUES (?, ?, ?, ?)",
+            (content_hash, kind, created_at, encoded),
+        )
+        row = self._connection.execute(
+            "SELECT kind, content_json FROM content_snapshots WHERE content_hash = ?",
+            (content_hash,),
+        ).fetchone()
+        if row is None or str(row["kind"]) != kind or str(row["content_json"]) != encoded:
+            raise ValueError("content hash is already bound to a different immutable snapshot")
+        return content_hash
+
+    def load_content_snapshot(self, content_hash: str, *, kind: str | None = None) -> dict[str, Any]:
+        row = self._connection.execute(
+            "SELECT kind, created_at, content_json FROM content_snapshots WHERE content_hash = ?",
+            (content_hash,),
+        ).fetchone()
+        if row is None:
+            raise KeyError(content_hash)
+        actual_kind = str(row["kind"])
+        if kind is not None and actual_kind != kind:
+            raise KeyError(content_hash)
+        return {
+            "content_hash": content_hash,
+            "kind": actual_kind,
+            "created_at": str(row["created_at"]),
+            "content": json.loads(row["content_json"]),
+        }
 
     def run_ids(self) -> list[str]:
         rows = self._connection.execute("SELECT DISTINCT run_id FROM trace_events ORDER BY run_id").fetchall()

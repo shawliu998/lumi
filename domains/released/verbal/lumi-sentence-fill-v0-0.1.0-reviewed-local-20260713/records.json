@@ -1,0 +1,290 @@
+{
+  "schema_version": "lumi.xingce-adaptive-records.v1",
+  "pack_id": "lumi-sentence-fill-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "review_status": "release_ready",
+  "records": [
+    {
+      "record_id": "D01",
+      "role": "entry_diagnostic",
+      "title": "语句填空：从问题承接到判断",
+      "target_skill_ids": [
+        "xingce.verbal.sentence_fill.relation",
+        "xingce.verbal.sentence_fill.reference",
+        "xingce.verbal.sentence_fill.topic",
+        "xingce.verbal.sentence_fill.style"
+      ],
+      "candidate_misconception_ids": [
+        "M-REL",
+        "M-REF",
+        "M-TOPIC",
+        "M-STYLE"
+      ],
+      "independence_group": "fill-seating-entry",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "prompt": "公共座椅的数量增加，并不必然改善使用体验。若座椅遮雨不足、阻断通行，或与等候区域脱节，使用者仍可能绕开它们。____。",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "因此，公共设施的设置还要结合具体使用情境"
+        },
+        {
+          "label": "B",
+          "text": "这些座椅一定会成为城市中最受欢迎的设施"
+        },
+        {
+          "label": "C",
+          "text": "座椅的颜色与所有城市的道路完全相同"
+        },
+        {
+          "label": "D",
+          "text": "因此，应当取消所有公共座椅"
+        }
+      ],
+      "correct_option": "A",
+      "route_probe_ids": [
+        "P01"
+      ],
+      "record_sha256": "989417965c34fa43d43fcf96916bddb97c80c6f58887d23e125b360f6596a9c4"
+    },
+    {
+      "record_id": "P01",
+      "role": "probe",
+      "title": "最小探查：结论要回应前文限制",
+      "target_skill_ids": [
+        "xingce.verbal.sentence_fill.relation",
+        "xingce.verbal.sentence_fill.reference",
+        "xingce.verbal.sentence_fill.topic",
+        "xingce.verbal.sentence_fill.style"
+      ],
+      "candidate_misconception_ids": [
+        "M-REL",
+        "M-REF",
+        "M-TOPIC",
+        "M-STYLE"
+      ],
+      "independence_group": "fill-data-probe",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "prompt": "公开数据的价值不只在于把文件放到网站上。若字段缺少口径说明，使用者可能把不同范围的数据直接比较。____。",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "因此，数据发布还应提供必要的说明和更新信息"
+        },
+        {
+          "label": "B",
+          "text": "这些说明已经证明所有数据都没有问题"
+        },
+        {
+          "label": "C",
+          "text": "数据文件的数量与本段讨论无关，所以无需阅读"
+        },
+        {
+          "label": "D",
+          "text": "因此，任何人都不应使用公开数据"
+        }
+      ],
+      "correct_option": "A",
+      "discriminates": [
+        "M-REL",
+        "M-REF",
+        "M-TOPIC",
+        "M-STYLE"
+      ],
+      "candidate_evidence_map": {
+        "M-REL": {
+          "A": "refute",
+          "B": "support",
+          "C": "support",
+          "D": "support"
+        },
+        "M-REF": {
+          "A": "refute",
+          "B": "support",
+          "C": "insufficient",
+          "D": "insufficient"
+        },
+        "M-TOPIC": {
+          "A": "refute",
+          "B": "support",
+          "C": "support",
+          "D": "support"
+        },
+        "M-STYLE": {
+          "A": "refute",
+          "B": "support",
+          "C": "support",
+          "D": "support"
+        }
+      },
+      "record_sha256": "5be86608c9e3068c0c5c0c8ee851fa493669b412e0e9455564b571a709a05f16"
+    },
+    {
+      "record_id": "T-REL",
+      "role": "teaching_asset",
+      "title": "微课：空格句先回答前文提出的关系",
+      "target_skill_ids": [
+        "xingce.verbal.sentence_fill.relation"
+      ],
+      "candidate_misconception_ids": [
+        "M-REL"
+      ],
+      "independence_group": "fill-relation-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "target_candidate_ids": [
+        "M-REL"
+      ],
+      "teaching_content": "先给前文写一句关系：条件不足会带来什么问题，作者要推出什么补充判断。看到“若……可能……”后，空格更可能承接为限制条件下的建议，而不是绝对结论。",
+      "record_sha256": "c21329e7c969849cfc07ea1fd920ddb7dab31c9dc00c89d08c33065b0ae77601"
+    },
+    {
+      "record_id": "T-REF",
+      "role": "teaching_asset",
+      "title": "微课：代词必须有清楚的落点",
+      "target_skill_ids": [
+        "xingce.verbal.sentence_fill.reference"
+      ],
+      "candidate_misconception_ids": [
+        "M-REF"
+      ],
+      "independence_group": "fill-reference-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "target_candidate_ids": [
+        "M-REF"
+      ],
+      "teaching_content": "将“这些说明”等代词替换为前文名词检验。若替换后找不到唯一对象，或对象在空格后才出现，句子就不能作为可靠衔接。",
+      "record_sha256": "864e51feb0351f2e0b79c18b7bb958bf99eddf949485408c20dcfeccc2d56be1"
+    },
+    {
+      "record_id": "T-TOPIC",
+      "role": "teaching_asset",
+      "title": "微课：同一个词不等于同一个话题",
+      "target_skill_ids": [
+        "xingce.verbal.sentence_fill.topic"
+      ],
+      "candidate_misconception_ids": [
+        "M-TOPIC"
+      ],
+      "independence_group": "fill-topic-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "target_candidate_ids": [
+        "M-TOPIC"
+      ],
+      "teaching_content": "空格前讨论的是设施使用情境或数据解释条件，候选必须继续回答这一主题。只出现“座椅”“数据”等同词却没有回应问题的句子，不是正确承接。",
+      "record_sha256": "4ead941f91ddcd13248fbad818749eb4fb76d371478063a51b6b531c3f29ac74"
+    },
+    {
+      "record_id": "T-STYLE",
+      "role": "teaching_asset",
+      "title": "微课：读出句法和断言力度",
+      "target_skill_ids": [
+        "xingce.verbal.sentence_fill.style"
+      ],
+      "candidate_misconception_ids": [
+        "M-STYLE"
+      ],
+      "independence_group": "fill-style-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "target_candidate_ids": [
+        "M-STYLE"
+      ],
+      "teaching_content": "前文是说明性、保留性的表达，空格也应保持同样语体。突然出现“所有”“任何人”“一定”等绝对断言，通常与前文的条件性描述不协调。",
+      "record_sha256": "2350240d3fddeb5450211f7485ca6154e800912a82cdd577dc6f434796b8228b"
+    },
+    {
+      "record_id": "V01",
+      "role": "independent_transfer",
+      "title": "独立迁移：从观察承接到改进方向",
+      "target_skill_ids": [
+        "xingce.verbal.sentence_fill.relation",
+        "xingce.verbal.sentence_fill.topic",
+        "xingce.verbal.sentence_fill.style"
+      ],
+      "candidate_misconception_ids": [
+        "M-REL",
+        "M-REF",
+        "M-TOPIC",
+        "M-STYLE"
+      ],
+      "independence_group": "fill-reading-transfer",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "prompt": "有些公共阅读角建成后使用率不高，原因不一定是书架太少，也可能是它与附近学校、休息区和活动安排没有连接。____。",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "因此，阅读角需要结合日常活动持续调整"
+        },
+        {
+          "label": "B",
+          "text": "阅读角中的书籍一定不值得阅读"
+        },
+        {
+          "label": "C",
+          "text": "所有阅读角都应只设置在学校里"
+        },
+        {
+          "label": "D",
+          "text": "因此，应停止提供公共阅读服务"
+        }
+      ],
+      "correct_option": "A",
+      "requires_no_hints": true,
+      "record_sha256": "a610a0bef66d5943e7082ac8b711b3cd7731d4d57548b5935396ce1789110dbd"
+    },
+    {
+      "record_id": "R01",
+      "role": "delayed_review",
+      "title": "延迟复习：限制条件后的恰当结论",
+      "target_skill_ids": [
+        "xingce.verbal.sentence_fill.relation",
+        "xingce.verbal.sentence_fill.reference"
+      ],
+      "candidate_misconception_ids": [
+        "M-REL",
+        "M-REF",
+        "M-TOPIC",
+        "M-STYLE"
+      ],
+      "independence_group": "fill-wayfinding-review",
+      "content_origin": "original_lumi",
+      "review_status": "release_ready",
+      "prompt": "步行指引若只在起点给出信息，陌生使用者到路口时仍需反复判断。____。",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "因此，可在关键转向处提供连续且一致的提示"
+        },
+        {
+          "label": "B",
+          "text": "这些提示说明所有道路都完全相同"
+        },
+        {
+          "label": "C",
+          "text": "路口从来不需要任何信息"
+        },
+        {
+          "label": "D",
+          "text": "因此，应取消步行路线"
+        }
+      ],
+      "correct_option": "A",
+      "requires_no_hints": true,
+      "scheduled_after_days": 4,
+      "eligible_after_transfer_ids": [
+        "V01"
+      ],
+      "record_sha256": "2de1d4f0e47e1a8dbc18edfbfa29fec1e70fd8361ed43beffc255ae5cb2de7c5"
+    }
+  ]
+}

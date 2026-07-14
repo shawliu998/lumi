@@ -1,0 +1,296 @@
+{
+  "schema_version": "lumi.xingce-adaptive-records.v1",
+  "pack_id": "lumi-main-idea-v0",
+  "pack_version": "0.1.0-draft",
+  "review_status": "draft_unreviewed",
+  "passage_role_map": {
+    "D01": {
+      "central_claim": "社区微更新应在保留日常使用与共同参与基础上改进公共空间",
+      "evidence": "遮雨棚、座椅和照明是具体例子",
+      "boundary": "不是单纯追求外观翻新"
+    },
+    "P01": {
+      "central_claim": "数据公开需要同时改善可读性与使用条件",
+      "evidence": "检索字段和说明页是做法",
+      "boundary": "不等于只增加数据数量"
+    },
+    "V01": {
+      "central_claim": "阅读角的价值在于与日常活动相连的持续使用",
+      "evidence": "借阅率是观察指标",
+      "boundary": "不等于只布置空间"
+    },
+    "R01": {
+      "central_claim": "步行指引应降低陌生使用者的判断成本",
+      "evidence": "清晰路标和连续信息是措施",
+      "boundary": "不是增加装饰"
+    }
+  },
+  "records": [
+    {
+      "record_id": "D01",
+      "role": "entry_diagnostic",
+      "title": "主旨概括：从例子回到中心关系",
+      "target_skill_ids": [
+        "xingce.verbal.main_idea.central_claim",
+        "xingce.verbal.main_idea.scope",
+        "xingce.verbal.main_idea.evidence_role",
+        "xingce.verbal.main_idea.claim_strength"
+      ],
+      "candidate_misconception_ids": [
+        "M-EXAMPLE",
+        "M-PART",
+        "M-OVER",
+        "M-SCOPE"
+      ],
+      "independence_group": "mainidea-community-entry",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "一些社区改造把注意力放在统一外观上，完工后却发现遮雨、休息和通行等日常需求仍未被解决。较有效的微更新通常先观察居民怎样使用空间，再用小尺度调整补足这些环节，并让使用者参与反馈。由此可见，社区微更新更应：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "以统一外观作为改造首要标准"
+        },
+        {
+          "label": "B",
+          "text": "在理解日常使用的基础上改进公共空间"
+        },
+        {
+          "label": "C",
+          "text": "通过增加座椅保证所有居民满意"
+        },
+        {
+          "label": "D",
+          "text": "以一次性大规模施工取代持续调整"
+        }
+      ],
+      "correct_option": "B",
+      "route_probe_ids": [
+        "P01"
+      ],
+      "record_sha256": "9023b9f86de16e220b1017ad6cb448f5dd9e551f34eab73245d3af487f4d2b62"
+    },
+    {
+      "record_id": "P01",
+      "role": "probe",
+      "title": "最小探查：中心观点不是一个做法清单",
+      "target_skill_ids": [
+        "xingce.verbal.main_idea.central_claim",
+        "xingce.verbal.main_idea.scope",
+        "xingce.verbal.main_idea.evidence_role",
+        "xingce.verbal.main_idea.claim_strength"
+      ],
+      "candidate_misconception_ids": [
+        "M-EXAMPLE",
+        "M-PART",
+        "M-OVER",
+        "M-SCOPE"
+      ],
+      "independence_group": "mainidea-data-probe",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "公开数据若只有大量表格，普通使用者仍难以判断字段含义和适用范围。为此，有些部门在发布数据时补充检索入口、口径说明和更新提示。这样做并非只为增加数据数量，而是为了让公开信息更容易被正确使用。该段意在说明：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "数据公开只要增加表格数量即可"
+        },
+        {
+          "label": "B",
+          "text": "检索入口是公开数据最重要的内容"
+        },
+        {
+          "label": "C",
+          "text": "数据公开还需要改善信息的可理解和可使用性"
+        },
+        {
+          "label": "D",
+          "text": "所有数据都应由普通使用者自行解释"
+        }
+      ],
+      "correct_option": "C",
+      "discriminates": [
+        "M-EXAMPLE",
+        "M-PART",
+        "M-OVER",
+        "M-SCOPE"
+      ],
+      "candidate_evidence_map": {
+        "M-EXAMPLE": {
+          "A": "support",
+          "B": "support",
+          "C": "refute",
+          "D": "insufficient"
+        },
+        "M-PART": {
+          "A": "support",
+          "B": "support",
+          "C": "refute",
+          "D": "insufficient"
+        },
+        "M-OVER": {
+          "A": "support",
+          "B": "insufficient",
+          "C": "refute",
+          "D": "support"
+        },
+        "M-SCOPE": {
+          "A": "support",
+          "B": "support",
+          "C": "refute",
+          "D": "support"
+        }
+      },
+      "record_sha256": "6ee85983444e893dec21c4f41f3f390a291e42ea3633499a7b3cf1609b4cc5d1"
+    },
+    {
+      "record_id": "T-EXAMPLE",
+      "role": "teaching_asset",
+      "title": "微课：例子回答“怎样”，主旨回答“为什么/应当怎样看”",
+      "target_skill_ids": [
+        "xingce.verbal.main_idea.evidence_role"
+      ],
+      "candidate_misconception_ids": [
+        "M-EXAMPLE"
+      ],
+      "independence_group": "mainidea-example-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-EXAMPLE"
+      ],
+      "teaching_content": "先把具体名词圈出来：座椅、检索入口、说明页都是例子或措施。再问一句：这些例子共同服务于什么判断？主旨应能解释多个例子，而不是只复述其中一个。",
+      "record_sha256": "b0d6086c512e8c285839c88053436fd4007b6567de5f2c06b2d02c374aed6544"
+    },
+    {
+      "record_id": "T-PART",
+      "role": "teaching_asset",
+      "title": "微课：用一句“对象—关系—结论”覆盖全文",
+      "target_skill_ids": [
+        "xingce.verbal.main_idea.central_claim",
+        "xingce.verbal.main_idea.scope"
+      ],
+      "candidate_misconception_ids": [
+        "M-PART",
+        "M-SCOPE"
+      ],
+      "independence_group": "mainidea-scope-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-PART",
+        "M-SCOPE"
+      ],
+      "teaching_content": "把段落压成一句：对什么对象，作者强调什么关系或方向。若选项只覆盖一个动作，或把对象换得更大/更小，就不能覆盖全文。",
+      "record_sha256": "c3f3e793512878a2ba41bfc34f26891f29ac7c4adedc3a1c15c375b30b53b045"
+    },
+    {
+      "record_id": "T-OVER",
+      "role": "teaching_asset",
+      "title": "微课：主旨必须不超过原文的力度",
+      "target_skill_ids": [
+        "xingce.verbal.main_idea.claim_strength"
+      ],
+      "candidate_misconception_ids": [
+        "M-OVER"
+      ],
+      "independence_group": "mainidea-strength-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-OVER"
+      ],
+      "teaching_content": "原文说“还需要”“更容易正确使用”，不等于“只要”“所有”。把选项中的绝对词换回原文检查：原文没有给出必然性，选项就不能擅自加重。",
+      "record_sha256": "867cdcd550ccc6b12fed8fa3d90fefbaa87ef3395abdb7664a5a3eea58a1bb6c"
+    },
+    {
+      "record_id": "V01",
+      "role": "independent_transfer",
+      "title": "独立迁移：从指标回到持续使用",
+      "target_skill_ids": [
+        "xingce.verbal.main_idea.central_claim",
+        "xingce.verbal.main_idea.scope",
+        "xingce.verbal.main_idea.evidence_role"
+      ],
+      "candidate_misconception_ids": [
+        "M-EXAMPLE",
+        "M-PART",
+        "M-OVER",
+        "M-SCOPE"
+      ],
+      "independence_group": "mainidea-reading-transfer",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "有些公共阅读角布置完成后很少被使用，原因不一定在于书架数量，而在于它与附近学校、休息区和活动安排缺少连接。把阅读角纳入日常活动，并根据借阅和停留情况调整内容，才可能形成稳定使用。该段主要强调：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "阅读角应尽量增加书架数量"
+        },
+        {
+          "label": "B",
+          "text": "借阅率是评价阅读角的唯一标准"
+        },
+        {
+          "label": "C",
+          "text": "阅读角需要与日常活动连接并持续调整"
+        },
+        {
+          "label": "D",
+          "text": "所有公共阅读角都应设置在学校附近"
+        }
+      ],
+      "correct_option": "C",
+      "requires_no_hints": true,
+      "record_sha256": "ef1caaca1e4e56c15a233c5995326b48e769a8bbeb1da98162b400948681ca5b"
+    },
+    {
+      "record_id": "R01",
+      "role": "delayed_review",
+      "title": "延迟复习：措施背后的中心目标",
+      "target_skill_ids": [
+        "xingce.verbal.main_idea.central_claim",
+        "xingce.verbal.main_idea.claim_strength"
+      ],
+      "candidate_misconception_ids": [
+        "M-EXAMPLE",
+        "M-PART",
+        "M-OVER",
+        "M-SCOPE"
+      ],
+      "independence_group": "mainidea-wayfinding-review",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "步行指引不只是多放几个箭头。对陌生使用者而言，连续且一致的路标能减少在路口反复判断的成本；必要时还应补充到达时间和无障碍信息。因此，步行指引的关键在于：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "尽可能增加装饰性标志"
+        },
+        {
+          "label": "B",
+          "text": "降低使用者辨认路径的信息成本"
+        },
+        {
+          "label": "C",
+          "text": "只为熟悉道路的居民服务"
+        },
+        {
+          "label": "D",
+          "text": "保证每个路口都有相同的箭头"
+        }
+      ],
+      "correct_option": "B",
+      "requires_no_hints": true,
+      "scheduled_after_days": 4,
+      "eligible_after_transfer_ids": [
+        "V01"
+      ],
+      "record_sha256": "eafd1843aa9cdfecffcdd35f6cc013bb42dd719a762b68389df645a486e0f64f"
+    }
+  ]
+}

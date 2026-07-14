@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lumi.local/contracts/study-pack-attempt.schema.json",
+  "title": "Lumi authoritative Study Pack practice attempt record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "attempt_id",
+    "pack_id",
+    "artifact_id",
+    "artifact_version",
+    "answer_digest",
+    "correct",
+    "score",
+    "evidence_origin",
+    "activity_kind",
+    "scorer_id"
+  ],
+  "properties": {
+    "schema_version": {"const": "lumi.study-pack-attempt.v1"},
+    "attempt_id": {"type": "string", "pattern": "^t_[A-P]{40}$"},
+    "pack_id": {"type": "string", "pattern": "^p_[A-P]{40}$"},
+    "artifact_id": {"type": "string", "pattern": "^a_[A-P]{40}$"},
+    "artifact_version": {"type": "integer", "minimum": 1},
+    "answer_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "correct": {"type": "boolean"},
+    "score": {"type": "number", "minimum": 0, "maximum": 1},
+    "evidence_origin": {
+      "enum": ["human_local_interactive", "evaluation_fixture"]
+    },
+    "activity_kind": {"const": "within_pack_practice"},
+    "scorer_id": {"enum": ["cloze_exact_v1@1.0.0", "normalized_exact_v1@1.0.0"]}
+  }
+}

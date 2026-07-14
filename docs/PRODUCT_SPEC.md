@@ -1,5 +1,11 @@
 # Lumi v0 product specification
 
+This is the target product specification. The verified P0.2 slice is narrower:
+one visible Xingce learning path, a same-fixture review activity, per-run KT, and
+an evidence-cited TodayPlan/ReviewSchedule. It does not yet provide Agent Lab,
+full Shenlun/Interview practice, calibrated forgetting or cohort priors,
+unseen-item transfer evidence, or population learning-effect results.
+
 ## Product statement
 
 Lumi is a local-first macOS learning agent for Chinese civil-service exam
@@ -44,6 +50,35 @@ scratch work where available, and domain-specific evidence. It supports objectiv
 Xingce items, long-form Shenlun responses, and recorded/transcribed Interview
 responses without forcing them into one scoring scheme.
 
+For the current complete-bank Xingce access slice, discovery has three ordinary
+study-software entry modes over one checksum-bound local export:
+
+1. **套卷练习** — browse 1,054 source papers, filter by year, region label and
+   exam type, then open the integrity-verified ready set of one paper;
+2. **按题型练习** — choose one of six classified modules or the explicit
+   unclassified group;
+3. **按知识点练习** — choose one of 30 released subtype facets that has ready
+   content.
+
+All three modes may also combine year and region-label filters. They share
+the same answer-redacted detail and post-submission scoring contract; none is a
+second copy of the bank. The current export exposes 77,695 ready records, of
+which 68,321 are practiceable with the installed offline asset pack. Another
+9,374 remain resource-gated and 484 records remain quarantined. Of the ready
+records, 28,569 map to a non-empty released subtype and 49,126 remain honestly
+unclassified. The all-status source totals are 28,821 and 49,358 respectively;
+review-quarantined records never enter product discovery.
+
+This is a content-access and practice-mechanics release. The “知识点” label is
+the reviewed subtype browse facet, not a claim of fine-grained skill inference.
+Full-bank practice does not write KT, confirm a misconception, or schedule
+Today/Review. Of the 1,054 papers, 925 have all currently collected records in
+ready state and 129 exclude one or more review records; this does not prove
+official-paper completeness. Nine papers without a unique source order remain
+visible in the directory but are closed to whole-paper mode. No
+human learning effect, exhaustive classification, public asset redistribution,
+or complete-paper guarantee follows from these counts.
+
 ### Tutor
 
 The tutor prefers diagnostic questions and graduated hints over answer dumping.
@@ -75,7 +110,7 @@ Lumi operates with bounded autonomy:
   mastery requires independent evidence.
 - It must disclose when content, scoring, or verification is model-generated.
 
-## Representative v0 coverage
+## Representative adaptive-loop v0 coverage
 
 Coverage is breadth-first for loop validation, not full-catalog completion:
 
@@ -91,7 +126,8 @@ a teaching decision, a verification event, and an auditable learner-state update
 
 ## Non-goals for v0
 
-- Full migration of all existing question-bank assets.
+- Blind migration or public redistribution of mutable/raw question-bank assets;
+  product resources require a versioned, checksum-bound, rights-scoped export.
 - Production multi-user accounts, social features, or cloud sync.
 - Autonomous high-stakes scoring claims.
 - Training a large sequence KT model before sufficient real trajectories exist.

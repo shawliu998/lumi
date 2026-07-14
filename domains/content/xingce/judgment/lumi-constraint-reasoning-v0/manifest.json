@@ -1,0 +1,67 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-constraint-reasoning-v0",
+  "pack_version": "0.1.0-draft",
+  "status": "draft_unreviewed",
+  "release_ready": false,
+  "runtime_registration": "forbidden_until_human_review",
+  "subtype_id": "xingce.judgment.constraint",
+  "module_id": "judgment",
+  "form": "text_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "draft_no_distribution"
+  },
+  "content_evidence": {
+    "constraint_table_or_proof": "records.json#constraint_proofs: each item records the complete constraint set and the checked feasible arrangement."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": false,
+    "required_reviews": [
+      {
+        "review_kind": "logic",
+        "status": "pending",
+        "required_checks": [
+          "unique_answer",
+          "constraint_table",
+          "quantifier",
+          "case_exhaustion",
+          "probe_discrimination",
+          "transfer_independence"
+        ]
+      },
+      {
+        "review_kind": "editorial_rights",
+        "status": "pending",
+        "required_checks": [
+          "original_wording",
+          "rule_clarity",
+          "neutral_context",
+          "license_scope"
+        ]
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "3d82ed76673636436e38c2f99cdd3e329f92e839db23b8c724657654edf2c1b3"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "bb194dbfb7d65ecc0b7aa33528d97704c0e41aaf413d83cbe5c7fcd97994408b"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "85ed357f7a96d9941aea90513cb21fc9ea056968e037ffe3928c0f331a4ca921"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "byte_count": 468,
+  "codepoint_count": 162,
+  "document_id": "d_ONIHDBBFDKONBMEBAKGIHAOGDJAFBHOOJEPCNHBH",
+  "extraction_state": "accepted",
+  "input_kind": "pasted_text",
+  "locator_count": 5,
+  "media_type": "text/plain;charset=utf-8",
+  "normalization_name": "unicode-nfc-canonical-newline",
+  "normalization_version": "1.0.0",
+  "normalized_sha256": "b4b476e3fbff1f59f01caaf636367f508a541193db2ad2b5380bb1de0d1d54cb",
+  "original_sha256": "b4b476e3fbff1f59f01caaf636367f508a541193db2ad2b5380bb1de0d1d54cb",
+  "pack_id": "p_OJIPMPCANHNACOEIFBHKLLIHPKINBDGICMMHIBMI",
+  "parser_name": "lumi-pasted-section-parser",
+  "parser_version": "1.0.0",
+  "schema_version": "lumi.source-document.v1",
+  "source_version": 1,
+  "warning_codes": []
+}

@@ -1,0 +1,67 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-political-current-affairs-v0",
+  "pack_version": "0.1.0-draft",
+  "status": "draft_unreviewed",
+  "release_ready": false,
+  "runtime_registration": "forbidden_until_human_review",
+  "subtype_id": "xingce.political.current_affairs",
+  "module_id": "political_theory",
+  "form": "text_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "draft_no_distribution"
+  },
+  "content_evidence": {
+    "authoritative_source_snapshot": "中国政府网转载，《中国共产党第二十届中央委员会第四次全体会议公报》（2025-10-23），https://www.bjstb.gov.cn/bjtb/ywdt/szyw/1356436/index.html；国家统计局转载全文，https://www.stats.gov.cn/zs/tjwh/tjkw/tjqk/zgxxb/202510/P020251024400652692329.pdf（accessed 2026-07-13）。",
+    "validity_cutoff": "2026-07-13; all questions are frozen to the named 2025 communique and must not imply facts beyond that text."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": false,
+    "required_reviews": [
+      {
+        "review_kind": "logic",
+        "status": "pending",
+        "required_checks": [
+          "unique_answer",
+          "date_attribution",
+          "policy_scope",
+          "fact_recall",
+          "transfer_independence"
+        ]
+      },
+      {
+        "review_kind": "editorial_rights",
+        "status": "pending",
+        "required_checks": [
+          "authoritative_source",
+          "original_wording",
+          "date_labeling",
+          "license_scope"
+        ]
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "8175ffc65369475a8b045761ca51b1e5de1d12bced3895e3557fa8179648be2f"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "ae649ef4df63d33c74f577687ae163c0650dae8f91d632ee47943fde3a259de1"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "05fabecc65d278dff4421ef6f535fafe9f43c62c3e475fd8ef5e711a53fd7f46"
+    }
+  ]
+}

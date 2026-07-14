@@ -33,9 +33,60 @@
       {"cause_id": "oral-structure-weak", "label": "组织步骤缺少清晰阶段标记", "synthetic_prior": 0.12, "evidence_refs": ["structure_missing"], "is_ground_truth": false}
     ]
   },
-  "probe": {"prompt": "如果参与儿童分为4—6岁和9—11岁，你会如何调整分组内容？", "targets": ["goal-audience-disconnected", "process-template-recitation"]},
-  "teach": {"prompt": "以目标和人群为起点，倒推活动内容、资源、风险与效果指标。", "strategy": "backward-event-design"},
-  "independent_verify": {"prompt": "组织一次社区老年智能手机课堂，须体现需求分层、执行细节、安全和课后反馈。", "response_mode": "spoken_text", "pass_condition": {"required_dimensions": ["audience", "execution", "risk", "feedback"], "minimum_dimensions": 3}},
-  "samples": {"passing_response": "首先调研年龄和参与人数，明确培养亲子共读习惯的目标。其次协调场地、招募志愿者并按年龄分组设计流程，同时做好安全预案。最后收集满意度反馈，建立阅读打卡并复盘。", "failing_response": "首先制定方案，然后做好宣传，活动当天维持秩序，最后总结经验。"},
+  "probe": {
+    "prompt": "按阶段说明4—6岁和9—11岁的分组内容差异，并补充活动后如何判断效果和持续参与。",
+    "targets": ["goal-audience-disconnected", "process-template-recitation", "closure-without-outcome", "oral-structure-weak"],
+    "assessment": {
+      "schema_version": "hermes.probe-assessment.v1", "evaluator": "authored_terms_v1",
+      "rules": [
+        {"cause_id": "process-template-recitation", "support_if": {"all_terms": ["制定方案宣传总结", "无需结合阅读场景"]}, "refute_if": {"all_terms": ["按儿童年龄分组", "设计绘本互动阅读分享"]}},
+        {"cause_id": "goal-audience-disconnected", "support_if": {"all_terms": ["两个年龄统一内容", "不必考虑理解差异"]}, "refute_if": {"all_terms": ["四至六岁绘本互动", "九至十一岁自主分享"]}},
+        {"cause_id": "closure-without-outcome", "support_if": {"all_terms": ["活动结束就是完成", "无需跟踪效果"]}, "refute_if": {"all_terms": ["收集参与反馈", "持续阅读打卡"]}},
+        {"cause_id": "oral-structure-weak", "support_if": {"all_terms": ["步骤没有阶段标记", "想到哪说到哪"]}, "refute_if": {"all_terms": ["先目标人群再执行风险", "最后评估持续参与"]}}
+      ],
+      "cause_samples": [
+        {"cause_id": "process-template-recitation", "supporting_response": "制定方案宣传总结即可，无需结合阅读场景。", "refuting_response": "按儿童年龄分组，设计绘本互动阅读分享。", "ambiguous_response": "按流程把活动办好。"},
+        {"cause_id": "goal-audience-disconnected", "supporting_response": "两个年龄统一内容，不必考虑理解差异。", "refuting_response": "四至六岁绘本互动，九至十一岁自主分享。", "ambiguous_response": "可以分成两个小组。"},
+        {"cause_id": "closure-without-outcome", "supporting_response": "活动结束就是完成，无需跟踪效果。", "refuting_response": "收集参与反馈，并持续阅读打卡。", "ambiguous_response": "活动后做个总结。"},
+        {"cause_id": "oral-structure-weak", "supporting_response": "步骤没有阶段标记，想到哪说到哪。", "refuting_response": "先目标人群再执行风险，最后评估持续参与。", "ambiguous_response": "我会分阶段组织。"}
+      ]
+    }
+  },
+  "teach": {
+    "prompt": "以目标和人群为起点，倒推活动内容、资源、风险与效果指标。", "strategy": "backward-event-design",
+    "variants": [
+      {"cause_id": "process-template-recitation", "prompt": "删去通用流程词，逐项补入亲子阅读的内容、人员和现场动作。", "strategy": "scenario-specific-rewrite"},
+      {"cause_id": "goal-audience-disconnected", "prompt": "分别为两个年龄段匹配理解水平、参与方式和阅读材料。", "strategy": "audience-content-mapping"},
+      {"cause_id": "closure-without-outcome", "prompt": "从共读习惯目标倒推参与、反馈与持续打卡三个结果指标。", "strategy": "outcome-backward-design"},
+      {"cause_id": "oral-structure-weak", "prompt": "用目标人群、执行风险、评估持续三个阶段标记组织口头回答。", "strategy": "organization-answer-signposting"}
+    ]
+  },
+  "independent_verify": {
+    "prompt": "组织一次社区老年智能手机课堂，须体现需求分层、执行细节、安全和课后反馈。",
+    "response_mode": "spoken_text",
+    "pass_condition": {
+      "scorer": "authored_dimensions_v1",
+      "required_dimensions": [
+        {"dimension_id": "audience", "aliases": ["需求分层", "按基础分组", "零基础", "进阶组"]},
+        {"dimension_id": "execution", "aliases": ["实操练习", "现场演示", "志愿者", "分组教学"]},
+        {"dimension_id": "risk", "aliases": ["防诈骗", "安全提示", "隐私保护", "风险提醒"]},
+        {"dimension_id": "feedback", "aliases": ["课后反馈", "课后答疑", "复盘", "回访"]}
+      ],
+      "minimum_dimensions": 4
+    },
+    "samples": {"passing_response": "首先按基础分组，零基础学员由志愿者现场演示并安排实操练习；课程加入防诈骗和隐私保护提示，最后收集课后反馈并持续答疑。", "failing_response": "先做好宣传，安排老师讲课，结束后总结。", "adversarial_negation_response": "不应需求分层或按基础分组，也不要实操练习、现场演示、志愿者或分组教学；反对防诈骗、隐私保护、课后反馈和答疑。"}
+  },
+  "assistance_ladder": {
+    "schema_version": "hermes.assistance-content.v1", "content_version": "event-design-help.v1",
+    "steps": [
+      {"action": "retry", "title": "再试一次", "content": "先回答活动要改变什么、服务谁，再倒推内容、人员、风险和怎样判断有效，不要先背流程。", "target_cause_ids": ["process-template-recitation", "goal-audience-disconnected", "closure-without-outcome", "oral-structure-weak"]},
+      {"action": "locate_evidence", "title": "定位人群", "content": "4—6 岁与 9—11 岁的理解和参与方式不同，分组内容必须体现年龄差异。", "target_cause_ids": ["goal-audience-disconnected"]},
+      {"action": "rule_hint", "title": "组织框架", "content": "按“目标与人群—内容与资源—执行与风险—效果与持续”组织，宣传和场地只是服务目标的手段。", "target_cause_ids": ["process-template-recitation", "closure-without-outcome", "oral-structure-weak"]},
+      {"action": "analogous_example", "title": "同类例子", "content": "老年手机课可按零基础和进阶分组，分别练拨号扫码与挂号防诈，而不是统一听一场讲座。", "target_cause_ids": ["goal-audience-disconnected", "process-template-recitation"]},
+      {"action": "worked_step", "title": "演示一段", "content": "先写：“目标是培养亲子共读习惯；4—6 岁侧重绘本互动，9—11 岁增加自主阅读和分享。”", "target_cause_ids": ["goal-audience-disconnected"]},
+      {"action": "full_explanation", "title": "完整说明", "content": "应先调研年龄和人数，明确共读目标；按年龄分组设计活动并配置志愿者与安全预案；最后用参与、满意度和持续打卡衡量效果并复盘。", "target_cause_ids": ["process-template-recitation", "goal-audience-disconnected", "closure-without-outcome", "oral-structure-weak"]}
+    ]
+  },
+  "samples": {"passing_response": "首先调研年龄和参与人数，明确培养亲子共读习惯的目标。其次协调场地、招募志愿者并按年龄分组设计流程，同时做好安全预案。最后收集满意度反馈，建立阅读打卡并复盘。", "failing_response": "首先制定方案，然后做好宣传，活动当天维持秩序，最后总结经验。", "adversarial_negation_response": "不应调研需求、年龄、参与人数或目标；不要安排场地、招募、分组、安全预案和流程；反对反馈、复盘、阅读打卡和满意度。"},
   "provenance": {"content_origin": "synthetic_original", "authoring_note": "合成社区活动面试题", "prior_source": "synthetic_engineering_prior_v1"}
 }

@@ -1,0 +1,6 @@
+{"schema_version":"lumi.xingce-adaptive-misconceptions.v1","pack_id":"lumi-table-material-v0","pack_version":"0.1.0-draft","review_status":"draft_unreviewed","candidate_misconceptions":[
+  {"cause_id":"M-ROWCOL","label":"候选：读错目标行、列或指标", "status":"unconfirmed","is_ground_truth":false,"target_skill_ids":["xingce.data.table_material.target_series"]},
+  {"cause_id":"M-UNIT","label":"候选：忽略表头单位或统计口径", "status":"unconfirmed","is_ground_truth":false,"target_skill_ids":["xingce.data.table_material.legend_unit"]},
+  {"cause_id":"M-DEN","label":"候选：比例分子分母颠倒或选错总体", "status":"unconfirmed","is_ground_truth":false,"target_skill_ids":["xingce.data.table_material.denominator"]},
+  {"cause_id":"M-ROUND","label":"候选：中间步骤过早取整或误读近似要求", "status":"unconfirmed","is_ground_truth":false,"target_skill_ids":["xingce.data.table_material.intermediate_rounding"]}
+]}

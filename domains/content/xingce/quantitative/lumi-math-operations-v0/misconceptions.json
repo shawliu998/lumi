@@ -1,0 +1,12 @@
+{
+  "schema_version": "lumi.xingce-adaptive-misconceptions.v1",
+  "pack_id": "lumi-math-operations-v0",
+  "pack_version": "0.1.0-draft",
+  "review_status": "draft_unreviewed",
+  "candidate_misconceptions": [
+    {"cause_id": "M-MODEL", "label": "候选：没有先写单位率与目标量关系", "status": "unconfirmed", "is_ground_truth": false, "target_skill_ids": ["xingce.quantitative.math_operations.rate_model"]},
+    {"cause_id": "M-BASE", "label": "候选：效率变化未作用在原单位率上", "status": "unconfirmed", "is_ground_truth": false, "target_skill_ids": ["xingce.quantitative.math_operations.rate_change"]},
+    {"cause_id": "M-SCOPE", "label": "候选：把原时间范围当成目标时间范围", "status": "unconfirmed", "is_ground_truth": false, "target_skill_ids": ["xingce.quantitative.math_operations.unit_scope"]},
+    {"cause_id": "M-CALC", "label": "候选：模型正确但乘除计算失误", "status": "unconfirmed", "is_ground_truth": false, "target_skill_ids": ["xingce.quantitative.math_operations.rate_model", "xingce.quantitative.math_operations.rate_change"]}
+  ]
+}

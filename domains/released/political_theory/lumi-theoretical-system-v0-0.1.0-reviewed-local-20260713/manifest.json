@@ -1,0 +1,72 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-theoretical-system-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "status": "release_ready",
+  "release_ready": true,
+  "runtime_registration": "allowed_after_human_review",
+  "subtype_id": "xingce.political.theoretical_system",
+  "module_id": "political_theory",
+  "form": "text_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "release_distribution_allowed"
+  },
+  "content_evidence": {
+    "authoritative_source_snapshot": "共产党员网，《党史百问｜中国特色社会主义理论体系的概括提出有何重大意义？》（2022-08-29），https://www.12371.cn/2022/08/29/ARTI1661761939373251.shtml；《习近平：关于中国特色社会主义理论体系的体会和认识》（2015-12-15），https://news.12371.cn/2015/12/15/ARTI1450154207109802.shtml（accessed 2026-07-13）。",
+    "validity_cutoff": "2026-07-13; the draft tests only names and relations explicitly stated by the named sources."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": true,
+    "review_attestations": [
+      {
+        "review_kind": "logic",
+        "reviewer_id": "1",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "c62eb7971609737e31155e234030fc62cd22fcaff6d46be28178e455dafda185"
+      },
+      {
+        "review_kind": "editorial_rights",
+        "reviewer_id": "2",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "c62eb7971609737e31155e234030fc62cd22fcaff6d46be28178e455dafda185"
+      }
+    ]
+  },
+  "product_release": {
+    "state": "released",
+    "acceptance_basis": "owner_acceptance_waiver",
+    "accepted_at": "2026-07-14",
+    "waived_gate": "type_by_type_human_local_browser_acceptance",
+    "human_effect_evidence": "unavailable",
+    "claim_scope": "content_and_mechanism_availability_only"
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "8db11906b2e61af00563619f1135ed594ef76ec830f6a66d29ae46c33e1d1832"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "d62cfa315fdabe5796df7b207afcbdf916764bb6af864da8268727c26b986ee2"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "5700bf79694a2c8111781438cddc749a6d2491712c5b74d125abb8410062a56d"
+    },
+    {
+      "path": "review-evidence.json",
+      "sha256": "fb72d82d92dba896fca7d0b67c21818dbad5bc6837d99c3d42a0059d088ca90b"
+    }
+  ]
+}

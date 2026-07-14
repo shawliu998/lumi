@@ -1,0 +1,67 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-history-humanity-v0",
+  "pack_version": "0.1.0-draft",
+  "status": "draft_unreviewed",
+  "release_ready": false,
+  "runtime_registration": "forbidden_until_human_review",
+  "subtype_id": "xingce.common.history_humanity",
+  "module_id": "common_knowledge",
+  "form": "text_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "draft_no_distribution"
+  },
+  "content_evidence": {
+    "fact_source_snapshot": "中国国家博物馆，《“后母戊”青铜方鼎》，https://www.chnmuseum.cn/zp/zpml/kgfjp/202008/t20200824_247255.shtml (accessed 2026-07-13); UNESCO Intangible Cultural Heritage, Traditional tea processing techniques and associated social practices in China, https://ich.unesco.org/en/RL/traditional-tea-processing-techniques-and-associated-social-practices-in-china-01884 (accessed 2026-07-13). Items use original wording and only paraphrase the listed source facts.",
+    "validity_cutoff": "2026-07-13; the pack names source-specific historical and cultural facts, not a live exhibition or ranking."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": false,
+    "required_reviews": [
+      {
+        "review_kind": "logic",
+        "status": "pending",
+        "required_checks": [
+          "unique_answer",
+          "attribution_accuracy",
+          "chronology_scope",
+          "candidate_discrimination",
+          "transfer_independence"
+        ]
+      },
+      {
+        "review_kind": "editorial_rights",
+        "status": "pending",
+        "required_checks": [
+          "source_attribution",
+          "original_wording",
+          "cultural_respect",
+          "license_scope"
+        ]
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "6d087532ae0529f13e42692cc62a01764cadde11fb5906c7012222df70a5de17"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "f1a54e7ba6ffa92a9d6fdd1ddfc6fc5ddaa28849a02625c7d628edd6599a51c0"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "de7cc182e89d8f7ab131f19dca1d1760cf55c65ff5ba14fcd54fbd27fdfd4e55"
+    }
+  ]
+}

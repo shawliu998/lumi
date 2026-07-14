@@ -1,5 +1,5 @@
 {
-  "trace_id": "trace-f4eb731e08273ff3",
+  "trace_id": "trace-9fa80b49f5419fe7",
   "schema_version": "trajectory-v1",
   "case_id": "xingce.data_analysis.growth_rate.ambiguous.v1",
   "created_at": "2026-07-11T00:00:00+00:00",
@@ -42,53 +42,56 @@
     {
       "call_id": "call-diagnosis-001",
       "tool": "hermes_explainable_learning_model.diagnose",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "input_evidence_ids": [
         "attempt:attempt-demo-001"
       ],
       "output": {
-        "sha256": "1ec20b973a59838d72da0bccaf17f6ca377b15ac4ed3ea43a7032b4ad97cc812",
+        "sha256": "1295fd20e13ae64ea19354c06a6765ce33ac1f7507d435258c83eb2997b4e229",
         "result": {
           "attempt_id": "attempt-demo-001",
           "hypotheses": [
             {
               "cause_id": "base_current_reversal",
-              "probability": 0.722468058585229,
-              "cohort_component": 0.42,
-              "learner_component": 0.5257142857142857,
+              "probability": 0.6618705035971223,
+              "prior_component": 0.42,
+              "prior_kind": "engineering_prior",
+              "learner_component": 1.251700680272109,
               "evidence_likelihood": 2.4,
               "evidence": [
-                "cohort_prior",
+                "engineering_prior",
                 "learner_history",
                 "attempt_feature_likelihood"
               ]
             },
             {
               "cause_id": "percentage_point_confusion",
-              "probability": 0.23857899657214093,
-              "cohort_component": 0.33,
-              "learner_component": 0.33142857142857146,
+              "probability": 0.27817745803357313,
+              "prior_component": 0.33,
+              "prior_kind": "engineering_prior",
+              "learner_component": 1.0043290043290043,
               "evidence_likelihood": 1.6,
               "evidence": [
-                "cohort_prior",
+                "engineering_prior",
                 "learner_history",
                 "attempt_feature_likelihood"
               ]
             },
             {
               "cause_id": "arithmetic_slip",
-              "probability": 0.0389529448426301,
-              "cohort_component": 0.25,
-              "learner_component": 0.14285714285714285,
+              "probability": 0.05995203836930456,
+              "prior_component": 0.25,
+              "prior_kind": "engineering_prior",
+              "learner_component": 0.5714285714285714,
               "evidence_likelihood": 0.8,
               "evidence": [
-                "cohort_prior",
+                "engineering_prior",
                 "learner_history",
                 "attempt_feature_likelihood"
               ]
             }
           ],
-          "uncertainty": 0.6400584790137556,
+          "uncertainty": 0.726178721796621,
           "provenance": {
             "attempt": {
               "attempt_id": "attempt-demo-001",
@@ -105,43 +108,46 @@
                 "option_b_matches": "reversed_base_current_formula"
               }
             },
-            "cohort_sources": [
+            "prior_sources": [
               {
                 "cause_id": "base_current_reversal",
-                "cohort_id": "cold-start-growth-rate",
-                "sample_size": 120,
-                "source_version": "expert-seeded-prior-v1"
+                "source_id": "synthetic-engineering-taxonomy",
+                "kind": "engineering_prior",
+                "sample_size": 0,
+                "source_version": "synthetic-engineering-prior-v1"
               },
               {
                 "cause_id": "percentage_point_confusion",
-                "cohort_id": "cold-start-growth-rate",
-                "sample_size": 120,
-                "source_version": "expert-seeded-prior-v1"
+                "source_id": "synthetic-engineering-taxonomy",
+                "kind": "engineering_prior",
+                "sample_size": 0,
+                "source_version": "synthetic-engineering-prior-v1"
               },
               {
                 "cause_id": "arithmetic_slip",
-                "cohort_id": "cold-start-growth-rate",
-                "sample_size": 120,
-                "source_version": "expert-seeded-prior-v1"
+                "source_id": "synthetic-engineering-taxonomy",
+                "kind": "engineering_prior",
+                "sample_size": 0,
+                "source_version": "synthetic-engineering-prior-v1"
               }
             ],
             "learner_history_version": "learner-history-demo-v1",
             "learner_history_exposure_count": 7,
-            "formula": "normalize(cohort_prior * learner_dirichlet_posterior * evidence_likelihood)"
+            "formula": "normalize(prior * learner_history_likelihood_ratio * evidence_likelihood)"
           },
-          "model_version": "hierarchical-cause-baseline-v1"
+          "model_version": "hierarchical-cause-baseline-v3"
         }
       }
     },
     {
       "call_id": "call-verification-001",
       "tool": "hermes_explainable_learning_model.verify_intervention",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "input_evidence_ids": [
         "attempt:attempt-demo-probe-001"
       ],
       "output": {
-        "sha256": "4d7596e60b30632b371f3527ae39b82eff612719858677817b65939389f77c64",
+        "sha256": "06c5c3f29f5070244f7437bebcb89e97c211e16ba9baa9832c94012f9e59b6d1",
         "result": {
           "post_state": {
             "learner_id": "learner-demo-redacted",
@@ -153,7 +159,7 @@
             "evidence_count": 4,
             "mastery": 0.5751921245771141,
             "uncertainty": 0.40476676779245535,
-            "last_updated_at": "2026-07-11T05:11:10.021712+00:00",
+            "last_updated_at": "2026-07-14T07:28:25.224440+00:00",
             "provenance": [
               {
                 "attempt": {
@@ -210,6 +216,8 @@
                 }
               },
               "minimum_gain": 0.02,
+              "evidence_weight": 1.0,
+              "commit_status": "committed",
               "model_version": "independent-transfer-check-v1"
             }
           }
@@ -243,7 +251,7 @@
       "evidence_count": 4,
       "mastery": 0.5751921245771141,
       "uncertainty": 0.40476676779245535,
-      "last_updated_at": "2026-07-11T05:11:10.021712+00:00",
+      "last_updated_at": "2026-07-14T07:28:25.224440+00:00",
       "provenance": [
         {
           "attempt": {

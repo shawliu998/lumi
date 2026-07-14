@@ -1,0 +1,23 @@
+{
+  "schema_version": "lumi.xingce-adaptive-skills.v1",
+  "pack_id": "lumi-number-sequence-v0",
+  "pack_version": "0.1.0-draft",
+  "review_status": "draft_unreviewed",
+  "skills": [
+    {
+      "skill_id": "xingce.quantitative.number_sequence.first_difference",
+      "label": "构造并比较相邻差值",
+      "mastery_claim": "能把数列改写为相邻差值序列，并检验差值本身的变化；仅由无提示迁移证据更新。"
+    },
+    {
+      "skill_id": "xingce.quantitative.number_sequence.rule_selection",
+      "label": "比较候选生成规则",
+      "mastery_claim": "能比较递增差值、交替子列与乘除关系，避免仅凭单个相邻数猜规则；仅由无提示迁移证据更新。"
+    },
+    {
+      "skill_id": "xingce.quantitative.number_sequence.extension",
+      "label": "按已验证规则延伸一项",
+      "mastery_claim": "能在规则已被验证后准确计算下一项，并复核增量；仅由无提示迁移证据更新。"
+    }
+  ]
+}

@@ -1,0 +1,290 @@
+{
+  "schema_version": "lumi.xingce-adaptive-records.v1",
+  "pack_id": "lumi-sentence-order-v0",
+  "pack_version": "0.1.0-draft",
+  "review_status": "draft_unreviewed",
+  "records": [
+    {
+      "record_id": "D01",
+      "role": "entry_diagnostic",
+      "title": "语句排序：背景—问题—措施—结果",
+      "target_skill_ids": [
+        "xingce.verbal.sentence_order.reference",
+        "xingce.verbal.sentence_order.connection",
+        "xingce.verbal.sentence_order.progression",
+        "xingce.verbal.sentence_order.coherence"
+      ],
+      "candidate_misconception_ids": [
+        "M-REF",
+        "M-CONN",
+        "M-PROG",
+        "M-COH"
+      ],
+      "independence_group": "order-tools-entry",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "将下列句子组成语意连贯的一段文字，排序最恰当的是：\n\n① 许多社区把闲置储物间改成共享工具间。\n② 但工具若没有借还标记，使用者很难知道物品去向。\n③ 因此，运营者先建立编号和归还位置，再根据使用记录调整物品。\n④ 这样，空间改造才从一次布置变成可持续的共享服务。",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "①②③④"
+        },
+        {
+          "label": "B",
+          "text": "②①④③"
+        },
+        {
+          "label": "C",
+          "text": "①③②④"
+        },
+        {
+          "label": "D",
+          "text": "④①②③"
+        }
+      ],
+      "correct_option": "A",
+      "route_probe_ids": [
+        "P01"
+      ],
+      "record_sha256": "31357f89452fb1c1f126b1e35929a011bfaad17e80cfd074b41730f49b1d4533"
+    },
+    {
+      "record_id": "P01",
+      "role": "probe",
+      "title": "最小探查：先解决指代与因果",
+      "target_skill_ids": [
+        "xingce.verbal.sentence_order.reference",
+        "xingce.verbal.sentence_order.connection",
+        "xingce.verbal.sentence_order.progression",
+        "xingce.verbal.sentence_order.coherence"
+      ],
+      "candidate_misconception_ids": [
+        "M-REF",
+        "M-CONN",
+        "M-PROG",
+        "M-COH"
+      ],
+      "independence_group": "order-data-probe",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "将下列句子组成语意连贯的一段文字，排序最恰当的是：\n\n① 这些说明使非专业使用者也能理解字段的含义和范围。\n② 某些公开数据虽然数量不少，却缺少口径和更新时间说明。\n③ 为此，发布者补充检索入口、字段解释和更新提示。\n④ 因而，信息公开不仅是提供数据，也包括降低正确使用数据的门槛。",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "①②③④"
+        },
+        {
+          "label": "B",
+          "text": "②③①④"
+        },
+        {
+          "label": "C",
+          "text": "②①④③"
+        },
+        {
+          "label": "D",
+          "text": "③②①④"
+        }
+      ],
+      "correct_option": "B",
+      "discriminates": [
+        "M-REF",
+        "M-CONN",
+        "M-PROG",
+        "M-COH"
+      ],
+      "candidate_evidence_map": {
+        "M-REF": {
+          "A": "support",
+          "B": "refute",
+          "C": "support",
+          "D": "insufficient"
+        },
+        "M-CONN": {
+          "A": "insufficient",
+          "B": "refute",
+          "C": "support",
+          "D": "support"
+        },
+        "M-PROG": {
+          "A": "support",
+          "B": "refute",
+          "C": "support",
+          "D": "support"
+        },
+        "M-COH": {
+          "A": "support",
+          "B": "refute",
+          "C": "support",
+          "D": "insufficient"
+        }
+      },
+      "record_sha256": "5c00dbb788eae6067b031fc10d8179910b7168c54c18f894d73b590aac4a53bd"
+    },
+    {
+      "record_id": "T-REF",
+      "role": "teaching_asset",
+      "title": "微课：含“这些、其、该”的句子先找对象",
+      "target_skill_ids": [
+        "xingce.verbal.sentence_order.reference"
+      ],
+      "candidate_misconception_ids": [
+        "M-REF"
+      ],
+      "independence_group": "order-reference-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-REF"
+      ],
+      "teaching_content": "先圈出“这些说明”等指代词，再反问：它指什么？被指代的“字段解释和更新提示”必须先出现，所以含指代词的句子不能作为开头。",
+      "record_sha256": "e2ed7d3847f409fe4f0a139e0c67d1fed8376f82e2adad9d1e423f5809dfbdb5"
+    },
+    {
+      "record_id": "T-CONN",
+      "role": "teaching_asset",
+      "title": "微课：连接词给出硬顺序",
+      "target_skill_ids": [
+        "xingce.verbal.sentence_order.connection"
+      ],
+      "candidate_misconception_ids": [
+        "M-CONN"
+      ],
+      "independence_group": "order-connection-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-CONN"
+      ],
+      "teaching_content": "“为此”前面需要一个待解决的问题；“因而”前面需要原因或结果链。先把这些连接词两侧配对，再处理剩余句子。",
+      "record_sha256": "cea453d43badb9717c48ef0b0105d700a8756d684f469fde7783c1a0af7ad5bf"
+    },
+    {
+      "record_id": "T-PROG",
+      "role": "teaching_asset",
+      "title": "微课：段落通常先提出情境，再给回应",
+      "target_skill_ids": [
+        "xingce.verbal.sentence_order.progression"
+      ],
+      "candidate_misconception_ids": [
+        "M-PROG"
+      ],
+      "independence_group": "order-progression-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-PROG"
+      ],
+      "teaching_content": "多数说明段落遵循：出现的对象或问题—为什么不够—如何回应—产生什么意义。先把“因而、这样”的总结句暂放在末尾，再检查前面的因果链。",
+      "record_sha256": "af0c814694938db0b3c4a4d48a4e16d139099610d6ae517eaf4e7c353183f897"
+    },
+    {
+      "record_id": "T-COH",
+      "role": "teaching_asset",
+      "title": "微课：拼好后必须从头读一遍",
+      "target_skill_ids": [
+        "xingce.verbal.sentence_order.coherence"
+      ],
+      "candidate_misconception_ids": [
+        "M-COH"
+      ],
+      "independence_group": "order-coherence-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-COH"
+      ],
+      "teaching_content": "关键词相同不代表顺序正确。按候选顺序朗读：开头是否凭空出现“这些”，中间是否突然给出结论，结尾能否收束前文。",
+      "record_sha256": "383b176612ef6da03deb41351f487f7f225abe606b0d4115608070c83b8cf07d"
+    },
+    {
+      "record_id": "V01",
+      "role": "independent_transfer",
+      "title": "独立迁移：另一个问题—措施—结果链",
+      "target_skill_ids": [
+        "xingce.verbal.sentence_order.reference",
+        "xingce.verbal.sentence_order.connection",
+        "xingce.verbal.sentence_order.progression"
+      ],
+      "candidate_misconception_ids": [
+        "M-REF",
+        "M-CONN",
+        "M-PROG",
+        "M-COH"
+      ],
+      "independence_group": "order-wayfinding-transfer",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "将下列句子组成语意连贯的一段文字，排序最恰当的是：\n\n① 它们能让第一次到访者在路口减少反复判断。\n② 一些步行路线的信息只在起点出现，途中缺少连续提示。\n③ 因此，管理者在转向处补充一致的路标和到达时间信息。\n④ 连续信息的价值不在装饰，而在于降低识别路径的成本。",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "①②③④"
+        },
+        {
+          "label": "B",
+          "text": "②③①④"
+        },
+        {
+          "label": "C",
+          "text": "②①④③"
+        },
+        {
+          "label": "D",
+          "text": "③②①④"
+        }
+      ],
+      "correct_option": "B",
+      "requires_no_hints": true,
+      "record_sha256": "de8d072f3010f337145b38cdbc318513bd830715c7f4666f42fdc66cafd8d5bd"
+    },
+    {
+      "record_id": "R01",
+      "role": "delayed_review",
+      "title": "延迟复习：用指代和总结句确定框架",
+      "target_skill_ids": [
+        "xingce.verbal.sentence_order.reference",
+        "xingce.verbal.sentence_order.coherence"
+      ],
+      "candidate_misconception_ids": [
+        "M-REF",
+        "M-CONN",
+        "M-PROG",
+        "M-COH"
+      ],
+      "independence_group": "order-reading-review",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "将下列句子组成语意连贯的一段文字，排序最恰当的是：\n\n① 这些变化使阅读角更容易成为日常活动的一部分。\n② 有些公共阅读角建成后使用率不高。\n③ 运营者于是把活动安排、书目更新和使用反馈连接起来。\n④ 因为空间本身若与附近生活脱节，书架再多也难形成持续使用。",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "②④③①"
+        },
+        {
+          "label": "B",
+          "text": "①②④③"
+        },
+        {
+          "label": "C",
+          "text": "②③④①"
+        },
+        {
+          "label": "D",
+          "text": "③②④①"
+        }
+      ],
+      "correct_option": "A",
+      "requires_no_hints": true,
+      "scheduled_after_days": 4,
+      "eligible_after_transfer_ids": [
+        "V01"
+      ],
+      "record_sha256": "cd1057f1f1f229e6a722cbfc1f70dae51c541b73400e4ec63d6abd0dc1b422a9"
+    }
+  ]
+}

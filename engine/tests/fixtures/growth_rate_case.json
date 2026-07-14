@@ -21,23 +21,23 @@
     {
       "cause_id": "base_current_reversal",
       "probability": 0.42,
-      "cohort_id": "mock-exam-beginner",
-      "sample_size": 840,
-      "source_version": "cohort-2026-07"
+      "cohort_id": "synthetic-engineering-taxonomy",
+      "sample_size": 0,
+      "source_version": "synthetic-engineering-prior-v1"
     },
     {
       "cause_id": "percentage_point_confusion",
       "probability": 0.33,
-      "cohort_id": "mock-exam-beginner",
-      "sample_size": 840,
-      "source_version": "cohort-2026-07"
+      "cohort_id": "synthetic-engineering-taxonomy",
+      "sample_size": 0,
+      "source_version": "synthetic-engineering-prior-v1"
     },
     {
       "cause_id": "arithmetic_error",
       "probability": 0.25,
-      "cohort_id": "mock-exam-beginner",
-      "sample_size": 840,
-      "source_version": "cohort-2026-07"
+      "cohort_id": "synthetic-engineering-taxonomy",
+      "sample_size": 0,
+      "source_version": "synthetic-engineering-prior-v1"
     }
   ],
   "history": {

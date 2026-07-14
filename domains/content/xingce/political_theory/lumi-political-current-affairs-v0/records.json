@@ -1,0 +1,224 @@
+{
+  "schema_version": "lumi.xingce-adaptive-records.v1",
+  "pack_id": "lumi-political-current-affairs-v0",
+  "pack_version": "0.1.0-draft",
+  "review_status": "draft_unreviewed",
+  "records": [
+    {
+      "record_id": "D01",
+      "role": "entry_diagnostic",
+      "title": "时事政治：先锁定全会公报快照",
+      "target_skill_ids": [
+        "xingce.political.current_affairs.date_attribution",
+        "xingce.political.current_affairs.document_scope"
+      ],
+      "candidate_misconception_ids": [
+        "M-DATE",
+        "M-SCOPE"
+      ],
+      "independence_group": "political-current-entry-plenum",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "依据本题列出的二十届四中全会公报，下列说法正确的是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "中国共产党第二十届中央委员会第四次全体会议于2025年10月20日至23日在北京举行"
+        },
+        {
+          "label": "B",
+          "text": "该公报描述的是一场未举行的未来会议"
+        },
+        {
+          "label": "C",
+          "text": "该公报可以直接证明所有后续规划任务已完成"
+        },
+        {
+          "label": "D",
+          "text": "会议届次和日期可由任意其他会议替代"
+        }
+      ],
+      "correct_option": "A",
+      "route_probe_ids": [
+        "P01"
+      ],
+      "record_sha256": "c0158a3cf85e041f7290210c35f52467769862cb20b2173e9d06de2ad465ddb8"
+    },
+    {
+      "record_id": "P01",
+      "role": "probe",
+      "title": "最小探查：审议通过不等于所有结果已发生",
+      "target_skill_ids": [
+        "xingce.political.current_affairs.date_attribution",
+        "xingce.political.current_affairs.document_scope"
+      ],
+      "candidate_misconception_ids": [
+        "M-DATE",
+        "M-SCOPE"
+      ],
+      "independence_group": "political-current-probe-document",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "依据所列公报，下列概括最稳妥的是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "全会审议通过了关于制定国民经济和社会发展第十五个五年规划的建议；题干未给出的后续结果不可自行补充"
+        },
+        {
+          "label": "B",
+          "text": "只要知道“十五五”字样，就不必核对文件和会议"
+        },
+        {
+          "label": "C",
+          "text": "审议通过文件必然等同于其中每项任务已经完成"
+        },
+        {
+          "label": "D",
+          "text": "任何后来新闻都会自动改写这份冻结公报"
+        }
+      ],
+      "correct_option": "A",
+      "discriminates": [
+        "M-DATE",
+        "M-SCOPE"
+      ],
+      "candidate_evidence_map": {
+        "M-DATE": {
+          "A": "refute",
+          "B": "support",
+          "C": "insufficient",
+          "D": "insufficient"
+        },
+        "M-SCOPE": {
+          "A": "refute",
+          "B": "insufficient",
+          "C": "support",
+          "D": "support"
+        }
+      },
+      "record_sha256": "51670abb8b7e26d46294bf04d08dd377141eb534f8936d38f33ef1d13e27a067"
+    },
+    {
+      "record_id": "T-DATE",
+      "role": "teaching_asset",
+      "title": "微课：会议、日期、文件三格核对",
+      "target_skill_ids": [
+        "xingce.political.current_affairs.date_attribution"
+      ],
+      "candidate_misconception_ids": [
+        "M-DATE"
+      ],
+      "independence_group": "political-current-date-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-DATE"
+      ],
+      "teaching_content": "将时事来源拆为会议届次、日期地点、文件动作三格。相近的会议名称和规划词不能互换；选择题只承认指定公报在截止日内明确写出的组合。",
+      "record_sha256": "cbf9aad0df3cf1029196f50aba37e0f07b729211f8a5305c51776b68d768adcc"
+    },
+    {
+      "record_id": "T-SCOPE",
+      "role": "teaching_asset",
+      "title": "微课：文件动作与实施结果分层",
+      "target_skill_ids": [
+        "xingce.political.current_affairs.document_scope"
+      ],
+      "candidate_misconception_ids": [
+        "M-SCOPE"
+      ],
+      "independence_group": "political-current-scope-teaching",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "target_candidate_ids": [
+        "M-SCOPE"
+      ],
+      "teaching_content": "“审议通过、提出、部署”说的是文件或会议动作；它们不是所有后续结果已经发生的证据。题干未给出执行事实时，答案只能停在公报所述动作。",
+      "record_sha256": "9c01b081a6525e7b37c3748e65d0b784f2051b3e0e10943e7e1abe9d39d4a6fb"
+    },
+    {
+      "record_id": "V01",
+      "role": "independent_transfer",
+      "title": "独立迁移：冻结时事文本的边界",
+      "target_skill_ids": [
+        "xingce.political.current_affairs.date_attribution",
+        "xingce.political.current_affairs.document_scope"
+      ],
+      "candidate_misconception_ids": [
+        "M-DATE",
+        "M-SCOPE"
+      ],
+      "independence_group": "political-current-transfer-source",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "一道题给出某次会议公报并询问其直接事实，最合适的答题方式是：",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "核对会议、日期和文件动作，只答公报直接支持的内容"
+        },
+        {
+          "label": "B",
+          "text": "把部署改写为全部目标已实现"
+        },
+        {
+          "label": "C",
+          "text": "忽略届次，用相似事件替换"
+        },
+        {
+          "label": "D",
+          "text": "自动加入截点之后的新闻"
+        }
+      ],
+      "correct_option": "A",
+      "requires_no_hints": true,
+      "record_sha256": "fdcfb5924300e6d6bdbb3b68749bc85c6923aaa243c2162b7315f1a9d86151e5"
+    },
+    {
+      "record_id": "R01",
+      "role": "delayed_review",
+      "title": "延迟复习：时事快照可回放",
+      "target_skill_ids": [
+        "xingce.political.current_affairs.document_scope"
+      ],
+      "candidate_misconception_ids": [
+        "M-DATE",
+        "M-SCOPE"
+      ],
+      "independence_group": "political-current-review-scope",
+      "content_origin": "original_lumi",
+      "review_status": "draft_unreviewed",
+      "prompt": "当时事题给出权威来源和有效截点时，何种结论最可靠？",
+      "response_mode": "single_choice",
+      "options": [
+        {
+          "label": "A",
+          "text": "该快照在截点内明确陈述的事实"
+        },
+        {
+          "label": "B",
+          "text": "将计划性用语一律改为已完成结果"
+        },
+        {
+          "label": "C",
+          "text": "不核对文件版本"
+        },
+        {
+          "label": "D",
+          "text": "混合不同届次的资料"
+        }
+      ],
+      "correct_option": "A",
+      "requires_no_hints": true,
+      "scheduled_after_days": 4,
+      "eligible_after_transfer_ids": [
+        "V01"
+      ],
+      "record_sha256": "cedc50c95356da6b37904085ee27e3fc7f34c3738497d13e36f954747fa644d9"
+    }
+  ]
+}

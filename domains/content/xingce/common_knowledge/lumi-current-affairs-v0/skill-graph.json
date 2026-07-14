@@ -1,0 +1,11 @@
+{
+  "schema_version": "lumi.xingce-adaptive-skills.v1",
+  "pack_id": "lumi-current-affairs-v0",
+  "pack_version": "0.1.0-draft",
+  "review_status": "draft_unreviewed",
+  "skills": [
+    {"skill_id": "xingce.common.current_affairs.date_attribution", "label": "按日期定位时政来源", "mastery_claim": "能将会议、文件和公布日期锁定在题目给出的版本；仅由无提示迁移更新。"},
+    {"skill_id": "xingce.common.current_affairs.policy_scope", "label": "区分报告、决议与后续执行事实", "mastery_claim": "能区别文件所批准或提出的内容与题干未给出的后续执行结果；仅由无提示迁移更新。"},
+    {"skill_id": "xingce.common.current_affairs.fact_recall", "label": "核对文件名称与会议届次", "mastery_claim": "能从权威快照中核对文件名称、届次和行动主体；仅由无提示迁移更新。"}
+  ]
+}

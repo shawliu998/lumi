@@ -1,0 +1,72 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-party-history-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "status": "release_ready",
+  "release_ready": true,
+  "runtime_registration": "allowed_after_human_review",
+  "subtype_id": "xingce.political.party_history",
+  "module_id": "political_theory",
+  "form": "text_mcq",
+  "scorer": "exact_option_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "release_distribution_allowed"
+  },
+  "content_evidence": {
+    "authoritative_source_snapshot": "共产党员网（来源：中央党史和文献研究院网站），《中国共产党第一次全国代表大会》，https://www.12371.cn/special/lcddh/ddh1/（accessed 2026-07-13）。",
+    "validity_cutoff": "2026-07-13; this draft is limited to the named source's account of the First National Congress, with no extension to unlisted historical claims."
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": true,
+    "review_attestations": [
+      {
+        "review_kind": "logic",
+        "reviewer_id": "1",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "eb9b16ffa9e5e0f227616c4426d5d63505f1e310f1a81c81b7aee795ab35a1ec"
+      },
+      {
+        "review_kind": "editorial_rights",
+        "reviewer_id": "2",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "eb9b16ffa9e5e0f227616c4426d5d63505f1e310f1a81c81b7aee795ab35a1ec"
+      }
+    ]
+  },
+  "product_release": {
+    "state": "released",
+    "acceptance_basis": "owner_acceptance_waiver",
+    "accepted_at": "2026-07-14",
+    "waived_gate": "type_by_type_human_local_browser_acceptance",
+    "human_effect_evidence": "unavailable",
+    "claim_scope": "content_and_mechanism_availability_only"
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "d91add270521686678e219ab000c007e9c393fdd0ec2a505327283ba8c56e992"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "74b2b2fb9a442bbde04c108425bd881cbc0b6a7befdef246e2d14bb0d2473001"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "5ee28fcda58b97b66bce818456b7fc5e21d46461921a8f4548afc09b68386f88"
+    },
+    {
+      "path": "review-evidence.json",
+      "sha256": "055eaf7f63744357fc6c9bb6a42e1e1c326fc67975b66412a406ca6a13522d23"
+    }
+  ]
+}

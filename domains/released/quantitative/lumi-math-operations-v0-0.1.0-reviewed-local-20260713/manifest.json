@@ -1,0 +1,72 @@
+{
+  "schema_version": "lumi.xingce-adaptive-pack.v1",
+  "pack_id": "lumi-math-operations-v0",
+  "pack_version": "0.1.0-reviewed-local-20260713",
+  "status": "release_ready",
+  "release_ready": true,
+  "runtime_registration": "allowed_after_human_review",
+  "subtype_id": "xingce.quantitative.math_operations",
+  "module_id": "quantitative",
+  "form": "numeric_or_mcq",
+  "scorer": "authored_numeric_v1",
+  "policy": {
+    "policy_id": "lumi.xingce-type-policy",
+    "policy_version": "1.0.0",
+    "candidate_status": "unconfirmed",
+    "state_commit_rule": "independent_unassisted_transfer_only"
+  },
+  "rights": {
+    "content_origin": "original_lumi",
+    "distribution": "release_distribution_allowed"
+  },
+  "content_evidence": {
+    "explicit_solution_steps": "records.json#/solution_notes",
+    "answer_tolerance_or_exactness": "records.json#/exact_numeric_scoring"
+  },
+  "human_review_gate": {
+    "required": true,
+    "production_load_allowed": true,
+    "review_attestations": [
+      {
+        "review_kind": "logic",
+        "reviewer_id": "1",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "4919ba25a7cfe44b46073128d93b7bd58af567fdbcf898827dc318f7cc906f2c"
+      },
+      {
+        "review_kind": "editorial_rights",
+        "reviewer_id": "2",
+        "reviewed_at": "2026-07-13",
+        "status": "approved",
+        "manifest_sha256": "4919ba25a7cfe44b46073128d93b7bd58af567fdbcf898827dc318f7cc906f2c"
+      }
+    ]
+  },
+  "product_release": {
+    "state": "released",
+    "acceptance_basis": "owner_acceptance_waiver",
+    "accepted_at": "2026-07-14",
+    "waived_gate": "type_by_type_human_local_browser_acceptance",
+    "human_effect_evidence": "unavailable",
+    "claim_scope": "content_and_mechanism_availability_only"
+  },
+  "artifacts": [
+    {
+      "path": "records.json",
+      "sha256": "0c4410aae3ed8de4e4b986d0c198e602629768c12dada18569129bc59fb05cc0"
+    },
+    {
+      "path": "skill-graph.json",
+      "sha256": "27ee76676b956f855116526d916724f76027575c2c0c3f7df0461769f2ce1d67"
+    },
+    {
+      "path": "misconceptions.json",
+      "sha256": "72123c4b61c710d3c9c389654143721bf8adfe60e6adc7f09beed4fd12f34d49"
+    },
+    {
+      "path": "review-evidence.json",
+      "sha256": "79d164a52d92c604cbdb93641dbb0209712ffabb71d7a3dff1897e8ea0aff286"
+    }
+  ]
+}
