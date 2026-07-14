@@ -25,12 +25,26 @@ CHECKSUM_FILENAME = "SHA256SUMS"
 QUESTION_ID_PATTERN = re.compile(r"^[A-Za-z0-9._:-]{1,128}$")
 COMMAND_ID_PATTERN = re.compile(r"^c_[A-P]{40}$")
 SUBTYPE_ID_PATTERN = re.compile(r"^[A-Za-z0-9._:-]{1,128}$")
+PAPER_ID_PATTERN = re.compile(r"^[A-Za-z0-9._:-]{1,128}$")
+MODULE_ID_PATTERN = re.compile(r"^[A-Za-z0-9._:-]{1,128}$")
 SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
 MAX_QUERY_LENGTH = 100
 MAX_PAGE_SIZE = 100
+MAX_PAPER_QUESTION_PAGE_SIZE = 200
 MAX_PAGE = 1_000_000
+MAX_FACET_LENGTH = 64
 LOCAL_SOURCE_MARKER = re.compile(r"\[本地原卷页图：[^\]]+\]")
 LOCAL_ABSOLUTE_PATH = re.compile(r"/(?:Users|Volumes)/[^\s\]\)<>\"']+")
+
+MODULE_LABELS = {
+    "verbal": "言语理解",
+    "quantitative": "数量关系",
+    "judgment": "判断推理",
+    "data_analysis": "资料分析",
+    "common_knowledge": "常识判断",
+    "political_theory": "政治理论",
+    "unclassified": "未分类",
+}
 
 
 class QuestionBankUnavailable(RuntimeError):
@@ -114,7 +128,7 @@ class XingceQuestionBankCatalog:
 
     def status(self) -> dict[str, Any]:
         base: dict[str, Any] = {
-            "schema_version": "lumi.xingce-question-bank-status.v1",
+            "schema_version": "lumi.xingce-question-bank-status.v2",
             "available": self.available,
             "status": "available" if self.available else "unavailable",
             "practice_contract": {
@@ -140,6 +154,7 @@ class XingceQuestionBankCatalog:
             "counts": counts,
             "access_counts": access_counts,
             "subtypes": self._subtype_counts(),
+            "facets": self._facets(),
             "offline_assets": (
                 self._assets.status()
                 if self._assets is not None
@@ -157,25 +172,46 @@ class XingceQuestionBankCatalog:
         self,
         *,
         subtype_id: Any = None,
+        module_id: Any = None,
+        paper_id: Any = None,
+        year: Any = None,
+        region: Any = None,
+        exam_type: Any = None,
         q: Any = None,
         page: Any = 1,
         page_size: Any = 20,
     ) -> dict[str, Any]:
         self._require_available()
         subtype = self._optional_subtype(subtype_id)
+        module = self._optional_module(module_id)
+        paper = self._optional_paper(paper_id)
+        year_value = self._optional_year(year)
+        region_value = self._optional_facet(region, "region")
+        exam_type_value = self._optional_facet(exam_type, "exam_type")
         search = self._optional_search(q)
         page_value = self._positive_int(page, "page")
         page_size_value = self._positive_int(page_size, "page_size")
         if page_value > MAX_PAGE:
             raise QuestionBankRequestError(f"page must not exceed {MAX_PAGE}")
-        if page_size_value > MAX_PAGE_SIZE:
-            raise QuestionBankRequestError(f"page_size must not exceed {MAX_PAGE_SIZE}")
-        where, parameters = self._where(subtype, search)
+        page_size_limit = MAX_PAPER_QUESTION_PAGE_SIZE if paper is not None else MAX_PAGE_SIZE
+        if page_size_value > page_size_limit:
+            raise QuestionBankRequestError(f"page_size must not exceed {page_size_limit}")
+        if paper is not None and not self._paper_sequence_available(paper):
+            raise QuestionBankConflict("paper source order is unavailable")
+        where, parameters = self._where(
+            subtype=subtype,
+            module=module,
+            paper=paper,
+            year=year_value,
+            region=region_value,
+            exam_type=exam_type_value,
+            search=search,
+        )
         offset = (page_value - 1) * page_size_value
         with self._connect() as connection:
             total = int(
                 connection.execute(
-                    f"SELECT COUNT(*) FROM ready_questions q JOIN ready_question_subtypes qs ON qs.question_id=q.question_id {where}",
+                    f"SELECT COUNT(*) FROM ready_questions q JOIN ready_question_subtypes qs ON qs.question_id=q.question_id JOIN subtype_catalog sc ON sc.subtype_id=qs.subtype_id {where}",
                     parameters,
                 ).fetchone()[0]
             )
@@ -183,9 +219,12 @@ class XingceQuestionBankCatalog:
                 f"""
                 SELECT q.question_id, qs.subtype_id,
                        sc.{self._columns['subtype_name']} AS subtype_name,
+                       sc.{self._columns['subtype_module_id']} AS module_id,
+                       q.{self._columns['paper_id']} AS paper_id,
                        q.{self._columns['module']} AS module,
                        q.{self._columns['year']} AS year,
                        q.{self._columns['region']} AS region,
+                       q.{self._columns['exam_type']} AS exam_type,
                        q.{self._columns['paper_title']} AS paper_title,
                        q.{self._columns['question_number']} AS question_number,
                        q.{self._columns['question_type']} AS question_type,
@@ -198,14 +237,17 @@ class XingceQuestionBankCatalog:
                 JOIN ready_question_subtypes qs ON qs.question_id=q.question_id
                 JOIN subtype_catalog sc ON sc.subtype_id=qs.subtype_id
                 {where}
-                ORDER BY q.question_id
+                ORDER BY q.{self._columns['year']} DESC,
+                         q.{self._columns['paper_title']},
+                         COALESCE(q.{self._columns['sort_order']}, q.{self._columns['question_number']}, 2147483647),
+                         q.question_id
                 LIMIT ? OFFSET ?
                 """,
                 (*parameters, page_size_value, offset),
             ).fetchall()
         items = [self._list_item(row) for row in rows]
         return {
-            "schema_version": "lumi.xingce-question-bank-list.v1",
+            "schema_version": "lumi.xingce-question-bank-list.v2",
             "items": items,
             "pagination": {
                 "page": page_value,
@@ -213,8 +255,138 @@ class XingceQuestionBankCatalog:
                 "total_items": total,
                 "total_pages": (total + page_size_value - 1) // page_size_value,
             },
-            "filters": {"subtype_id": subtype or "", "q": search or ""},
+            "filters": {
+                "subtype_id": subtype or "",
+                "module_id": module or "",
+                "paper_id": paper or "",
+                "year": year_value,
+                "region": region_value or "",
+                "exam_type": exam_type_value or "",
+                "q": search or "",
+            },
         }
+
+    def list_papers(
+        self,
+        *,
+        year: Any = None,
+        region: Any = None,
+        exam_type: Any = None,
+        q: Any = None,
+        page: Any = 1,
+        page_size: Any = 24,
+    ) -> dict[str, Any]:
+        self._require_available()
+        year_value = self._optional_year(year)
+        region_value = self._optional_facet(region, "region")
+        exam_type_value = self._optional_facet(exam_type, "exam_type")
+        search = self._optional_search(q)
+        page_value = self._positive_int(page, "page")
+        page_size_value = self._positive_int(page_size, "page_size")
+        if page_value > MAX_PAGE:
+            raise QuestionBankRequestError(f"page must not exceed {MAX_PAGE}")
+        if page_size_value > MAX_PAGE_SIZE:
+            raise QuestionBankRequestError(f"page_size must not exceed {MAX_PAGE_SIZE}")
+        where, parameters = self._paper_where(
+            year=year_value,
+            region=region_value,
+            exam_type=exam_type_value,
+            search=search,
+        )
+        offset = (page_value - 1) * page_size_value
+        with self._connect() as connection:
+            total = int(
+                connection.execute(
+                    f"SELECT COUNT(*) FROM (SELECT p.paper_id FROM papers p JOIN ready_questions q ON q.{self._columns['paper_id']}=p.paper_id {where} GROUP BY p.paper_id)",
+                    parameters,
+                ).fetchone()[0]
+            )
+            rows = connection.execute(
+                f"""
+                SELECT p.paper_id,
+                       p.{self._columns['paper_title_catalog']} AS title,
+                       p.{self._columns['paper_year']} AS year,
+                       p.{self._columns['paper_region']} AS region,
+                       p.{self._columns['paper_exam_type']} AS exam_type,
+                       p.{self._columns['paper_question_count']} AS source_question_count,
+                       p.{self._columns['paper_full_answers']} AS has_full_answers,
+                       p.{self._columns['paper_full_explanations']} AS has_full_explanations,
+                       COUNT(q.question_id) AS ready_question_count,
+                       SUM(CASE WHEN q.{self._columns['has_assets']}<>0 THEN 1 ELSE 0 END) AS asset_flagged_question_count,
+                       SUM(CASE WHEN COALESCE(q.{self._columns['sort_order']}, q.{self._columns['question_number']}) IS NULL THEN 1 ELSE 0 END) AS missing_source_order_count,
+                       COUNT(DISTINCT COALESCE(q.{self._columns['sort_order']}, q.{self._columns['question_number']})) AS distinct_source_order_count
+                FROM papers p
+                JOIN ready_questions q ON q.{self._columns['paper_id']}=p.paper_id
+                {where}
+                GROUP BY p.paper_id
+                ORDER BY p.{self._columns['paper_year']} DESC,
+                         p.{self._columns['paper_region']},
+                         p.{self._columns['paper_title_catalog']}
+                LIMIT ? OFFSET ?
+                """,
+                (*parameters, page_size_value, offset),
+            ).fetchall()
+        items = []
+        for row in rows:
+            ready_count = int(row["ready_question_count"])
+            source_count = int(row["source_question_count"])
+            source_order_unique = (
+                int(row["missing_source_order_count"] or 0) == 0
+                and int(row["distinct_source_order_count"] or 0) == ready_count
+            )
+            items.append(
+                {
+                    "paper_id": row["paper_id"],
+                    "title": row["title"],
+                    "year": row["year"],
+                    "region": row["region"],
+                    "exam_type": row["exam_type"],
+                    "source_question_count": source_count,
+                    "ready_question_count": ready_count,
+                    "asset_flagged_question_count": int(row["asset_flagged_question_count"] or 0),
+                    "all_collected_records_ready": source_count == ready_count,
+                    "sequence_status": "source_order_unique" if source_order_unique else "source_order_unavailable",
+                    "paper_practice_available": source_order_unique,
+                    "official_completeness": "unknown",
+                    "has_full_explanations": bool(row["has_full_explanations"]),
+                }
+            )
+        return {
+            "schema_version": "lumi.xingce-question-bank-paper-list.v1",
+            "items": items,
+            "pagination": {
+                "page": page_value,
+                "page_size": page_size_value,
+                "total_items": total,
+                "total_pages": (total + page_size_value - 1) // page_size_value,
+            },
+            "filters": {
+                "year": year_value,
+                "region": region_value or "",
+                "exam_type": exam_type_value or "",
+                "q": search or "",
+            },
+        }
+
+    def _paper_sequence_available(self, paper_id: str) -> bool:
+        with self._connect() as connection:
+            row = connection.execute(
+                f"""
+                SELECT COUNT(*) AS ready_count,
+                       SUM(CASE WHEN COALESCE(q.{self._columns['sort_order']}, q.{self._columns['question_number']}) IS NULL THEN 1 ELSE 0 END) AS missing_source_order_count,
+                       COUNT(DISTINCT COALESCE(q.{self._columns['sort_order']}, q.{self._columns['question_number']})) AS distinct_source_order_count
+                FROM ready_questions q
+                WHERE q.{self._columns['paper_id']}=?
+                """,
+                (paper_id,),
+            ).fetchone()
+        ready_count = int(row["ready_count"] or 0)
+        if ready_count == 0:
+            return True
+        return (
+            int(row["missing_source_order_count"] or 0) == 0
+            and int(row["distinct_source_order_count"] or 0) == ready_count
+        )
 
     def question(self, question_id: Any) -> dict[str, Any]:
         self._require_available()
@@ -396,6 +568,7 @@ class XingceQuestionBankCatalog:
             if quick is None or quick[0] != "ok":
                 raise ValueError("SQLite quick check failed")
             required_objects = {
+                "papers",
                 "ready_questions",
                 "ready_options",
                 "ready_answer_keys",
@@ -406,7 +579,7 @@ class XingceQuestionBankCatalog:
             existing = {
                 row[0]
                 for row in connection.execute(
-                    "SELECT name FROM sqlite_schema WHERE name IN (?,?,?,?,?,?)",
+                    f"SELECT name FROM sqlite_schema WHERE name IN ({','.join('?' for _ in required_objects)})",
                     tuple(sorted(required_objects)),
                 )
             }
@@ -431,9 +604,13 @@ class XingceQuestionBankCatalog:
     def _bind_columns(self, connection: sqlite3.Connection) -> None:
         self._columns = {
             "subtype_name": self._column(connection, "subtype_catalog", ("label", "display_name", "name", "subtype_name")),
+            "subtype_module_id": self._column(connection, "subtype_catalog", ("module_id",)),
+            "paper_id": self._column(connection, "ready_questions", ("paper_id",)),
+            "sort_order": self._column(connection, "ready_questions", ("sort_order", "question_no", "question_number")),
             "module": self._column(connection, "ready_questions", ("module",)),
             "year": self._column(connection, "ready_questions", ("year",)),
             "region": self._column(connection, "ready_questions", ("region",)),
+            "exam_type": self._column(connection, "ready_questions", ("exam_type",)),
             "paper_title": self._column(connection, "ready_questions", ("paper_title",)),
             "question_number": self._column(connection, "ready_questions", ("question_no", "question_number")),
             "question_type": self._column(connection, "ready_questions", ("question_type", "type", "answer_type")),
@@ -449,6 +626,13 @@ class XingceQuestionBankCatalog:
             "option_order": self._column(connection, "ready_options", ("option_order", "sort_order")),
             "answer": self._column(connection, "ready_answer_keys", ("answer_labels", "answer_label", "answer")),
             "explanation": self._column(connection, "ready_explanations", ("explanation_text", "explanation")),
+            "paper_title_catalog": self._column(connection, "papers", ("title", "paper_title")),
+            "paper_year": self._column(connection, "papers", ("year",)),
+            "paper_region": self._column(connection, "papers", ("region",)),
+            "paper_exam_type": self._column(connection, "papers", ("exam_type",)),
+            "paper_question_count": self._column(connection, "papers", ("question_count",)),
+            "paper_full_answers": self._column(connection, "papers", ("has_full_answers",)),
+            "paper_full_explanations": self._column(connection, "papers", ("has_full_explanations",)),
         }
 
     @staticmethod
@@ -515,9 +699,12 @@ class XingceQuestionBankCatalog:
             f"""
             SELECT q.question_id, qs.subtype_id,
                    sc.{self._columns['subtype_name']} AS subtype_name,
+                   sc.{self._columns['subtype_module_id']} AS module_id,
+                   q.{self._columns['paper_id']} AS paper_id,
                    q.{self._columns['module']} AS module,
                    q.{self._columns['year']} AS year,
                    q.{self._columns['region']} AS region,
+                   q.{self._columns['exam_type']} AS exam_type,
                    q.{self._columns['paper_title']} AS paper_title,
                    q.{self._columns['question_number']} AS question_number,
                    q.{self._columns['question_type']} AS question_type,
@@ -542,12 +729,37 @@ class XingceQuestionBankCatalog:
             (identifier,),
         ).fetchall()
 
-    def _where(self, subtype: str | None, search: str | None) -> tuple[str, tuple[Any, ...]]:
+    def _where(
+        self,
+        *,
+        subtype: str | None,
+        module: str | None,
+        paper: str | None,
+        year: int | None,
+        region: str | None,
+        exam_type: str | None,
+        search: str | None,
+    ) -> tuple[str, tuple[Any, ...]]:
         terms: list[str] = []
         parameters: list[Any] = []
         if subtype is not None:
             terms.append("qs.subtype_id=?")
             parameters.append(subtype)
+        if module is not None:
+            terms.append(f"sc.{self._columns['subtype_module_id']}=?")
+            parameters.append(module)
+        if paper is not None:
+            terms.append(f"q.{self._columns['paper_id']}=?")
+            parameters.append(paper)
+        if year is not None:
+            terms.append(f"q.{self._columns['year']}=?")
+            parameters.append(year)
+        if region is not None:
+            terms.append(f"q.{self._columns['region']}=?")
+            parameters.append(region)
+        if exam_type is not None:
+            terms.append(f"q.{self._columns['exam_type']}=?")
+            parameters.append(exam_type)
         if search is not None:
             escaped = search.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
             pattern = f"%{escaped}%"
@@ -555,6 +767,31 @@ class XingceQuestionBankCatalog:
                 f"(q.{self._columns['stem']} LIKE ? ESCAPE '\\' OR q.{self._columns['material']} LIKE ? ESCAPE '\\' OR q.{self._columns['paper_title']} LIKE ? ESCAPE '\\')"
             )
             parameters.extend((pattern, pattern, pattern))
+        return ("WHERE " + " AND ".join(terms) if terms else "", tuple(parameters))
+
+    def _paper_where(
+        self,
+        *,
+        year: int | None,
+        region: str | None,
+        exam_type: str | None,
+        search: str | None,
+    ) -> tuple[str, tuple[Any, ...]]:
+        terms: list[str] = []
+        parameters: list[Any] = []
+        if year is not None:
+            terms.append(f"p.{self._columns['paper_year']}=?")
+            parameters.append(year)
+        if region is not None:
+            terms.append(f"p.{self._columns['paper_region']}=?")
+            parameters.append(region)
+        if exam_type is not None:
+            terms.append(f"p.{self._columns['paper_exam_type']}=?")
+            parameters.append(exam_type)
+        if search is not None:
+            escaped = search.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+            terms.append(f"p.{self._columns['paper_title_catalog']} LIKE ? ESCAPE '\\'")
+            parameters.append(f"%{escaped}%")
         return ("WHERE " + " AND ".join(terms) if terms else "", tuple(parameters))
 
     def _list_item(self, row: sqlite3.Row) -> dict[str, Any]:
@@ -566,9 +803,12 @@ class XingceQuestionBankCatalog:
             "question_id": row["question_id"],
             "subtype_id": row["subtype_id"],
             "subtype_name": row["subtype_name"],
+            "module_id": row["module_id"],
+            "paper_id": row["paper_id"],
             "module": row["module"],
             "year": row["year"],
             "region": row["region"],
+            "exam_type": row["exam_type"],
             "paper_title": row["paper_title"],
             "question_number": row["question_number"],
             "question_type": row["question_type"],
@@ -594,9 +834,12 @@ class XingceQuestionBankCatalog:
             "question_id": row["question_id"],
             "subtype_id": row["subtype_id"],
             "subtype_name": row["subtype_name"],
+            "module_id": row["module_id"],
+            "paper_id": row["paper_id"],
             "module": row["module"],
             "year": row["year"],
             "region": row["region"],
+            "exam_type": row["exam_type"],
             "paper_title": row["paper_title"],
             "question_number": row["question_number"],
             "question_type": row["question_type"],
@@ -651,6 +894,82 @@ class XingceQuestionBankCatalog:
             {"subtype_id": row["subtype_id"], "name": row["name"], "ready_count": row["ready_count"]}
             for row in rows
         ]
+
+    def _facets(self) -> dict[str, list[dict[str, Any]]]:
+        with self._connect() as connection:
+            years = connection.execute(
+                f"SELECT q.{self._columns['year']} AS value, COUNT(*) AS ready_count FROM ready_questions q GROUP BY q.{self._columns['year']} ORDER BY value DESC"
+            ).fetchall()
+            regions = connection.execute(
+                f"SELECT q.{self._columns['region']} AS value, COUNT(*) AS ready_count FROM ready_questions q GROUP BY q.{self._columns['region']} ORDER BY ready_count DESC, value"
+            ).fetchall()
+            exam_types = connection.execute(
+                f"SELECT q.{self._columns['exam_type']} AS value, COUNT(*) AS ready_count FROM ready_questions q GROUP BY q.{self._columns['exam_type']} ORDER BY ready_count DESC, value"
+            ).fetchall()
+            modules = connection.execute(
+                f"""
+                SELECT sc.{self._columns['subtype_module_id']} AS module_id,
+                       COUNT(q.question_id) AS ready_count
+                FROM subtype_catalog sc
+                JOIN ready_question_subtypes qs ON qs.subtype_id=sc.subtype_id
+                JOIN ready_questions q ON q.question_id=qs.question_id
+                GROUP BY sc.{self._columns['subtype_module_id']}
+                ORDER BY CASE sc.{self._columns['subtype_module_id']}
+                    WHEN 'verbal' THEN 1 WHEN 'quantitative' THEN 2
+                    WHEN 'judgment' THEN 3 WHEN 'data_analysis' THEN 4
+                    WHEN 'common_knowledge' THEN 5 WHEN 'political_theory' THEN 6
+                    ELSE 99 END
+                """
+            ).fetchall()
+            knowledge_points = connection.execute(
+                f"""
+                SELECT sc.subtype_id,
+                       sc.{self._columns['subtype_module_id']} AS module_id,
+                       sc.{self._columns['subtype_name']} AS name,
+                       COUNT(q.question_id) AS ready_count
+                FROM subtype_catalog sc
+                JOIN ready_question_subtypes qs ON qs.subtype_id=sc.subtype_id
+                JOIN ready_questions q ON q.question_id=qs.question_id
+                WHERE sc.{self._columns['subtype_module_id']}<>'unclassified'
+                GROUP BY sc.subtype_id, sc.{self._columns['subtype_module_id']}, sc.{self._columns['subtype_name']}
+                HAVING COUNT(q.question_id)>0
+                ORDER BY sc.{self._columns['subtype_module_id']}, sc.subtype_id
+                """
+            ).fetchall()
+        return {
+            "years": [
+                {"value": int(row["value"]), "ready_count": int(row["ready_count"])}
+                for row in years
+                if row["value"] is not None
+            ],
+            "regions": [
+                {"value": row["value"], "ready_count": int(row["ready_count"])}
+                for row in regions
+                if isinstance(row["value"], str) and row["value"]
+            ],
+            "exam_types": [
+                {"value": row["value"], "ready_count": int(row["ready_count"])}
+                for row in exam_types
+                if isinstance(row["value"], str) and row["value"]
+            ],
+            "modules": [
+                {
+                    "module_id": row["module_id"],
+                    "name": MODULE_LABELS.get(row["module_id"], "其他题型"),
+                    "ready_count": int(row["ready_count"]),
+                }
+                for row in modules
+            ],
+            "knowledge_points": [
+                {
+                    "subtype_id": row["subtype_id"],
+                    "module_id": row["module_id"],
+                    "name": row["name"],
+                    "ready_count": int(row["ready_count"]),
+                }
+                for row in knowledge_points
+            ],
+        }
 
     def _access_counts(self, connection: sqlite3.Connection | None = None) -> dict[str, int]:
         def project(active: sqlite3.Connection) -> dict[str, int]:
@@ -809,6 +1128,46 @@ class XingceQuestionBankCatalog:
         if not isinstance(value, str) or SUBTYPE_ID_PATTERN.fullmatch(value) is None:
             raise QuestionBankRequestError("subtype_id is invalid")
         return value
+
+    @staticmethod
+    def _optional_module(value: Any) -> str | None:
+        if value is None:
+            return None
+        if not isinstance(value, str) or MODULE_ID_PATTERN.fullmatch(value) is None:
+            raise QuestionBankRequestError("module_id is invalid")
+        return value
+
+    @staticmethod
+    def _optional_paper(value: Any) -> str | None:
+        if value is None:
+            return None
+        if not isinstance(value, str) or PAPER_ID_PATTERN.fullmatch(value) is None:
+            raise QuestionBankRequestError("paper_id is invalid")
+        return value
+
+    @staticmethod
+    def _optional_year(value: Any) -> int | None:
+        if value is None:
+            return None
+        year = XingceQuestionBankCatalog._positive_int(value, "year")
+        if year < 1900 or year > 2100:
+            raise QuestionBankRequestError("year must be between 1900 and 2100")
+        return year
+
+    @staticmethod
+    def _optional_facet(value: Any, name: str) -> str | None:
+        if value is None:
+            return None
+        if (
+            not isinstance(value, str)
+            or not value.strip()
+            or len(value) > MAX_FACET_LENGTH
+            or any(ord(character) < 32 for character in value)
+        ):
+            raise QuestionBankRequestError(
+                f"{name} must be non-empty text up to {MAX_FACET_LENGTH} characters"
+            )
+        return value.strip()
 
     @staticmethod
     def _optional_search(value: Any) -> str | None:

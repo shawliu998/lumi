@@ -46,6 +46,9 @@ SCREENSHOTS = {
     "p02-compare-budget-conflict-khanmigo.png": (1816, 562),
     "question-bank-offline-assets-1280x720.png": (1280, 720),
     "question-bank-offline-assets-640x720.png": (640, 720),
+    "question-bank-paper-directory-1280x720.png": (1280, 720),
+    "question-bank-paper-practice-1280x720.png": (1280, 720),
+    "question-bank-knowledge-640x720.png": (640, 720),
 }
 
 BANNED_PATTERNS = {

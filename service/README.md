@@ -68,7 +68,8 @@ CLI option to widen the bind address.
 | GET | `/v1/runs/{id}/replay` | Hash-verified replay frames |
 | GET | `/v1/skills/report` | Evidence-backed per-skill trace summary |
 | GET | `/v1/xingce/question-bank` | Full-bank availability, safe release version, counts, and subtype catalog |
-| GET | `/v1/xingce/question-bank/questions` | Search only integrity-verified `ready` questions; closed filters and bounded pagination |
+| GET | `/v1/xingce/question-bank/papers` | Browse integrity-verified ready papers; filters: `year`, `region`, `exam_type`, `q`, with bounded pagination |
+| GET | `/v1/xingce/question-bank/questions` | Browse integrity-verified `ready` questions by paper, type, or knowledge-point facet; filters: `paper_id`, `module_id`, `subtype_id`, `year`, `region`, `exam_type`, `q`, with bounded pagination |
 | GET | `/v1/xingce/question-bank/questions/{id}` | Read one answer-redacted `ready` question and its options |
 | POST | `/v1/xingce/question-bank/questions/{id}/attempts` | Score an ordinary practice response, then reveal its answer and explanation |
 | GET | `/v1/xingce/question-bank/assets/{asset_id}` | Read one checksum-verified attempt-required image through an opaque loopback URL |
@@ -121,9 +122,29 @@ Only `ready_questions`, `ready_options`, `ready_answer_keys`, and
 product queries. `needs_review` rows are not
 listed, addressable, or scoreable. List and unanswered-detail responses never
 contain answers, explanations, correct-option flags, or private source paths.
-The list accepts only `subtype_id`, `q` (at most 100 characters), `page`, and
-`page_size` (at most 100). Unknown, repeated, blank, or out-of-range query
-parameters fail closed.
+The product exposes three explicit entry modes over the same immutable release:
+
+- **套卷**: list papers, optionally filter by year, region label, exam type,
+  or title, then request the ready questions for one opaque `paper_id`;
+- **题型**: select one of the six classified modules or the explicit
+  unclassified group through `module_id`;
+- **知识点**: select one of the 30 released subtype facets with ready content through
+  `subtype_id`. This label currently means the reviewed subtype catalog, not a
+  finer-grained or automatically inferred learner skill graph.
+
+The question list accepts only `paper_id`, `module_id`, `subtype_id`, `year`,
+`region`, `exam_type`, `q` (at most 100 characters), `page`, and `page_size`.
+The paper list accepts the corresponding year, region, exam-type and text
+filters. Unknown, repeated, blank, or out-of-range query parameters fail
+closed. The current export contains 1,054 source-paper entries, 27 year facets
+(2000–2026), 34 non-empty region-label facets, six exam-type facets, six
+classified modules plus the unclassified group, and 30 non-empty released
+subtype/knowledge-point facets. For 925 papers all collected records are ready;
+129 exclude one or more review records. This is not an official-paper
+completeness claim. Nine papers lacking a unique source order are listed with
+`paper_practice_available=false`, and exact whole-paper queries fail closed.
+These are release statistics, not a promise that every source classification is
+pedagogically final.
 
 Ordinary attempts accept exactly `selected_response`, `confidence`,
 `elapsed_seconds`, and a public `command_id`. They reveal the answer and
@@ -149,7 +170,11 @@ served only from the loopback endpoint above with verified media type, a
 content-SHA ETag, mandatory cache revalidation and `nosniff`. No resource is
 fetched from the network.
 
-The current local pack unlocks 7,625 of 16,999 flagged questions. It bundles all
+The current immutable question export contains 78,179 records: 77,695 are
+browsable `ready` records and 484 remain quarantined as `needs_review`. Of the
+ready records, 60,696 are directly practiceable without a bundled image and
+16,999 are resource-flagged. The current local pack unlocks 7,625 of those
+16,999 flagged questions. It bundles all
 attempt-required local images for 3,822 questions and determines that another
 3,803 need no image until after submission. The remaining 9,374 stay gated:
 8,143 require remote-only assets, 1,222 mix local and remote dependencies, and 9
@@ -165,6 +190,14 @@ Both detail projection and scoring re-read every attempt-required binary and
 recheck its media type and content SHA. If a controlled resource disappears or
 changes after sidecar startup, detail becomes `asset_runtime_unavailable` and
 submission returns `409` without creating a practice receipt.
+
+The three entry modes change discovery only. Full-bank attempts remain
+`practice_only` and cannot write KT, confirm a candidate error cause, or create
+Today/Review work. Of the 77,695 ready records, 28,569 map to a non-empty
+released subtype and 49,126 remain visible as unclassified rather than receiving
+a fabricated knowledge-point label. Across all 78,179 records, including review
+quarantine, those values are 28,821 and 49,358. The release also makes no public
+redistribution-rights, human-effect, or complete-paper guarantee.
 
 ## Study Pack boundary
 

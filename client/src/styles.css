@@ -6649,6 +6649,43 @@ button.connection-status:hover {
   font-size: 11px;
 }
 
+.bank-mode-tabs {
+  min-height: 52px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  background: #fbfbfc;
+}
+
+.bank-mode-tabs button {
+  min-width: 0;
+  min-height: 39px;
+  padding: 5px 9px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: 6px;
+  align-items: center;
+  color: #575a63;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.bank-mode-tabs button > svg { grid-row: 1 / 3; color: #72757e; }
+.bank-mode-tabs button > span { font-size: 12px; font-weight: 650; }
+.bank-mode-tabs button > small { color: #70737c; font-size: 11px; }
+.bank-mode-tabs button:hover { border-color: #dedfe4; background: #fff; }
+.bank-mode-tabs button.active { border-color: #c9c7ef; color: #4944bf; background: #f1f2ff; }
+.bank-mode-tabs button.active > svg { color: #5b56ca; }
+.bank-mode-tabs button:focus-visible,
+.bank-paper-card:focus-visible,
+.bank-paper-session-bar button:focus-visible { outline: 2px solid #625ccd; outline-offset: 2px; }
+
 .bank-controls {
   min-height: 45px;
   padding: 7px 10px;
@@ -6697,9 +6734,7 @@ button.connection-status:hover {
   font-size: 12px;
 }
 
-.bank-controls label {
-  width: min(220px, 37%);
-}
+.bank-controls label { min-width: 120px; flex: 0 1 190px; }
 
 .bank-controls select,
 .bank-confidence select {
@@ -6712,6 +6747,107 @@ button.connection-status:hover {
   background: #fff;
   font-size: 12px;
 }
+
+.bank-filter-note {
+  min-height: 28px;
+  margin: 0;
+  padding: 5px 12px;
+  border-bottom: 1px solid var(--border);
+  color: #656871;
+  background: #fafafd;
+  font-size: 11px;
+  line-height: 17px;
+}
+
+.bank-paper-directory {
+  min-height: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #f8f9fb;
+}
+
+.bank-paper-grid {
+  min-height: 0;
+  padding: 12px;
+  flex: 1;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-content: start;
+  gap: 8px;
+}
+
+.bank-paper-card {
+  min-width: 0;
+  min-height: 132px;
+  padding: 11px;
+  border: 1px solid #dedfe4;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  color: #454850;
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+}
+
+.bank-paper-card:hover { border-color: #aaa7dd; box-shadow: 0 2px 8px rgba(42, 44, 58, 0.06); }
+.bank-paper-card:disabled { opacity: 1; border-style: dashed; background: #fafbfc; cursor: not-allowed; }
+.bank-paper-card:disabled:hover { border-color: #dedfe4; box-shadow: none; }
+.bank-paper-card-meta { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #676a73; font-size: 11px; }
+.bank-paper-card-meta strong { color: #4f4bc3; font-size: 12px; }
+.bank-paper-card h2 { margin: 8px 0; color: #393c44; font-size: 13px; line-height: 19px; font-weight: 650; }
+.bank-paper-card-count { margin-top: auto; color: #4d5058; font-size: 11px; font-weight: 600; }
+.bank-paper-card small { margin-top: 3px; color: #6b6e77; font-size: 11px; line-height: 16px; }
+.bank-paper-state { min-height: 180px; flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px; color: #62656e; font-size: 12px; }
+.bank-paper-state.error { color: #8b5a42; }
+
+.bank-paper-session-bar {
+  min-height: 47px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fafafd;
+}
+
+.bank-paper-session-bar > button {
+  min-height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: 5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #555861;
+  background: #fff;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.bank-paper-session-bar > div { min-width: 0; display: grid; gap: 1px; }
+.bank-paper-session-bar strong { overflow: hidden; color: #3f424a; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.bank-paper-session-bar small { color: #696c75; font-size: 11px; }
+
+.bank-paper-complete {
+  min-width: 0;
+  min-height: 0;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #5f626b;
+  text-align: center;
+}
+
+.bank-paper-complete > svg { color: #347358; }
+.bank-paper-complete strong { color: #3f424a; font-size: 15px; }
+.bank-paper-complete p { max-width: 360px; margin: 0 0 5px; font-size: 12px; line-height: 18px; }
 
 .bank-workspace {
   min-height: 0;
@@ -6905,13 +7041,19 @@ button.connection-status:hover {
 .bank-result > div { padding: 8px 10px; border-top: 1px solid #e5e7e8; display: flex; align-items: flex-start; gap: 6px; color: #5f626b; background: #fafafd; font-size: 11px; line-height: 16px; }
 .bank-result:focus-visible { outline: 2px solid #625ccd; outline-offset: 2px; }
 .bank-attempt-error { margin: 9px 0 0; color: #8c3f28; font-size: 12px; line-height: 18px; }
-.bank-detail-actions { min-height: 46px; padding: 7px 12px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: flex-end; background: #fff; }
-.bank-detail-actions .button { display: inline-flex; align-items: center; gap: 5px; }
+.bank-detail-actions { min-height: 46px; padding: 7px 12px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: flex-end; gap: 7px; background: #fff; }
+.bank-detail-actions .button { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; }
 
 @media (max-width: 720px) {
   .bank-page-header { min-height: 68px; }
+  .bank-mode-tabs button > small { display: none; }
+  .bank-mode-tabs button { grid-template-rows: auto; }
+  .bank-mode-tabs button > svg { grid-row: auto; }
+  .bank-paper-grid { grid-template-columns: 1fr; }
+  .bank-paper-session-bar { align-items: flex-start; flex-direction: column; }
   .bank-controls { align-items: stretch; flex-direction: column; }
-  .bank-controls label { width: 100%; }
+  .bank-controls form { width: 100%; flex: 0 0 30px; }
+  .bank-controls label { width: 100%; flex: none; }
   .bank-workspace { overflow-y: auto; grid-template-columns: 1fr; grid-template-rows: minmax(190px, 38%) minmax(360px, 1fr); }
   .bank-browser { border-right: 0; border-bottom: 1px solid var(--border); }
   .bank-question-detail { min-height: 360px; }

@@ -39,9 +39,10 @@ mean population learning efficacy or production distribution has been proved.
 | --- | --- | --- |
 | 31/31 Xingce subtype releases | `domains/content/xingce/coverage-matrix.v1.json`; 30 `domains/released/**/manifest.json` owner decision blocks | product release uses a 2026-07-14 owner waiver; it is not a claim of human effectiveness |
 | 31/31 local catalog + Chinese type selector | real loopback/browser QA in `client/design-qa.md`; `client/`; `service/` | automated direct-route answers use an isolated evaluation namespace and do not count as human acceptance |
-| Versioned complete local question bank | pinned export `lumi-xingce-cleaned17-v2`; checksum-bound offline asset export `lumi-xingce-assets-cleaned17-v2-local-assets-v1`; installers, read-only service, real loopback resource QA and client contract tests | 77,695 ready records are browsable; 68,321 support practice; 9,374 remain honestly asset-gated; 484 review records are quarantined, including 9 strong pre-answer safety findings; 49,358 records remain honestly unclassified. The 7,625 newly unlocked records are product-access evidence, not adaptive-learning or human-effect evidence |
+| Complete-bank discovery | three routes over one immutable export: 套卷, 题型, 知识点; paper/question APIs and client selectors | 1,054 source-paper entries; 27 year facets (2000–2026); 34 region-label facets; six exam-type facets; six classified modules plus an explicit unclassified group; 30 non-empty mapped subtype facets. “知识点” is the browse-level subtype catalog, not a finer learner-skill diagnosis. For 925 papers all collected records are ready; 129 exclude review records. Official-paper completeness remains unknown, and nine papers without a unique source order are closed to whole-paper mode |
+| Versioned complete local question bank | pinned export `lumi-xingce-cleaned17-v2`; checksum-bound offline asset export `lumi-xingce-assets-cleaned17-v2-local-assets-v1`; installers, read-only service, real loopback resource QA and client contract tests | 77,695 ready records are browsable; 68,321 support practice; 9,374 remain honestly asset-gated; 484 review records are quarantined, including 9 strong pre-answer safety findings. Within ready, 28,569 map to a non-empty released subtype and 49,126 remain honestly unclassified; across all 78,179 records, those figures are 28,821 and 49,358. The 7,625 newly unlocked records are product-access evidence, not adaptive-learning or human-effect evidence |
 | Packaged macOS candidate | debug `Lumi.app`; strict/deep signature and managed lifecycle checks | ARM64, ad-hoc signed only; not notarized or production-distributed; the 694 MiB question bank and 402 MB resource pack are installed separately under controlled app data rather than embedded in Git or the app bundle |
-| Full deterministic release evidence | `evals/reports/latest.json`, run `run-20260714T061513Z`: 17/17 PASS; `scripts/verify_core.py` PASS with the pinned offline Study Pack evaluation interpreter | local/evaluation-fixture evidence is kept separate from human learning evidence |
+| Full deterministic release evidence | `evals/reports/latest.json`, run `run-20260714T072827Z`: 17/17 PASS; `scripts/verify_core.py` PASS with the pinned offline Study Pack evaluation interpreter | local/evaluation-fixture evidence is kept separate from human learning evidence |
 
 The complete-bank surface is deliberately `practice_only`: an accepted answer
 may return the answer and explanation and persist an idempotent practice receipt,
@@ -51,6 +52,14 @@ verification policy. Missing assets are never fetched implicitly.
 Attempt-required images are served only by opaque loopback paths after
 whole-export checksum verification; source paths and remote URLs are not
 projected. `needs_review` records cannot be addressed through the product API.
+
+The three discovery entries do not widen that evidence claim. 套卷 uses an
+opaque `paper_id`; 题型 uses six classified `module_id` facets plus the honest
+unclassified group; 知识点 uses the 30 released `subtype_id` facets that have at
+least one ready record. Year, region-label and exam-type filters
+come from the verified export and fail closed on invalid input. The totals are
+current release facts, not evidence that all 1,054 papers are complete, that all
+questions have a released subtype, or that browsing/practice changed learning.
 
 ## Historical judgment-reasoning implementation slice
 

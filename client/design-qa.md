@@ -721,3 +721,43 @@ one compact left rail, flat white surfaces, single-pixel dividers, restrained
 violet selection, system typography, and no gradient, glow, assistant avatar,
 chat bubble, decorative hero, or invented metric. This is product-access
 evidence only, not a human learning-effect claim.
+
+## Complete-bank practice organization QA — 2026-07-14
+
+The sealed `cleaned17-v2` export contains structured paper identity rather than
+filename inference: 27 years, 34 regions, 6 exam types and 1,054 source papers.
+The client now presents three explicit entry modes: paper, major question type,
+and mapped knowledge point. The 30 knowledge-point entries exclude the 49,126
+honestly unclassified questions; those records remain reachable through paper
+and the visible `未分类` question-type group.
+
+Real loopback browser QA selected 2026 → 国考 → 国考 and returned exactly three
+paper cards. Opening the deputy-provincial paper loaded one ordered 135-question
+sequence, selected question 1, and exposed the `1 / 135` position. The sequence
+uses the immutable `paper_id`, source sort order and question number; it does not
+group by a guessed title. Resource-dependent questions still pass the existing
+per-question binary verification and may be skipped without being counted as
+submitted. Cards describe collected, browsable records rather than claiming an
+official paper is complete; the nine papers without unique source order disable
+whole-paper entry. A separate real-browser check selected 2019 → 北京 → 市考:
+the 96/101-record 北京市考 card was disabled, displayed “5 道隔离未展示” and
+“题序待核验”, and a programmatic click did not create a paper session.
+
+At both `1280 × 720` and `640 × 720`, document horizontal overflow was false,
+no answer input was selected, no result panel appeared, and every visible
+question-bank text node measured at least 11px. The narrow knowledge-point view
+kept the mode switch, year/region/knowledge filters, the explicitly selected
+conditional-logic list and pagination reachable. With no knowledge point
+selected, the product now prompts for one rather than silently including
+unclassified records. No browser automation submitted an answer.
+
+Final inspected PNG evidence:
+
+- `qa/question-bank-paper-directory-1280x720.png` — `8605f8ec2cf31b65a8f87c5dabdba865ec565515bd667cb7ce6d85d61f022d59`
+- `qa/question-bank-paper-practice-1280x720.png` — `bcce5563f496a9696f4a82497032bc4977fec944199d498260a1ff00d2ce1160`
+- `qa/question-bank-knowledge-640x720.png` — `69140d3f221d9879a450a02ab441d3dcb0c6c139cfb2842f7cd0971ef8869343`
+
+The visual language remains the existing flat education-product baseline: a
+compact rail, neutral paper surfaces, restrained violet selection and dense but
+readable metadata. No assistant persona, chat bubble, decorative hero, gradient,
+glow or fabricated performance metric was introduced.

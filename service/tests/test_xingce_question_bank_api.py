@@ -27,7 +27,8 @@ from tests.test_xingce_question_assets import build_fixture as _asset_export
 SCHEMA = """
 CREATE TABLE questions (
   question_id TEXT PRIMARY KEY, release_state TEXT NOT NULL,
-  module TEXT NOT NULL, year INTEGER, region TEXT, paper_title TEXT,
+  paper_id TEXT NOT NULL, sort_order INTEGER,
+  module TEXT NOT NULL, year INTEGER, region TEXT, exam_type TEXT, paper_title TEXT,
   question_no INTEGER, type TEXT, stem_text TEXT NOT NULL,
   material_text TEXT NOT NULL, requirement_text TEXT NOT NULL,
   difficulty TEXT, option_count INTEGER NOT NULL, has_assets INTEGER NOT NULL, content_signature TEXT NOT NULL
@@ -38,9 +39,17 @@ CREATE TABLE options (
 );
 CREATE TABLE answer_keys (question_id TEXT PRIMARY KEY, answer_labels TEXT NOT NULL);
 CREATE TABLE explanations (question_id TEXT PRIMARY KEY, explanation_text TEXT NOT NULL);
-CREATE TABLE subtype_catalog (subtype_id TEXT PRIMARY KEY, display_name TEXT NOT NULL);
+CREATE TABLE papers (
+  paper_id TEXT PRIMARY KEY, title TEXT NOT NULL, year INTEGER, region TEXT NOT NULL,
+  exam_type TEXT NOT NULL, question_count INTEGER NOT NULL,
+  has_full_answers INTEGER NOT NULL, has_full_explanations INTEGER NOT NULL
+);
+CREATE TABLE subtype_catalog (
+  subtype_id TEXT PRIMARY KEY, module_id TEXT NOT NULL,
+  display_name TEXT NOT NULL, sort_order INTEGER NOT NULL
+);
 CREATE TABLE question_subtypes (question_id TEXT PRIMARY KEY, subtype_id TEXT NOT NULL);
-CREATE VIEW ready_questions AS SELECT question_id,module,year,region,paper_title,question_no,type,stem_text,material_text,requirement_text,difficulty,option_count,has_assets,content_signature FROM questions WHERE release_state='ready';
+CREATE VIEW ready_questions AS SELECT question_id,paper_id,sort_order,module,year,region,exam_type,paper_title,question_no,type,stem_text,material_text,requirement_text,difficulty,option_count,has_assets,content_signature FROM questions WHERE release_state='ready';
 CREATE VIEW ready_question_subtypes AS SELECT s.* FROM question_subtypes s JOIN questions q USING(question_id) WHERE q.release_state='ready';
 CREATE VIEW ready_options AS SELECT o.* FROM options o JOIN questions q USING(question_id) WHERE q.release_state='ready';
 CREATE VIEW ready_answer_keys AS SELECT a.* FROM answer_keys a JOIN questions q USING(question_id) WHERE q.release_state='ready';
@@ -52,7 +61,7 @@ def _digest(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _export(root: Path, *, ready_has_assets: bool = False) -> Path:
+def _export(root: Path, *, ready_has_assets: bool = False, unsequenced: bool = False) -> Path:
     export = root / "versioned export with spaces"
     export.mkdir(parents=True)
     schema = export / "schema.sql"
@@ -60,12 +69,22 @@ def _export(root: Path, *, ready_has_assets: bool = False) -> Path:
     database = export / "lumi-question-bank.sqlite3"
     with closing(sqlite3.connect(database)) as connection, connection:
         connection.executescript(SCHEMA)
-        connection.execute("INSERT INTO subtype_catalog VALUES (?,?)", ("xingce.verbal.main_idea", "主旨概括"))
+        connection.executemany(
+            "INSERT INTO papers VALUES (?,?,?,?,?,?,?,?)",
+            (
+                ("paper_ready", "2025 国考", 2025, "国考", "国考", 1, 1, 1),
+                ("paper_review", "待审题本", 2024, "某省", "省考", 1, 1, 1),
+            ),
+        )
+        connection.execute(
+            "INSERT INTO subtype_catalog VALUES (?,?,?,?)",
+            ("xingce.verbal.main_idea", "verbal", "主旨概括", 1),
+        )
         rows = [
-            ("q_ready", "ready", "言语理解", 2025, "国考", "2025 国考", 1, "single", "作者意在说明什么？", "材料中的增长并非偶然。", "请选择最恰当的一项。", "中等", 4, int(ready_has_assets), "a" * 64),
-            ("q_review", "needs_review", "言语理解", 2024, "某省", "待审题本", 2, "single", "这道题尚待审核", "待审材料", "请选择。", "未知", 2, 0, "b" * 64),
+            ("q_ready", "ready", "paper_ready", None if unsequenced else 1, "言语理解", 2025, "国考", "国考", "2025 国考", None if unsequenced else 1, "single", "作者意在说明什么？", "材料中的增长并非偶然。", "请选择最恰当的一项。", "中等", 4, int(ready_has_assets), "a" * 64),
+            ("q_review", "needs_review", "paper_review", 2, "言语理解", 2024, "某省", "省考", "待审题本", 2, "single", "这道题尚待审核", "待审材料", "请选择。", "未知", 2, 0, "b" * 64),
         ]
-        connection.executemany("INSERT INTO questions VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", rows)
+        connection.executemany("INSERT INTO questions VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", rows)
         connection.executemany(
             "INSERT INTO question_subtypes VALUES (?,?)",
             (("q_ready", "xingce.verbal.main_idea"), ("q_review", "xingce.verbal.main_idea")),
@@ -157,13 +176,67 @@ class QuestionBankCatalogTests(unittest.TestCase):
         self.assertTrue(status["available"])
         self.assertEqual(status["export"]["counts"], {"total": 2, "ready": 1, "needs_review": 1})
         self.assertEqual(status["export"]["access_counts"], {"direct_practice_ready": 1, "asset_gated": 0})
-        result = catalog.list_questions(q="增长", page=1, page_size=10)
+        self.assertEqual(status["schema_version"], "lumi.xingce-question-bank-status.v2")
+        self.assertEqual(status["export"]["facets"]["years"], [{"value": 2025, "ready_count": 1}])
+        self.assertEqual(status["export"]["facets"]["regions"], [{"value": "国考", "ready_count": 1}])
+        self.assertEqual(
+            status["export"]["facets"]["modules"],
+            [{"module_id": "verbal", "name": "言语理解", "ready_count": 1}],
+        )
+        self.assertEqual(
+            status["export"]["facets"]["knowledge_points"],
+            [{"subtype_id": "xingce.verbal.main_idea", "module_id": "verbal", "name": "主旨概括", "ready_count": 1}],
+        )
+        result = catalog.list_questions(
+            q="增长", module_id="verbal", year=2025, region="国考",
+            exam_type="国考", page=1, page_size=10,
+        )
         self.assertEqual([item["question_id"] for item in result["items"]], ["q_ready"])
         self.assertEqual(result["pagination"]["total_items"], 1)
         self.assertEqual(result["filters"]["subtype_id"], "")
+        self.assertEqual(result["filters"]["module_id"], "verbal")
+        self.assertEqual(result["items"][0]["paper_id"], "paper_ready")
+        self.assertEqual(result["items"][0]["exam_type"], "国考")
         serialized = json.dumps(result, ensure_ascii=False).lower()
         for forbidden in ("answer", "explanation", "is_correct", "待审私有解析", str(self.export).lower()):
             self.assertNotIn(forbidden, serialized)
+
+    def test_paper_catalog_and_exact_paper_sequence_use_only_ready_questions(self) -> None:
+        catalog = self.catalog()
+        papers = catalog.list_papers(year=2025, region="国考", exam_type="国考")
+        self.assertEqual(papers["schema_version"], "lumi.xingce-question-bank-paper-list.v1")
+        self.assertEqual(papers["pagination"]["total_items"], 1)
+        self.assertEqual(
+            papers["items"][0],
+            {
+                "paper_id": "paper_ready",
+                "title": "2025 国考",
+                "year": 2025,
+                "region": "国考",
+                "exam_type": "国考",
+                "source_question_count": 1,
+                "ready_question_count": 1,
+                "asset_flagged_question_count": 0,
+                "all_collected_records_ready": True,
+                "sequence_status": "source_order_unique",
+                "paper_practice_available": True,
+                "official_completeness": "unknown",
+                "has_full_explanations": True,
+            },
+        )
+        sequence = catalog.list_questions(paper_id="paper_ready", page_size=200)
+        self.assertEqual([row["question_id"] for row in sequence["items"]], ["q_ready"])
+        self.assertEqual(sequence["filters"]["paper_id"], "paper_ready")
+
+    def test_paper_without_unique_source_order_is_not_exposed_as_whole_paper_practice(self) -> None:
+        export = _export(self.root / "unsequenced", unsequenced=True)
+        catalog = XingceQuestionBankCatalog(export, attempt_database=self.root / "unsequenced-attempts.sqlite3")
+        paper = catalog.list_papers()["items"][0]
+        self.assertEqual(paper["sequence_status"], "source_order_unavailable")
+        self.assertFalse(paper["paper_practice_available"])
+        self.assertEqual(paper["official_completeness"], "unknown")
+        with self.assertRaises(QuestionBankConflict):
+            catalog.list_questions(paper_id="paper_ready", page_size=200)
 
     def test_detail_redacts_scoring_and_needs_review_is_not_addressable(self) -> None:
         catalog = self.catalog()
@@ -298,9 +371,18 @@ class QuestionBankCatalogTests(unittest.TestCase):
 
     def test_query_validation_is_closed_and_bounded(self) -> None:
         catalog = self.catalog()
-        for kwargs in ({"page": 0}, {"page": 1_000_001}, {"page_size": 101}, {"q": "x" * 101}, {"subtype_id": "bad/value"}):
+        for kwargs in (
+            {"page": 0}, {"page": 1_000_001}, {"page_size": 101},
+            {"q": "x" * 101}, {"subtype_id": "bad/value"},
+            {"module_id": "bad/value"}, {"paper_id": "bad/value"},
+            {"year": 1899}, {"region": "x" * 65},
+        ):
             with self.assertRaises(ValueError):
                 catalog.list_questions(**kwargs)
+        self.assertEqual(
+            catalog.list_questions(paper_id="paper_ready", page_size=200)["pagination"]["page_size"],
+            200,
+        )
         # SQL wildcard input is literal rather than an accidental match-all.
         self.assertEqual(catalog.list_questions(q="%")['items'], [])
 
@@ -339,10 +421,15 @@ class QuestionBankHttpTests(unittest.TestCase):
             finally:
                 error.close()
 
-    def test_four_stable_routes_and_capability_are_available(self) -> None:
+    def test_question_bank_routes_and_capability_are_available(self) -> None:
         status, metadata = self.request("GET", "/v1/xingce/question-bank")
         self.assertEqual(status, 200)
         self.assertTrue(metadata["available"])
+        status, papers = self.request(
+            "GET", "/v1/xingce/question-bank/papers?year=2025&region=%E5%9B%BD%E8%80%83&exam_type=%E5%9B%BD%E8%80%83",
+        )
+        self.assertEqual(status, 200)
+        self.assertEqual(papers["items"][0]["paper_id"], "paper_ready")
         status, listing = self.request("GET", "/v1/xingce/question-bank/questions?page=1&page_size=1")
         self.assertEqual(status, 200)
         self.assertEqual(listing["items"][0]["question_id"], "q_ready")
@@ -360,6 +447,10 @@ class QuestionBankHttpTests(unittest.TestCase):
         status, capabilities = self.request("GET", "/v1/capabilities")
         self.assertEqual(status, 200)
         self.assertEqual(capabilities["endpoints"]["xingce_question_bank"], "GET /v1/xingce/question-bank")
+        self.assertEqual(
+            capabilities["endpoints"]["xingce_question_bank_papers"],
+            "GET /v1/xingce/question-bank/papers",
+        )
 
     def test_closed_query_and_needs_review_isolation(self) -> None:
         status, error = self.request("GET", "/v1/xingce/question-bank/questions?offset=0")
@@ -387,6 +478,27 @@ class QuestionBankHttpTests(unittest.TestCase):
             )
             self.assertEqual(status, 409)
             self.assertEqual(error["error"]["code"], "question_assets_not_bundled")
+        finally:
+            self.base = previous
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=2)
+
+    def test_unsequenced_paper_http_fails_closed_with_specific_error(self) -> None:
+        root = Path(self.temporary.name) / "unsequenced-http"
+        export = _export(root, unsequenced=True)
+        application = SidecarApplication(root / "sidecar.sqlite3", xingce_full_bank_export=export)
+        server = create_server(application, port=0)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        previous = self.base
+        self.base = f"http://127.0.0.1:{server.server_address[1]}"
+        try:
+            status, error = self.request(
+                "GET", "/v1/xingce/question-bank/questions?paper_id=paper_ready&page_size=200"
+            )
+            self.assertEqual(status, 409)
+            self.assertEqual(error["error"]["code"], "question_bank_paper_sequence_unavailable")
         finally:
             self.base = previous
             server.shutdown()

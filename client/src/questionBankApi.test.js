@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   isValidQuestionBankAttempt,
   isValidQuestionBankList,
+  isValidQuestionBankPapers,
   isValidQuestionBankQuestion,
   isValidQuestionBankStatus,
   questionBankAssetUrl,
@@ -13,9 +14,12 @@ const item = {
   question_id: "q_abc123",
   subtype_id: "xingce.verbal.logical_cloze",
   subtype_name: "逻辑填空",
+  module_id: "verbal",
+  paper_id: "paper_abc123",
   module: "言语理解与表达",
   year: 2025,
   region: "国考",
+  exam_type: "国考",
   paper_title: "2025 年行测题",
   question_number: 1,
   question_type: "single",
@@ -26,7 +30,7 @@ const item = {
 
 test("question-bank status distinguishes a verified local export from honest unavailability", () => {
   assert.equal(isValidQuestionBankStatus({
-    schema_version: "lumi.xingce-question-bank-status.v1",
+    schema_version: "lumi.xingce-question-bank-status.v2",
     available: true,
     status: "available",
     export: {
@@ -37,6 +41,18 @@ test("question-bank status distinguishes a verified local export from honest una
       counts: { total: 78179, ready: 77695, needs_review: 484 },
       access_counts: { direct_practice_ready: 68321, asset_gated: 9374 },
       subtypes: [{ subtype_id: "xingce.verbal.logical_cloze", name: "逻辑填空", ready_count: 100 }],
+      facets: {
+        years: [{ value: 2025, ready_count: 77695 }],
+        regions: [{ value: "国考", ready_count: 77695 }],
+        exam_types: [{ value: "国考", ready_count: 77695 }],
+        modules: [
+          { module_id: "verbal", name: "言语理解", ready_count: 28569 },
+          { module_id: "unclassified", name: "未分类", ready_count: 49126 },
+        ],
+        knowledge_points: [
+          { subtype_id: "xingce.verbal.logical_cloze", module_id: "verbal", name: "逻辑填空", ready_count: 3496 },
+        ],
+      },
       offline_assets: {
         schema_version: "lumi.xingce-question-assets-status.v1",
         available: true,
@@ -50,7 +66,7 @@ test("question-bank status distinguishes a verified local export from honest una
     practice_contract: { mode: "practice_only", writes_learner_state: false },
   }), true);
   assert.equal(isValidQuestionBankStatus({
-    schema_version: "lumi.xingce-question-bank-status.v1",
+    schema_version: "lumi.xingce-question-bank-status.v2",
     available: false,
     status: "unavailable",
     reason: "local_export_not_installed",
@@ -59,10 +75,10 @@ test("question-bank status distinguishes a verified local export from honest una
 
 test("question lists and unanswered details fail closed on answer leakage", () => {
   const list = {
-    schema_version: "lumi.xingce-question-bank-list.v1",
+    schema_version: "lumi.xingce-question-bank-list.v2",
     items: [item],
     pagination: { page: 1, page_size: 20, total_items: 1, total_pages: 1 },
-    filters: { subtype_id: "", q: "" },
+    filters: { subtype_id: "", module_id: "", paper_id: "", year: null, region: "", exam_type: "", q: "" },
   };
   assert.equal(isValidQuestionBankList(list), true);
   assert.equal(isValidQuestionBankList({ ...list, items: [{ ...item, answer: "A" }] }), false);
@@ -91,6 +107,33 @@ test("question lists and unanswered details fail closed on answer leakage", () =
     attempt: { ...detail.attempt, allowed: false, reason: "asset_not_bundled", asset_dependency_state: "required_remote" },
   };
   assert.equal(isValidQuestionBankQuestion(assetGated), true);
+});
+
+test("paper catalog requires exact, answer-safe whole-paper metadata", () => {
+  const payload = {
+    schema_version: "lumi.xingce-question-bank-paper-list.v1",
+    items: [{
+      paper_id: "paper_abc123",
+      title: "2025 年国家公务员录用考试《行测》",
+      year: 2025,
+      region: "国考",
+      exam_type: "国考",
+      source_question_count: 130,
+      ready_question_count: 130,
+      asset_flagged_question_count: 6,
+      all_collected_records_ready: true,
+      sequence_status: "source_order_unique",
+      paper_practice_available: true,
+      official_completeness: "unknown",
+      has_full_explanations: true,
+    }],
+    pagination: { page: 1, page_size: 24, total_items: 1, total_pages: 1 },
+    filters: { year: 2025, region: "国考", exam_type: "国考", q: "" },
+  };
+  assert.equal(isValidQuestionBankPapers(payload), true);
+  assert.equal(isValidQuestionBankPapers({ ...payload, items: [{ ...payload.items[0], answer: "A" }] }), false);
+  assert.equal(isValidQuestionBankPapers({ ...payload, items: [{ ...payload.items[0], ready_question_count: 129 }] }), false);
+  assert.equal(isValidQuestionBankPapers({ ...payload, items: [{ ...payload.items[0], sequence_status: "source_order_unavailable" }] }), false);
 });
 
 test("bundled assets use opaque loopback paths and reject source paths or URLs", () => {

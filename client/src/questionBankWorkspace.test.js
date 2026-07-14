@@ -11,6 +11,21 @@ test("full question bank is a first-class local workspace", () => {
   assert.match(source, /完整行测题库/);
   assert.match(source, /本机只读资源/);
   assert.match(source, /隔离待复核/);
+  assert.match(source, /套卷练习/);
+  assert.match(source, /题型练习/);
+  assert.match(source, /知识点练习/);
+  assert.match(source, /请先选择一个知识点/);
+  assert.match(source, /mode === "knowledge" && !subtypeId/);
+  assert.match(source, /<option value="">选择知识点<\/option>/);
+  assert.match(source, /全部年份/);
+  assert.match(source, /全部地区/);
+  assert.match(source, /fetchQuestionBankPapers/);
+  assert.match(source, /paperId: paperMode \? selectedPaper\.paper_id/);
+  assert.match(source, /pageSize: paperMode \? 200 : 20/);
+  assert.match(source, /资源不完整或未作答的题没有被伪造为完成/);
+  assert.match(source, /题序待核验，整卷入口暂不可用/);
+  assert.match(source, /已收录.*道可浏览题/);
+  assert.doesNotMatch(source, /完整可练/);
 });
 
 test("unanswered question UI does not render an answer or explanation field", () => {
@@ -39,6 +54,7 @@ test("question bank handles offline assets and narrow layouts honestly", () => {
   assert.match(source, /resultRef\.current\.scrollIntoView/);
   assert.match(source, /htmlFor="question-bank-search"/);
   assert.match(source, /等待离线资源/);
+  assert.match(source, /跳过本题/);
   assert.match(source, /请先安装经过校验的版本化本地导出/);
   assert.match(source, /question_bank_unavailable/);
 });

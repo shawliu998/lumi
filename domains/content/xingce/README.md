@@ -44,6 +44,27 @@ newly quarantined by the versioned pre-answer safety gate because source text
 contained an explicit answer/analysis marker or a remote `INCLUDEPICTURE` field;
 their source content is preserved for review rather than silently cleaned.
 
+The same verified export supports three product entry modes without copying the
+database into Git:
+
+- **套卷**: 1,054 source papers with ready content, searchable by title and
+  filterable by year, region label, and exam type;
+- **题型**: six classified Xingce modules plus the explicit unclassified group;
+- **知识点**: 30 released subtype facets with ready content, used as the current
+  browse-level knowledge-point catalog.
+
+The export currently exposes 27 year facets (2000–2026), 34 non-empty region
+labels (31 province-level labels plus 国考, 广州, and 深圳), and six exam-type
+facets. Paper and question results are
+still `ready`-only and answer-redacted before submission. “知识点” here does not
+claim a finer-grained skill diagnosis: 28,569 ready questions map to a released
+subtype, while 49,126 remain honestly unclassified and are still discoverable
+without a fabricated label. A paper entry may contain only the ready subset of
+its collected questions; callers must use `ready_question_count`,
+`all_collected_records_ready`, `sequence_status`, and the always-explicit
+`official_completeness` instead of assuming completeness. Whole-paper mode is
+closed for the nine papers that lack a unique source order.
+
 Ordinary full-bank attempts are `practice_only` evidence proposals. They do not
 write KT, confirm a misconception, or enter Today/Review. The adaptive learning
 flow remains the only deterministic learner-state committer.

@@ -541,14 +541,34 @@ def _handler_factory(application: SidecarApplication, allowed_origins: frozenset
                     raise ServiceError(400, "invalid_query", "question bank status does not accept query parameters")
                 return application.xingce_question_bank_status()
             if path == "/v1/xingce/question-bank/questions":
-                unknown = set(query) - {"subtype_id", "q", "page", "page_size"}
+                unknown = set(query) - {
+                    "subtype_id", "module_id", "paper_id", "year", "region",
+                    "exam_type", "q", "page", "page_size",
+                }
                 if unknown:
                     raise ServiceError(400, "invalid_query", "unsupported question bank query parameter")
                 return application.xingce_question_bank_questions(
                     subtype_id=_single_query(query, "subtype_id"),
+                    module_id=_single_query(query, "module_id"),
+                    paper_id=_single_query(query, "paper_id"),
+                    year=_single_query(query, "year"),
+                    region=_single_query(query, "region"),
+                    exam_type=_single_query(query, "exam_type"),
                     q=_single_query(query, "q"),
                     page=_single_query(query, "page") or 1,
                     page_size=_single_query(query, "page_size") or 20,
+                )
+            if path == "/v1/xingce/question-bank/papers":
+                unknown = set(query) - {"year", "region", "exam_type", "q", "page", "page_size"}
+                if unknown:
+                    raise ServiceError(400, "invalid_query", "unsupported question paper query parameter")
+                return application.xingce_question_bank_papers(
+                    year=_single_query(query, "year"),
+                    region=_single_query(query, "region"),
+                    exam_type=_single_query(query, "exam_type"),
+                    q=_single_query(query, "q"),
+                    page=_single_query(query, "page") or 1,
+                    page_size=_single_query(query, "page_size") or 24,
                 )
             question_bank_question = XINGCE_QUESTION_BANK_QUESTION_ROUTE.fullmatch(path)
             if question_bank_question:

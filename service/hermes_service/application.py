@@ -302,6 +302,7 @@ class SidecarApplication:
                 "xingce_adaptive_workspace": "GET /v1/xingce/adaptive/{subtype_id}/workspace",
                 "xingce_adaptive_session": "POST /v1/xingce/adaptive/{subtype_id}/sessions",
                 "xingce_question_bank": "GET /v1/xingce/question-bank",
+                "xingce_question_bank_papers": "GET /v1/xingce/question-bank/papers",
                 "xingce_question_bank_questions": "GET /v1/xingce/question-bank/questions",
                 "xingce_question_bank_question": "GET /v1/xingce/question-bank/questions/{question_id}",
                 "xingce_question_bank_attempt": "POST /v1/xingce/question-bank/questions/{question_id}/attempts",
@@ -319,6 +320,18 @@ class SidecarApplication:
         try:
             return self.xingce_question_bank.list_questions(**query)
         except (QuestionBankUnavailable, QuestionBankRequestError, QuestionBankNotFound, QuestionBankConflict, QuestionBankAssetUnavailable) as exc:
+            raise _question_bank_service_error(exc) from None
+
+    def xingce_question_bank_papers(self, **query: Any) -> dict[str, Any]:
+        try:
+            return self.xingce_question_bank.list_papers(**query)
+        except (
+            QuestionBankUnavailable,
+            QuestionBankRequestError,
+            QuestionBankNotFound,
+            QuestionBankConflict,
+            QuestionBankAssetUnavailable,
+        ) as exc:
             raise _question_bank_service_error(exc) from None
 
     def xingce_question_bank_question(self, question_id: Any) -> dict[str, Any]:
@@ -2181,6 +2194,8 @@ def _question_bank_service_error(error: Exception) -> ServiceError:
     if isinstance(error, QuestionBankNotFound):
         return ServiceError(404, "question_not_found", "题目不存在或尚未通过内容审核。")
     if isinstance(error, QuestionBankConflict):
+        if str(error) == "paper source order is unavailable":
+            return ServiceError(409, "question_bank_paper_sequence_unavailable", "该套卷的来源题序尚未核验，不能进入整卷练习。")
         return ServiceError(409, "question_bank_attempt_conflict", str(error))
     if isinstance(error, QuestionBankAssetUnavailable):
         return ServiceError(409, "question_assets_not_bundled", "题目所需图片尚未作为本地资源打包，当前不能作答。")

@@ -40,3 +40,8 @@ They were captured against the installed immutable question database and
 checksum-bound offline resource pack with a disposable attempt database. No
 answer was selected or submitted. Their exact dimensions and SHA-256 hashes are
 recorded in `../design-qa.md` and enforced by the artifact gate.
+
+`question-bank-paper-directory-*`, `question-bank-paper-practice-*`, and
+`question-bank-knowledge-*` are the current year/region paper, ordered whole-
+paper, and mapped-knowledge navigation evidence. They use the installed sealed
+question export and contain no selected or submitted learner answer.
