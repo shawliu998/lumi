@@ -14,14 +14,14 @@
         "title": "Lumi",
         "width": 1320,
         "height": 880,
-        "minWidth": 1024,
-        "minHeight": 680,
+        "minWidth": 640,
+        "minHeight": 640,
         "resizable": true,
         "fullscreen": false
       }
     ],
     "security": {
-      "csp": "default-src 'self'; base-uri 'self'; connect-src 'self' http://127.0.0.1:8765; font-src 'self' data:; form-action 'self'; frame-ancestors 'none'; img-src 'self' asset: http://asset.localhost data: blob:; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'"
+      "csp": "default-src 'self'; base-uri 'self'; connect-src 'self' http://127.0.0.1:8765; font-src 'self' data:; form-action 'self'; frame-ancestors 'none'; img-src 'self' asset: http://asset.localhost http://127.0.0.1:8765 data: blob:; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'"
     }
   },
   "bundle": {

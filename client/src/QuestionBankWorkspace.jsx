@@ -14,6 +14,7 @@ import {
 import {
   fetchQuestionBankQuestion,
   fetchQuestionBankStatus,
+  questionBankAssetUrl,
   searchQuestionBank,
   submitQuestionBankAttempt,
 } from "./questionBankApi.js";
@@ -31,17 +32,37 @@ function errorCopy(error, fallback) {
   return error?.message || fallback;
 }
 
+function QuestionAssets({ assets, placement, optionLabel = "", label, onAssetError }) {
+  const visible = assets.filter((asset) => asset.placements.some((item) => (
+    item.placement === placement && item.option_label === optionLabel
+  )));
+  if (visible.length === 0) return null;
+  return (
+    <div className={`bank-assets bank-assets-${placement}`}>
+      {visible.map((asset, index) => (
+        <img
+          key={asset.asset_id}
+          src={questionBankAssetUrl(asset)}
+          alt={`${label}${visible.length > 1 ? ` ${index + 1}` : ""}`}
+          loading="lazy"
+          decoding="async"
+          onError={() => onAssetError(asset.asset_id)}
+        />
+      ))}
+    </div>
+  );
+}
+
 function QuestionList({ state, activeId, onSelect }) {
   if (state.phase === "loading") return <div className="bank-list-state"><span className="bank-loading-dot" />正在读取本机索引</div>;
   if (state.phase === "error") return <div className="bank-list-state error"><WarningCircle size={17} />{errorCopy(state.error, "题目列表读取失败。")}</div>;
   if (state.data.items.length === 0) return <div className="bank-list-state"><MagnifyingGlass size={17} />没有符合条件的题目</div>;
   return (
-    <div className="bank-question-list" role="list" aria-label="题目列表">
+    <nav className="bank-question-list" aria-label="题目列表">
       {state.data.items.map((item) => (
         <button
           key={item.question_id}
           type="button"
-          role="listitem"
           className={activeId === item.question_id ? "bank-question-row active" : "bank-question-row"}
           onClick={() => onSelect(item.question_id)}
           aria-current={activeId === item.question_id ? "true" : undefined}
@@ -51,11 +72,31 @@ function QuestionList({ state, activeId, onSelect }) {
           <span className="bank-question-source">{item.paper_title}{item.question_number ? ` · 第 ${item.question_number} 题` : ""}</span>
         </button>
       ))}
-    </div>
+    </nav>
   );
 }
 
-function QuestionDetail({ state, answer, setAnswer, confidence, setConfidence, onSubmit, onNext }) {
+function QuestionDetail({ state, answer, setAnswer, confidence, setConfidence, onSubmit, onNext, onRetry }) {
+  const [failedAssetIds, setFailedAssetIds] = useState(() => new Set());
+  const resultRef = useRef(null);
+  const questionId = state.data?.question?.question_id || "";
+
+  useEffect(() => {
+    setFailedAssetIds(new Set());
+  }, [questionId]);
+
+  useEffect(() => {
+    if (!state.result || !resultRef.current) return;
+    resultRef.current.focus({ preventScroll: true });
+    resultRef.current.scrollIntoView({ block: "nearest", behavior: "auto" });
+  }, [state.result]);
+
+  const handleAssetError = useCallback((assetId) => {
+    setFailedAssetIds((current) => new Set([...current, assetId]));
+    setAnswer("");
+    setConfidence("");
+  }, [setAnswer, setConfidence]);
+
   if (state.phase === "idle") return <div className="bank-detail-empty"><Database size={24} /><strong>从左侧选择一道题</strong><p>题目与评分均来自本机只读索引。</p></div>;
   if (state.phase === "loading") return <div className="bank-detail-empty"><span className="bank-loading-dot" /><strong>正在核对题目签名</strong></div>;
   if (state.phase === "error") return <div className="bank-detail-empty error"><WarningCircle size={22} /><strong>题目未载入</strong><p>{errorCopy(state.error, "题目内容未通过校验。")}</p></div>;
@@ -63,6 +104,8 @@ function QuestionDetail({ state, answer, setAnswer, confidence, setConfidence, o
   const question = state.data.question;
   const attempt = state.data.attempt;
   const result = state.result;
+  const assetRenderFailed = failedAssetIds.size > 0;
+  const canAttempt = attempt.allowed && !assetRenderFailed;
   const multiple = ["multiple", "multi", "multiple_choice"].includes(question.question_type);
   const selected = new Set(answer ? answer.split("|") : []);
   const toggle = (label) => {
@@ -79,32 +122,39 @@ function QuestionDetail({ state, answer, setAnswer, confidence, setConfidence, o
         <small>{question.year || "年份未知"} · {question.region || "地区未知"}{question.question_number ? ` · 第 ${question.question_number} 题` : ""}</small>
       </header>
       <div className="bank-detail-scroll">
-        {question.material && <section className="bank-material"><small>材料</small><p>{question.material}</p></section>}
-        {question.stem && <section className="bank-stem"><small>题目</small><p>{question.stem}</p></section>}
-        {question.has_assets && <div className="bank-asset-notice"><WarningCircle size={14} /><span>本题依赖尚未打包的图像或公式资源；Lumi 不会隐式联网，也不会在题目不完整时评分。</span></div>}
-        <fieldset className="bank-options" disabled={!attempt.allowed || Boolean(result) || state.submitting}>
+        {!attempt.allowed && <div className="bank-asset-notice"><WarningCircle size={16} /><span>本题仍缺少作答必需的图像或公式资源。安装或修复离线资源包后可重新核对；Lumi 不会隐式联网，也不会在题目不完整时评分。</span></div>}
+        {assetRenderFailed && <div className="bank-asset-notice" role="alert"><WarningCircle size={16} /><span>本机图片未能完整载入，本题已停止作答。请重新核对离线资源，Lumi 不会用残缺题目评分。</span></div>}
+        {(question.material || question.assets.some((asset) => asset.placements.some((item) => item.placement === "material"))) && <section className="bank-material"><small>材料</small>{question.material && <p>{question.material}</p>}<QuestionAssets assets={question.assets} placement="material" label="题目材料图" onAssetError={handleAssetError} /></section>}
+        {(question.stem || question.assets.some((asset) => asset.placements.some((item) => item.placement === "stem"))) && <section className="bank-stem"><small>题目</small>{question.stem && <p>{question.stem}</p>}<QuestionAssets assets={question.assets} placement="stem" label="题干图" onAssetError={handleAssetError} /></section>}
+        {(question.requirement || question.assets.some((asset) => asset.placements.some((item) => item.placement === "requirement"))) && <section className="bank-requirement"><small>作答要求</small>{question.requirement && <p>{question.requirement}</p>}<QuestionAssets assets={question.assets} placement="requirement" label="作答要求图" onAssetError={handleAssetError} /></section>}
+        <fieldset className="bank-options" disabled={!canAttempt || Boolean(result) || state.submitting}>
           <legend className="sr-only">选择答案</legend>
           {question.options.map((option) => (
             <label key={option.label} className={selected.has(option.label) ? "selected" : ""}>
               <input type={multiple ? "checkbox" : "radio"} name="bank-answer" checked={selected.has(option.label)} onChange={() => toggle(option.label)} />
-              <span>{option.label}</span><p>{option.text}</p>
+              <span>{option.label}</span>
+              <div className="bank-option-copy">
+                <p>{option.text}</p>
+                <QuestionAssets assets={question.assets} placement="option" optionLabel={option.label} label={`选项 ${option.label} 配图`} onAssetError={handleAssetError} />
+              </div>
             </label>
           ))}
         </fieldset>
-        {!result && attempt.allowed && (
+        {!result && canAttempt && (
           <label className="bank-confidence"><span>作答信心</span><select value={confidence} onChange={(event) => setConfidence(event.target.value)}><option value="">请选择</option><option value="high">高</option><option value="medium">中</option><option value="low">低</option></select></label>
         )}
         {state.errorAfterSubmit && <p className="bank-attempt-error" role="alert">{errorCopy(state.errorAfterSubmit, "答案未提交，可安全重试。")}</p>}
         {result && (
-          <section className={result.correct ? "bank-result correct" : "bank-result incorrect"} aria-live="polite">
+          <section ref={resultRef} tabIndex="-1" className={result.correct ? "bank-result correct" : "bank-result incorrect"} aria-live="polite">
             <header>{result.correct ? <CheckCircle size={18} weight="fill" /> : <XCircle size={18} weight="fill" />}<strong>{result.correct ? "回答正确" : "这次没有答对"}</strong><span>正确答案 {result.answer}</span></header>
             <p>{result.explanation || "本题暂无额外解析。"}</p>
+            {result.explanation_media_status === "text_only" && <p className="bank-result-media-note">解析中的图片尚未在答后视图展示；以上文字解析仍可阅读。</p>}
             <div><ShieldCheck size={14} /><span>本次仅记录普通练习结果；不会直接更新 KT，也不会把一次答错解释成已确认错因。</span></div>
           </section>
         )}
       </div>
       <footer className="bank-detail-actions">
-        {result ? <button type="button" className="button primary" onClick={onNext}>下一题<CaretRight size={13} /></button> : attempt.allowed ? <button type="button" className="button primary" disabled={!answer || !confidence || state.submitting} onClick={onSubmit}>{state.submitting ? "正在本机评分" : "提交答案"}</button> : <button type="button" className="button secondary" disabled>等待离线资源包</button>}
+        {result ? <button type="button" className="button primary" onClick={onNext}>下一题<CaretRight size={13} /></button> : canAttempt ? <button type="button" className="button primary" disabled={!answer || !confidence || state.submitting} onClick={onSubmit}>{state.submitting ? "正在本机评分" : "提交答案"}</button> : <button type="button" className="button secondary" onClick={() => onRetry(question.question_id)}>重新核对离线资源</button>}
       </footer>
     </article>
   );
@@ -198,7 +248,7 @@ export function QuestionBankWorkspace() {
       </header>
       <section className="bank-controls" aria-label="题库筛选">
         <form onSubmit={(event) => { event.preventDefault(); setPage(1); setQuery(queryDraft.trim()); }}>
-          <MagnifyingGlass size={14} /><input value={queryDraft} onChange={(event) => setQueryDraft(event.target.value)} placeholder="搜索题干或试卷" maxLength={100} /><button type="submit">搜索</button>
+          <MagnifyingGlass size={14} /><label className="sr-only" htmlFor="question-bank-search">搜索题干或试卷</label><input id="question-bank-search" value={queryDraft} onChange={(event) => setQueryDraft(event.target.value)} placeholder="搜索题干或试卷" maxLength={100} /><button type="submit">搜索</button>
         </form>
         <label><span className="sr-only">题型</span><select value={subtypeId} onChange={(event) => { setSubtypeId(event.target.value); setPage(1); }}><option value="">全部题型</option>{bank.subtypes.map((row) => <option key={row.subtype_id} value={row.subtype_id}>{row.name}（{countText(row.ready_count)}）</option>)}</select></label>
       </section>
@@ -207,7 +257,7 @@ export function QuestionBankWorkspace() {
           <QuestionList state={list} activeId={activeId} onSelect={selectQuestion} />
           <footer className="bank-pagination"><button type="button" aria-label="上一页" disabled={page <= 1 || list.phase !== "ready"} onClick={() => setPage((value) => value - 1)}><CaretLeft size={13} /></button><span>{list.data.pagination.page} / {Math.max(1, list.data.pagination.total_pages)}</span><button type="button" aria-label="下一页" disabled={page >= list.data.pagination.total_pages || list.phase !== "ready"} onClick={() => setPage((value) => value + 1)}><CaretRight size={13} /></button></footer>
         </aside>
-        <QuestionDetail state={detail} answer={answer} setAnswer={setAnswer} confidence={confidence} setConfidence={setConfidence} onSubmit={submit} onNext={next} />
+        <QuestionDetail state={detail} answer={answer} setAnswer={setAnswer} confidence={confidence} setConfidence={setConfidence} onSubmit={submit} onNext={next} onRetry={selectQuestion} />
       </div>
     </div>
   );

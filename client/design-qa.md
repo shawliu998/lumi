@@ -664,3 +664,60 @@ human acceptance claim. The next honest evidence is a fresh voluntary learner
 answer on the rebuilt product: if the first answer is correct, the learner must
 complete the direct transfer; if incorrect, the existing probe → teaching →
 transfer route remains authoritative.
+
+## Complete-bank offline resource QA — 2026-07-14
+
+The complete-bank client was exercised against the installed immutable
+`lumi-xingce-cleaned17-v2` question database and checksum-bound
+`lumi-xingce-assets-cleaned17-v2-local-assets-v1` resource pack. The sidecar used a
+fresh temporary attempt database; no learner answer was selected or submitted.
+
+- The header displayed the verified runtime counts: 68,321 practice-ready,
+  9,374 still waiting for resources, and 484 quarantined review records. The
+  additional 9 review records are explicit pre-answer safety quarantines rather
+  than hidden text cleanup.
+- Searching for `工学研究生` opened a real image-dependent question. Its one
+  opaque loopback image completed with a non-zero natural width; no source path,
+  remote URL, answer, explanation, or correct marker appeared before submission.
+- At the desktop viewport the detail region was the intended scroll owner
+  (`297px` client height / `876px` content height). At `640 × 780`, document
+  width remained exactly `640px`; the question panel was `560px` wide and the
+  image stayed inside it at `382.5px` wide.
+- Scrolling the detail region reached its exact bottom (`603 + 273 = 876`) and
+  exposed all four answer options plus the confidence control. The submit action
+  remained disabled because automation did not invent a learner choice.
+- A remote-only resource question rendered no broken image, disabled both the
+  options and submission, and showed the fail-closed reason at the top of the
+  detail content. That placement was corrected during this pass so a long source
+  cannot hide the reason below the fold.
+- The blocked view had no horizontal overflow and projected no `/Users/` path or
+  `http(s)` source URL. The sidecar separately returned `409` for remote-only,
+  mixed-dependency, and rejected-placeholder attempts.
+
+After the accessibility and recovery remediation, the final component was
+recaptured at the exact release viewports. In both captures, every visible
+complete-bank text node measured at least `11px`; the document had no horizontal
+overflow and the image decoded to `1191 × 1684`. The detail pane remained the
+only long-content scroll owner (`472 × 294` within `472 × 934` at desktop and
+`560 × 257` within `560 × 934` at narrow width). The real Mac window minimum is
+now the same tested `640 × 640` responsive boundary rather than an unreachable
+1024px floor.
+
+An actual browser image failure was then injected at the loopback transport
+boundary. The visible page raised a `role=alert` notice, disabled the answer
+fieldset through native fieldset semantics, removed the confidence control,
+cleared any answer state, and offered an enabled `重新核对离线资源` action. No
+answer was submitted. Black-tiled compositor captures from that injected state
+were discarded; the failure result is retained as DOM and transport evidence,
+not presented as a visual artifact.
+
+Final inspected PNG evidence:
+
+- `qa/question-bank-offline-assets-1280x720.png` — `2d78cb260d0131472087c87cb4c4e85bc596b2924073adc2a96c8aca9af03462`
+- `qa/question-bank-offline-assets-640x720.png` — `29cff3d935701222bca43c3c90c1a7c5d5cc474965f1abf6f1d1d0085234548e`
+
+The captures preserve the ordinary Khanmigo-like education-product baseline:
+one compact left rail, flat white surfaces, single-pixel dividers, restrained
+violet selection, system typography, and no gradient, glow, assistant avatar,
+chat bubble, decorative hero, or invented metric. This is product-access
+evidence only, not a human learning-effect claim.

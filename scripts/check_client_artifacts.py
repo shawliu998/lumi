@@ -44,6 +44,8 @@ SCREENSHOTS = {
     "p02-budget-below-accepted-retry-1280x720.png": (1280, 720),
     "p02-budget-retry-success-1280x720.png": (1280, 720),
     "p02-compare-budget-conflict-khanmigo.png": (1816, 562),
+    "question-bank-offline-assets-1280x720.png": (1280, 720),
+    "question-bank-offline-assets-640x720.png": (640, 720),
 }
 
 BANNED_PATTERNS = {

@@ -97,7 +97,8 @@ a teaching decision, a verification event, and an auditable learner-state update
 
 ## Non-goals for v0
 
-- Full migration of all existing question-bank assets.
+- Blind migration or public redistribution of mutable/raw question-bank assets;
+  product resources require a versioned, checksum-bound, rights-scoped export.
 - Production multi-user accounts, social features, or cloud sync.
 - Autonomous high-stakes scoring claims.
 - Training a large sequence KT model before sufficient real trajectories exist.

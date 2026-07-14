@@ -34,6 +34,8 @@ const expectations = [
   [config.build?.devUrl === "http://127.0.0.1:1420", "devUrl must be loopback-only"],
   [config.app?.security?.csp?.includes("default-src 'self'"), "CSP must default to self"],
   [config.app?.security?.csp?.includes("connect-src 'self' http://127.0.0.1:8765"), "CSP must allow only the exact loopback sidecar origin"],
+  [config.app?.security?.csp?.includes("img-src 'self' asset: http://asset.localhost http://127.0.0.1:8765 data: blob:"), "CSP must allow verified question images only from the exact loopback sidecar origin"],
+  [config.app?.windows?.[0]?.minWidth === 640 && config.app?.windows?.[0]?.minHeight === 640, "desktop minimum size must match the tested responsive question-bank boundary"],
   [!config.app?.security?.csp?.includes("127.0.0.1:1420"), "CSP must not grant the development port network access"],
   [JSON.stringify(config.bundle?.externalBin) === JSON.stringify(["binaries/hermes-sidecar"]), "bundle must package only the Lumi sidecar"],
   [JSON.stringify(config.bundle?.resources) === JSON.stringify({ "resources/sidecar-runtime": "sidecar-runtime" }), "bundle must include the sidecar runtime tree"],

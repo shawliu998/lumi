@@ -58,6 +58,7 @@ XINGCE_ADAPTIVE_TRANSFER_ROUTE = re.compile(r"^/v1/xingce/adaptive/([^/]+)/sessi
 XINGCE_ADAPTIVE_REPLAY_ROUTE = re.compile(r"^/v1/xingce/adaptive/([^/]+)/sessions/([^/]+)/replay$")
 XINGCE_QUESTION_BANK_QUESTION_ROUTE = re.compile(r"^/v1/xingce/question-bank/questions/([^/]+)$")
 XINGCE_QUESTION_BANK_ATTEMPT_ROUTE = re.compile(r"^/v1/xingce/question-bank/questions/([^/]+)/attempts$")
+XINGCE_QUESTION_BANK_ASSET_ROUTE = re.compile(r"^/v1/xingce/question-bank/assets/([^/]+)$")
 
 
 class LocalThreadingHTTPServer(ThreadingHTTPServer):
@@ -127,6 +128,15 @@ def _handler_factory(application: SidecarApplication, allowed_origins: frozenset
             try:
                 parsed = urlsplit(self.path)
                 if method == "GET":
+                    asset_match = XINGCE_QUESTION_BANK_ASSET_ROUTE.fullmatch(parsed.path)
+                    if asset_match:
+                        if parsed.query:
+                            raise ServiceError(400, "invalid_query", "question asset does not accept query parameters")
+                        payload = application.xingce_question_bank_asset(
+                            unquote(asset_match.group(1))
+                        )
+                        self._send_binary(200, payload, request_id, origin)
+                        return
                     payload = self._route_get(parsed.path, parse_qs(parsed.query, keep_blank_values=True))
                     self._send(200, payload, request_id, origin)
                     return
@@ -768,6 +778,40 @@ def _handler_factory(application: SidecarApplication, allowed_origins: frozenset
             self.end_headers()
             if encoded:
                 self.wfile.write(encoded)
+
+        def _send_binary(
+            self,
+            status: int,
+            payload: dict[str, Any],
+            request_id: str,
+            origin: str | None = None,
+        ) -> None:
+            content = payload.get("content")
+            media_type = payload.get("media_type")
+            content_sha256 = payload.get("content_sha256")
+            if (
+                not isinstance(content, bytes)
+                or media_type not in {"image/png", "image/jpeg", "image/gif", "image/webp"}
+                or not isinstance(content_sha256, str)
+                or re.fullmatch(r"[0-9a-f]{64}", content_sha256) is None
+            ):
+                raise ServiceError(500, "invalid_asset_response", "verified asset response is invalid")
+            self.send_response(status)
+            self.send_header("X-Request-ID", request_id)
+            # Asset URLs are opaque IDs rather than content-addressed URLs. Force
+            # revalidation so a later release cannot reuse an ID and display a
+            # stale image from the WebView cache.
+            self.send_header("Cache-Control", "private, no-cache, max-age=0, must-revalidate")
+            self.send_header("X-Content-Type-Options", "nosniff")
+            self.send_header("Content-Security-Policy", "default-src 'none'; sandbox")
+            self.send_header("Content-Type", media_type)
+            self.send_header("ETag", f'"sha256-{content_sha256}"')
+            if origin is not None and origin in allowed_origins:
+                self.send_header("Access-Control-Allow-Origin", origin)
+                self.send_header("Vary", "Origin")
+            self.send_header("Content-Length", str(len(content)))
+            self.end_headers()
+            self.wfile.write(content)
 
     return Handler
 

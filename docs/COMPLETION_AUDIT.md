@@ -39,16 +39,18 @@ mean population learning efficacy or production distribution has been proved.
 | --- | --- | --- |
 | 31/31 Xingce subtype releases | `domains/content/xingce/coverage-matrix.v1.json`; 30 `domains/released/**/manifest.json` owner decision blocks | product release uses a 2026-07-14 owner waiver; it is not a claim of human effectiveness |
 | 31/31 local catalog + Chinese type selector | real loopback/browser QA in `client/design-qa.md`; `client/`; `service/` | automated direct-route answers use an isolated evaluation namespace and do not count as human acceptance |
-| Versioned complete local question bank | pinned export `lumi-xingce-cleaned17-v1`; `domains/content/xingce/full-question-bank.release.v1.json`; installer, read-only service and client contract tests | 77,704 ready records are browsable; 60,703 support direct text practice; 17,001 asset-dependent records fail closed; 475 review records are quarantined; 49,358 records remain honestly unclassified |
-| Packaged macOS candidate | debug `Lumi.app`; bundled tree SHA-256 `bb83b266c50797b2b0316a5abec7556595e92a857483e3283e2c9232f1c2578c`; strict/deep signature and lifecycle checks | ARM64, ad-hoc signed only; not notarized or production-distributed; the 687 MiB question-bank export is installed separately under controlled app data rather than embedded in Git or the app bundle |
-| Full deterministic release evidence | `evals/reports/latest.json`, run `run-20260714T043039Z`: 17/17 PASS; `scripts/verify_core.py` PASS | local/evaluation-fixture evidence is kept separate from human learning evidence |
+| Versioned complete local question bank | pinned export `lumi-xingce-cleaned17-v2`; checksum-bound offline asset export `lumi-xingce-assets-cleaned17-v2-local-assets-v1`; installers, read-only service, real loopback resource QA and client contract tests | 77,695 ready records are browsable; 68,321 support practice; 9,374 remain honestly asset-gated; 484 review records are quarantined, including 9 strong pre-answer safety findings; 49,358 records remain honestly unclassified. The 7,625 newly unlocked records are product-access evidence, not adaptive-learning or human-effect evidence |
+| Packaged macOS candidate | debug `Lumi.app`; strict/deep signature and managed lifecycle checks | ARM64, ad-hoc signed only; not notarized or production-distributed; the 694 MiB question bank and 402 MB resource pack are installed separately under controlled app data rather than embedded in Git or the app bundle |
+| Full deterministic release evidence | `evals/reports/latest.json`, run `run-20260714T061513Z`: 17/17 PASS; `scripts/verify_core.py` PASS with the pinned offline Study Pack evaluation interpreter | local/evaluation-fixture evidence is kept separate from human learning evidence |
 
 The complete-bank surface is deliberately `practice_only`: an accepted answer
 may return the answer and explanation and persist an idempotent practice receipt,
 but it cannot update KT, confirm a candidate misconception, or create Today/Review
 work. Adaptive state changes still require the separate diagnostic and independent
-verification policy. Missing assets are never fetched implicitly, and
-`needs_review` records cannot be addressed through the product API.
+verification policy. Missing assets are never fetched implicitly.
+Attempt-required images are served only by opaque loopback paths after
+whole-export checksum verification; source paths and remote URLs are not
+projected. `needs_review` records cannot be addressed through the product API.
 
 ## Historical judgment-reasoning implementation slice
 
@@ -106,7 +108,7 @@ and must not be combined into a claim that the end-to-end P0 product is complete
 | Loopback-only local service | complete | `service/` tests; health/capabilities/real-attempt/trace/replay/skill-report endpoints | public batch/demo run creation is disabled; internal evaluation traces remain separately auditable |
 | Real-attempt safety projection | complete | release `attempt_api` and `cohort_prior_guardrail` gates; redacted API evidence artifact | synthetic engineering priors are not real cohort evidence |
 | Stepwise learner continuation | complete for local v1 | release `attempt_continuation` gate; versioned probe/verification HTTP trace and replay | single local learner/session; no cross-device concurrency claim |
-| P0.3.1 real Xingce product activity | in progress | `domains/content/xingce/p031-data-analysis-v1`; ProductActivity/HTTP/client tests; `client/design-qa.md`; immutable real run `r_NNPBCBAOLCDCFLFJJALKBJCMMFHKKIIHEGLFGEFN`; release verifier 18/18; local debug `Lumi.app` tree `4752ff221c1c72a3a528e945688b3608b2cbf7580200eb0cf7fb232fe0d2d4fb` | v1 real completion exposed and drove KT/review fixes; v2 requires a fresh real full-path acceptance run before release |
+| Historical P0.3.1 data-analysis activity | compatibility evidence retained | `domains/content/xingce/p031-data-analysis-v1`; ProductActivity/HTTP/client tests; `client/design-qa.md`; immutable real run `r_NNPBCBAOLCDCFLFJJALKBJCMMFHKKIIHEGLFGEFN` | v1 real completion exposed and drove KT/review fixes; a fresh v2 human run remains useful post-release evidence but is explicitly not a blocker for the owner-waived complete-bank access slice |
 | Progressive assistance and misconception dossier | complete for P0.1 | six authored levels; `progressive_assistance` and `misconception_dossier` gates; 42 resolved probe/teaching contracts | engineering policy is uncalibrated; synonym/ASR coverage is conservative |
 | Explainable TodayPlan and independent ReviewSchedule | complete for bounded P0.2 | `evals/reports/latest.json` → `today_plan_schedule`; closed schemas; schedule/API tests; `client/design-qa.md` | only completed human-local attempts seed tasks; one owned launchable fixture; +1/+3 and durations are uncalibrated; activity is a same-fixture retest; completion cannot write KT; no population-effect claim |
 | Khanmigo-grounded, non-AI-slop client | complete for P0.2 | `client/design-qa.md`; 28 dimension/hash-gated artifacts: 17 current P0.2 states/comparisons plus 11 retained P0.1 artifacts; `scripts/check_client_artifacts.py` | one launchable Xingce fixture; no broad usability or public design-system claim |

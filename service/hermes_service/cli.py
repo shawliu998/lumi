@@ -16,6 +16,7 @@ from lumi_study_pack.store import (
 from .api import create_server
 from .application import SidecarApplication
 from .xingce_adaptive_session import XingceAdaptiveSessionConfig, XingceAdaptiveSessionService
+from .xingce_question_assets import configured_asset_export_root
 from .xingce_question_bank import configured_export_root
 
 
@@ -25,6 +26,7 @@ INTERNAL_EVALUATION_PROJECTION_ENV = "LUMI_INTERNAL_EVALUATION_PROJECTION"
 JUDGMENT_PACK_ROOT_ENV = "LUMI_JUDGMENT_PACK_ROOT"
 XINGCE_ADAPTIVE_PACK_ROOTS_ENV = "LUMI_XINGCE_ADAPTIVE_PACK_ROOTS"
 XINGCE_FULL_BANK_EXPORT_ENV = "LUMI_XINGCE_FULL_BANK_EXPORT"
+XINGCE_ASSET_EXPORT_ENV = "LUMI_XINGCE_ASSET_EXPORT"
 DEFAULT_RELEASED_JUDGMENT_PACK_ROOT = (
     Path(__file__).resolve().parents[2]
     / "domains"
@@ -127,6 +129,10 @@ def configured_xingce_full_bank_export() -> Path | None:
     return configured_export_root(os.environ.get(XINGCE_FULL_BANK_EXPORT_ENV))
 
 
+def configured_xingce_asset_export() -> Path | None:
+    return configured_asset_export_root(os.environ.get(XINGCE_ASSET_EXPORT_ENV))
+
+
 def parser() -> argparse.ArgumentParser:
     result = argparse.ArgumentParser(description="Lumi loopback-only local sidecar")
     result.add_argument("--db", default=str(Path.home() / ".hermes" / "sidecar.sqlite3"))
@@ -166,6 +172,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             evidence_origin=attempt_origin,
         ),
         xingce_full_bank_export=configured_xingce_full_bank_export(),
+        xingce_asset_export=configured_xingce_asset_export(),
     )
     if args.command == "capabilities":
         print(json.dumps(application.capabilities(), ensure_ascii=False, indent=2))

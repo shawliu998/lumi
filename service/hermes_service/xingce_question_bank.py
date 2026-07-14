@@ -11,6 +11,12 @@ import threading
 from typing import Any, Iterable, Iterator, Mapping
 from urllib.parse import quote
 
+from .xingce_question_assets import (
+    QuestionAssetNotFound,
+    QuestionAssetUnavailable,
+    XingceQuestionAssetCatalog,
+)
+
 
 MANIFEST_SCHEMA = "lumi.xingce-full-bank-export.v1"
 DATABASE_FILENAME = "lumi-question-bank.sqlite3"
@@ -23,6 +29,8 @@ SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
 MAX_QUERY_LENGTH = 100
 MAX_PAGE_SIZE = 100
 MAX_PAGE = 1_000_000
+LOCAL_SOURCE_MARKER = re.compile(r"\[本地原卷页图：[^\]]+\]")
+LOCAL_ABSOLUTE_PATH = re.compile(r"/(?:Users|Volumes)/[^\s\]\)<>\"']+")
 
 
 class QuestionBankUnavailable(RuntimeError):
@@ -71,6 +79,7 @@ class XingceQuestionBankCatalog:
         export_root: str | Path | None,
         *,
         attempt_database: str | Path,
+        asset_export_root: str | Path | None = None,
     ) -> None:
         self._root = None if export_root is None else Path(export_root).expanduser()
         self._attempt_database = str(attempt_database)
@@ -80,6 +89,7 @@ class XingceQuestionBankCatalog:
         self._database_sha256: str | None = None
         self._unavailable_reason = "export_not_configured"
         self._columns: dict[str, str] = {}
+        self._assets: XingceQuestionAssetCatalog | None = None
         if self._root is not None:
             try:
                 self._load()
@@ -91,6 +101,12 @@ class XingceQuestionBankCatalog:
                 self._database_sha256 = None
                 self._columns = {}
                 self._unavailable_reason = "integrity_validation_failed"
+        if self.available:
+            assert self._database_sha256 is not None
+            self._assets = XingceQuestionAssetCatalog(
+                asset_export_root,
+                question_database_sha256=self._database_sha256,
+            )
 
     @property
     def available(self) -> bool:
@@ -124,6 +140,16 @@ class XingceQuestionBankCatalog:
             "counts": counts,
             "access_counts": access_counts,
             "subtypes": self._subtype_counts(),
+            "offline_assets": (
+                self._assets.status()
+                if self._assets is not None
+                else {
+                    "schema_version": "lumi.xingce-question-assets-status.v1",
+                    "available": False,
+                    "status": "unavailable",
+                    "reason": "question_bank_unavailable",
+                }
+            ),
         }
         return base
 
@@ -198,16 +224,41 @@ class XingceQuestionBankCatalog:
             options = self._options(connection, identifier)
         if row is None:
             raise QuestionBankNotFound(identifier)
-        question = self._detail_item(row, options)
-        asset_gated = bool(row["has_assets"])
+        policy = self._attempt_policy(row)
+        try:
+            required_assets = self._verified_required_assets(identifier, policy)
+        except QuestionBankAssetUnavailable:
+            policy = {
+                **policy,
+                "allowed": False,
+                "dependency_state": "asset_runtime_unavailable",
+            }
+            required_assets = []
+        question = self._detail_item(
+            row,
+            options,
+            assets=required_assets,
+            asset_delivery=(
+                "bundled"
+                if required_assets
+                else "not_required"
+                if policy["allowed"]
+                else "not_bundled"
+            ),
+        )
         attempt = {
-            "allowed": not asset_gated,
+            "allowed": policy["allowed"],
             "mode": "practice_only",
             "evidence_proposal_only": True,
             "writes_learner_state": False,
+            "asset_dependency_state": policy["dependency_state"],
         }
-        if asset_gated:
-            attempt["reason"] = "asset_not_bundled"
+        if not policy["allowed"]:
+            attempt["reason"] = (
+                "asset_runtime_unavailable"
+                if policy["dependency_state"] == "asset_runtime_unavailable"
+                else "asset_not_bundled"
+            )
         return {
             "schema_version": "lumi.xingce-question-bank-question.v1",
             "question": question,
@@ -235,8 +286,10 @@ class XingceQuestionBankCatalog:
             row = self._question_row(connection, identifier)
             if row is None:
                 raise QuestionBankNotFound(identifier)
-            if bool(row["has_assets"]):
+            policy = self._attempt_policy(row)
+            if not policy["allowed"]:
                 raise QuestionBankAssetUnavailable("question assets are not bundled")
+            self._verified_required_assets(identifier, policy)
             options = self._options(connection, identifier)
             answer_row = connection.execute(
                 f"SELECT {self._columns['answer']} AS answer FROM ready_answer_keys WHERE question_id=?",
@@ -252,7 +305,7 @@ class XingceQuestionBankCatalog:
         selected = self._canonical_response(selected_response, labels)
         answer = self._canonical_response(answer_row["answer"], labels)
         correct = selected == answer
-        explanation = None if explanation_row is None else explanation_row["explanation"]
+        explanation = None if explanation_row is None else _public_text(explanation_row["explanation"])
         if explanation is not None and not isinstance(explanation, str):
             raise QuestionBankUnavailable("ready question explanation is invalid")
         assert self._manifest is not None and self._database_sha256 is not None
@@ -282,6 +335,11 @@ class XingceQuestionBankCatalog:
             "learner_state_updated": False,
             "created_at": result["created_at"],
             "idempotent_replay": result["idempotent_replay"],
+            "explanation_media_status": (
+                "text_only"
+                if policy["explanation_asset_count"] > 0
+                else "not_required"
+            ),
         }
 
     def _load(self) -> None:
@@ -500,9 +558,9 @@ class XingceQuestionBankCatalog:
         return ("WHERE " + " AND ".join(terms) if terms else "", tuple(parameters))
 
     def _list_item(self, row: sqlite3.Row) -> dict[str, Any]:
-        stem = row["stem"] if isinstance(row["stem"], str) else ""
-        material = row["material"] if isinstance(row["material"], str) else ""
-        requirement = row["requirement"] if isinstance(row["requirement"], str) else ""
+        stem = _public_text(row["stem"])
+        material = _public_text(row["material"])
+        requirement = _public_text(row["requirement"])
         preview = stem.strip() or material.strip() or requirement.strip() or "题目内容依赖尚未打包的本地资源"
         return {
             "question_id": row["question_id"],
@@ -520,10 +578,17 @@ class XingceQuestionBankCatalog:
             "has_assets": bool(row["has_assets"]),
         }
 
-    def _detail_item(self, row: sqlite3.Row, options: list[sqlite3.Row]) -> dict[str, Any]:
-        stem = row["stem"] if isinstance(row["stem"], str) else ""
-        material = row["material"] if isinstance(row["material"], str) else ""
-        requirement = row["requirement"] if isinstance(row["requirement"], str) else ""
+    def _detail_item(
+        self,
+        row: sqlite3.Row,
+        options: list[sqlite3.Row],
+        *,
+        assets: list[dict[str, Any]],
+        asset_delivery: str,
+    ) -> dict[str, Any]:
+        stem = _public_text(row["stem"])
+        material = _public_text(row["material"])
+        requirement = _public_text(row["requirement"])
         preview = stem.strip() or material.strip() or requirement.strip() or "题目内容依赖尚未打包的本地资源"
         return {
             "question_id": row["question_id"],
@@ -543,10 +608,13 @@ class XingceQuestionBankCatalog:
             "option_count": row["option_count"],
             "difficulty": row["difficulty"],
             "content_signature": row["content_signature"],
-            "options": [{"label": option["label"], "text": option["text"]} for option in options],
+            "options": [
+                {"label": option["label"], "text": _public_text(option["text"])}
+                for option in options
+            ],
             "has_assets": bool(row["has_assets"]),
-            "assets": [],
-            "asset_delivery": "not_bundled" if row["has_assets"] else "not_required",
+            "assets": assets,
+            "asset_delivery": asset_delivery,
         }
 
     def _public_counts(self) -> dict[str, int]:
@@ -589,6 +657,14 @@ class XingceQuestionBankCatalog:
             row = active.execute(
                 f"SELECT COUNT(*) AS total, SUM(CASE WHEN {self._columns['has_assets']}=0 THEN 1 ELSE 0 END) AS direct, SUM(CASE WHEN {self._columns['has_assets']}<>0 THEN 1 ELSE 0 END) AS gated FROM ready_questions"
             ).fetchone()
+            if self._assets is not None and self._assets.available:
+                asset_counts = self._assets.status()["counts"]
+                if asset_counts["flagged_asset_questions"] != int(row["gated"] or 0):
+                    raise QuestionBankUnavailable("offline asset policy count does not match the question bank")
+                return {
+                    "direct_practice_ready": int(row["direct"] or 0) + asset_counts["attempt_unlocked"],
+                    "asset_gated": asset_counts["attempt_blocked"],
+                }
             return {
                 "direct_practice_ready": int(row["direct"] or 0),
                 "asset_gated": int(row["gated"] or 0),
@@ -598,6 +674,69 @@ class XingceQuestionBankCatalog:
             return project(connection)
         with self._connect() as active:
             return project(active)
+
+    def _attempt_policy(self, row: sqlite3.Row) -> dict[str, Any]:
+        if not bool(row["has_assets"]):
+            return {
+                "allowed": True,
+                "dependency_state": "not_required",
+                "required_asset_count": 0,
+                "explanation_asset_count": 0,
+            }
+        if self._assets is None or not self._assets.available:
+            return {
+                "allowed": False,
+                "dependency_state": "asset_export_unavailable",
+                "required_asset_count": 1,
+                "explanation_asset_count": 0,
+            }
+        try:
+            policy = self._assets.policy(str(row["question_id"]))
+        except QuestionAssetNotFound:
+            return {
+                "allowed": False,
+                "dependency_state": "asset_policy_missing",
+                "required_asset_count": 1,
+                "explanation_asset_count": 0,
+            }
+        return {
+            "allowed": policy["can_attempt"],
+            "dependency_state": policy["dependency_state"],
+            "required_asset_count": policy["required_asset_count"],
+            "explanation_asset_count": policy["explanation_asset_count"],
+        }
+
+    def _verified_required_assets(
+        self,
+        question_id: str,
+        policy: Mapping[str, Any],
+    ) -> list[dict[str, Any]]:
+        if not policy["allowed"] or policy["required_asset_count"] == 0:
+            return []
+        if self._assets is None or not self._assets.available:
+            raise QuestionBankAssetUnavailable("offline question assets are unavailable")
+        try:
+            assets = self._assets.verified_required_assets(question_id)
+        except (QuestionAssetNotFound, QuestionAssetUnavailable) as error:
+            raise QuestionBankAssetUnavailable(str(error)) from None
+        if len(assets) != policy["required_asset_count"]:
+            raise QuestionBankAssetUnavailable(
+                "required question assets do not match the attempt policy"
+            )
+        return assets
+
+    def asset_binary(self, asset_id: Any) -> dict[str, Any]:
+        self._require_available()
+        if not isinstance(asset_id, str) or not asset_id:
+            raise QuestionBankRequestError("asset_id is invalid")
+        if self._assets is None or not self._assets.available:
+            raise QuestionBankAssetUnavailable("offline question assets are unavailable")
+        try:
+            return self._assets.binary(asset_id)
+        except QuestionAssetNotFound as error:
+            raise QuestionBankNotFound(str(error)) from None
+        except QuestionAssetUnavailable as error:
+            raise QuestionBankAssetUnavailable(str(error)) from None
 
     def _record_attempt(self, **record: Any) -> dict[str, Any]:
         attempt_id = "qb_" + hashlib.sha256(
@@ -699,3 +838,10 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _public_text(value: Any) -> str:
+    if not isinstance(value, str):
+        return ""
+    text = LOCAL_SOURCE_MARKER.sub("题目材料见下方离线原卷页图。", value)
+    return LOCAL_ABSOLUTE_PATH.sub("[本地资源]", text)

@@ -6,6 +6,7 @@ import {
   isValidQuestionBankList,
   isValidQuestionBankQuestion,
   isValidQuestionBankStatus,
+  questionBankAssetUrl,
 } from "./questionBankApi.js";
 
 const item = {
@@ -29,13 +30,22 @@ test("question-bank status distinguishes a verified local export from honest una
     available: true,
     status: "available",
     export: {
-      export_id: "lumi-xingce-full-20260617-cleaned17-v1",
-      export_version: "1",
+      export_id: "lumi-xingce-cleaned17-v2",
+      export_version: "cleaned17-v2",
       schema_version: "lumi.xingce-question-bank-export.v1",
       generated_at: "2026-07-14T00:00:00Z",
-      counts: { total: 78179, ready: 77704, needs_review: 475 },
-      access_counts: { direct_practice_ready: 60703, asset_gated: 17001 },
+      counts: { total: 78179, ready: 77695, needs_review: 484 },
+      access_counts: { direct_practice_ready: 68321, asset_gated: 9374 },
       subtypes: [{ subtype_id: "xingce.verbal.logical_cloze", name: "逻辑填空", ready_count: 100 }],
+      offline_assets: {
+        schema_version: "lumi.xingce-question-assets-status.v1",
+        available: true,
+        status: "available",
+        export_id: "lumi-xingce-assets-cleaned17-v2-local-assets-v1",
+        export_version: "cleaned17-v2-local-assets-v1",
+        counts: { flagged_asset_questions: 16999, attempt_unlocked: 7625, attempt_blocked: 9374 },
+        implicit_network_fetch: false,
+      },
     },
     practice_contract: { mode: "practice_only", writes_learner_state: false },
   }), true);
@@ -71,16 +81,54 @@ test("question lists and unanswered details fail closed on answer leakage", () =
       assets: [],
       asset_delivery: "not_required",
     },
-    attempt: { allowed: true, mode: "practice_only", writes_learner_state: false },
+    attempt: { allowed: true, mode: "practice_only", writes_learner_state: false, asset_dependency_state: "not_required" },
   };
   assert.equal(isValidQuestionBankQuestion(detail), true);
   assert.equal(isValidQuestionBankQuestion({ ...detail, question: { ...detail.question, explanation: "答案依据" } }), false);
   const assetGated = {
     ...detail,
     question: { ...detail.question, stem: "", material: "", has_assets: true, asset_delivery: "not_bundled" },
-    attempt: { ...detail.attempt, allowed: false, reason: "asset_not_bundled" },
+    attempt: { ...detail.attempt, allowed: false, reason: "asset_not_bundled", asset_dependency_state: "required_remote" },
   };
   assert.equal(isValidQuestionBankQuestion(assetGated), true);
+});
+
+test("bundled assets use opaque loopback paths and reject source paths or URLs", () => {
+  const asset = {
+    asset_id: "asset_ab12",
+    content_sha256: "a".repeat(64),
+    media_type: "image/png",
+    path: "/v1/xingce/question-bank/assets/asset_ab12",
+    placements: [{ placement: "stem", option_label: "" }],
+  };
+  const detail = {
+    schema_version: "lumi.xingce-question-bank-question.v1",
+    question: {
+      ...item,
+      material: "",
+      stem: "请根据图表选择。",
+      options: [{ label: "A", text: "甲" }, { label: "B", text: "乙" }],
+      has_assets: true,
+      assets: [asset],
+      asset_delivery: "bundled",
+    },
+    attempt: {
+      allowed: true,
+      mode: "practice_only",
+      writes_learner_state: false,
+      asset_dependency_state: "bundled_complete",
+    },
+  };
+  assert.equal(isValidQuestionBankQuestion(detail), true);
+  assert.match(questionBankAssetUrl(asset), /^http:\/\/127\.0\.0\.1:\d+\/v1\/xingce\/question-bank\/assets\/asset_ab12$/);
+  assert.equal(isValidQuestionBankQuestion({
+    ...detail,
+    question: { ...detail.question, assets: [{ ...asset, path: "/Users/a1-6/source.png" }] },
+  }), false);
+  assert.equal(isValidQuestionBankQuestion({
+    ...detail,
+    question: { ...detail.question, assets: [{ ...asset, path: "https://example.com/source.png" }] },
+  }), false);
 });
 
 test("scored practice is explicit evidence-only and never claims a learner-state write", () => {
@@ -99,6 +147,7 @@ test("scored practice is explicit evidence-only and never claims a learner-state
     learner_state_updated: false,
     created_at: "2026-07-14T00:00:00Z",
     idempotent_replay: false,
+    explanation_media_status: "not_required",
   };
   assert.equal(isValidQuestionBankAttempt(result), true);
   assert.equal(isValidQuestionBankAttempt({ ...result, learner_state_updated: true }), false);

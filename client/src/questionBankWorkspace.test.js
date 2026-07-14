@@ -24,7 +24,21 @@ test("unanswered question UI does not render an answer or explanation field", ()
 
 test("question bank handles offline assets and narrow layouts honestly", () => {
   assert.match(source, /不会隐式联网，也不会在题目不完整时评分/);
-  assert.match(source, /等待离线资源包/);
+  assert.match(source, /function QuestionAssets/);
+  assert.match(source, /questionBankAssetUrl\(asset\)/);
+  assert.match(source, /题目材料图/);
+  assert.match(source, /作答要求图/);
+  assert.match(source, /选项 \$\{option\.label\} 配图/);
+  assert.match(source, /解析中的图片尚未在答后视图展示/);
+  assert.doesNotMatch(source, /asset\.source_path/);
+  assert.doesNotMatch(source, /asset\.source_url/);
+  assert.match(source, /onError=\{\(\) => onAssetError\(asset\.asset_id\)\}/);
+  assert.match(source, /assetRenderFailed/);
+  assert.match(source, /本机图片未能完整载入，本题已停止作答/);
+  assert.match(source, /重新核对离线资源/);
+  assert.match(source, /resultRef\.current\.scrollIntoView/);
+  assert.match(source, /htmlFor="question-bank-search"/);
+  assert.match(source, /等待离线资源/);
   assert.match(source, /请先安装经过校验的版本化本地导出/);
   assert.match(source, /question_bank_unavailable/);
 });

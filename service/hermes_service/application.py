@@ -105,6 +105,7 @@ class SidecarApplication:
         judgment_session_service: JudgmentSessionService | None = None,
         xingce_adaptive_session_services: Mapping[str, XingceAdaptiveSessionService] | None = None,
         xingce_full_bank_export: str | Path | None = None,
+        xingce_asset_export: str | Path | None = None,
         xingce_question_bank_catalog: XingceQuestionBankCatalog | None = None,
     ) -> None:
         if study_pack_attempt_evidence_origin not in ATTEMPT_EVIDENCE_ORIGINS:
@@ -210,11 +211,14 @@ class SidecarApplication:
         self.xingce_coverage = XingceCoverageCatalog(
             available_subtype_ids=available_xingce_subtypes,
         )
-        if xingce_question_bank_catalog is not None and xingce_full_bank_export is not None:
-            raise ValueError("provide either a full-bank catalog or export root")
+        if xingce_question_bank_catalog is not None and (
+            xingce_full_bank_export is not None or xingce_asset_export is not None
+        ):
+            raise ValueError("provide either a full-bank catalog or export roots")
         self.xingce_question_bank = xingce_question_bank_catalog or XingceQuestionBankCatalog(
             xingce_full_bank_export,
             attempt_database=self.database,
+            asset_export_root=xingce_asset_export,
         )
 
     def health(self) -> dict[str, Any]:
@@ -301,6 +305,7 @@ class SidecarApplication:
                 "xingce_question_bank_questions": "GET /v1/xingce/question-bank/questions",
                 "xingce_question_bank_question": "GET /v1/xingce/question-bank/questions/{question_id}",
                 "xingce_question_bank_attempt": "POST /v1/xingce/question-bank/questions/{question_id}/attempts",
+                "xingce_question_bank_asset": "GET /v1/xingce/question-bank/assets/{asset_id}",
             },
         }
 
@@ -326,6 +331,17 @@ class SidecarApplication:
         try:
             return self.xingce_question_bank.attempt(question_id, **payload)
         except (QuestionBankUnavailable, QuestionBankRequestError, QuestionBankNotFound, QuestionBankConflict, QuestionBankAssetUnavailable) as exc:
+            raise _question_bank_service_error(exc) from None
+
+    def xingce_question_bank_asset(self, asset_id: Any) -> dict[str, Any]:
+        try:
+            return self.xingce_question_bank.asset_binary(asset_id)
+        except (
+            QuestionBankAssetUnavailable,
+            QuestionBankNotFound,
+            QuestionBankRequestError,
+            QuestionBankUnavailable,
+        ) as exc:
             raise _question_bank_service_error(exc) from None
 
     def xingce_adaptive_workspace(self, subtype_id: Any) -> dict[str, Any]:

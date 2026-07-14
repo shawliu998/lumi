@@ -6590,8 +6590,8 @@ button.connection-status:hover {
 .bank-centered p {
   max-width: 360px;
   margin: 0 0 5px;
-  font-size: 9px;
-  line-height: 15px;
+  font-size: 12px;
+  line-height: 18px;
 }
 
 .bank-loading-dot {
@@ -6617,9 +6617,9 @@ button.connection-status:hover {
 }
 
 .bank-page-header small {
-  color: #7a7d86;
-  font-size: 8px;
-  line-height: 11px;
+  color: #5f626b;
+  font-size: 11px;
+  line-height: 15px;
 }
 
 .bank-page-header h1 {
@@ -6631,9 +6631,9 @@ button.connection-status:hover {
 
 .bank-page-header p {
   margin: 0;
-  color: #6c6f77;
-  font-size: 8.5px;
-  line-height: 13px;
+  color: #5f626b;
+  font-size: 11px;
+  line-height: 16px;
 }
 
 .bank-page-header > span {
@@ -6646,7 +6646,7 @@ button.connection-status:hover {
   gap: 5px;
   color: #5f626b;
   background: #fafafd;
-  font-size: 8px;
+  font-size: 11px;
 }
 
 .bank-controls {
@@ -6676,9 +6676,14 @@ button.connection-status:hover {
   height: 100%;
   padding: 0 7px;
   border: 0;
-  outline: 0;
+  outline: none;
   color: #40424a;
-  font-size: 9px;
+  font-size: 12px;
+}
+
+.bank-controls form:focus-within {
+  border-color: #625ccd;
+  box-shadow: 0 0 0 2px #dedcff;
 }
 
 .bank-controls form button {
@@ -6689,7 +6694,7 @@ button.connection-status:hover {
   background: #f8f9fb;
   color: #555861;
   cursor: pointer;
-  font-size: 8.5px;
+  font-size: 12px;
 }
 
 .bank-controls label {
@@ -6705,7 +6710,7 @@ button.connection-status:hover {
   border-radius: 5px;
   color: #4b4e56;
   background: #fff;
-  font-size: 8.5px;
+  font-size: 12px;
 }
 
 .bank-workspace {
@@ -6754,15 +6759,15 @@ button.connection-status:hover {
   gap: 8px;
 }
 
-.bank-question-meta strong { color: #4e49cf; font-size: 8px; }
+.bank-question-meta strong { color: #4e49cf; font-size: 11px; }
 .bank-question-meta small,
-.bank-question-source { color: #858891; font-size: 7px; line-height: 10px; }
+.bank-question-source { color: #5f626b; font-size: 11px; line-height: 15px; }
 
 .bank-question-preview {
   overflow: hidden;
   color: #3f4249;
-  font-size: 9px;
-  line-height: 14px;
+  font-size: 12px;
+  line-height: 18px;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -6781,8 +6786,8 @@ button.connection-status:hover {
   align-items: center;
   justify-content: center;
   gap: 7px;
-  color: #777a83;
-  font-size: 8.5px;
+  color: #5f626b;
+  font-size: 12px;
   text-align: center;
 }
 
@@ -6797,14 +6802,14 @@ button.connection-status:hover {
   align-items: center;
   justify-content: center;
   gap: 9px;
-  color: #777a83;
+  color: #5f626b;
   background: #fff;
-  font-size: 8px;
+  font-size: 11px;
 }
 
 .bank-pagination button {
-  width: 24px;
-  height: 23px;
+  width: 28px;
+  height: 28px;
   padding: 0;
   border: 1px solid var(--border);
   border-radius: 4px;
@@ -6831,12 +6836,12 @@ button.connection-status:hover {
   align-items: center;
   justify-content: center;
   gap: 7px;
-  color: #777a83;
+  color: #5f626b;
   text-align: center;
 }
 
-.bank-detail-empty strong { color: #4a4d55; font-size: 11px; }
-.bank-detail-empty p { max-width: 300px; margin: 0; font-size: 8.5px; line-height: 14px; }
+.bank-detail-empty strong { color: #4a4d55; font-size: 14px; }
+.bank-detail-empty p { max-width: 300px; margin: 0; font-size: 12px; line-height: 18px; }
 
 .bank-detail-header {
   min-height: 57px;
@@ -6849,14 +6854,22 @@ button.connection-status:hover {
 }
 
 .bank-detail-header span,
-.bank-detail-header small { color: #757881; font-size: 7.5px; line-height: 11px; }
-.bank-detail-header h2 { max-width: 430px; margin: 2px 0 0; overflow: hidden; color: #3e4149; font-size: 10px; line-height: 14px; text-overflow: ellipsis; white-space: nowrap; }
+.bank-detail-header small { color: #5f626b; font-size: 11px; line-height: 15px; }
+.bank-detail-header h2 { max-width: 430px; margin: 2px 0 0; overflow: hidden; color: #3e4149; font-size: 13px; line-height: 18px; text-overflow: ellipsis; white-space: nowrap; }
 .bank-detail-scroll { min-height: 0; flex: 1; padding: 12px 13px 18px; overflow-y: auto; }
 .bank-material { margin-bottom: 10px; padding: 9px 10px; border-left: 2px solid #aaa7f7; background: #f8f8fc; }
+.bank-requirement { margin-top: 10px; padding: 8px 10px; border: 1px solid #e5e6ea; background: #fcfcfd; }
 .bank-material small,
-.bank-stem small { display: block; margin-bottom: 4px; color: #7773d7; font-size: 7.5px; font-weight: 600; }
+.bank-stem small,
+.bank-requirement small { display: block; margin-bottom: 4px; color: #5c57bd; font-size: 11px; font-weight: 600; }
 .bank-material p,
-.bank-stem p { margin: 0; color: #3f4249; font-size: 10px; line-height: 17px; white-space: pre-wrap; }
+.bank-stem p,
+.bank-requirement p { margin: 0; color: #3f4249; font-size: 13px; line-height: 20px; white-space: pre-wrap; }
+
+.bank-assets { margin-top: 8px; display: grid; justify-items: start; gap: 7px; }
+.bank-assets img { max-width: min(100%, 620px); max-height: 540px; border: 1px solid #e1e2e6; display: block; object-fit: contain; background: #fff; }
+.bank-assets-option { margin-top: 7px; }
+.bank-assets-option img { max-height: 320px; }
 
 .bank-asset-notice {
   margin: 9px 0;
@@ -6865,30 +6878,33 @@ button.connection-status:hover {
   display: flex;
   align-items: flex-start;
   gap: 6px;
-  color: #805f47;
+  color: #67452f;
   background: #fcfaf8;
-  font-size: 8px;
-  line-height: 12px;
+  font-size: 12px;
+  line-height: 18px;
 }
 
 .bank-options { margin: 12px 0 0; padding: 0; border: 0; display: grid; gap: 6px; }
-.bank-options label { min-height: 34px; padding: 7px 9px; border: 1px solid #dedfe4; border-radius: 5px; display: grid; grid-template-columns: 16px 20px minmax(0, 1fr); align-items: start; gap: 5px; background: #fff; cursor: pointer; }
+.bank-options label { min-height: 44px; padding: 9px 10px; border: 1px solid #dedfe4; border-radius: 5px; display: grid; grid-template-columns: 18px 24px minmax(0, 1fr); align-items: start; gap: 7px; background: #fff; cursor: pointer; }
 .bank-options label:hover { border-color: #c6c4f1; background: #fbfbfe; }
 .bank-options label.selected { border-color: #9f9bf2; background: #f1f2ff; }
 .bank-options input { margin: 2px 0 0; accent-color: var(--accent); }
-.bank-options label > span { width: 18px; height: 18px; border-radius: 4px; display: grid; place-items: center; color: #5a5d65; background: #f0f1f4; font-size: 8px; font-weight: 600; }
-.bank-options label p { margin: 1px 0 0; color: #44474f; font-size: 9px; line-height: 14px; }
+.bank-options label > span { width: 22px; height: 22px; border-radius: 4px; display: grid; place-items: center; color: #4f525a; background: #f0f1f4; font-size: 11px; font-weight: 600; }
+.bank-option-copy { min-width: 0; }
+.bank-options label p { margin: 1px 0 0; color: #44474f; font-size: 12px; line-height: 18px; }
 
-.bank-confidence { width: 150px; margin-top: 10px; display: grid; grid-template-columns: 48px minmax(0, 1fr); align-items: center; gap: 6px; color: #686b74; font-size: 8px; }
+.bank-confidence { width: 210px; margin-top: 12px; display: grid; grid-template-columns: 68px minmax(0, 1fr); align-items: center; gap: 8px; color: #555861; font-size: 12px; }
 .bank-result { margin-top: 12px; border: 1px solid #dbe5de; border-radius: 6px; overflow: hidden; background: #fbfdfb; }
 .bank-result.incorrect { border-color: #eaded7; background: #fdfbf9; }
 .bank-result > header { min-height: 35px; padding: 8px 9px; border-bottom: 1px solid #e1e8e3; display: flex; align-items: center; gap: 6px; color: #2f7256; }
 .bank-result.incorrect > header { border-color: #eee3dc; color: #9a5739; }
-.bank-result > header strong { font-size: 10px; }
-.bank-result > header span { margin-left: auto; font-size: 8px; font-weight: 600; }
-.bank-result > p { margin: 0; padding: 9px 10px; color: #4e5159; font-size: 9px; line-height: 15px; white-space: pre-wrap; }
-.bank-result > div { padding: 7px 9px; border-top: 1px solid #e5e7e8; display: flex; align-items: flex-start; gap: 6px; color: #6b6e76; background: #fafafd; font-size: 7.5px; line-height: 12px; }
-.bank-attempt-error { margin: 9px 0 0; color: #995237; font-size: 8px; line-height: 13px; }
+.bank-result > header strong { font-size: 13px; }
+.bank-result > header span { margin-left: auto; font-size: 11px; font-weight: 600; }
+.bank-result > p { margin: 0; padding: 10px; color: #4e5159; font-size: 12px; line-height: 18px; white-space: pre-wrap; }
+.bank-result > p.bank-result-media-note { padding-top: 0; color: #5f626b; font-size: 11px; line-height: 16px; }
+.bank-result > div { padding: 8px 10px; border-top: 1px solid #e5e7e8; display: flex; align-items: flex-start; gap: 6px; color: #5f626b; background: #fafafd; font-size: 11px; line-height: 16px; }
+.bank-result:focus-visible { outline: 2px solid #625ccd; outline-offset: 2px; }
+.bank-attempt-error { margin: 9px 0 0; color: #8c3f28; font-size: 12px; line-height: 18px; }
 .bank-detail-actions { min-height: 46px; padding: 7px 12px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: flex-end; background: #fff; }
 .bank-detail-actions .button { display: inline-flex; align-items: center; gap: 5px; }
 

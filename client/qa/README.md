@@ -34,3 +34,9 @@ judgment Domain Pack and a fresh `evaluation_fixture` SQLite database for
 component/browser checks. Its two synthetic attestation identifiers are only a
 test seam: it never changes the repository draft, creates human evidence, or
 counts as logic/editorial-rights approval for packaging.
+
+`question-bank-offline-assets-*` are current complete-bank release evidence.
+They were captured against the installed immutable question database and
+checksum-bound offline resource pack with a disposable attempt database. No
+answer was selected or submitted. Their exact dimensions and SHA-256 hashes are
+recorded in `../design-qa.md` and enforced by the artifact gate.

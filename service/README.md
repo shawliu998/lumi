@@ -71,6 +71,7 @@ CLI option to widen the bind address.
 | GET | `/v1/xingce/question-bank/questions` | Search only integrity-verified `ready` questions; closed filters and bounded pagination |
 | GET | `/v1/xingce/question-bank/questions/{id}` | Read one answer-redacted `ready` question and its options |
 | POST | `/v1/xingce/question-bank/questions/{id}/attempts` | Score an ordinary practice response, then reveal its answer and explanation |
+| GET | `/v1/xingce/question-bank/assets/{asset_id}` | Read one checksum-verified attempt-required image through an opaque loopback URL |
 
 Example:
 
@@ -133,12 +134,37 @@ idempotency. `confidence` is the closed learner-facing enum `low`, `medium`, or
 Today, or Review. The reviewed Domain Pack adaptive path remains the only path
 that can commit learner-state changes after independent verification.
 
-The current export keeps asset references but does not ship a hash-bound local
-asset bundle. Status therefore separates `direct_practice_ready` from
-`asset_gated`; detail remains answer-redacted and reports
-`attempt.reason=asset_not_bundled` for the latter. Their local absolute paths and
-remote URLs are never returned, and an asset-gated attempt fails with `409`
-rather than pretending an incomplete visual question is usable.
+The optional asset export is configured separately through
+`LUMI_XINGCE_ASSET_EXPORT`, then the controlled per-user pointer:
+
+```text
+~/Library/Application Support/com.lumi.learning/content/xingce-question-assets/current
+```
+
+It is accepted only when its manifest is bound to the exact selected question
+database SHA-256 and every schema, catalog and content-addressed image matches
+the checksum index. The product catalog contains opaque IDs and relative blob
+paths only; it contains no source absolute paths or remote URLs. Images are
+served only from the loopback endpoint above with verified media type, a
+content-SHA ETag, mandatory cache revalidation and `nosniff`. No resource is
+fetched from the network.
+
+The current local pack unlocks 7,625 of 16,999 flagged questions. It bundles all
+attempt-required local images for 3,822 questions and determines that another
+3,803 need no image until after submission. The remaining 9,374 stay gated:
+8,143 require remote-only assets, 1,222 mix local and remote dependencies, and 9
+use rejected placeholders. Status therefore reports 68,321
+`direct_practice_ready` and 9,374 `asset_gated`. An unanswered detail remains
+answer-redacted; any incomplete visual question reports
+`attempt.reason=asset_not_bundled`, and submission fails with `409` rather than
+pretending the question is usable. Explanation images are not exposed through
+the pre-answer asset endpoint; where they are not bundled, the accepted attempt
+explicitly reports a text-only explanation view.
+
+Both detail projection and scoring re-read every attempt-required binary and
+recheck its media type and content SHA. If a controlled resource disappears or
+changes after sidecar startup, detail becomes `asset_runtime_unavailable` and
+submission returns `409` without creating a practice receipt.
 
 ## Study Pack boundary
 

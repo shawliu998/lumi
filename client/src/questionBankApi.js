@@ -1,4 +1,4 @@
-import { HermesApiError, request } from "./hermesApi.js";
+import { HERMES_API_BASE, HermesApiError, request } from "./hermesApi.js";
 import { createCommandId, isCommandId } from "./publicLearningId.js";
 
 const STATUS_SCHEMA = "lumi.xingce-question-bank-status.v1";
@@ -83,6 +83,13 @@ export async function submitQuestionBankAttempt({
   return payload;
 }
 
+export function questionBankAssetUrl(asset) {
+  if (!validQuestionAsset(asset)) {
+    throw contractError("离线图片地址未通过本机合同校验。", "invalid_question_bank_asset");
+  }
+  return `${HERMES_API_BASE}${asset.path}`;
+}
+
 export function isValidQuestionBankStatus(payload) {
   if (!plainObject(payload) || payload.schema_version !== STATUS_SCHEMA || typeof payload.available !== "boolean") return false;
   if (!payload.available) {
@@ -103,6 +110,7 @@ export function isValidQuestionBankStatus(payload) {
       && nonempty(row.name)
       && Number.isInteger(row.ready_count)
       && row.ready_count >= 0)
+    && validOfflineAssetStatus(value.offline_assets)
     && payload.practice_contract?.mode === "practice_only"
     && payload.practice_contract?.writes_learner_state === false;
 }
@@ -133,13 +141,18 @@ export function isValidQuestionBankQuestion(payload) {
     && question.options.length >= 2
     && question.options.every((option) => plainObject(option) && /^[A-Z]{1,4}$/.test(option.label || "") && nonempty(option.text))
     && Array.isArray(question.assets)
+    && question.assets.every(validQuestionAsset)
     && typeof question.has_assets === "boolean"
-    && ["not_required", "not_bundled"].includes(question.asset_delivery)
+    && ["not_required", "not_bundled", "bundled"].includes(question.asset_delivery)
     && plainObject(attempt)
     && typeof attempt.allowed === "boolean"
     && attempt.mode === "practice_only"
     && attempt.writes_learner_state === false
-    && (attempt.allowed ? attempt.reason === undefined : attempt.reason === "asset_not_bundled");
+    && nonempty(attempt.asset_dependency_state)
+    && (attempt.allowed ? attempt.reason === undefined : attempt.reason === "asset_not_bundled")
+    && (question.asset_delivery === "bundled" ? attempt.allowed && question.assets.length > 0 : true)
+    && (question.asset_delivery === "not_bundled" ? !attempt.allowed && question.assets.length === 0 : true)
+    && (question.asset_delivery === "not_required" ? question.assets.length === 0 : true);
 }
 
 export function isValidQuestionBankAttempt(payload, { questionId = payload?.question_id, commandId = payload?.command_id } = {}) {
@@ -158,7 +171,39 @@ export function isValidQuestionBankAttempt(payload, { questionId = payload?.ques
     && payload.evidence_proposal_only === true
     && payload.learner_state_updated === false
     && nonempty(payload.created_at)
-    && typeof payload.idempotent_replay === "boolean";
+    && typeof payload.idempotent_replay === "boolean"
+    && ["not_required", "text_only"].includes(payload.explanation_media_status);
+}
+
+function validOfflineAssetStatus(value) {
+  if (!plainObject(value) || value.schema_version !== "lumi.xingce-question-assets-status.v1" || typeof value.available !== "boolean") return false;
+  if (!value.available) return value.status === "unavailable" && nonempty(value.reason);
+  const counts = value.counts;
+  return value.status === "available"
+    && nonempty(value.export_id)
+    && nonempty(value.export_version)
+    && value.implicit_network_fetch === false
+    && plainObject(counts)
+    && Number.isInteger(counts.flagged_asset_questions)
+    && Number.isInteger(counts.attempt_unlocked)
+    && Number.isInteger(counts.attempt_blocked)
+    && counts.attempt_unlocked >= 0
+    && counts.attempt_blocked >= 0
+    && counts.attempt_unlocked + counts.attempt_blocked === counts.flagged_asset_questions;
+}
+
+function validQuestionAsset(asset) {
+  return plainObject(asset)
+    && /^[A-Za-z0-9._:-]{1,128}$/.test(asset.asset_id || "")
+    && /^[0-9a-f]{64}$/.test(asset.content_sha256 || "")
+    && ["image/png", "image/jpeg", "image/gif", "image/webp"].includes(asset.media_type)
+    && /^\/v1\/xingce\/question-bank\/assets\/[A-Za-z0-9._:-]{1,128}$/.test(asset.path || "")
+    && Array.isArray(asset.placements)
+    && asset.placements.length >= 1
+    && asset.placements.every((placement) => plainObject(placement)
+      && ["material", "stem", "requirement", "option"].includes(placement.placement)
+      && typeof placement.option_label === "string"
+      && (placement.placement === "option" ? /^[A-Z]{1,4}$/.test(placement.option_label) : placement.option_label === ""));
 }
 
 function validListItem(row) {

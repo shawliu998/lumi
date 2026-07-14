@@ -21,6 +21,7 @@ from hermes_service.xingce_question_bank import (
     XingceQuestionBankCatalog,
     configured_export_root,
 )
+from tests.test_xingce_question_assets import build_fixture as _asset_export
 
 
 SCHEMA = """
@@ -212,6 +213,7 @@ class QuestionBankCatalogTests(unittest.TestCase):
                 "mode": "practice_only",
                 "evidence_proposal_only": True,
                 "writes_learner_state": False,
+                "asset_dependency_state": "asset_export_unavailable",
             },
         )
         self.assertEqual(detail["question"]["assets"], [])
@@ -223,6 +225,76 @@ class QuestionBankCatalogTests(unittest.TestCase):
                 elapsed_seconds=1,
                 command_id="c_" + "C" * 40,
             )
+
+    def test_checksum_bound_offline_asset_unlocks_and_projects_only_loopback_path(self) -> None:
+        separate = self.root / "bundled-asset-case"
+        separate.mkdir()
+        export = _export(separate, ready_has_assets=True)
+        asset_export = _asset_export(
+            separate,
+            _digest(export / "lumi-question-bank.sqlite3"),
+            include_explanation=False,
+        )
+        catalog = XingceQuestionBankCatalog(
+            export,
+            attempt_database=separate / "attempts.sqlite3",
+            asset_export_root=asset_export,
+        )
+        status = catalog.status()
+        self.assertEqual(status["export"]["access_counts"], {"direct_practice_ready": 1, "asset_gated": 0})
+        self.assertTrue(status["export"]["offline_assets"]["available"])
+        detail = catalog.question("q_ready")
+        self.assertTrue(detail["attempt"]["allowed"])
+        self.assertEqual(detail["attempt"]["asset_dependency_state"], "bundled_complete")
+        self.assertEqual(detail["question"]["asset_delivery"], "bundled")
+        asset = detail["question"]["assets"][0]
+        self.assertEqual(asset["path"], "/v1/xingce/question-bank/assets/asset_required")
+        self.assertNotIn(str(separate), json.dumps(detail))
+        binary = catalog.asset_binary("asset_required")
+        self.assertEqual(binary["media_type"], "image/png")
+        self.assertTrue(binary["content"].startswith(b"\x89PNG"))
+
+    def test_required_asset_runtime_loss_disables_detail_and_prevents_scoring(self) -> None:
+        separate = self.root / "runtime-asset-loss"
+        separate.mkdir()
+        export = _export(separate, ready_has_assets=True)
+        asset_export = _asset_export(
+            separate,
+            _digest(export / "lumi-question-bank.sqlite3"),
+            include_explanation=False,
+        )
+        ledger = separate / "attempts.sqlite3"
+        catalog = XingceQuestionBankCatalog(
+            export,
+            attempt_database=ledger,
+            asset_export_root=asset_export,
+        )
+        self.assertTrue(catalog.question("q_ready")["attempt"]["allowed"])
+        next((asset_export / "blobs").rglob("*.png")).unlink()
+
+        detail = catalog.question("q_ready")
+        self.assertEqual(
+            detail["attempt"],
+            {
+                "allowed": False,
+                "reason": "asset_runtime_unavailable",
+                "mode": "practice_only",
+                "evidence_proposal_only": True,
+                "writes_learner_state": False,
+                "asset_dependency_state": "asset_runtime_unavailable",
+            },
+        )
+        self.assertEqual(detail["question"]["assets"], [])
+        self.assertEqual(detail["question"]["asset_delivery"], "not_bundled")
+        with self.assertRaises(QuestionBankAssetUnavailable):
+            catalog.attempt(
+                "q_ready",
+                selected_response="A",
+                confidence="high",
+                elapsed_seconds=1,
+                command_id="c_" + "D" * 40,
+            )
+        self.assertFalse(ledger.exists())
 
     def test_query_validation_is_closed_and_bounded(self) -> None:
         catalog = self.catalog()
@@ -317,6 +389,79 @@ class QuestionBankHttpTests(unittest.TestCase):
             self.assertEqual(error["error"]["code"], "question_assets_not_bundled")
         finally:
             self.base = previous
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=2)
+
+    def test_verified_asset_http_is_loopback_binary_and_not_json(self) -> None:
+        root = Path(self.temporary.name) / "bundled-asset-http"
+        root.mkdir()
+        export = _export(root, ready_has_assets=True)
+        asset_export = _asset_export(
+            root,
+            _digest(export / "lumi-question-bank.sqlite3"),
+            include_explanation=False,
+        )
+        application = SidecarApplication(
+            root / "sidecar.sqlite3",
+            xingce_full_bank_export=export,
+            xingce_asset_export=asset_export,
+        )
+        server = create_server(application, port=0)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            base = f"http://127.0.0.1:{server.server_address[1]}"
+            request = Request(
+                base + "/v1/xingce/question-bank/assets/asset_required",
+                headers={"Origin": "tauri://localhost"},
+            )
+            with urlopen(request, timeout=3) as response:
+                body = response.read()
+                self.assertEqual(response.status, 200)
+                self.assertEqual(response.headers["Content-Type"], "image/png")
+                self.assertEqual(
+                    response.headers["Cache-Control"],
+                    "private, no-cache, max-age=0, must-revalidate",
+                )
+                self.assertEqual(response.headers["X-Content-Type-Options"], "nosniff")
+                self.assertEqual(response.headers["Access-Control-Allow-Origin"], "tauri://localhost")
+                self.assertTrue(response.headers["ETag"].startswith('"sha256-'))
+                self.assertTrue(body.startswith(b"\x89PNG"))
+            with self.assertRaises(HTTPError) as caught:
+                urlopen(base + "/v1/xingce/question-bank/assets/asset_explanation", timeout=3)
+            self.assertEqual(caught.exception.code, 404)
+            caught.exception.close()
+
+            next((asset_export / "blobs").rglob("*.png")).unlink()
+            previous = self.base
+            self.base = base
+            try:
+                status, detail = self.request(
+                    "GET", "/v1/xingce/question-bank/questions/q_ready"
+                )
+                self.assertEqual(status, 200)
+                self.assertFalse(detail["attempt"]["allowed"])
+                self.assertEqual(
+                    detail["attempt"]["reason"], "asset_runtime_unavailable"
+                )
+                status, error = self.request(
+                    "POST",
+                    "/v1/xingce/question-bank/questions/q_ready/attempts",
+                    {
+                        "selected_response": "A",
+                        "confidence": "high",
+                        "elapsed_seconds": 1,
+                        "command_id": "c_" + "D" * 40,
+                    },
+                )
+                self.assertEqual(status, 409)
+                self.assertEqual(
+                    error["error"]["code"], "question_assets_not_bundled"
+                )
+            finally:
+                self.base = previous
+        finally:
             server.shutdown()
             server.server_close()
             thread.join(timeout=2)
