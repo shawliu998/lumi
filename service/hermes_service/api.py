@@ -56,6 +56,8 @@ XINGCE_ADAPTIVE_SESSION_ROUTE = re.compile(r"^/v1/xingce/adaptive/([^/]+)/sessio
 XINGCE_ADAPTIVE_PROBE_ROUTE = re.compile(r"^/v1/xingce/adaptive/([^/]+)/sessions/([^/]+)/probe$")
 XINGCE_ADAPTIVE_TRANSFER_ROUTE = re.compile(r"^/v1/xingce/adaptive/([^/]+)/sessions/([^/]+)/transfer$")
 XINGCE_ADAPTIVE_REPLAY_ROUTE = re.compile(r"^/v1/xingce/adaptive/([^/]+)/sessions/([^/]+)/replay$")
+XINGCE_QUESTION_BANK_QUESTION_ROUTE = re.compile(r"^/v1/xingce/question-bank/questions/([^/]+)$")
+XINGCE_QUESTION_BANK_ATTEMPT_ROUTE = re.compile(r"^/v1/xingce/question-bank/questions/([^/]+)/attempts$")
 
 
 class LocalThreadingHTTPServer(ThreadingHTTPServer):
@@ -185,6 +187,22 @@ def _handler_factory(application: SidecarApplication, allowed_origins: frozenset
                     if not required.issubset(body) or set(body) - (required | {"rationale"}):
                         raise ServiceError(400, "invalid_body", "adaptive session body has unsupported or missing fields")
                     payload = application.start_xingce_adaptive_session(unquote(adaptive_start.group(1)), **body)
+                    self._send(201, payload, request_id, origin)
+                    return
+                question_bank_attempt = XINGCE_QUESTION_BANK_ATTEMPT_ROUTE.fullmatch(parsed.path)
+                if method == "POST" and question_bank_attempt:
+                    body = self._read_json(
+                        {"selected_response", "confidence", "elapsed_seconds", "command_id"}
+                    )
+                    if set(body) != {"selected_response", "confidence", "elapsed_seconds", "command_id"}:
+                        raise ServiceError(
+                            400,
+                            "invalid_body",
+                            "question bank attempt body must contain every declared field",
+                        )
+                    payload = application.attempt_xingce_question_bank_question(
+                        unquote(question_bank_attempt.group(1)), **body
+                    )
                     self._send(201, payload, request_id, origin)
                     return
                 judgment_probe_match = JUDGMENT_SESSION_PROBE_ROUTE.fullmatch(parsed.path)
@@ -508,6 +526,27 @@ def _handler_factory(application: SidecarApplication, allowed_origins: frozenset
                 if query:
                     raise ServiceError(400, "invalid_query", "Xingce coverage does not accept query parameters")
                 return application.xingce_coverage_catalog()
+            if path == "/v1/xingce/question-bank":
+                if query:
+                    raise ServiceError(400, "invalid_query", "question bank status does not accept query parameters")
+                return application.xingce_question_bank_status()
+            if path == "/v1/xingce/question-bank/questions":
+                unknown = set(query) - {"subtype_id", "q", "page", "page_size"}
+                if unknown:
+                    raise ServiceError(400, "invalid_query", "unsupported question bank query parameter")
+                return application.xingce_question_bank_questions(
+                    subtype_id=_single_query(query, "subtype_id"),
+                    q=_single_query(query, "q"),
+                    page=_single_query(query, "page") or 1,
+                    page_size=_single_query(query, "page_size") or 20,
+                )
+            question_bank_question = XINGCE_QUESTION_BANK_QUESTION_ROUTE.fullmatch(path)
+            if question_bank_question:
+                if query:
+                    raise ServiceError(400, "invalid_query", "question bank detail does not accept query parameters")
+                return application.xingce_question_bank_question(
+                    unquote(question_bank_question.group(1))
+                )
             if path == "/v1/judgment/workspace":
                 if query:
                     raise ServiceError(400, "invalid_query", "judgment workspace does not accept query parameters")

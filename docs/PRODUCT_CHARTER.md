@@ -19,11 +19,14 @@ discriminating probe, teaching policy, unseen transfer, state receipt and
 review schedule.
 
 Conditional logic (sufficient/necessary conditions, direction conversion and
-bounded symbolization) is the first released pack and remains the reference
-implementation. The canonical 31-subtype coverage boundary, including
-material, visual and freshness requirements, lives in
-[XINGCE_COVERAGE_V1.md](XINGCE_COVERAGE_V1.md). A planned row is not an
-available product capability.
+bounded symbolization) remains the reference implementation. As of 2026-07-14,
+all 31 canonical subtypes are product-released: each binds a reviewed immutable
+pack and deterministic learning mechanism. The owner explicitly waived
+type-by-type human-local browser acceptance as a release blocker. Every release
+records `owner_acceptance_waiver`, the decision date, and
+`human_effect_evidence: unavailable`; release therefore means content and
+mechanism availability, not validated usability or learning effect. The
+canonical boundary lives in [XINGCE_COVERAGE_V1.md](XINGCE_COVERAGE_V1.md).
 
 Shenlun, Interview, generic K12 tutoring, social or marketplace features,
 rankings, payments, and broad AI chat remain out of scope for this delivery.
@@ -77,7 +80,11 @@ skills, causes, mastery, or scheduling.
 - Population, calibration, causality, fairness, and learning-effect claims are
   unavailable without consented, privacy-reviewed data.
 
-## Five-minute demonstration standard
+## Five-minute demonstration and evidence standard
+
+The owner waiver makes this walkthrough a post-release product-evidence target,
+not a content/mechanism release gate. It is still required before Lumi may
+claim a subtype has completed human experience validation or improved learning.
 
 1. A learner mistakes an item from a reviewed Xingce subtype with confidence.
 2. Lumi displays two or more candidate causes and asks one discriminating

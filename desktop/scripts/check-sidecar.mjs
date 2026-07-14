@@ -216,8 +216,10 @@ async function verifyReviewedXingceCatalog(port) {
   assertCheck(catalog.status === 200, "xingce_catalog_unavailable");
   const { summary, items } = catalog.body;
   assertCheck(summary?.total_subtypes === 31, "xingce_catalog_total_mismatch");
-  assertCheck(summary?.reviewed_release_ready_subtypes === 30, "xingce_catalog_reviewed_count_mismatch");
+  assertCheck(summary?.released_subtypes === 31, "xingce_catalog_released_count_mismatch");
+  assertCheck(summary?.reviewed_release_ready_subtypes === 0, "xingce_catalog_reviewed_count_mismatch");
   assertCheck(summary?.available_subtypes === 31, "xingce_catalog_available_count_mismatch");
+  assertCheck(summary?.is_complete === true, "xingce_catalog_release_incomplete");
   assertCheck(items?.length === 31 && items.every((item) => item.availability === "available"), "xingce_catalog_unavailable_pack");
   const tableMaterial = items.find((item) => item.subtype_id === "xingce.data.table_material");
   assertCheck(tableMaterial?.launch === "/v1/xingce/adaptive/xingce.data.table_material/workspace", "xingce_table_material_launch_missing");
@@ -227,6 +229,7 @@ async function verifyReviewedXingceCatalog(port) {
   assertCheck(!JSON.stringify(workspace.body).includes("correct_option"), "xingce_workspace_answer_leaked");
   return {
     total_subtypes: summary.total_subtypes,
+    released_subtypes: summary.released_subtypes,
     reviewed_release_ready_subtypes: summary.reviewed_release_ready_subtypes,
     available_subtypes: summary.available_subtypes,
     table_material_workspace_verified: true,

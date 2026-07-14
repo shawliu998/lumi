@@ -44,12 +44,12 @@ class XingceCoverageApiTests(unittest.TestCase):
         self.assertEqual(payload["schema_version"], "lumi.xingce-coverage-catalog.v1")
         self.assertTrue(payload["local_only"])
         self.assertEqual(payload["summary"]["total_subtypes"], 31)
-        self.assertEqual(payload["summary"]["released_subtypes"], 1)
-        self.assertEqual(payload["summary"]["reviewed_release_ready_subtypes"], 30)
+        self.assertEqual(payload["summary"]["released_subtypes"], 31)
+        self.assertEqual(payload["summary"]["reviewed_release_ready_subtypes"], 0)
         self.assertEqual(payload["summary"]["planned_subtypes"], 0)
         self.assertTrue(payload["summary"]["content_release_ready"])
         self.assertEqual(payload["summary"]["available_subtypes"], 0)
-        self.assertFalse(payload["summary"]["is_complete"])
+        self.assertTrue(payload["summary"]["is_complete"])
         self.assertEqual(len(payload["items"]), 31)
         available = [item for item in payload["items"] if item["availability"] == "available"]
         self.assertEqual(available, [])
@@ -58,7 +58,7 @@ class XingceCoverageApiTests(unittest.TestCase):
         planned = [item for item in payload["items"] if item["availability"] == "planned"]
         self.assertTrue(all(item["launch"] is None for item in planned))
         self.assertTrue(all(item["unavailable_reason"] == "local_reviewed_pack_not_registered" for item in planned))
-        self.assertEqual({item["content_status"] for item in planned}, {"released", "reviewed_release_ready"})
+        self.assertEqual({item["content_status"] for item in planned}, {"released"})
 
     def test_catalog_is_declared_in_capabilities_and_rejects_query_parameters(self) -> None:
         status, capabilities = self.request("/v1/capabilities")

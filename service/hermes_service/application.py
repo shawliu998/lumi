@@ -67,6 +67,14 @@ from .judgment_session import (
 )
 from .xingce_catalog import XingceCoverageCatalog
 from .xingce_adaptive_session import XingceAdaptiveSessionError, XingceAdaptiveSessionService
+from .xingce_question_bank import (
+    QuestionBankAssetUnavailable,
+    QuestionBankConflict,
+    QuestionBankNotFound,
+    QuestionBankRequestError,
+    QuestionBankUnavailable,
+    XingceQuestionBankCatalog,
+)
 
 
 SERVICE_VERSION = "0.3.0"
@@ -96,6 +104,8 @@ class SidecarApplication:
         judgment_pack_root: str | Path | None = None,
         judgment_session_service: JudgmentSessionService | None = None,
         xingce_adaptive_session_services: Mapping[str, XingceAdaptiveSessionService] | None = None,
+        xingce_full_bank_export: str | Path | None = None,
+        xingce_question_bank_catalog: XingceQuestionBankCatalog | None = None,
     ) -> None:
         if study_pack_attempt_evidence_origin not in ATTEMPT_EVIDENCE_ORIGINS:
             raise ValueError("unsupported Study Pack attempt evidence origin")
@@ -200,6 +210,12 @@ class SidecarApplication:
         self.xingce_coverage = XingceCoverageCatalog(
             available_subtype_ids=available_xingce_subtypes,
         )
+        if xingce_question_bank_catalog is not None and xingce_full_bank_export is not None:
+            raise ValueError("provide either a full-bank catalog or export root")
+        self.xingce_question_bank = xingce_question_bank_catalog or XingceQuestionBankCatalog(
+            xingce_full_bank_export,
+            attempt_database=self.database,
+        )
 
     def health(self) -> dict[str, Any]:
         store = EventStore(self.database)
@@ -243,6 +259,7 @@ class SidecarApplication:
                 "judgment-reasoning-workspace-v1",
                 "xingce-coverage-catalog-v1",
                 "xingce-adaptive-session-v1",
+                "xingce-full-question-bank-v1",
             ],
             "endpoints": {
                 "health": "GET /v1/health",
@@ -280,11 +297,36 @@ class SidecarApplication:
                 "xingce_coverage": "GET /v1/xingce/coverage",
                 "xingce_adaptive_workspace": "GET /v1/xingce/adaptive/{subtype_id}/workspace",
                 "xingce_adaptive_session": "POST /v1/xingce/adaptive/{subtype_id}/sessions",
+                "xingce_question_bank": "GET /v1/xingce/question-bank",
+                "xingce_question_bank_questions": "GET /v1/xingce/question-bank/questions",
+                "xingce_question_bank_question": "GET /v1/xingce/question-bank/questions/{question_id}",
+                "xingce_question_bank_attempt": "POST /v1/xingce/question-bank/questions/{question_id}/attempts",
             },
         }
 
     def xingce_coverage_catalog(self) -> dict[str, Any]:
         return self.xingce_coverage.public_projection()
+
+    def xingce_question_bank_status(self) -> dict[str, Any]:
+        return self.xingce_question_bank.status()
+
+    def xingce_question_bank_questions(self, **query: Any) -> dict[str, Any]:
+        try:
+            return self.xingce_question_bank.list_questions(**query)
+        except (QuestionBankUnavailable, QuestionBankRequestError, QuestionBankNotFound, QuestionBankConflict, QuestionBankAssetUnavailable) as exc:
+            raise _question_bank_service_error(exc) from None
+
+    def xingce_question_bank_question(self, question_id: Any) -> dict[str, Any]:
+        try:
+            return self.xingce_question_bank.question(question_id)
+        except (QuestionBankUnavailable, QuestionBankRequestError, QuestionBankNotFound, QuestionBankConflict, QuestionBankAssetUnavailable) as exc:
+            raise _question_bank_service_error(exc) from None
+
+    def attempt_xingce_question_bank_question(self, question_id: Any, **payload: Any) -> dict[str, Any]:
+        try:
+            return self.xingce_question_bank.attempt(question_id, **payload)
+        except (QuestionBankUnavailable, QuestionBankRequestError, QuestionBankNotFound, QuestionBankConflict, QuestionBankAssetUnavailable) as exc:
+            raise _question_bank_service_error(exc) from None
 
     def xingce_adaptive_workspace(self, subtype_id: Any) -> dict[str, Any]:
         return self._xingce_adaptive_service(subtype_id).workspace()
@@ -2111,6 +2153,22 @@ def _xingce_adaptive_service_error(error: XingceAdaptiveSessionError) -> Service
     if "stale" in str(error) or "out-of-order" in str(error) or "bound" in str(error):
         return ServiceError(409, "xingce_adaptive_session_conflict", str(error))
     return ServiceError(400, "invalid_xingce_adaptive_session", str(error))
+
+
+def _question_bank_service_error(error: Exception) -> ServiceError:
+    if isinstance(error, QuestionBankUnavailable):
+        return ServiceError(
+            409,
+            "question_bank_unavailable",
+            "完整行测题库未安装或未通过完整性校验。",
+        )
+    if isinstance(error, QuestionBankNotFound):
+        return ServiceError(404, "question_not_found", "题目不存在或尚未通过内容审核。")
+    if isinstance(error, QuestionBankConflict):
+        return ServiceError(409, "question_bank_attempt_conflict", str(error))
+    if isinstance(error, QuestionBankAssetUnavailable):
+        return ServiceError(409, "question_assets_not_bundled", "题目所需图片尚未作为本地资源打包，当前不能作答。")
+    return ServiceError(400, "invalid_question_bank_request", str(error))
 
 
 def _schedule_service_error(error: ScheduleError) -> ServiceError:

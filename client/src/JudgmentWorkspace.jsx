@@ -129,14 +129,14 @@ function XingceCoverageSummary({ onOpenSubtype }) {
     return <section className="judgment-panel xingce-coverage" aria-label="行测题型范围"><header><div><MapTrifold size={16} /><h2>行测题型范围</h2></div><small>暂不可读</small></header><p className="xingce-coverage-note">未确认本机范围时，不把历史题库或 fixture 当作可学题型。</p></section>;
   }
   const { summary, items } = state.coverage;
-  const readyForLocalAcceptance = items.filter((item) => item.availability === "available" && item.content_status === "reviewed_release_ready");
+  const availableTypes = items.filter((item) => item.availability === "available");
   return (
     <section className="judgment-panel xingce-coverage" aria-labelledby="xingce-coverage-heading">
       <header><div><MapTrifold size={16} /><h2 id="xingce-coverage-heading">行测题型范围</h2></div><small>本机题包</small></header>
-      <div className="xingce-coverage-total"><strong>{summary.available_subtypes}<span> / {summary.total_subtypes}</span></strong><p>个本机题型已完成内容审核</p></div>
+      <div className="xingce-coverage-total"><strong>{summary.released_subtypes}<span> / {summary.total_subtypes}</span></strong><p>个本机题型已发布</p></div>
       <ul>{Object.entries(summary.modules).map(([id, module]) => <li key={id}><span>{module.label}</span><strong>{module.available} / {module.total}</strong></li>)}</ul>
-      {readyForLocalAcceptance.length > 0 && <details className="xingce-pack-picker"><summary>选择已审核题型</summary><div>{readyForLocalAcceptance.map((item) => <button key={item.subtype_id} type="button" onClick={() => onOpenSubtype({ subtypeId: item.subtype_id, label: item.label })}><span>{item.label}</span><CaretRight size={12} /></button>)}</div></details>}
-      <p className="xingce-coverage-note">其中 {summary.reviewed_release_ready_subtypes} 个正进行真人学习流验收；内容审核不等于产品验收完成。</p>
+      {availableTypes.length > 0 && <details className="xingce-pack-picker"><summary>选择已发布题型</summary><div>{availableTypes.map((item) => <button key={item.subtype_id} type="button" onClick={() => onOpenSubtype({ subtypeId: item.subtype_id, label: item.label })}><span>{item.label}</span><CaretRight size={12} /></button>)}</div></details>}
+      <p className="xingce-coverage-note">题型已按负责人发布决定开放；真人学习效果证据尚未建立，不作为这次发布的阻断项。</p>
     </section>
   );
 }

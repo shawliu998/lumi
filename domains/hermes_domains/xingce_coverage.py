@@ -7,6 +7,7 @@ immutable Domain Pack and its type-specific learning loop exist.
 
 from __future__ import annotations
 
+from datetime import date
 import json
 from pathlib import Path
 from typing import Any, Mapping
@@ -23,6 +24,10 @@ _EXPECTED_LOOP_EVIDENCE = frozenset({"selected_response", "confidence", "elapsed
 _ALLOWED_FORMS = frozenset({"text_mcq", "numeric_or_mcq", "visual_mcq", "material_mcq"})
 _ALLOWED_SCORERS = frozenset({"exact_option_v1", "authored_numeric_v1"})
 _ALLOWED_RELEASE_STATES = frozenset({"released", "reviewed_release_ready", "planned"})
+_OWNER_WAIVER_BASIS = "owner_acceptance_waiver"
+_WAIVED_GATE = "type_by_type_human_local_browser_acceptance"
+_NO_EFFECT_EVIDENCE = "unavailable"
+_RELEASE_CLAIM_SCOPE = "content_and_mechanism_availability_only"
 
 
 class XingceCoverageError(ContractError):
@@ -147,6 +152,28 @@ def validate_coverage_matrix(document: Mapping[str, Any]) -> None:
                 raise XingceCoverageError("reviewed subtype must bind a reviewed pack id")
             if not isinstance(release.get("pack_version"), str) or not release["pack_version"].strip():
                 raise XingceCoverageError("reviewed subtype must bind a reviewed pack version")
+            decision_fields = {
+                "acceptance_basis",
+                "accepted_at",
+                "waived_gate",
+                "human_effect_evidence",
+                "claim_scope",
+            }
+            if release["state"] == "released":
+                if release.get("acceptance_basis") != _OWNER_WAIVER_BASIS:
+                    raise XingceCoverageError("released subtype must record owner_acceptance_waiver")
+                try:
+                    date.fromisoformat(str(release.get("accepted_at", "")))
+                except ValueError as exc:
+                    raise XingceCoverageError("released subtype accepted_at must be an ISO date") from exc
+                if release.get("waived_gate") != _WAIVED_GATE:
+                    raise XingceCoverageError("released subtype must identify the waived human-local gate")
+                if release.get("human_effect_evidence") != _NO_EFFECT_EVIDENCE:
+                    raise XingceCoverageError("released subtype cannot claim human-effect evidence")
+                if release.get("claim_scope") != _RELEASE_CLAIM_SCOPE:
+                    raise XingceCoverageError("released subtype must keep the release claim bounded")
+            elif decision_fields.intersection(release):
+                raise XingceCoverageError("review-ready subtype cannot claim an owner release decision")
         elif "pack_id" in release or "pack_version" in release:
             raise XingceCoverageError("planned subtype cannot pretend it has a released pack")
     if seen_modules != _EXPECTED_MODULE_IDS:

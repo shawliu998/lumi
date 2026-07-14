@@ -12,19 +12,19 @@ mean population learning efficacy or production distribution has been proved.
 > substitute for a type-specific release. A data-analysis run, Study Pack,
 > synthetic fixture coverage or the old 42-path matrix cannot complete a row.
 
-> **Current content and local-runtime status — 2026-07-13:** all 31/31 rows are
-> available from the local sidecar: conditional logic is the existing
-> `released` runtime pack, and the other 30 are distinct, immutable
-> `reviewed_release_ready` packs bound to the owner-confirmed two-person review
-> workbook. The ARM64 debug `Lumi.app` contains that same resource tree and its
-> bundled sidecar proves the 31/31 catalog plus a real table-material workspace
-> without leaking an answer key.
+> **Current content and local-runtime status — 2026-07-14:** all 31/31 rows are
+> product-released and available from the local sidecar. Conditional logic keeps
+> its existing controlled release; the other 30 are distinct, immutable packs
+> bound to the owner-confirmed two-person content review workbook. Their
+> manifests retain that review signature and separately record the owner's
+> `owner_acceptance_waiver` dated 2026-07-14.
 >
-> **Acceptance status remains partial:** content review and deterministic
-> evaluation do not replace a voluntary human-local walkthrough of every new
-> type's full observe → diagnose → probe → teach → no-hint transfer → state
-> receipt → review flow. No automated answer may be used for that walkthrough,
-> and no learning-effect claim follows from it.
+> **Release is complete; human-effect evidence is unavailable.** The owner
+> explicitly waived a voluntary type-by-type human-local walkthrough as a
+> release blocker. The executable matrix and 30 generic manifests bound the
+> claim to content/mechanism availability and record
+> `human_effect_evidence: unavailable`. No human answers or effect evidence were
+> fabricated, and no usability or learning-effect claim follows from release.
 >
 > Three voluntary human-local conditional-logic first answers were correct
 > under the preceding policy and honestly created no diagnosis, KT update or
@@ -32,24 +32,33 @@ mean population learning efficacy or production distribution has been proved.
 > verification. The current source now routes a correct entry directly to an
 > authored unseen transfer, while the wrong-answer route still requires probe
 > and teaching. Browser completion evidence for that correction is isolated
-> `evaluation_fixture` QA; a fresh voluntary human transfer is still pending.
+> `evaluation_fixture` QA; a fresh voluntary human transfer remains a useful
+> post-release evidence target, not a release condition.
 
-| 2026-07-13 all-Xingce delivery slice | Evidence | Explicit limit |
+| 2026-07-14 all-Xingce delivery slice | Evidence | Explicit limit |
 | --- | --- | --- |
-| 30 reviewed generic packs registered locally | `domains/released/`; `bf06664`; `c9d29db`; `service/hermes_service/cli.py` | each pack remains `reviewed_release_ready`, not a claim of human effectiveness |
+| 31/31 Xingce subtype releases | `domains/content/xingce/coverage-matrix.v1.json`; 30 `domains/released/**/manifest.json` owner decision blocks | product release uses a 2026-07-14 owner waiver; it is not a claim of human effectiveness |
 | 31/31 local catalog + Chinese type selector | real loopback/browser QA in `client/design-qa.md`; `client/`; `service/` | automated direct-route answers use an isolated evaluation namespace and do not count as human acceptance |
-| Packaged macOS candidate | debug `Lumi.app`; bundled tree SHA-256 `0de1f24df5096980c6f410d61a8d464d757c2c7b8b3ce39d7dbbd4c3a1a92b80`; strict/deep signature and lifecycle checks | ARM64, ad-hoc signed only; not notarized or production-distributed |
-| Full deterministic release evidence | `evals/reports/latest.json`, run `run-20260713T154334Z`: 17/17 PASS; `scripts/verify_core.py` PASS | local/evaluation-fixture evidence is kept separate from human learning evidence |
+| Versioned complete local question bank | pinned export `lumi-xingce-cleaned17-v1`; `domains/content/xingce/full-question-bank.release.v1.json`; installer, read-only service and client contract tests | 77,704 ready records are browsable; 60,703 support direct text practice; 17,001 asset-dependent records fail closed; 475 review records are quarantined; 49,358 records remain honestly unclassified |
+| Packaged macOS candidate | debug `Lumi.app`; bundled tree SHA-256 `bb83b266c50797b2b0316a5abec7556595e92a857483e3283e2c9232f1c2578c`; strict/deep signature and lifecycle checks | ARM64, ad-hoc signed only; not notarized or production-distributed; the 687 MiB question-bank export is installed separately under controlled app data rather than embedded in Git or the app bundle |
+| Full deterministic release evidence | `evals/reports/latest.json`, run `run-20260714T043039Z`: 17/17 PASS; `scripts/verify_core.py` PASS | local/evaluation-fixture evidence is kept separate from human learning evidence |
+
+The complete-bank surface is deliberately `practice_only`: an accepted answer
+may return the answer and explanation and persist an idempotent practice receipt,
+but it cannot update KT, confirm a candidate misconception, or create Today/Review
+work. Adaptive state changes still require the separate diagnostic and independent
+verification policy. Missing assets are never fetched implicitly, and
+`needs_review` records cannot be addressed through the product API.
 
 ## Historical judgment-reasoning implementation slice
 
 This table supersedes any implication that the historical 42-fixture or
 data-analysis gates are a release signal for the active application.
 
-| Active requirement | Current evidence | Remaining release condition |
+| Historical requirement | Current evidence | Remaining post-release evidence |
 | --- | --- | --- |
 | Rights-clear conditional-reasoning content | 12 original CC BY 4.0 source records remain checksum-bound and `draft_unreviewed` in `domains/content/judgment/lumi-conditional-reasoning-v0`. The owner-authorized release wrapper `domains/released/judgment/lumi-conditional-reasoning-v0-0.1.0-reviewed-local-20260713` binds the third-review workbook digest, two distinct anonymous reviewer IDs, their date-only precision, the source hashes, and the transformed local release hashes. P02 now makes the necessary→sufficient error explicit before mapping it to M-ROLE support, and T02 removes a time-sequence analogy. A voluntary human-local no-error branch was observed in the controlled release; its private attempt remains only in the local database. | This is a local controlled release record, not a claim of broad content coverage, population learning effect, or public production distribution. |
-| Reachable observe → diagnose → probe → teach → verify loop | `JudgmentSessionService`, closed local HTTP routes, and Workspace expose both D01 condition-direction and D02 inference-validity entry paths; candidates remain unconfirmed and only authored probes/teaching/transfer roles can follow. QA-only browser evidence in `client/design-qa.md` drives D01 → P01 → T01 → V01 through the real temporary sidecar. | One reviewed content pack must complete this exact path in the human-local sidecar; automated paths remain `evaluation_fixture`. |
+| Reachable observe → diagnose → probe → teach → verify loop | `JudgmentSessionService`, closed local HTTP routes, and Workspace expose both D01 condition-direction and D02 inference-validity entry paths; candidates remain unconfirmed and only authored probes/teaching/transfer roles can follow. QA-only browser evidence in `client/design-qa.md` drives D01 → P01 → T01 → V01 through the real temporary sidecar. | A voluntary human-local completion would validate the experience; automated paths remain `evaluation_fixture`, and the owner waived this evidence as a release blocker. |
 | Durable learner evidence and update gate | `LearnerStateStore` records origin-isolated facts, hypotheses, decisions, verification receipts, and append-only snapshots. Only an unhinted, unseen transfer may produce its bounded deterministic update; failed or assisted outcomes are withheld. A durable transfer-observation event resumes the same command after interruption. Earlier probe observations are now replayed only for the same learner/origin/pack and can break a tie **only after** the current probe supports multiple authored routes. The observed human no-error branch correctly produced no diagnosis, KT update, or review task. | The policy has deterministic coverage and a human no-error observation; a voluntary human walkthrough of the candidate → probe → teaching → independent-transfer branch is still required. |
 | Reflect and replay | First-answer commands are idempotent; a completed transfer persists a replayable `schedule_review` policy decision. Workspace reload derives local review tasks from that decision ledger and now indexes up to six hash-verified sessions belonging to the same learner/origin/namespace. Selecting one explicitly loads its replay; the compact index contains no options, answers, candidate rationale, receipts, or answer keys. | Review-task completion and delayed-item delivery still need their dedicated current-domain flow and human walkthrough. |
 | Four-policy mechanics evaluation | `evals/judgment_experiment` has isolated `synthetic:` databases, frozen manifests, redacted traces, paired per-seed outputs, and independent-transfer commit tests for the four protocol policies. | This proves only deterministic simulation mechanics. It cannot approve content, enter a human namespace, or support learning-effect, calibration, cohort, causal, or fairness claims. |

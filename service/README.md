@@ -25,7 +25,7 @@ python3 -m venv .venv
 . .venv/bin/activate
 python -m pip install -e ./study_pack
 python -m pip install --no-deps -e ./service
-export PYTHONPATH="$PWD/service:$PWD/study_pack:$PWD/domains:$PWD/engine:$PWD/runtime:$PWD/integration"
+export PYTHONPATH="$PWD/service:$PWD/study_pack:$PWD/domains:$PWD/domains/tests:$PWD/engine:$PWD/runtime:$PWD/integration"
 cd service
 python -m unittest discover -s tests -v
 python -m hermes_service --db /tmp/hermes-sidecar.sqlite3 capabilities
@@ -67,6 +67,10 @@ CLI option to widen the bind address.
 | GET | `/v1/runs/{id}/trace` | Append-only events and state/tool artifacts |
 | GET | `/v1/runs/{id}/replay` | Hash-verified replay frames |
 | GET | `/v1/skills/report` | Evidence-backed per-skill trace summary |
+| GET | `/v1/xingce/question-bank` | Full-bank availability, safe release version, counts, and subtype catalog |
+| GET | `/v1/xingce/question-bank/questions` | Search only integrity-verified `ready` questions; closed filters and bounded pagination |
+| GET | `/v1/xingce/question-bank/questions/{id}` | Read one answer-redacted `ready` question and its options |
+| POST | `/v1/xingce/question-bank/questions/{id}/attempts` | Score an ordinary practice response, then reveal its answer and explanation |
 
 Example:
 
@@ -91,6 +95,50 @@ curl -sS http://127.0.0.1:8765/v1/attempts/ATTEMPT_ID/responses \
   -d '{"phase":"verification","expected_version":11,"expected_state":"awaiting_verification","prompt_instance_id":"ATTEMPT_ID:verification:1","response":"C","confidence":0.9,"response_time_seconds":18}'
 
 ```
+
+## Versioned full Xingce question bank
+
+The optional full bank is an immutable content export, not a dependency on the
+mutable `xingcetiku` workspace. The sidecar looks first at
+`LUMI_XINGCE_FULL_BANK_EXPORT`, then at the controlled per-user pointer:
+
+```text
+~/Library/Application Support/com.lumi.learning/content/xingce-full-bank/current
+```
+
+The selected version directory must contain `manifest.json`, `schema.sql`,
+`lumi-question-bank.sqlite3`, and `SHA256SUMS`. Startup verifies the manifest
+contract, manifest/schema/database SHA-256 values and byte sizes, required
+SQLite views, and a SQLite quick check. The database is subsequently opened
+with `mode=ro&immutable=1` and `PRAGMA query_only=ON`. A missing export is a
+supported `unavailable` status; any missing or changed artifact keeps the
+catalog unavailable without exposing a filesystem path or falling back to a
+working question-bank directory.
+
+Only `ready_questions`, `ready_options`, `ready_answer_keys`, and
+`ready_explanations` (plus the ready subtype mapping view) participate in
+product queries. `needs_review` rows are not
+listed, addressable, or scoreable. List and unanswered-detail responses never
+contain answers, explanations, correct-option flags, or private source paths.
+The list accepts only `subtype_id`, `q` (at most 100 characters), `page`, and
+`page_size` (at most 100). Unknown, repeated, blank, or out-of-range query
+parameters fail closed.
+
+Ordinary attempts accept exactly `selected_response`, `confidence`,
+`elapsed_seconds`, and a public `command_id`. They reveal the answer and
+explanation only after accepted submission and use a local command ledger for
+idempotency. `confidence` is the closed learner-facing enum `low`, `medium`, or
+`high`. These attempts are explicitly `practice_only` and
+`evidence_proposal_only`: they do not update KT, misconception hypotheses,
+Today, or Review. The reviewed Domain Pack adaptive path remains the only path
+that can commit learner-state changes after independent verification.
+
+The current export keeps asset references but does not ship a hash-bound local
+asset bundle. Status therefore separates `direct_practice_ready` from
+`asset_gated`; detail remains answer-redacted and reports
+`attempt.reason=asset_not_bundled` for the latter. Their local absolute paths and
+remote URLs are never returned, and an asset-gated attempt fails with `409`
+rather than pretending an incomplete visual question is usable.
 
 ## Study Pack boundary
 

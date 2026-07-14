@@ -20,26 +20,33 @@ class XingceCoverageTests(unittest.TestCase):
     def setUp(self) -> None:
         self.matrix = load_coverage_matrix(DEFAULT_COVERAGE_MATRIX)
 
-    def test_declares_every_canonical_module_and_does_not_overclaim_completion(self) -> None:
+    def test_declares_every_canonical_module_and_records_bounded_owner_release(self) -> None:
         summary = coverage_summary(DEFAULT_COVERAGE_MATRIX)
         self.assertEqual(summary["total_subtypes"], 31)
-        self.assertEqual(summary["released_subtypes"], 1)
-        self.assertEqual(summary["reviewed_release_ready_subtypes"], 30)
+        self.assertEqual(summary["released_subtypes"], 31)
+        self.assertEqual(summary["reviewed_release_ready_subtypes"], 0)
         self.assertEqual(summary["planned_subtypes"], 0)
         self.assertTrue(summary["content_release_ready"])
-        self.assertFalse(summary["is_complete"])
+        self.assertTrue(summary["is_complete"])
         self.assertEqual(
             set(summary["modules"]),
             {"verbal", "quantitative", "judgment", "data_analysis", "common_knowledge", "political_theory"},
         )
         self.assertTrue(all(module["total"] >= 1 for module in summary["modules"].values()))
 
-    def test_only_reviewed_conditional_pack_is_counted_as_released(self) -> None:
+    def test_every_release_records_the_waiver_and_absence_of_human_effect_evidence(self) -> None:
         released = [
             item for item in self.matrix["subtypes"] if item.get("release", {}).get("state") == "released"
         ]
-        self.assertEqual([item["id"] for item in released], ["xingce.judgment.conditional_logic"])
-        self.assertEqual(released[0]["release"]["pack_id"], "lumi-conditional-reasoning-v0")
+        self.assertEqual(len(released), 31)
+        for item in released:
+            with self.subTest(subtype=item["id"]):
+                declaration = item["release"]
+                self.assertEqual(declaration["acceptance_basis"], "owner_acceptance_waiver")
+                self.assertEqual(declaration["accepted_at"], "2026-07-14")
+                self.assertEqual(declaration["waived_gate"], "type_by_type_human_local_browser_acceptance")
+                self.assertEqual(declaration["human_effect_evidence"], "unavailable")
+                self.assertEqual(declaration["claim_scope"], "content_and_mechanism_availability_only")
 
     def test_default_matrix_path_can_be_relocated_for_a_frozen_read_only_bundle(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -73,6 +80,19 @@ class XingceCoverageTests(unittest.TestCase):
         verbal = next(item for item in broken["subtypes"] if item["id"] == "xingce.verbal.logical_cloze")
         verbal["misconception_dimensions"] = ["semantic_collocation"]
         with self.assertRaisesRegex(XingceCoverageError, "at least two"):
+            validate_coverage_matrix(broken)
+
+    def test_release_cannot_omit_the_owner_decision_or_invent_human_effect_evidence(self) -> None:
+        broken = copy.deepcopy(self.matrix)
+        verbal = next(item for item in broken["subtypes"] if item["id"] == "xingce.verbal.logical_cloze")
+        verbal["release"].pop("acceptance_basis")
+        with self.assertRaisesRegex(XingceCoverageError, "owner_acceptance_waiver"):
+            validate_coverage_matrix(broken)
+
+        broken = copy.deepcopy(self.matrix)
+        verbal = next(item for item in broken["subtypes"] if item["id"] == "xingce.verbal.logical_cloze")
+        verbal["release"]["human_effect_evidence"] = "proven"
+        with self.assertRaisesRegex(XingceCoverageError, "cannot claim human-effect evidence"):
             validate_coverage_matrix(broken)
 
 

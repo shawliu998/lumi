@@ -1,20 +1,22 @@
 """Validated authoring contract for every Lumi Xingce adaptive Domain Pack.
 
-The conditional-logic pack predates this module and remains the only reviewed
-runtime pack.  This module is deliberately a *new* shared authoring contract:
+The conditional-logic pack predates this module; the remaining reviewed
+runtime packs use this shared authoring contract:
 it lets every other Xingce subtype describe its own deterministic scorer,
 competing error hypotheses, discriminating probe, teaching asset, unseen
 transfer, and delayed review without inheriting conditional-logic semantics.
 
-It does not publish a pack.  A draft can be validated and evaluated, but a
-runtime loader must reject it until two different human reviewers attest to the
-immutable payload.  This keeps all 31 subtype rows honest while allowing the
-same local-first execution boundary to be built once.
+It does not itself publish a pack.  A draft can be validated and evaluated,
+but a runtime loader must reject it until two different human reviewers attest
+to the immutable payload.  A separate owner decision may release that reviewed
+payload while explicitly waiving type-by-type browser acceptance; that decision
+never counts as human learning-effect evidence.
 """
 
 from __future__ import annotations
 
 import copy
+from datetime import date
 import hashlib
 import json
 from pathlib import Path
@@ -55,14 +57,17 @@ def canonical_json_sha256(value: Any) -> str:
 def reviewed_manifest_sha256(manifest: Mapping[str, Any]) -> str:
     """Hash the release manifest without the self-referential signatures.
 
-    Review attestations sign the exact release intent, artifact hashes and
-    review-evidence checksum.  The attestation list itself is excluded so a
-    signature can name this digest without creating a hash cycle.
+    Review attestations sign the exact content-review intent, artifact hashes
+    and review-evidence checksum.  The attestation list itself is excluded so a
+    signature can name this digest without creating a hash cycle.  A later
+    owner product-release decision is also excluded: content reviewers did not
+    sign that operational decision, and adding it must not rewrite history.
     """
     signed = copy.deepcopy(manifest)
     gate = signed.get("human_review_gate")
     if isinstance(gate, dict):
         gate.pop("review_attestations", None)
+    signed.pop("product_release", None)
     return canonical_json_sha256(signed)
 
 
@@ -158,6 +163,34 @@ def _validate_manifest(manifest: Mapping[str, Any]) -> Mapping[str, Any]:
     if rights.get("content_origin") == "versioned_export":
         _sha256(rights.get("source_export_sha256"), "source_export_sha256")
         _nonempty(rights.get("source_export_id"), "source_export_id")
+
+    product_release = manifest.get("product_release")
+    if product_release is not None:
+        if status != RELEASE_STATUS or not isinstance(product_release, Mapping):
+            raise XingceAdaptivePackError("product release requires reviewed release-ready content")
+        if set(product_release) != {
+            "state",
+            "acceptance_basis",
+            "accepted_at",
+            "waived_gate",
+            "human_effect_evidence",
+            "claim_scope",
+        }:
+            raise XingceAdaptivePackError("product release declaration has unsupported fields")
+        if product_release.get("state") != "released":
+            raise XingceAdaptivePackError("product release state must be released")
+        if product_release.get("acceptance_basis") != "owner_acceptance_waiver":
+            raise XingceAdaptivePackError("product release must record owner_acceptance_waiver")
+        try:
+            date.fromisoformat(str(product_release.get("accepted_at", "")))
+        except ValueError as exc:
+            raise XingceAdaptivePackError("product release accepted_at must be an ISO date") from exc
+        if product_release.get("waived_gate") != "type_by_type_human_local_browser_acceptance":
+            raise XingceAdaptivePackError("product release must identify the waived human-local gate")
+        if product_release.get("human_effect_evidence") != "unavailable":
+            raise XingceAdaptivePackError("product release cannot claim human-effect evidence")
+        if product_release.get("claim_scope") != "content_and_mechanism_availability_only":
+            raise XingceAdaptivePackError("product release claim scope is not bounded")
 
     evidence = _require(manifest, "content_evidence", Mapping)
     expected_evidence = set(subtype["content_requirements"])
@@ -588,6 +621,7 @@ def load_xingce_adaptive_pack(root: str | Path, *, require_reviewed: bool = Fals
         "records": [dict(row) for row in records["records"]],
         "skills": [dict(row) for row in skills["skills"]],
         "candidate_misconceptions": [dict(row) for row in taxonomy["candidate_misconceptions"]],
+        "product_release": copy.deepcopy(manifest.get("product_release")),
     }
 
 

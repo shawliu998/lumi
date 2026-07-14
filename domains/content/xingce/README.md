@@ -26,3 +26,22 @@ The roles in the first release are intentional:
 
 Skill labels remain versioned candidate annotations. They are not learner
 diagnoses, population error rates, or evidence of mastery.
+
+## Complete local question bank
+
+`full-question-bank.release.v1.json` pins the immutable SQLite export consumed
+by the desktop sidecar. The 687 MiB database remains outside Git; only its
+version, lineage, counts, and checksums are committed here. The loader accepts
+the export only after verifying `manifest.json`, `schema.sql`, `SHA256SUMS`, and
+the SQLite file, and it reads only the export's `ready_*` views.
+
+This release exposes all 77,704 ready records in browse/search. It permits
+direct scoring only for the 60,703 records that do not depend on an unbundled
+asset. The other 17,001 stay visible but fail closed until a separately hashed
+offline asset release exists; Lumi never follows source paths or image URLs
+implicitly. The 475 `needs_review` records are not addressable through the
+product API.
+
+Ordinary full-bank attempts are `practice_only` evidence proposals. They do not
+write KT, confirm a misconception, or enter Today/Review. The adaptive learning
+flow remains the only deterministic learner-state committer.

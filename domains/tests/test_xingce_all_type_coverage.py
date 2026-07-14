@@ -44,7 +44,7 @@ def _response_for(record: dict, *, correct: bool) -> str:
 
 
 class XingceAllTypeCoverageTests(unittest.TestCase):
-    def test_every_coverage_row_binds_the_authoring_draft_or_a_reviewed_release(self) -> None:
+    def test_every_coverage_row_binds_a_released_immutable_pack(self) -> None:
         matrix = load_coverage_matrix()
         rows = {row["id"]: row for row in matrix["subtypes"]}
         drafts = [load_xingce_adaptive_pack(root) for root in _adaptive_draft_roots()]
@@ -55,14 +55,13 @@ class XingceAllTypeCoverageTests(unittest.TestCase):
         released_ids = [row["id"] for row in released]
         reviewed = [row for row in matrix["subtypes"] if row.get("release", {}).get("state") == "reviewed_release_ready"]
         reviewed_ids = [row["id"] for row in reviewed]
-        self.assertEqual(set(rows), set(draft_ids).union(released_ids))
-        self.assertEqual(set(draft_ids), set(reviewed_ids))
+        self.assertEqual(set(rows), set(released_ids))
         self.assertEqual(set(reviewed_ids).intersection(released_ids), set())
         self.assertEqual(len(drafts), 30)
-        self.assertEqual(len(reviewed), 30)
-        self.assertEqual(released_ids, ["xingce.judgment.conditional_logic"])
+        self.assertEqual(len(reviewed), 0)
+        self.assertEqual(len(released_ids), 31)
 
-        release = released[0]["release"]
+        release = next(row["release"] for row in released if row["id"] == "xingce.judgment.conditional_logic")
         release_manifest = RELEASE_ROOT / "judgment" / "lumi-conditional-reasoning-v0-0.1.0-reviewed-local-20260713" / "manifest.json"
         release_document = json.loads(release_manifest.read_text(encoding="utf-8"))
         self.assertEqual(release_document["pack_id"], release["pack_id"])
@@ -72,19 +71,32 @@ class XingceAllTypeCoverageTests(unittest.TestCase):
         self.assertEqual(len(adaptive_releases), 30)
         release_by_id = {pack["pack_id"]: pack for pack in adaptive_releases}
         self.assertEqual(len(release_by_id), 30)
-        for row in reviewed:
+        for row in released:
+            if row["id"] == "xingce.judgment.conditional_logic":
+                continue
             with self.subTest(subtype=row["id"]):
                 declaration = row["release"]
                 pack = release_by_id[declaration["pack_id"]]
                 self.assertEqual(pack["pack_version"], declaration["pack_version"])
                 self.assertEqual(pack["subtype_id"], row["id"])
+                self.assertEqual(
+                    pack["product_release"],
+                    {
+                        "state": "released",
+                        "acceptance_basis": "owner_acceptance_waiver",
+                        "accepted_at": "2026-07-14",
+                        "waived_gate": "type_by_type_human_local_browser_acceptance",
+                        "human_effect_evidence": "unavailable",
+                        "claim_scope": "content_and_mechanism_availability_only",
+                    },
+                )
 
         summary = coverage_summary()
-        self.assertEqual(summary["released_subtypes"], 1)
-        self.assertEqual(summary["reviewed_release_ready_subtypes"], 30)
+        self.assertEqual(summary["released_subtypes"], 31)
+        self.assertEqual(summary["reviewed_release_ready_subtypes"], 0)
         self.assertEqual(summary["planned_subtypes"], 0)
         self.assertTrue(summary["content_release_ready"])
-        self.assertFalse(summary["is_complete"])
+        self.assertTrue(summary["is_complete"])
 
     def test_every_draft_has_a_deterministic_unconfirmed_path_to_independent_transfer(self) -> None:
         for root in _adaptive_draft_roots():

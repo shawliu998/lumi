@@ -80,8 +80,8 @@
     "overdue_plus_3_catch_up": {
       "task_kind": "delayed_retention",
       "policy_offset_days": 3,
-      "base_due_on": "2026-07-16",
-      "initial_due_on": "2026-07-23",
+      "base_due_on": "2026-07-17",
+      "initial_due_on": "2026-07-24",
       "scheduling_adjustment": "overdue_catch_up",
       "assertion_count": 91,
       "status": "pass",
@@ -189,8 +189,8 @@
       "errors": []
     },
     "skewed_sidecar_clock": {
-      "old_plan_date": "2026-07-14",
-      "current_plan_date": "2026-07-15",
+      "old_plan_date": "2026-07-15",
+      "current_plan_date": "2026-07-16",
       "stale_create_status": 409,
       "old_write_status": 409,
       "current_plan_version": 1,

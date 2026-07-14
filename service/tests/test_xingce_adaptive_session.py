@@ -151,7 +151,7 @@ class XingceAdaptiveSessionTests(unittest.TestCase):
         catalog = application.xingce_coverage_catalog()
         logical_cloze = next(row for row in catalog["items"] if row["subtype_id"] == "xingce.verbal.logical_cloze")
         self.assertEqual(logical_cloze["availability"], "available")
-        self.assertEqual(logical_cloze["content_status"], "reviewed_release_ready")
+        self.assertEqual(logical_cloze["content_status"], "released")
         with self.assertRaises(Exception):
             application.xingce_adaptive_workspace("xingce.judgment.definition")
         with self.assertRaisesRegex(ValueError, "reviewed coverage row"):

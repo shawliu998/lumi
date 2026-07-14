@@ -84,6 +84,45 @@ class XingceAdaptivePackTests(unittest.TestCase):
         with self.assertRaisesRegex(XingceAdaptivePackError, "exact release"):
             validate_xingce_adaptive_documents(release, records, skills, taxonomy)
 
+    def test_owner_release_waiver_is_bounded_and_does_not_rewrite_content_review(self) -> None:
+        subtype = next(row for row in self.matrix["subtypes"] if row["id"] == "xingce.judgment.definition")
+        manifest, records, skills, taxonomy = documents_for(subtype)
+        release = copy.deepcopy(manifest)
+        release.update({"status": "release_ready", "release_ready": True, "runtime_registration": "allowed_after_human_review"})
+        release["rights"]["distribution"] = "release_distribution_allowed"
+        release["artifacts"].append({"path": "review-evidence.json", "sha256": "e" * 64})
+        release["human_review_gate"] = {
+            "required": True,
+            "production_load_allowed": True,
+            "review_attestations": [
+                {"review_kind": "logic", "status": "approved", "reviewer_id": "logic-reviewer", "reviewed_at": "2026-07-13", "manifest_sha256": "pending"},
+                {"review_kind": "editorial_rights", "status": "approved", "reviewer_id": "rights-reviewer", "reviewed_at": "2026-07-13", "manifest_sha256": "pending"},
+            ],
+        }
+        for document in (records, skills, taxonomy):
+            document["pack_version"] = release["pack_version"]
+            document["review_status"] = "release_ready"
+        for record in records["records"]:
+            record["review_status"] = "release_ready"
+            record["record_sha256"] = record_sha256(record)
+        content_review_digest = reviewed_manifest_sha256(release)
+        for attestation in release["human_review_gate"]["review_attestations"]:
+            attestation["manifest_sha256"] = content_review_digest
+        release["product_release"] = {
+            "state": "released",
+            "acceptance_basis": "owner_acceptance_waiver",
+            "accepted_at": "2026-07-14",
+            "waived_gate": "type_by_type_human_local_browser_acceptance",
+            "human_effect_evidence": "unavailable",
+            "claim_scope": "content_and_mechanism_availability_only",
+        }
+        self.assertEqual(reviewed_manifest_sha256(release), content_review_digest)
+        validate_xingce_adaptive_documents(release, records, skills, taxonomy)
+
+        release["product_release"]["human_effect_evidence"] = "proven"
+        with self.assertRaisesRegex(XingceAdaptivePackError, "cannot claim human-effect evidence"):
+            validate_xingce_adaptive_documents(release, records, skills, taxonomy)
+
     def test_public_projection_does_not_expose_scorer_or_candidate_routing(self) -> None:
         subtype = next(row for row in self.matrix["subtypes"] if row["id"] == "xingce.verbal.main_idea")
         _, records, _, _ = documents_for(subtype)

@@ -10,22 +10,22 @@ import {
 
 function xingceCoverageContract() {
   const modules = {
-    verbal: { label: "言语理解与表达", total: 6, released: 0, reviewed_release_ready: 6, available: 6 },
-    quantitative: { label: "数量关系", total: 2, released: 0, reviewed_release_ready: 2, available: 2 },
-    judgment: { label: "判断推理", total: 7, released: 1, reviewed_release_ready: 6, available: 7 },
-    data_analysis: { label: "资料分析", total: 4, released: 0, reviewed_release_ready: 4, available: 4 },
-    common_knowledge: { label: "常识判断", total: 6, released: 0, reviewed_release_ready: 6, available: 6 },
-    political_theory: { label: "政治理论", total: 6, released: 0, reviewed_release_ready: 6, available: 6 },
+    verbal: { label: "言语理解与表达", total: 6, released: 6, reviewed_release_ready: 0, available: 6 },
+    quantitative: { label: "数量关系", total: 2, released: 2, reviewed_release_ready: 0, available: 2 },
+    judgment: { label: "判断推理", total: 7, released: 7, reviewed_release_ready: 0, available: 7 },
+    data_analysis: { label: "资料分析", total: 4, released: 4, reviewed_release_ready: 0, available: 4 },
+    common_knowledge: { label: "常识判断", total: 6, released: 6, reviewed_release_ready: 0, available: 6 },
+    political_theory: { label: "政治理论", total: 6, released: 6, reviewed_release_ready: 0, available: 6 },
   };
-  const reviewed = Object.entries(modules).flatMap(([moduleId, module]) => Array.from({ length: module.reviewed_release_ready }, (_, index) => ({
-    subtype_id: `xingce.${moduleId}.planned_${index}`,
+  const released = Object.entries(modules).flatMap(([moduleId, module]) => Array.from({ length: module.released }, (_, index) => ({
+    subtype_id: `xingce.${moduleId}.released_${index}`,
     module_id: moduleId,
     module_label: module.label,
-    label: `待审核子型 ${index + 1}`,
+    label: `已发布子型 ${index + 1}`,
     form: "text_mcq",
-    content_status: "reviewed_release_ready",
+    content_status: "released",
     availability: "available",
-    launch: `/v1/xingce/adaptive/xingce.${moduleId}.planned_${index}/workspace`,
+    launch: `/v1/xingce/adaptive/xingce.${moduleId}.released_${index}/workspace`,
     unavailable_reason: null,
     pack: { pack_id: `lumi-${moduleId}-${index}`, pack_version: "0.1.0-reviewed-local-20260713" },
   })));
@@ -36,39 +36,25 @@ function xingceCoverageContract() {
       schema_version: "lumi.xingce-coverage-summary.v1",
       taxonomy_version: "lumi.xingce-taxonomy.v1",
       total_subtypes: 31,
-      released_subtypes: 1,
-      reviewed_release_ready_subtypes: 30,
+      released_subtypes: 31,
+      reviewed_release_ready_subtypes: 0,
       planned_subtypes: 0,
       content_release_ready: true,
       available_subtypes: 31,
-      is_complete: false,
+      is_complete: true,
       modules,
     },
-    items: [
-      {
-        subtype_id: "xingce.judgment.conditional_logic",
-        module_id: "judgment",
-        module_label: "判断推理",
-        label: "逻辑判断·条件关系",
-        form: "text_mcq",
-        content_status: "released",
-        availability: "available",
-        launch: "/v1/judgment/workspace",
-        unavailable_reason: null,
-        pack: { pack_id: "lumi-conditional-reasoning-v0", pack_version: "0.1.0-reviewed-local-20260713" },
-      },
-      ...reviewed,
-    ],
+    items: released,
   };
 }
 
-test("Xingce coverage distinguishes reviewed local availability from full runtime release", () => {
+test("Xingce coverage accepts the owner-released 31-type catalog without leaking content", () => {
   assert.equal(isValidXingceCoverageContract(xingceCoverageContract()), true);
   const leaked = xingceCoverageContract();
   leaked.items[0].options = [{ label: "A", text: "leak" }];
   assert.equal(isValidXingceCoverageContract(leaked), false);
   const overclaimed = xingceCoverageContract();
-  overclaimed.summary.is_complete = true;
+  overclaimed.summary.is_complete = false;
   assert.equal(isValidXingceCoverageContract(overclaimed), false);
 });
 

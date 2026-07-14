@@ -11,6 +11,7 @@ import {
   ChatCircleDots,
   CheckCircle,
   ClipboardText,
+  Database,
   Gear,
   House,
   Info,
@@ -56,9 +57,11 @@ import {
 } from "./TodayPlanViews";
 import { StudyPackMaterials } from "./StudyPackViews.jsx";
 import { JudgmentWorkspace } from "./JudgmentWorkspace.jsx";
+import { QuestionBankWorkspace } from "./QuestionBankWorkspace.jsx";
 
 const NAV_ITEMS = [
   { id: "judgment", label: "学习空间", icon: Target },
+  { id: "question-bank", label: "完整题库", icon: Database },
   { id: "overview", label: "历史总览", icon: House },
   { id: "practice", label: "练习任务", icon: ListChecks },
   { id: "tools", label: "训练工具", icon: Toolbox },
@@ -1147,6 +1150,7 @@ function CommandPalette({ onClose, setPage, onOpenTool }) {
   const [query, setQuery] = useState("");
   const items = [
     { label: "判断推理学习空间", meta: "当前主线", action: () => setPage("judgment") },
+    { label: "完整行测题库", meta: "本机资源", action: () => setPage("question-bank") },
     { label: "今日学习", meta: "页面", action: () => setPage("overview") },
     { label: "错因辨析", meta: "训练工具", action: () => onOpenTool("错因辨析") },
     { label: "技能报告", meta: "页面", action: () => setPage("reports") },
@@ -1383,8 +1387,9 @@ export function App() {
       <div className={collapsed ? "app-window sidebar-collapsed" : "app-window"}>
         <Sidebar page={page} setPage={setPage} collapsed={collapsed} setCollapsed={setCollapsed} onUtility={setUtility} sidecar={sidecar} onRetrySidecar={retryAll} />
         <section className="app-main">
-          {page !== "tools" && page !== "judgment" && <Topbar page={page} setPage={setPage} onSearch={() => setCommandOpen(true)} onUtility={setUtility} />}
+          {page !== "tools" && page !== "judgment" && page !== "question-bank" && <Topbar page={page} setPage={setPage} onSearch={() => setCommandOpen(true)} onUtility={setUtility} />}
           {page === "judgment" && <JudgmentWorkspace onServiceReachable={refreshSidecar} />}
+          {page === "question-bank" && <QuestionBankWorkspace />}
           {page === "overview" && <Overview setPage={setPage} sidecar={sidecar} planning={planning} />}
           {page === "practice" && <TodayPracticeScreen planning={planning} onCreate={handleCreatePlan} onCommand={handleTaskCommand} onLaunchTask={launchTask} />}
           {page === "tools" && <ToolsScreen favorites={favorites} setFavorites={setFavorites} selectedTool={selectedTool} setSelectedTool={setSelectedTool} toolStage={toolStage} setToolStage={setToolStage} sidecar={sidecar} onRefreshSkills={refreshSkills} setPage={setPage} />}

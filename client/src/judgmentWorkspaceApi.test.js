@@ -105,5 +105,5 @@ test("reviewed local Xingce packs open under their human-readable subtype label"
   const source = readFileSync(new URL("./JudgmentWorkspace.jsx", import.meta.url), "utf8");
   assert.match(source, /onOpenSubtype\(\{ subtypeId: item\.subtype_id, label: item\.label \}\)/);
   assert.match(source, /displayTitle=\{adaptiveSelection\.label\}/);
-  assert.match(source, /真人学习流验收；内容审核不等于产品验收完成/);
+  assert.match(source, /真人学习效果证据尚未建立，不作为这次发布的阻断项/);
 });
