@@ -1,0 +1,59 @@
+{
+  "schema_version": "lumi.practice-bank-manifest.v3",
+  "bank_id": "lumi.xingce.core-320.practice-v3",
+  "version": "1.0.1",
+  "generator_version": "lumi.practice-generator.v3.0.1",
+  "status": "published_internal",
+  "expected_question_count": 320,
+  "expected_module_counts": {
+    "xingce.verbal.core": 80,
+    "xingce.judgment.core": 80,
+    "xingce.quantitative.core": 80,
+    "xingce.data-analysis.core": 80
+  },
+  "generated_sha256": "854ba5e483454718408cfbf8b428881333130d2224cfd4b5db3499cd54baf117",
+  "content_sources": [
+    {
+      "content_source_id": "src.lumi.core320.wen-structure",
+      "content_origin": "synthetic_original",
+      "reference_title": "三色笔记-行测文.pdf",
+      "reference_page_range": {
+        "pdf_start": 3,
+        "pdf_end": 42,
+        "printed_start": 1,
+        "printed_end": 40
+      },
+      "covered_modules": [
+        "xingce.verbal.core",
+        "xingce.judgment.core"
+      ],
+      "source_use": "concept_structure_reference",
+      "source_text_included": false,
+      "rights_status": "rights_review_required",
+      "authorization_status": "internal_mvp_only",
+      "review_status": "human_review_required_before_external_release",
+      "authored_at": "2026-07-15"
+    },
+    {
+      "content_source_id": "src.lumi.core320.li-structure",
+      "content_origin": "synthetic_original",
+      "reference_title": "三色笔记-行测理.pdf",
+      "reference_page_range": {
+        "pdf_start": 3,
+        "pdf_end": 55,
+        "printed_start": 1,
+        "printed_end": 53
+      },
+      "covered_modules": [
+        "xingce.quantitative.core",
+        "xingce.data-analysis.core"
+      ],
+      "source_use": "concept_structure_reference",
+      "source_text_included": false,
+      "rights_status": "rights_review_required",
+      "authorization_status": "internal_mvp_only",
+      "review_status": "human_review_required_before_external_release",
+      "authored_at": "2026-07-15"
+    }
+  ]
+}

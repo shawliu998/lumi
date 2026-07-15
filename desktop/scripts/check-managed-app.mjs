@@ -1,13 +1,36 @@
 import { spawn, execFile as execFileCallback } from "node:child_process";
+import { readFile } from "node:fs/promises";
 import { promisify } from "node:util";
 import { resolve } from "node:path";
 import { createServer } from "node:net";
+import { loadCore320Manifest } from "./core320-contract.mjs";
 
 const execFile = promisify(execFileCallback);
 const desktopRoot = resolve(import.meta.dirname, "..");
 const appPath = resolve(desktopRoot, "src-tauri/target/debug/bundle/macos/Lumi.app");
 const executable = resolve(appPath, "Contents/MacOS/hermes-desktop");
 const bundleSidecarPattern = `${appPath}/Contents/.+hermes-sidecar`;
+const builtContentRoot = resolve(desktopRoot, "src-tauri/resources/sidecar-runtime/_internal/domains/practice_v3");
+const bundledContentRoot = resolve(
+  appPath,
+  "Contents/Resources/sidecar-runtime/_internal/domains/practice_v3"
+);
+
+async function verifyBundledCore320Content() {
+  const { value: sourceManifest } = await loadCore320Manifest(desktopRoot);
+  const filenames = ["manifest.json", "practice-bank-manifest.schema.json", "samples.safe.json"];
+  for (const filename of filenames) {
+    const [source, built, bundled] = await Promise.all([
+      readFile(resolve(desktopRoot, `../domains/practice_v3/${filename}`)),
+      readFile(resolve(builtContentRoot, filename)),
+      readFile(resolve(bundledContentRoot, filename))
+    ]);
+    if (!source.equals(built) || !source.equals(bundled)) {
+      throw new Error(`managed app contains stale Core-320 ${filename}`);
+    }
+  }
+  return sourceManifest;
+}
 
 function reserveLoopbackPort() {
   return new Promise((resolvePort, reject) => {
@@ -94,6 +117,7 @@ let app;
 let failedApp;
 let blocker;
 try {
+  const core320Manifest = await verifyBundledCore320Content();
   const port = await reserveLoopbackPort();
   app = spawnManagedApp(port, true);
   const health = await waitFor(async () => {
@@ -120,7 +144,10 @@ try {
   failedApp = spawnManagedApp(occupiedPort);
   await waitForExit(failedApp, "Lumi did not fail closed when its sidecar port was occupied");
 
-  console.log(`Managed app lifecycle and startup-failure checks passed (sidecar ${health.version}).`);
+  console.log(
+    `Managed app contains Core-320 ${core320Manifest.generated_sha256}; lifecycle and startup-failure ` +
+      `checks passed (sidecar ${health.version}).`
+  );
 } finally {
   if (app?.exitCode === null) app.kill("SIGKILL");
   if (failedApp?.exitCode === null) failedApp.kill("SIGKILL");

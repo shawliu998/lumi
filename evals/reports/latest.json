@@ -1,8 +1,8 @@
 {
   "schema_version": "release-report-v1",
-  "run_id": "run-20260711T051110Z",
-  "generated_at": "2026-07-11T05:11:10.387175+00:00",
-  "repository": "/Users/a1-6/Documents/peikao",
+  "run_id": "run-20260714T120838Z",
+  "generated_at": "2026-07-14T12:08:38.159520+00:00",
+  "repository": ".",
   "overall_status": "pass",
   "summary": {
     "pass": 13,
@@ -30,7 +30,7 @@
         }
       ],
       "blocking": true,
-      "duration_ms": 1
+      "duration_ms": 4
     },
     {
       "name": "fixtures",
@@ -479,7 +479,7 @@
         }
       ],
       "blocking": true,
-      "duration_ms": 10
+      "duration_ms": 11
     },
     {
       "name": "engine_tests",
@@ -493,7 +493,7 @@
             "unittest",
             "discover",
             "-s",
-            "/Users/a1-6/Documents/peikao/engine/tests",
+            "./engine/tests",
             "-v"
           ],
           "exit_code": 0,
@@ -501,7 +501,7 @@
         }
       ],
       "blocking": true,
-      "duration_ms": 55
+      "duration_ms": 56
     },
     {
       "name": "integration_surfaces",
@@ -516,11 +516,11 @@
               "unittest",
               "discover",
               "-s",
-              "/Users/a1-6/Documents/peikao/runtime/tests",
+              "./runtime/tests",
               "-v"
             ],
             "exit_code": 0,
-            "output": "test_guardrail_blocks_protected_path (test_runtime.RuntimeTests.test_guardrail_blocks_protected_path) ... ok\ntest_interrupt_resume_reconstructs_from_database (test_runtime.RuntimeTests.test_interrupt_resume_reconstructs_from_database) ... ok\ntest_model_calls_are_recorded (test_runtime.RuntimeTests.test_model_calls_are_recorded) ... ok\ntest_model_routing_quality_first (test_runtime.RuntimeTests.test_model_routing_quality_first) ... ok\ntest_replay_does_not_invoke_tools (test_runtime.RuntimeTests.test_replay_does_not_invoke_tools) ... ok\ntest_tool_schema_rejects_invalid_output (test_runtime.RuntimeTests.test_tool_schema_rejects_invalid_output) ... ok\ntest_trace_is_append_only_and_redacts_secrets (test_runtime.RuntimeTests.test_trace_is_append_only_and_redacts_secrets) ... ok\ntest_two_cycle_demo_completes_with_typed_artifacts (test_runtime.RuntimeTests.test_two_cycle_demo_completes_with_typed_artifacts) ... ok\n\n----------------------------------------------------------------------\nRan 8 tests in 0.028s\n\nOK"
+            "output": "test_guardrail_blocks_protected_path (test_runtime.RuntimeTests.test_guardrail_blocks_protected_path) ... ok\ntest_interrupt_resume_reconstructs_from_database (test_runtime.RuntimeTests.test_interrupt_resume_reconstructs_from_database) ... ok\ntest_model_calls_are_recorded (test_runtime.RuntimeTests.test_model_calls_are_recorded) ... ok\ntest_model_routing_quality_first (test_runtime.RuntimeTests.test_model_routing_quality_first) ... ok\ntest_replay_does_not_invoke_tools (test_runtime.RuntimeTests.test_replay_does_not_invoke_tools) ... ok\ntest_tool_schema_rejects_invalid_output (test_runtime.RuntimeTests.test_tool_schema_rejects_invalid_output) ... ok\ntest_trace_is_append_only_and_redacts_secrets (test_runtime.RuntimeTests.test_trace_is_append_only_and_redacts_secrets) ... ok\ntest_two_cycle_demo_completes_with_typed_artifacts (test_runtime.RuntimeTests.test_two_cycle_demo_completes_with_typed_artifacts) ... ok\n\n----------------------------------------------------------------------\nRan 8 tests in 0.022s\n\nOK"
           }
         },
         {
@@ -531,11 +531,11 @@
               "unittest",
               "discover",
               "-s",
-              "/Users/a1-6/Documents/peikao/domains/tests",
+              "./domains/tests",
               "-v"
             ],
             "exit_code": 0,
-            "output": "test_all_candidates_remain_unconfirmed (test_domain_contract.DeterministicAdapterTests.test_all_candidates_remain_unconfirmed) ... ok\ntest_ambiguous_scenarios_request_probe_and_keep_multiple_hypotheses (test_domain_contract.DeterministicAdapterTests.test_ambiguous_scenarios_request_probe_and_keep_multiple_hypotheses) ... ok\ntest_offline_scenarios_use_only_local_deterministic_fallback (test_domain_contract.DeterministicAdapterTests.test_offline_scenarios_use_only_local_deterministic_fallback) ... ok\ntest_passing_sample_scores_higher_than_failing_sample (test_domain_contract.DeterministicAdapterTests.test_passing_sample_scores_higher_than_failing_sample) ... ok\ntest_replay_is_byte_stable (test_domain_contract.DeterministicAdapterTests.test_replay_is_byte_stable) ... ok\ntest_score_observations_are_not_causal_labels (test_domain_contract.DeterministicAdapterTests.test_score_observations_are_not_causal_labels) ... ok\ntest_success_scenarios_pass_with_no_asserted_cause (test_domain_contract.DeterministicAdapterTests.test_success_scenarios_pass_with_no_asserted_cause) ... ok\ntest_complete_14_by_3_scenario_matrix (test_domain_contract.DomainContractTests.test_complete_14_by_3_scenario_matrix) ... ok\ntest_every_fixture_validates (test_domain_contract.DomainContractTests.test_every_fixture_validates) ... ok\ntest_rejects_ground_truth_cause_claim (test_domain_contract.DomainContractTests.test_rejects_ground_truth_cause_claim) ... ok\ntest_rejects_non_independent_verification (test_domain_contract.DomainContractTests.test_rejects_non_independent_verification) ... ok\ntest_representative_coverage (test_domain_contract.DomainContractTests.test_representative_coverage) ... ok\n\n----------------------------------------------------------------------\nRan 12 tests in 0.021s\n\nOK"
+            "output": "test_all_candidates_remain_unconfirmed (test_domain_contract.DeterministicAdapterTests.test_all_candidates_remain_unconfirmed) ... ok\ntest_ambiguous_scenarios_request_probe_and_keep_multiple_hypotheses (test_domain_contract.DeterministicAdapterTests.test_ambiguous_scenarios_request_probe_and_keep_multiple_hypotheses) ... ok\ntest_offline_scenarios_use_only_local_deterministic_fallback (test_domain_contract.DeterministicAdapterTests.test_offline_scenarios_use_only_local_deterministic_fallback) ... ok\ntest_passing_sample_scores_higher_than_failing_sample (test_domain_contract.DeterministicAdapterTests.test_passing_sample_scores_higher_than_failing_sample) ... ok\ntest_replay_is_byte_stable (test_domain_contract.DeterministicAdapterTests.test_replay_is_byte_stable) ... ok\ntest_score_observations_are_not_causal_labels (test_domain_contract.DeterministicAdapterTests.test_score_observations_are_not_causal_labels) ... ok\ntest_success_scenarios_pass_with_no_asserted_cause (test_domain_contract.DeterministicAdapterTests.test_success_scenarios_pass_with_no_asserted_cause) ... ok\ntest_complete_14_by_3_scenario_matrix (test_domain_contract.DomainContractTests.test_complete_14_by_3_scenario_matrix) ... ok\ntest_every_fixture_validates (test_domain_contract.DomainContractTests.test_every_fixture_validates) ... ok\ntest_rejects_ground_truth_cause_claim (test_domain_contract.DomainContractTests.test_rejects_ground_truth_cause_claim) ... ok\ntest_rejects_non_independent_verification (test_domain_contract.DomainContractTests.test_rejects_non_independent_verification) ... ok\ntest_representative_coverage (test_domain_contract.DomainContractTests.test_representative_coverage) ... ok\ntest_completion_depends_on_practice_not_reading (test_lessons.LessonContentTests.test_completion_depends_on_practice_not_reading) ... ok\ntest_document_loads_by_id_and_manifest_path (test_lessons.LessonContentTests.test_document_loads_by_id_and_manifest_path) ... ok\ntest_manifest_loads_the_versioned_growth_rate_lesson (test_lessons.LessonContentTests.test_manifest_loads_the_versioned_growth_rate_lesson) ... ok\ntest_method_card_stays_deliberately_small (test_lessons.LessonContentTests.test_method_card_stays_deliberately_small) ... ok\ntest_provenance_limits_reference_use_to_concept_structure (test_lessons.LessonContentTests.test_provenance_limits_reference_use_to_concept_structure) ... ok\ntest_two_runs_provide_four_distinct_questions_and_two_transfers (test_lessons.LessonContentTests.test_two_runs_provide_four_distinct_questions_and_two_transfers) ... ok\ntest_worked_example_has_steps_and_weak_to_strong_hints (test_lessons.LessonContentTests.test_worked_example_has_steps_and_weak_to_strong_hints) ... ok\ntest_rejects_checksum_mismatch (test_lessons.LessonFailClosedTests.test_rejects_checksum_mismatch) ... ok\ntest_rejects_document_not_listed_in_manifest (test_lessons.LessonFailClosedTests.test_rejects_document_not_listed_in_manifest) ... ok\ntest_rejects_duplicate_practice_fixture_ids (test_lessons.LessonFailClosedTests.test_rejects_duplicate_practice_fixture_ids) ... ok\ntest_rejects_invalid_embedded_domain_fixture (test_lessons.LessonFailClosedTests.test_rejects_invalid_embedded_domain_fixture) ... ok\ntest_rejects_mastery_change_from_reading (test_lessons.LessonFailClosedTests.test_rejects_mastery_change_from_reading) ... ok\ntest_rejects_more_than_one_knowledge_component (test_lessons.LessonFailClosedTests.test_rejects_more_than_one_knowledge_component) ... ok\ntest_rejects_non_monotonic_hint_ladder (test_lessons.LessonFailClosedTests.test_rejects_non_monotonic_hint_ladder) ... ok\ntest_rejects_oversized_lesson (test_lessons.LessonFailClosedTests.test_rejects_oversized_lesson) ... ok\ntest_rejects_reused_practice_and_verification_question (test_lessons.LessonFailClosedTests.test_rejects_reused_practice_and_verification_question) ... ok\ntest_rejects_source_text_inclusion (test_lessons.LessonFailClosedTests.test_rejects_source_text_inclusion) ... ok\ntest_rejects_unknown_schema_fields (test_lessons.LessonFailClosedTests.test_rejects_unknown_schema_fields) ... ok\ntest_rejects_unlisted_json_file (test_lessons.LessonFailClosedTests.test_rejects_unlisted_json_file) ... ok\ntest_rejects_worked_example_reused_as_practice (test_lessons.LessonFailClosedTests.test_rejects_worked_example_reused_as_practice) ... ok\n\n----------------------------------------------------------------------\nRan 32 tests in 0.037s\n\nOK"
           }
         },
         {
@@ -546,11 +546,11 @@
               "unittest",
               "discover",
               "-s",
-              "/Users/a1-6/Documents/peikao/integration/tests",
+              "./integration/tests",
               "-v"
             ],
             "exit_code": 0,
-            "output": "test_ambiguous_case_selects_disambiguating_probe (test_learning_loop.IntegrationLoopTests.test_ambiguous_case_selects_disambiguating_probe) ... ok\ntest_continuation_rejects_out_of_order_and_stale_versions (test_learning_loop.IntegrationLoopTests.test_continuation_rejects_out_of_order_and_stale_versions) ... ok\ntest_every_mastery_delta_has_evidence_and_versions (test_learning_loop.IntegrationLoopTests.test_every_mastery_delta_has_evidence_and_versions) ... ok\ntest_offline_case_has_no_fabricated_model_calls_and_replays (test_learning_loop.IntegrationLoopTests.test_offline_case_has_no_fabricated_model_calls_and_replays) ... ok\ntest_real_response_is_scored_raw_but_only_redacted_evidence_is_traced (test_learning_loop.IntegrationLoopTests.test_real_response_is_scored_raw_but_only_redacted_evidence_is_traced) ... ok\ntest_real_responses_drive_distinct_score_and_diagnosis_paths (test_learning_loop.IntegrationLoopTests.test_real_responses_drive_distinct_score_and_diagnosis_paths) ... ok\ntest_real_session_requires_probe_then_verification_before_mastery_update (test_learning_loop.IntegrationLoopTests.test_real_session_requires_probe_then_verification_before_mastery_update) ... ok\ntest_success_runs_domain_engine_runtime_and_verifies_transfer (test_learning_loop.IntegrationLoopTests.test_success_runs_domain_engine_runtime_and_verifies_transfer) ... ok\ntest_trace_contains_all_seven_real_phase_artifacts (test_learning_loop.IntegrationLoopTests.test_trace_contains_all_seven_real_phase_artifacts) ... ok\n\n----------------------------------------------------------------------\nRan 9 tests in 0.148s\n\nOK"
+            "output": "test_ambiguous_case_selects_disambiguating_probe (test_learning_loop.IntegrationLoopTests.test_ambiguous_case_selects_disambiguating_probe) ... ok\ntest_continuation_rejects_out_of_order_and_stale_versions (test_learning_loop.IntegrationLoopTests.test_continuation_rejects_out_of_order_and_stale_versions) ... ok\ntest_every_mastery_delta_has_evidence_and_versions (test_learning_loop.IntegrationLoopTests.test_every_mastery_delta_has_evidence_and_versions) ... ok\ntest_offline_case_has_no_fabricated_model_calls_and_replays (test_learning_loop.IntegrationLoopTests.test_offline_case_has_no_fabricated_model_calls_and_replays) ... ok\ntest_real_response_is_scored_raw_but_only_redacted_evidence_is_traced (test_learning_loop.IntegrationLoopTests.test_real_response_is_scored_raw_but_only_redacted_evidence_is_traced) ... ok\ntest_real_responses_drive_distinct_score_and_diagnosis_paths (test_learning_loop.IntegrationLoopTests.test_real_responses_drive_distinct_score_and_diagnosis_paths) ... ok\ntest_real_session_requires_probe_then_verification_before_mastery_update (test_learning_loop.IntegrationLoopTests.test_real_session_requires_probe_then_verification_before_mastery_update) ... ok\ntest_success_runs_domain_engine_runtime_and_verifies_transfer (test_learning_loop.IntegrationLoopTests.test_success_runs_domain_engine_runtime_and_verifies_transfer) ... ok\ntest_trace_contains_all_seven_real_phase_artifacts (test_learning_loop.IntegrationLoopTests.test_trace_contains_all_seven_real_phase_artifacts) ... ok\n\n----------------------------------------------------------------------\nRan 9 tests in 0.140s\n\nOK"
           }
         },
         {
@@ -732,7 +732,7 @@
               "-m",
               "hermes_runtime",
               "--db",
-              "/Users/a1-6/Documents/peikao/evals/reports/runtime-probe-f_9uqg4e/trace.sqlite3",
+              "./evals/reports/runtime-probe-<temporary>/trace.sqlite3",
               "demo",
               "--run-id",
               "eval-runtime-probe"
@@ -764,7 +764,7 @@
               "-m",
               "hermes_runtime",
               "--db",
-              "/Users/a1-6/Documents/peikao/evals/reports/runtime-probe-f_9uqg4e/trace.sqlite3",
+              "./evals/reports/runtime-probe-<temporary>/trace.sqlite3",
               "replay",
               "eval-runtime-probe"
             ],
@@ -795,7 +795,7 @@
                   "trace_verified": true,
                   "model_calls_recorded": 0
                 },
-                "replay_sha256": "a1d33b67a888d192208fb20be000407dc50b606ef649b3ac82d6ec0a0e458f2b",
+                "replay_sha256": "8c957d5c5a7ba20a73b0789a16e671966b25c784b98d7dd0bd71ff1ba74b0359",
                 "assertion_errors": []
               },
               "ambiguous": {
@@ -811,7 +811,7 @@
                   "trace_verified": true,
                   "model_calls_recorded": 0
                 },
-                "replay_sha256": "84d2d25a2dd1588afb86223cbf278c94b996d1f5518318aebb07ae24b40b2178",
+                "replay_sha256": "8e3a2ef2f7803d0d384920682f8c93ca87e09e6226005f972b83987f50f79d71",
                 "assertion_errors": []
               },
               "offline": {
@@ -827,7 +827,7 @@
                   "trace_verified": true,
                   "model_calls_recorded": 0
                 },
-                "replay_sha256": "e4a635d6194361bc6925dc8872a660b71bfa62213598075d202e0a444449093c",
+                "replay_sha256": "98631997416302e3d9ba9f3b0771c03ffe538386550938b7c2592982c8304e65",
                 "assertion_errors": []
               }
             }
@@ -835,7 +835,7 @@
         }
       ],
       "blocking": true,
-      "duration_ms": 1087
+      "duration_ms": 966
     },
     {
       "name": "attempt_api",
@@ -872,7 +872,7 @@
               },
               "error": null,
               "trace_status": 200,
-              "trace_sha256": "71fc7df51e267aee0fc3d2f5a3ee7d9cd9507976370493c740ae0fdc5c82ec0a",
+              "trace_sha256": "d29b82b359233d613d8921a543e0b5a54e7e6f6ab36b149cb7bb139dade799a4",
               "replay_status": 200,
               "replay_sha256": "61e29c5cf0e72cd90fbb0828dc02616053a8f9506d5c30cb3932d91eff89f072",
               "rejected_run_trace_status": null
@@ -900,7 +900,7 @@
               },
               "error": null,
               "trace_status": 200,
-              "trace_sha256": "7a97714fdb1cbaa5c3b41020d4752ed632eff0ac21ee991f1d653a4ab311f873",
+              "trace_sha256": "bc475abf9aaac0bc09060ef760880a475a2feef4bd8661afcf81712bb0a54646",
               "replay_status": 200,
               "replay_sha256": "405eb39fef6f6a0f9f4c0b7e89043006453c788899c5add578a717726d23ba88",
               "rejected_run_trace_status": null
@@ -932,7 +932,7 @@
               },
               "error": null,
               "trace_status": 200,
-              "trace_sha256": "bfd9e47db88bb59c8f711f5155670f5953074ba7d06358f5fc0d85d324de75b3",
+              "trace_sha256": "056daaf49a6eecdc83a33be2432f19af96367ed7d61c543e11742551bde5947c",
               "replay_status": 200,
               "replay_sha256": "98936669097896d4dc065abb925ef14e223403843b364552f4708adb49776d6e",
               "rejected_run_trace_status": null
@@ -1128,14 +1128,14 @@
               },
               "after_skill_count": 1,
               "duplicate_after_complete_status": 409,
-              "trace_sha256": "fbfea7c9332249df4020e83af6e304d221f3f55038f1a57b6edc6c95df053e36",
-              "replay_sha256": "62801a0667c675c74fd4486ab833ab373d0e9608666092e157c3fae080f462ac"
+              "trace_sha256": "4484020373df2157cea0085380dc9420d9baf33ec354936bb0bdf68b3ef6121f",
+              "replay_sha256": "f29d9b100080386ebb704c05c584d2bad8d0c0bf41e8c6863a364d519fb5a5ac"
             }
           }
         }
       ],
       "blocking": true,
-      "duration_ms": 237
+      "duration_ms": 203
     },
     {
       "name": "cohort_prior_guardrail",
@@ -1149,7 +1149,7 @@
             "unittest",
             "discover",
             "-s",
-            "/Users/a1-6/Documents/peikao/engine/tests",
+            "./engine/tests",
             "-p",
             "test_cohort.py",
             "-v"
@@ -1201,7 +1201,7 @@
         }
       ],
       "blocking": true,
-      "duration_ms": 62
+      "duration_ms": 58
     },
     {
       "name": "attempt_continuation",
@@ -1238,7 +1238,7 @@
               },
               "error": null,
               "trace_status": 200,
-              "trace_sha256": "71fc7df51e267aee0fc3d2f5a3ee7d9cd9507976370493c740ae0fdc5c82ec0a",
+              "trace_sha256": "d29b82b359233d613d8921a543e0b5a54e7e6f6ab36b149cb7bb139dade799a4",
               "replay_status": 200,
               "replay_sha256": "61e29c5cf0e72cd90fbb0828dc02616053a8f9506d5c30cb3932d91eff89f072",
               "rejected_run_trace_status": null
@@ -1266,7 +1266,7 @@
               },
               "error": null,
               "trace_status": 200,
-              "trace_sha256": "7a97714fdb1cbaa5c3b41020d4752ed632eff0ac21ee991f1d653a4ab311f873",
+              "trace_sha256": "bc475abf9aaac0bc09060ef760880a475a2feef4bd8661afcf81712bb0a54646",
               "replay_status": 200,
               "replay_sha256": "405eb39fef6f6a0f9f4c0b7e89043006453c788899c5add578a717726d23ba88",
               "rejected_run_trace_status": null
@@ -1298,7 +1298,7 @@
               },
               "error": null,
               "trace_status": 200,
-              "trace_sha256": "bfd9e47db88bb59c8f711f5155670f5953074ba7d06358f5fc0d85d324de75b3",
+              "trace_sha256": "056daaf49a6eecdc83a33be2432f19af96367ed7d61c543e11742551bde5947c",
               "replay_status": 200,
               "replay_sha256": "98936669097896d4dc065abb925ef14e223403843b364552f4708adb49776d6e",
               "rejected_run_trace_status": null
@@ -1494,8 +1494,8 @@
               },
               "after_skill_count": 1,
               "duplicate_after_complete_status": 409,
-              "trace_sha256": "fbfea7c9332249df4020e83af6e304d221f3f55038f1a57b6edc6c95df053e36",
-              "replay_sha256": "62801a0667c675c74fd4486ab833ab373d0e9608666092e157c3fae080f462ac"
+              "trace_sha256": "4484020373df2157cea0085380dc9420d9baf33ec354936bb0bdf68b3ef6121f",
+              "replay_sha256": "f29d9b100080386ebb704c05c584d2bad8d0c0bf41e8c6863a364d519fb5a5ac"
             }
           }
         }
@@ -1510,7 +1510,7 @@
       "evidence": [
         {
           "trace_id": "trace-f4eb731e08273ff3",
-          "sha256": "31210748d78402d59a15e0564c9cd8891f8d2c33c8bd5282651bff536d992e96",
+          "sha256": "9aeb13f8056e77e174d95304735eedbdbb185cec70f3e66da978bedb5e8b59ff",
           "trace": {
             "trace_id": "trace-f4eb731e08273ff3",
             "schema_version": "trajectory-v1",
@@ -1654,7 +1654,7 @@
                   "attempt:attempt-demo-probe-001"
                 ],
                 "output": {
-                  "sha256": "4d7596e60b30632b371f3527ae39b82eff612719858677817b65939389f77c64",
+                  "sha256": "0c442d69e5aeb0dfeccd6b02756b7e4c781ea1e536ccd13d110128d475c2e27a",
                   "result": {
                     "post_state": {
                       "learner_id": "learner-demo-redacted",
@@ -1666,7 +1666,7 @@
                       "evidence_count": 4,
                       "mastery": 0.5751921245771141,
                       "uncertainty": 0.40476676779245535,
-                      "last_updated_at": "2026-07-11T05:11:10.021712+00:00",
+                      "last_updated_at": "2026-07-14T12:08:38.020111+00:00",
                       "provenance": [
                         {
                           "attempt": {
@@ -1756,7 +1756,7 @@
                 "evidence_count": 4,
                 "mastery": 0.5751921245771141,
                 "uncertainty": 0.40476676779245535,
-                "last_updated_at": "2026-07-11T05:11:10.021712+00:00",
+                "last_updated_at": "2026-07-14T12:08:38.020111+00:00",
                 "provenance": [
                   {
                     "attempt": {
@@ -1811,7 +1811,7 @@
         }
       ],
       "blocking": true,
-      "duration_ms": 9
+      "duration_ms": 8
     },
     {
       "name": "diagnosis",
@@ -1914,7 +1914,7 @@
       "summary": "real KT update is bounded, versioned, and linked to one evidence event",
       "evidence": [
         {
-          "state_sha256": "c4b39c99e92f8d5ad725f7127741dbe0b43fa94eee645a993672ff3f03e405e4",
+          "state_sha256": "fad94732ca5309b9b3ddb4f09a7ced35a94e1687efa9a2a735c5c9546e0e7a96",
           "state": {
             "learner_id": "learner-demo-redacted",
             "skill_id": "xingce.data_analysis.growth_rate.base_current",
@@ -1925,7 +1925,7 @@
             "evidence_count": 4,
             "mastery": 0.5751921245771141,
             "uncertainty": 0.40476676779245535,
-            "last_updated_at": "2026-07-11T05:11:10.021396+00:00",
+            "last_updated_at": "2026-07-14T12:08:38.019864+00:00",
             "provenance": [
               {
                 "attempt": {
@@ -1996,7 +1996,7 @@
               "model_version": "independent-transfer-check-v1"
             }
           },
-          "mechanics_sha256": "4d7596e60b30632b371f3527ae39b82eff612719858677817b65939389f77c64"
+          "mechanics_sha256": "0c442d69e5aeb0dfeccd6b02756b7e4c781ea1e536ccd13d110128d475c2e27a"
         },
         {
           "domain_engine_runtime_integration": {
@@ -2013,7 +2013,7 @@
                 "trace_verified": true,
                 "model_calls_recorded": 0
               },
-              "replay_sha256": "a1d33b67a888d192208fb20be000407dc50b606ef649b3ac82d6ec0a0e458f2b",
+              "replay_sha256": "8c957d5c5a7ba20a73b0789a16e671966b25c784b98d7dd0bd71ff1ba74b0359",
               "assertion_errors": []
             },
             "ambiguous": {
@@ -2029,7 +2029,7 @@
                 "trace_verified": true,
                 "model_calls_recorded": 0
               },
-              "replay_sha256": "84d2d25a2dd1588afb86223cbf278c94b996d1f5518318aebb07ae24b40b2178",
+              "replay_sha256": "8e3a2ef2f7803d0d384920682f8c93ca87e09e6226005f972b83987f50f79d71",
               "assertion_errors": []
             },
             "offline": {
@@ -2045,7 +2045,7 @@
                 "trace_verified": true,
                 "model_calls_recorded": 0
               },
-              "replay_sha256": "e4a635d6194361bc6925dc8872a660b71bfa62213598075d202e0a444449093c",
+              "replay_sha256": "98631997416302e3d9ba9f3b0771c03ffe538386550938b7c2592982c8304e65",
               "assertion_errors": []
             }
           },
@@ -2061,7 +2061,7 @@
       "summary": "local trace privacy contract and static secret scan passed; no cloud operations detected",
       "evidence": [
         {
-          "scanned_file_count": 206,
+          "scanned_file_count": 130,
           "secret_findings": []
         },
         {
@@ -2076,7 +2076,7 @@
         }
       ],
       "blocking": true,
-      "duration_ms": 73
+      "duration_ms": 49
     },
     {
       "name": "readonly_boundary",
@@ -2085,23 +2085,23 @@
       "evidence": [
         {
           "forbidden_repository": {
-            "path": "/Users/a1-6/Desktop/shenlun-agent-platform",
+            "path": "$LUMI_SHENLUN_REPO",
             "exists": true,
             "head": "b5a6a4065cf401d54b2809ce7639217c95db3f5d",
             "probe": "read-only rev-parse"
           },
-          "inspected_symlinks": 12,
+          "inspected_symlinks": 0,
           "protective_references": [],
           "boundary_command": {
             "available": true,
             "exit_code": 0,
-            "output": "{\n  \"path\": \"/Users/a1-6/Desktop/shenlun-agent-platform\",\n  \"exists\": true,\n  \"expected_head\": \"b5a6a4065cf401d54b2809ce7639217c95db3f5d\",\n  \"actual_head\": \"b5a6a4065cf401d54b2809ce7639217c95db3f5d\",\n  \"working_tree_clean\": true,\n  \"baseline_head_unchanged\": true,\n  \"status\": \"pass\"\n}"
+            "output": "{\n  \"path\": \"$LUMI_SHENLUN_REPO\",\n  \"exists\": true,\n  \"expected_head\": \"b5a6a4065cf401d54b2809ce7639217c95db3f5d\",\n  \"actual_head\": \"b5a6a4065cf401d54b2809ce7639217c95db3f5d\",\n  \"working_tree_clean\": true,\n  \"baseline_head_unchanged\": true,\n  \"status\": \"pass\"\n}"
           },
           "violations": []
         }
       ],
       "blocking": true,
-      "duration_ms": 292
+      "duration_ms": 90
     }
   ]
 }

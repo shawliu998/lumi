@@ -3,8 +3,66 @@
 Implementation status is tracked in `COMPLETION_AUDIT.md`; this document keeps
 the dependency order and future exit criteria.
 
+## Current execution order
+
+The numbered phases below describe the architecture roadmap; they are **not** a
+claim that every earlier product phase is externally released. The active
+checkpoint is **P0.4 — continuous-practice v1**. Core-320 breadth and the local
+cross-session continuation layer are implemented: verbal, judgment,
+quantitative, and data-analysis each contain 80 versioned questions and share
+the same direct-practice policy:
+
+```text
+learner sees: direct eight-question practice → answer
+→ minimum feedback → natural next item → factual group summary
+→ one-click recommended or learner-selected next group
+
+system records: versioned item → deterministic score → uncertain cause hypotheses
+→ minimum intervention policy → unseen transfer → delayed validation eligibility
+→ rebuildable history/wrong-question/profile views → audited next-scope decision
+```
+
+Every automated record binds the visible activity to its content artifact,
+launch request, learner attempt, trace/replay, policy decision, and state delta.
+The owner has explicitly removed a voluntary usability session as a prerequisite
+for internal breadth. Automation may prove mechanics but may not impersonate a
+learner or be cited as real usability, transfer, or retention evidence.
+
+The approved 2026-07-14 correction remains specified in
+`SMART_PRACTICE_V2.md`. Growth-rate is the retained deep reference slice; v3
+generalizes its checksum-verified content, fixed-eight policy, direct-practice
+client, append-only decisions, near transfer, and delayed-validation contracts
+to four modules. The earlier micro-lesson, mandatory continuation runtime, and
+v2 content package remain regression or focused-practice fixtures rather than
+the default product path.
+
 The roadmap validates risk in dependency order. Breadth means every exam domain
 crosses the same audited contract; it does not mean importing every item first.
+
+### Next execution slice — P0.4.1 internal trial and learner calibration
+
+Do not add another large question batch or mandatory teaching stage yet.
+Content review is deferred from this internal execution slice by owner decision;
+it remains an external-release requirement. Prioritize:
+
+1. restore a supported screenshot/browser channel and capture the current
+   module selection, normal answer, incorrect feedback, optional intervention,
+   final summary, offline/error, and narrow-width states;
+2. collect consented local attempt telemetry for item difficulty, option
+   selection, completion, response time, intervention exposure, near transfer,
+   and delayed return—without treating it as psychological ground truth;
+3. observe whether the factual report and one-click next group improve session
+   continuation without adding learner work; keep recommendation evidence and
+   learner overrides separately measurable;
+4. add an explicit version-preservation or migration path before a future bank
+   version replaces v1.0.1, so old accepted attempts remain replayable;
+5. replace the text/Unicode-only judgment-figure subset with versioned visual
+   assets and deterministic geometry metadata;
+6. use those data to calibrate scheduling before
+   deciding whether common-knowledge breadth or additional volume is valuable.
+
+This slice is the recommended next work order, not a condition for continuing
+to use the current internal Core-320 build.
 
 ## Phase 0 — repository and executable skeleton
 
@@ -44,8 +102,9 @@ Deliver:
 - micro-lessons, probes, transfer items, and spaced review;
 - first item/distractor/cohort analytics in DuckDB.
 
-Start with data analysis as the deepest reference implementation, then prove the
-contract on verbal, judgment, quantitative, and common/political knowledge.
+2026-07-15 checkpoint: the contract is implemented for verbal, judgment,
+quantitative, and data analysis as Core-320. Common/political knowledge remains
+deferred; adding it is not required for the current four-module internal MVP.
 
 Exit: all Xingce rows in the representative matrix pass release gates.
 

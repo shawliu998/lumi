@@ -1,0 +1,908 @@
+{
+  "schema_version": "hermes.practice-package.v2",
+  "package_id": "lumi.xingce.growth-rate.practice-v2",
+  "version": "1.0.0",
+  "title": "资料分析：直接增长率智能刷题",
+  "domain": "xingce",
+  "path": "data_analysis",
+  "user_facing_type": "资料分析",
+  "diagnostic_unit": {
+    "diagnostic_unit_id": "xingce.data-analysis.direct-growth-rate",
+    "name": "直接增长率：识别比较起点并保留变化方向",
+    "ability_boundary": [
+      "同一指标给出两个可比时点时识别基期量和现期量",
+      "使用（现期量－基期量）除以基期量计算直接增长率",
+      "把下降产生的负变化保留到增长率结果中"
+    ],
+    "excluded_skills": [
+      "反推基期量",
+      "间隔增长率和年均增长率",
+      "百分点、贡献率及复杂材料定位"
+    ],
+    "expected_core_question_count": 18,
+    "expected_filler_question_count": 8,
+    "minimum_independent_evidence_families": 6,
+    "minimum_delayed_validation_questions": 4
+  },
+  "content_sources": [
+    {
+      "content_source_id": "src.lumi.growth-v2-original",
+      "content_origin": "synthetic_original",
+      "reference_title": "三色笔记-行测理.pdf",
+      "reference_page_range": {
+        "pdf_start": 3,
+        "pdf_end": 5,
+        "printed_start": 1,
+        "printed_end": 3
+      },
+      "source_use": "concept_structure_reference",
+      "rights_status": "rights_review_required",
+      "authorization_status": "internal_mvp_only",
+      "source_text_included": false,
+      "author": "Lumi internal curriculum team",
+      "authored_at": "2026-07-14",
+      "review_status": "human_review_required_before_external_release"
+    }
+  ],
+  "error_signatures": [
+    {
+      "signature_id": "growth.current-as-denominator",
+      "label": "用现期量作分母",
+      "observable_rule": "所选选项等于（现期量－基期量）除以现期量的结果",
+      "semantics": "observed_option_pattern_not_mental_cause"
+    },
+    {
+      "signature_id": "growth.ratio-without-minus-one",
+      "label": "把现期与基期之比直接当增长率",
+      "observable_rule": "所选选项等于现期量除以基期量，未减去1",
+      "semantics": "observed_option_pattern_not_mental_cause"
+    },
+    {
+      "signature_id": "growth.decrease-sign-dropped",
+      "label": "下降时丢失负号",
+      "observable_rule": "下降题所选选项等于正确增长率的绝对值",
+      "semantics": "observed_option_pattern_not_mental_cause"
+    }
+  ],
+  "cause_candidates": [
+    {
+      "cause_id": "cause.comparison-start-confusion",
+      "label": "可能尚未把变化发生前的量作为比较起点",
+      "semantics": "actionable_withdrawable_hypothesis_not_ground_truth"
+    },
+    {
+      "cause_id": "cause.ratio-growth-distinction",
+      "label": "可能尚未区分现基期比值与相对变化率",
+      "semantics": "actionable_withdrawable_hypothesis_not_ground_truth"
+    },
+    {
+      "cause_id": "cause.direction-sign-not-carried",
+      "label": "可能未把下降方向保留到最终结果",
+      "semantics": "actionable_withdrawable_hypothesis_not_ground_truth"
+    }
+  ],
+  "interventions": {
+    "microtutorials": [
+      {
+        "schema_version": "hermes.intervention-asset.v2",
+        "asset_id": "asset.growth.denominator.microtutorial",
+        "version": "1.0.0",
+        "kind": "microtutorial",
+        "target_signature_ids": ["growth.current-as-denominator"],
+        "target_cause_id": "cause.comparison-start-confusion",
+        "title": "分母代表比较起点",
+        "estimated_seconds": 40,
+        "principle": "增长率回答变化相对于起点有多大，因此分母是变化发生前的基期量。",
+        "worked_contrast": "从400增到460，变化量是60；60÷400=15%，而60÷460比较的是变化后的规模，不是本题所问的起点。",
+        "return_action": "回到题目时先圈出变化前的数，再列式。",
+        "authorization_status": "internal_mvp_only",
+        "review_status": "human_review_required"
+      },
+      {
+        "schema_version": "hermes.intervention-asset.v2",
+        "asset_id": "asset.growth.ratio.microtutorial",
+        "version": "1.0.0",
+        "kind": "microtutorial",
+        "target_signature_ids": ["growth.current-as-denominator", "growth.ratio-without-minus-one"],
+        "target_cause_id": "cause.ratio-growth-distinction",
+        "title": "比值不是增长率",
+        "estimated_seconds": 45,
+        "principle": "现期÷基期表示现期是基期的多少倍；增长率还要减去原有的1倍。",
+        "worked_contrast": "从500增到600，600÷500=120%，表示现期为基期的120%；增长率是120%－100%=20%。",
+        "return_action": "看到“增长率”时检查算式中是否扣除了原有部分。",
+        "authorization_status": "internal_mvp_only",
+        "review_status": "human_review_required"
+      },
+      {
+        "schema_version": "hermes.intervention-asset.v2",
+        "asset_id": "asset.growth.direction.microtutorial",
+        "version": "1.0.0",
+        "kind": "microtutorial",
+        "target_signature_ids": ["growth.decrease-sign-dropped"],
+        "target_cause_id": "cause.direction-sign-not-carried",
+        "title": "先保留变化方向",
+        "estimated_seconds": 35,
+        "principle": "下降时现期量减基期量为负，除以正的基期量后增长率仍为负。",
+        "worked_contrast": "从800降到680，变化量是－120；－120÷800=－15%，正15%会把下降误写成增长。",
+        "return_action": "列式后先判断分子的正负，再计算大小。",
+        "authorization_status": "internal_mvp_only",
+        "review_status": "human_review_required"
+      }
+    ],
+    "probes": [
+      {
+        "schema_version": "hermes.intervention-asset.v2",
+        "asset_id": "asset.growth.formula-choice.probe",
+        "version": "1.0.0",
+        "kind": "structured_probe",
+        "trigger_signature_ids": ["growth.current-as-denominator", "growth.ratio-without-minus-one"],
+        "candidate_cause_ids": ["cause.comparison-start-confusion", "cause.ratio-growth-distinction"],
+        "title": "只选算式，不计算",
+        "prompt": "某指标从400增至460。要计算增长率，你会先选哪一个算式？",
+        "response_mode": "single_choice",
+        "options": {
+          "A": "（460－400）÷400",
+          "B": "（460－400）÷460",
+          "C": "460÷400"
+        },
+        "option_results": {
+          "A": {"supported_cause_id": null, "observation": "选择了以基期为分母的增长率算式；本探针不支持任一待区分原因"},
+          "B": {"supported_cause_id": "cause.comparison-start-confusion", "observation": "选择以变化后的现期量作为比较起点"},
+          "C": {"supported_cause_id": "cause.ratio-growth-distinction", "observation": "选择现期与基期的比值，未去除原有的1倍"}
+        },
+        "optional": true,
+        "uses_session_slot": true,
+        "authorization_status": "internal_mvp_only",
+        "review_status": "human_review_required"
+      }
+    ]
+  },
+  "material_groups": [
+    {"material_group_id": "mg.core.01", "label": "公共文化服务记录一", "kind": "standalone_synthetic_record", "independence_policy": "same_group_not_independent"},
+    {"material_group_id": "mg.core.02", "label": "公共文化服务记录二", "kind": "standalone_synthetic_record", "independence_policy": "same_group_not_independent"},
+    {"material_group_id": "mg.core.shared-city", "label": "青岚市年度公共服务资料", "kind": "shared_synthetic_material", "independence_policy": "same_group_not_independent"},
+    {"material_group_id": "mg.core.05", "label": "农业设施记录", "kind": "standalone_synthetic_record", "independence_policy": "same_group_not_independent"},
+    {"material_group_id": "mg.core.06", "label": "公共建筑能耗记录", "kind": "standalone_synthetic_record", "independence_policy": "same_group_not_independent"},
+    {"material_group_id": "mg.core.07", "label": "基层健康服务记录一", "kind": "standalone_synthetic_record", "independence_policy": "same_group_not_independent"},
+    {"material_group_id": "mg.core.08", "label": "基层健康服务记录二", "kind": "standalone_synthetic_record", "independence_policy": "same_group_not_independent"},
+    {"material_group_id": "mg.core.09", "label": "节水设施记录", "kind": "standalone_synthetic_record", "independence_policy": "same_group_not_independent"},
+    {"material_group_id": "mg.core.10", "label": "生态巡护记录", "kind": "standalone_synthetic_record", "independence_policy": "same_group_not_independent"},
+    {"material_group_id": "mg.core.11", "label": "社区教育记录一", "kind": "standalone_synthetic_record", "independence_policy": "same_group_not_independent"},
+    {"material_group_id": "mg.core.12", "label": "社区教育记录二", "kind": "standalone_synthetic_record", "independence_policy": "same_group_not_independent"},
+    {"material_group_id": "mg.core.13", "label": "政务数字服务记录", "kind": "standalone_synthetic_record", "independence_policy": "same_group_not_independent"},
+    {"material_group_id": "mg.core.14", "label": "安全宣传记录", "kind": "standalone_synthetic_record", "independence_policy": "same_group_not_independent"},
+    {"material_group_id": "mg.core.15", "label": "延迟验证文化记录", "kind": "standalone_synthetic_record", "independence_policy": "same_group_not_independent"},
+    {"material_group_id": "mg.core.16", "label": "延迟验证交通记录", "kind": "standalone_synthetic_record", "independence_policy": "same_group_not_independent"},
+    {"material_group_id": "mg.core.17", "label": "延迟验证产业记录", "kind": "standalone_synthetic_record", "independence_policy": "same_group_not_independent"},
+    {"material_group_id": "mg.core.18", "label": "延迟验证生态记录", "kind": "standalone_synthetic_record", "independence_policy": "same_group_not_independent"},
+    {"material_group_id": "mg.filler.01", "label": "间隔题记录一", "kind": "standalone_synthetic_record", "independence_policy": "same_group_not_independent"},
+    {"material_group_id": "mg.filler.02", "label": "间隔题记录二", "kind": "standalone_synthetic_record", "independence_policy": "same_group_not_independent"},
+    {"material_group_id": "mg.filler.03", "label": "间隔题记录三", "kind": "standalone_synthetic_record", "independence_policy": "same_group_not_independent"},
+    {"material_group_id": "mg.filler.04", "label": "间隔题记录四", "kind": "standalone_synthetic_record", "independence_policy": "same_group_not_independent"},
+    {"material_group_id": "mg.filler.05", "label": "间隔题记录五", "kind": "standalone_synthetic_record", "independence_policy": "same_group_not_independent"},
+    {"material_group_id": "mg.filler.06", "label": "间隔题记录六", "kind": "standalone_synthetic_record", "independence_policy": "same_group_not_independent"},
+    {"material_group_id": "mg.filler.07", "label": "间隔题记录七", "kind": "standalone_synthetic_record", "independence_policy": "same_group_not_independent"},
+    {"material_group_id": "mg.filler.08", "label": "间隔题记录八", "kind": "standalone_synthetic_record", "independence_policy": "same_group_not_independent"}
+  ],
+  "evidence_families": [
+    {"evidence_family_id": "ef.core.public-services", "label": "公共服务规模直算", "construction_note": "同一构题骨架的增减量直算变体，不可互相提供独立证据", "independence_policy": "same_family_not_independent"},
+    {"evidence_family_id": "ef.core.green-transport", "label": "绿色交通直算", "construction_note": "以独立交通指标构造", "independence_policy": "same_family_not_independent"},
+    {"evidence_family_id": "ef.core.venue-use", "label": "公共场馆使用直算", "construction_note": "以场馆指标构造但共享一份城市资料", "independence_policy": "same_family_not_independent"},
+    {"evidence_family_id": "ef.core.agriculture", "label": "农业设施直算", "construction_note": "以设施投用量构造", "independence_policy": "same_family_not_independent"},
+    {"evidence_family_id": "ef.core.energy", "label": "能耗下降直算", "construction_note": "以下降型能耗指标构造", "independence_policy": "same_family_not_independent"},
+    {"evidence_family_id": "ef.core.health", "label": "健康服务直算", "construction_note": "同一健康服务构题骨架的两种变体", "independence_policy": "same_family_not_independent"},
+    {"evidence_family_id": "ef.core.water", "label": "节水规模直算", "construction_note": "以节水设施覆盖量构造", "independence_policy": "same_family_not_independent"},
+    {"evidence_family_id": "ef.core.ecology", "label": "生态指标直算", "construction_note": "以生态巡护指标构造", "independence_policy": "same_family_not_independent"},
+    {"evidence_family_id": "ef.core.education", "label": "社区教育直算", "construction_note": "同一社区教育构题骨架的两种变体", "independence_policy": "same_family_not_independent"},
+    {"evidence_family_id": "ef.core.digital", "label": "数字服务直算", "construction_note": "以政务数字服务量构造", "independence_policy": "same_family_not_independent"},
+    {"evidence_family_id": "ef.core.safety", "label": "安全宣传直算", "construction_note": "以安全宣传指标构造", "independence_policy": "same_family_not_independent"},
+    {"evidence_family_id": "ef.core.delay-culture", "label": "文化服务延迟验证", "construction_note": "独立保留的文化服务题族", "independence_policy": "same_family_not_independent"},
+    {"evidence_family_id": "ef.core.delay-transit", "label": "交通延迟验证", "construction_note": "独立保留的交通题族", "independence_policy": "same_family_not_independent"},
+    {"evidence_family_id": "ef.core.delay-industry", "label": "产业延迟验证", "construction_note": "独立保留的产业题族", "independence_policy": "same_family_not_independent"},
+    {"evidence_family_id": "ef.core.delay-ecology", "label": "生态延迟验证", "construction_note": "独立保留的生态题族", "independence_policy": "same_family_not_independent"},
+    {"evidence_family_id": "ef.filler.01", "label": "占比间隔题", "construction_note": "仅用于题间间隔，不计目标单元证据", "independence_policy": "same_family_not_independent"},
+    {"evidence_family_id": "ef.filler.02", "label": "平均数间隔题一", "construction_note": "仅用于题间间隔，不计目标单元证据", "independence_policy": "same_family_not_independent"},
+    {"evidence_family_id": "ef.filler.03", "label": "倍数间隔题", "construction_note": "仅用于题间间隔，不计目标单元证据", "independence_policy": "same_family_not_independent"},
+    {"evidence_family_id": "ef.filler.04", "label": "增长量间隔题", "construction_note": "仅用于题间间隔，不计目标单元证据", "independence_policy": "same_family_not_independent"},
+    {"evidence_family_id": "ef.filler.05", "label": "基期间隔题", "construction_note": "仅用于题间间隔，不计目标单元证据", "independence_policy": "same_family_not_independent"},
+    {"evidence_family_id": "ef.filler.06", "label": "占比间隔题二", "construction_note": "仅用于题间间隔，不计目标单元证据", "independence_policy": "same_family_not_independent"},
+    {"evidence_family_id": "ef.filler.07", "label": "平均数间隔题二", "construction_note": "仅用于题间间隔，不计目标单元证据", "independence_policy": "same_family_not_independent"},
+    {"evidence_family_id": "ef.filler.08", "label": "差量间隔题", "construction_note": "仅用于题间间隔，不计目标单元证据", "independence_policy": "same_family_not_independent"}
+  ],
+  "questions": [
+    {
+      "schema_version": "hermes.question-version.v2",
+      "question_id": "xingce.data.growth.v2.q01",
+      "version": "1.0.0",
+      "status": "published_internal",
+      "domain": "xingce",
+      "user_facing_type": "资料分析",
+      "diagnostic_unit_id": "xingce.data-analysis.direct-growth-rate",
+      "content_source_id": "src.lumi.growth-v2-original",
+      "material_group_id": "mg.core.01",
+      "evidence_family_id": "ef.core.public-services",
+      "target_change_direction": "increase",
+      "prompt": "某区公共阅读空间周末接待量由240人次增加到276人次，该指标的增长率是多少？",
+      "response_mode": "single_choice",
+      "options": {"A": "115%", "B": "15%", "C": "13.0%", "D": "36%"},
+      "scoring": {
+        "adapter": "xingce_mcq_v2", "max_score": 1, "correct_option": "B", "canonical_answer": "15%",
+        "error_option_mappings": {
+          "A": {"signature_id": "growth.ratio-without-minus-one", "cause_candidate_ids": ["cause.ratio-growth-distinction"], "observation": "276除以240等于115%，把现基期比值直接当作增长率"},
+          "C": {"signature_id": "growth.current-as-denominator", "cause_candidate_ids": ["cause.comparison-start-confusion", "cause.ratio-growth-distinction"], "observation": "36除以276约为13.0%，使用了现期量作分母"},
+          "D": {"signature_id": null, "cause_candidate_ids": [], "observation": "直接把变化量36写成百分数，未形成目标错误签名"}
+        }
+      },
+      "role_eligibility": {"regular_practice": true, "near_transfer": true, "delayed_validation": false, "reserved_unexposed": false, "filler": false, "evidence_eligible": true},
+      "feedback": {"first_error_principle": "本题比较起点是240，增长率应以240作分母。", "full_explanation": "变化量为276－240=36，36÷240=15%，所以选择B。"},
+      "calculation": {"base_value": 240, "current_value": 276, "expected_rate_percent": 15, "rounding_decimals": 0}
+    },
+    {
+      "schema_version": "hermes.question-version.v2",
+      "question_id": "xingce.data.growth.v2.q02",
+      "version": "1.0.0",
+      "status": "published_internal",
+      "domain": "xingce",
+      "user_facing_type": "资料分析",
+      "diagnostic_unit_id": "xingce.data-analysis.direct-growth-rate",
+      "content_source_id": "src.lumi.growth-v2-original",
+      "material_group_id": "mg.core.02",
+      "evidence_family_id": "ef.core.public-services",
+      "target_change_direction": "decrease",
+      "prompt": "某街道纸质办事指南月用量由500份降至450份，该指标的增长率是多少？",
+      "response_mode": "single_choice",
+      "options": {"A": "10%", "B": "90%", "C": "-10%", "D": "-11.1%"},
+      "scoring": {
+        "adapter": "xingce_mcq_v2", "max_score": 1, "correct_option": "C", "canonical_answer": "-10%",
+        "error_option_mappings": {
+          "A": {"signature_id": "growth.decrease-sign-dropped", "cause_candidate_ids": ["cause.direction-sign-not-carried"], "observation": "选择了正确下降幅度的绝对值10%，但丢失负号"},
+          "B": {"signature_id": "growth.ratio-without-minus-one", "cause_candidate_ids": ["cause.ratio-growth-distinction"], "observation": "450除以500等于90%，把现基期比值直接当作增长率"},
+          "D": {"signature_id": "growth.current-as-denominator", "cause_candidate_ids": ["cause.comparison-start-confusion", "cause.ratio-growth-distinction"], "observation": "负50除以450约为负11.1%，使用了现期量作分母"}
+        }
+      },
+      "role_eligibility": {"regular_practice": true, "near_transfer": true, "delayed_validation": false, "reserved_unexposed": false, "filler": false, "evidence_eligible": true},
+      "feedback": {"first_error_principle": "下降时变化量为负，分母仍是变化前的500。", "full_explanation": "变化量为450－500=－50，－50÷500=－10%，所以选择C。"},
+      "calculation": {"base_value": 500, "current_value": 450, "expected_rate_percent": -10, "rounding_decimals": 0}
+    },
+    {
+      "schema_version": "hermes.question-version.v2",
+      "question_id": "xingce.data.growth.v2.q03",
+      "version": "1.0.0",
+      "status": "published_internal",
+      "domain": "xingce",
+      "user_facing_type": "资料分析",
+      "diagnostic_unit_id": "xingce.data-analysis.direct-growth-rate",
+      "content_source_id": "src.lumi.growth-v2-original",
+      "material_group_id": "mg.core.shared-city",
+      "evidence_family_id": "ef.core.green-transport",
+      "target_change_direction": "increase",
+      "prompt": "青岚市公共自行车日均使用量由3200次升至4000次，增长率是多少？",
+      "response_mode": "single_choice",
+      "options": {"A": "20%", "B": "80%", "C": "25%", "D": "125%"},
+      "scoring": {
+        "adapter": "xingce_mcq_v2", "max_score": 1, "correct_option": "C", "canonical_answer": "25%",
+        "error_option_mappings": {
+          "A": {"signature_id": "growth.current-as-denominator", "cause_candidate_ids": ["cause.comparison-start-confusion", "cause.ratio-growth-distinction"], "observation": "800除以4000等于20%，使用了现期量作分母"},
+          "B": {"signature_id": null, "cause_candidate_ids": [], "observation": "把变化量800缩写成80%，不属于三个目标签名"},
+          "D": {"signature_id": "growth.ratio-without-minus-one", "cause_candidate_ids": ["cause.ratio-growth-distinction"], "observation": "4000除以3200等于125%，把现基期比值直接当作增长率"}
+        }
+      },
+      "role_eligibility": {"regular_practice": true, "near_transfer": true, "delayed_validation": false, "reserved_unexposed": false, "filler": false, "evidence_eligible": true},
+      "feedback": {"first_error_principle": "增长率比较的是新增800相对于原有3200的大小。", "full_explanation": "（4000－3200）÷3200=25%，所以选择C。"},
+      "calculation": {"base_value": 3200, "current_value": 4000, "expected_rate_percent": 25, "rounding_decimals": 0}
+    },
+    {
+      "schema_version": "hermes.question-version.v2",
+      "question_id": "xingce.data.growth.v2.q04",
+      "version": "1.0.0",
+      "status": "published_internal",
+      "domain": "xingce",
+      "user_facing_type": "资料分析",
+      "diagnostic_unit_id": "xingce.data-analysis.direct-growth-rate",
+      "content_source_id": "src.lumi.growth-v2-original",
+      "material_group_id": "mg.core.shared-city",
+      "evidence_family_id": "ef.core.venue-use",
+      "target_change_direction": "decrease",
+      "prompt": "同一份青岚市资料显示，公共场馆一次性用品用量由800箱降至680箱，其增长率是多少？",
+      "response_mode": "single_choice",
+      "options": {"A": "85%", "B": "-17.6%", "C": "15%", "D": "-15%"},
+      "scoring": {
+        "adapter": "xingce_mcq_v2", "max_score": 1, "correct_option": "D", "canonical_answer": "-15%",
+        "error_option_mappings": {
+          "A": {"signature_id": "growth.ratio-without-minus-one", "cause_candidate_ids": ["cause.ratio-growth-distinction"], "observation": "680除以800等于85%，把现基期比值直接当作增长率"},
+          "B": {"signature_id": "growth.current-as-denominator", "cause_candidate_ids": ["cause.comparison-start-confusion", "cause.ratio-growth-distinction"], "observation": "负120除以680约为负17.6%，使用了现期量作分母"},
+          "C": {"signature_id": "growth.decrease-sign-dropped", "cause_candidate_ids": ["cause.direction-sign-not-carried"], "observation": "选择了正确下降幅度15%，但丢失负号"}
+        }
+      },
+      "role_eligibility": {"regular_practice": true, "near_transfer": true, "delayed_validation": false, "reserved_unexposed": false, "filler": false, "evidence_eligible": true},
+      "feedback": {"first_error_principle": "下降120箱相对于起点800箱，结果应保留负号。", "full_explanation": "（680－800）÷800=－15%，所以选择D。"},
+      "calculation": {"base_value": 800, "current_value": 680, "expected_rate_percent": -15, "rounding_decimals": 0}
+    },
+    {
+      "schema_version": "hermes.question-version.v2",
+      "question_id": "xingce.data.growth.v2.q05",
+      "version": "1.0.0",
+      "status": "published_internal",
+      "domain": "xingce",
+      "user_facing_type": "资料分析",
+      "diagnostic_unit_id": "xingce.data-analysis.direct-growth-rate",
+      "content_source_id": "src.lumi.growth-v2-original",
+      "material_group_id": "mg.core.05",
+      "evidence_family_id": "ef.core.agriculture",
+      "target_change_direction": "increase",
+      "prompt": "某县投入使用的智能灌溉终端由1250台增至1500台，增长率是多少？",
+      "response_mode": "single_choice",
+      "options": {"A": "20%", "B": "16.7%", "C": "120%", "D": "250%"},
+      "scoring": {
+        "adapter": "xingce_mcq_v2", "max_score": 1, "correct_option": "A", "canonical_answer": "20%",
+        "error_option_mappings": {
+          "B": {"signature_id": "growth.current-as-denominator", "cause_candidate_ids": ["cause.comparison-start-confusion", "cause.ratio-growth-distinction"], "observation": "250除以1500约为16.7%，使用了现期量作分母"},
+          "C": {"signature_id": "growth.ratio-without-minus-one", "cause_candidate_ids": ["cause.ratio-growth-distinction"], "observation": "1500除以1250等于120%，把现基期比值直接当作增长率"},
+          "D": {"signature_id": null, "cause_candidate_ids": [], "observation": "把变化量250直接写成百分数，不属于三个目标签名"}
+        }
+      },
+      "role_eligibility": {"regular_practice": true, "near_transfer": true, "delayed_validation": false, "reserved_unexposed": false, "filler": false, "evidence_eligible": true},
+      "feedback": {"first_error_principle": "新增250台要与原有1250台比较。", "full_explanation": "（1500－1250）÷1250=20%，所以选择A。"},
+      "calculation": {"base_value": 1250, "current_value": 1500, "expected_rate_percent": 20, "rounding_decimals": 0}
+    },
+    {
+      "schema_version": "hermes.question-version.v2",
+      "question_id": "xingce.data.growth.v2.q06",
+      "version": "1.0.0",
+      "status": "published_internal",
+      "domain": "xingce",
+      "user_facing_type": "资料分析",
+      "diagnostic_unit_id": "xingce.data-analysis.direct-growth-rate",
+      "content_source_id": "src.lumi.growth-v2-original",
+      "material_group_id": "mg.core.06",
+      "evidence_family_id": "ef.core.energy",
+      "target_change_direction": "decrease",
+      "prompt": "某组公共建筑季度用电量由900万千瓦时降至720万千瓦时，增长率是多少？",
+      "response_mode": "single_choice",
+      "options": {"A": "80%", "B": "-20%", "C": "20%", "D": "-25%"},
+      "scoring": {
+        "adapter": "xingce_mcq_v2", "max_score": 1, "correct_option": "B", "canonical_answer": "-20%",
+        "error_option_mappings": {
+          "A": {"signature_id": "growth.ratio-without-minus-one", "cause_candidate_ids": ["cause.ratio-growth-distinction"], "observation": "720除以900等于80%，把现基期比值直接当作增长率"},
+          "C": {"signature_id": "growth.decrease-sign-dropped", "cause_candidate_ids": ["cause.direction-sign-not-carried"], "observation": "选择了正确下降幅度20%，但丢失负号"},
+          "D": {"signature_id": "growth.current-as-denominator", "cause_candidate_ids": ["cause.comparison-start-confusion", "cause.ratio-growth-distinction"], "observation": "负180除以720等于负25%，使用了现期量作分母"}
+        }
+      },
+      "role_eligibility": {"regular_practice": true, "near_transfer": true, "delayed_validation": false, "reserved_unexposed": false, "filler": false, "evidence_eligible": true},
+      "feedback": {"first_error_principle": "用电量下降，变化量为负180，比较起点是900。", "full_explanation": "（720－900）÷900=－20%，所以选择B。"},
+      "calculation": {"base_value": 900, "current_value": 720, "expected_rate_percent": -20, "rounding_decimals": 0}
+    },
+    {
+      "schema_version": "hermes.question-version.v2",
+      "question_id": "xingce.data.growth.v2.q07",
+      "version": "1.0.0",
+      "status": "published_internal",
+      "domain": "xingce",
+      "user_facing_type": "资料分析",
+      "diagnostic_unit_id": "xingce.data-analysis.direct-growth-rate",
+      "content_source_id": "src.lumi.growth-v2-original",
+      "material_group_id": "mg.core.07",
+      "evidence_family_id": "ef.core.health",
+      "target_change_direction": "increase",
+      "prompt": "某社区健康筛查点日均服务人数由360人增至432人，增长率是多少？",
+      "response_mode": "single_choice",
+      "options": {"A": "120%", "B": "72%", "C": "16.7%", "D": "20%"},
+      "scoring": {
+        "adapter": "xingce_mcq_v2", "max_score": 1, "correct_option": "D", "canonical_answer": "20%",
+        "error_option_mappings": {
+          "A": {"signature_id": "growth.ratio-without-minus-one", "cause_candidate_ids": ["cause.ratio-growth-distinction"], "observation": "432除以360等于120%，把现基期比值直接当作增长率"},
+          "B": {"signature_id": null, "cause_candidate_ids": [], "observation": "把变化量72直接写成百分数，不属于三个目标签名"},
+          "C": {"signature_id": "growth.current-as-denominator", "cause_candidate_ids": ["cause.comparison-start-confusion", "cause.ratio-growth-distinction"], "observation": "72除以432约为16.7%，使用了现期量作分母"}
+        }
+      },
+      "role_eligibility": {"regular_practice": true, "near_transfer": true, "delayed_validation": false, "reserved_unexposed": false, "filler": false, "evidence_eligible": true},
+      "feedback": {"first_error_principle": "新增72人要与原有360人比较。", "full_explanation": "（432－360）÷360=20%，所以选择D。"},
+      "calculation": {"base_value": 360, "current_value": 432, "expected_rate_percent": 20, "rounding_decimals": 0}
+    },
+    {
+      "schema_version": "hermes.question-version.v2",
+      "question_id": "xingce.data.growth.v2.q08",
+      "version": "1.0.0",
+      "status": "published_internal",
+      "domain": "xingce",
+      "user_facing_type": "资料分析",
+      "diagnostic_unit_id": "xingce.data-analysis.direct-growth-rate",
+      "content_source_id": "src.lumi.growth-v2-original",
+      "material_group_id": "mg.core.08",
+      "evidence_family_id": "ef.core.health",
+      "target_change_direction": "decrease",
+      "prompt": "另一社区健康站一次性耗材月用量由640包降至544包，增长率是多少？",
+      "response_mode": "single_choice",
+      "options": {"A": "15%", "B": "-17.6%", "C": "-15%", "D": "85%"},
+      "scoring": {
+        "adapter": "xingce_mcq_v2", "max_score": 1, "correct_option": "C", "canonical_answer": "-15%",
+        "error_option_mappings": {
+          "A": {"signature_id": "growth.decrease-sign-dropped", "cause_candidate_ids": ["cause.direction-sign-not-carried"], "observation": "选择了正确下降幅度15%，但丢失负号"},
+          "B": {"signature_id": "growth.current-as-denominator", "cause_candidate_ids": ["cause.comparison-start-confusion", "cause.ratio-growth-distinction"], "observation": "负96除以544约为负17.6%，使用了现期量作分母"},
+          "D": {"signature_id": "growth.ratio-without-minus-one", "cause_candidate_ids": ["cause.ratio-growth-distinction"], "observation": "544除以640等于85%，把现基期比值直接当作增长率"}
+        }
+      },
+      "role_eligibility": {"regular_practice": true, "near_transfer": true, "delayed_validation": false, "reserved_unexposed": false, "filler": false, "evidence_eligible": true},
+      "feedback": {"first_error_principle": "下降96包相对于起点640包，增长率应为负。", "full_explanation": "（544－640）÷640=－15%，所以选择C。"},
+      "calculation": {"base_value": 640, "current_value": 544, "expected_rate_percent": -15, "rounding_decimals": 0}
+    },
+    {
+      "schema_version": "hermes.question-version.v2",
+      "question_id": "xingce.data.growth.v2.q09",
+      "version": "1.0.0",
+      "status": "published_internal",
+      "domain": "xingce",
+      "user_facing_type": "资料分析",
+      "diagnostic_unit_id": "xingce.data-analysis.direct-growth-rate",
+      "content_source_id": "src.lumi.growth-v2-original",
+      "material_group_id": "mg.core.09",
+      "evidence_family_id": "ef.core.water",
+      "target_change_direction": "increase",
+      "prompt": "某市完成节水器具改造的住户由1500户增至1800户，增长率是多少？",
+      "response_mode": "single_choice",
+      "options": {"A": "16.7%", "B": "300%", "C": "20%", "D": "120%"},
+      "scoring": {
+        "adapter": "xingce_mcq_v2", "max_score": 1, "correct_option": "C", "canonical_answer": "20%",
+        "error_option_mappings": {
+          "A": {"signature_id": "growth.current-as-denominator", "cause_candidate_ids": ["cause.comparison-start-confusion", "cause.ratio-growth-distinction"], "observation": "300除以1800约为16.7%，使用了现期量作分母"},
+          "B": {"signature_id": null, "cause_candidate_ids": [], "observation": "把变化量300直接写成百分数，不属于三个目标签名"},
+          "D": {"signature_id": "growth.ratio-without-minus-one", "cause_candidate_ids": ["cause.ratio-growth-distinction"], "observation": "1800除以1500等于120%，把现基期比值直接当作增长率"}
+        }
+      },
+      "role_eligibility": {"regular_practice": true, "near_transfer": true, "delayed_validation": false, "reserved_unexposed": false, "filler": false, "evidence_eligible": true},
+      "feedback": {"first_error_principle": "新增300户相对于改造前的1500户。", "full_explanation": "（1800－1500）÷1500=20%，所以选择C。"},
+      "calculation": {"base_value": 1500, "current_value": 1800, "expected_rate_percent": 20, "rounding_decimals": 0}
+    },
+    {
+      "schema_version": "hermes.question-version.v2",
+      "question_id": "xingce.data.growth.v2.q10",
+      "version": "1.0.0",
+      "status": "published_internal",
+      "domain": "xingce",
+      "user_facing_type": "资料分析",
+      "diagnostic_unit_id": "xingce.data-analysis.direct-growth-rate",
+      "content_source_id": "src.lumi.growth-v2-original",
+      "material_group_id": "mg.core.10",
+      "evidence_family_id": "ef.core.ecology",
+      "target_change_direction": "decrease",
+      "prompt": "某自然保护地人工巡护漏报点位由420处降至378处，该指标的增长率是多少？",
+      "response_mode": "single_choice",
+      "options": {"A": "-11.1%", "B": "90%", "C": "-10%", "D": "10%"},
+      "scoring": {
+        "adapter": "xingce_mcq_v2", "max_score": 1, "correct_option": "C", "canonical_answer": "-10%",
+        "error_option_mappings": {
+          "A": {"signature_id": "growth.current-as-denominator", "cause_candidate_ids": ["cause.comparison-start-confusion", "cause.ratio-growth-distinction"], "observation": "负42除以378约为负11.1%，使用了现期量作分母"},
+          "B": {"signature_id": "growth.ratio-without-minus-one", "cause_candidate_ids": ["cause.ratio-growth-distinction"], "observation": "378除以420等于90%，把现基期比值直接当作增长率"},
+          "D": {"signature_id": "growth.decrease-sign-dropped", "cause_candidate_ids": ["cause.direction-sign-not-carried"], "observation": "选择了正确下降幅度10%，但丢失负号"}
+        }
+      },
+      "role_eligibility": {"regular_practice": true, "near_transfer": true, "delayed_validation": false, "reserved_unexposed": false, "filler": false, "evidence_eligible": true},
+      "feedback": {"first_error_principle": "漏报点位减少，变化量是负42，分母是原有420。", "full_explanation": "（378－420）÷420=－10%，所以选择C。"},
+      "calculation": {"base_value": 420, "current_value": 378, "expected_rate_percent": -10, "rounding_decimals": 0}
+    },
+    {
+      "schema_version": "hermes.question-version.v2",
+      "question_id": "xingce.data.growth.v2.q11",
+      "version": "1.0.0",
+      "status": "published_internal",
+      "domain": "xingce",
+      "user_facing_type": "资料分析",
+      "diagnostic_unit_id": "xingce.data-analysis.direct-growth-rate",
+      "content_source_id": "src.lumi.growth-v2-original",
+      "material_group_id": "mg.core.11",
+      "evidence_family_id": "ef.core.education",
+      "target_change_direction": "increase",
+      "prompt": "某市社区夜校年度报名人次由2500增至2875，增长率是多少？",
+      "response_mode": "single_choice",
+      "options": {"A": "115%", "B": "13.0%", "C": "375%", "D": "15%"},
+      "scoring": {
+        "adapter": "xingce_mcq_v2", "max_score": 1, "correct_option": "D", "canonical_answer": "15%",
+        "error_option_mappings": {
+          "A": {"signature_id": "growth.ratio-without-minus-one", "cause_candidate_ids": ["cause.ratio-growth-distinction"], "observation": "2875除以2500等于115%，把现基期比值直接当作增长率"},
+          "B": {"signature_id": "growth.current-as-denominator", "cause_candidate_ids": ["cause.comparison-start-confusion", "cause.ratio-growth-distinction"], "observation": "375除以2875约为13.0%，使用了现期量作分母"},
+          "C": {"signature_id": null, "cause_candidate_ids": [], "observation": "把变化量375直接写成百分数，不属于三个目标签名"}
+        }
+      },
+      "role_eligibility": {"regular_practice": false, "near_transfer": true, "delayed_validation": false, "reserved_unexposed": false, "filler": false, "evidence_eligible": true},
+      "feedback": {"first_error_principle": "报名新增375人次应与原有2500人次比较。", "full_explanation": "（2875－2500）÷2500=15%，所以选择D。"},
+      "calculation": {"base_value": 2500, "current_value": 2875, "expected_rate_percent": 15, "rounding_decimals": 0}
+    },
+    {
+      "schema_version": "hermes.question-version.v2",
+      "question_id": "xingce.data.growth.v2.q12",
+      "version": "1.0.0",
+      "status": "published_internal",
+      "domain": "xingce",
+      "user_facing_type": "资料分析",
+      "diagnostic_unit_id": "xingce.data-analysis.direct-growth-rate",
+      "content_source_id": "src.lumi.growth-v2-original",
+      "material_group_id": "mg.core.12",
+      "evidence_family_id": "ef.core.education",
+      "target_change_direction": "decrease",
+      "prompt": "某学习中心纸质练习册月消耗量由760本降至646本，增长率是多少？",
+      "response_mode": "single_choice",
+      "options": {"A": "85%", "B": "-15%", "C": "15%", "D": "-17.6%"},
+      "scoring": {
+        "adapter": "xingce_mcq_v2", "max_score": 1, "correct_option": "B", "canonical_answer": "-15%",
+        "error_option_mappings": {
+          "A": {"signature_id": "growth.ratio-without-minus-one", "cause_candidate_ids": ["cause.ratio-growth-distinction"], "observation": "646除以760等于85%，把现基期比值直接当作增长率"},
+          "C": {"signature_id": "growth.decrease-sign-dropped", "cause_candidate_ids": ["cause.direction-sign-not-carried"], "observation": "选择了正确下降幅度15%，但丢失负号"},
+          "D": {"signature_id": "growth.current-as-denominator", "cause_candidate_ids": ["cause.comparison-start-confusion", "cause.ratio-growth-distinction"], "observation": "负114除以646约为负17.6%，使用了现期量作分母"}
+        }
+      },
+      "role_eligibility": {"regular_practice": false, "near_transfer": true, "delayed_validation": false, "reserved_unexposed": false, "filler": false, "evidence_eligible": true},
+      "feedback": {"first_error_principle": "练习册消耗量下降，先保留负114，再除以760。", "full_explanation": "（646－760）÷760=－15%，所以选择B。"},
+      "calculation": {"base_value": 760, "current_value": 646, "expected_rate_percent": -15, "rounding_decimals": 0}
+    },
+    {
+      "schema_version": "hermes.question-version.v2",
+      "question_id": "xingce.data.growth.v2.q13",
+      "version": "1.0.0",
+      "status": "published_internal",
+      "domain": "xingce",
+      "user_facing_type": "资料分析",
+      "diagnostic_unit_id": "xingce.data-analysis.direct-growth-rate",
+      "content_source_id": "src.lumi.growth-v2-original",
+      "material_group_id": "mg.core.13",
+      "evidence_family_id": "ef.core.digital",
+      "target_change_direction": "increase",
+      "prompt": "某政务小程序日均成功办理事项由480件增至600件，增长率是多少？",
+      "response_mode": "single_choice",
+      "options": {"A": "20%", "B": "125%", "C": "25%", "D": "120%"},
+      "scoring": {
+        "adapter": "xingce_mcq_v2", "max_score": 1, "correct_option": "C", "canonical_answer": "25%",
+        "error_option_mappings": {
+          "A": {"signature_id": "growth.current-as-denominator", "cause_candidate_ids": ["cause.comparison-start-confusion", "cause.ratio-growth-distinction"], "observation": "120除以600等于20%，使用了现期量作分母"},
+          "B": {"signature_id": "growth.ratio-without-minus-one", "cause_candidate_ids": ["cause.ratio-growth-distinction"], "observation": "600除以480等于125%，把现基期比值直接当作增长率"},
+          "D": {"signature_id": null, "cause_candidate_ids": [], "observation": "把变化量120直接写成百分数，不属于三个目标签名"}
+        }
+      },
+      "role_eligibility": {"regular_practice": false, "near_transfer": true, "delayed_validation": false, "reserved_unexposed": false, "filler": false, "evidence_eligible": true},
+      "feedback": {"first_error_principle": "新增120件相对于办理前的480件。", "full_explanation": "（600－480）÷480=25%，所以选择C。"},
+      "calculation": {"base_value": 480, "current_value": 600, "expected_rate_percent": 25, "rounding_decimals": 0}
+    },
+    {
+      "schema_version": "hermes.question-version.v2",
+      "question_id": "xingce.data.growth.v2.q14",
+      "version": "1.0.0",
+      "status": "published_internal",
+      "domain": "xingce",
+      "user_facing_type": "资料分析",
+      "diagnostic_unit_id": "xingce.data-analysis.direct-growth-rate",
+      "content_source_id": "src.lumi.growth-v2-original",
+      "material_group_id": "mg.core.14",
+      "evidence_family_id": "ef.core.safety",
+      "target_change_direction": "decrease",
+      "prompt": "某园区未完成消防培训的人数由1100人降至880人，该指标的增长率是多少？",
+      "response_mode": "single_choice",
+      "options": {"A": "-25%", "B": "80%", "C": "20%", "D": "-20%"},
+      "scoring": {
+        "adapter": "xingce_mcq_v2", "max_score": 1, "correct_option": "D", "canonical_answer": "-20%",
+        "error_option_mappings": {
+          "A": {"signature_id": "growth.current-as-denominator", "cause_candidate_ids": ["cause.comparison-start-confusion", "cause.ratio-growth-distinction"], "observation": "负220除以880等于负25%，使用了现期量作分母"},
+          "B": {"signature_id": "growth.ratio-without-minus-one", "cause_candidate_ids": ["cause.ratio-growth-distinction"], "observation": "880除以1100等于80%，把现基期比值直接当作增长率"},
+          "C": {"signature_id": "growth.decrease-sign-dropped", "cause_candidate_ids": ["cause.direction-sign-not-carried"], "observation": "选择了正确下降幅度20%，但丢失负号"}
+        }
+      },
+      "role_eligibility": {"regular_practice": false, "near_transfer": true, "delayed_validation": false, "reserved_unexposed": false, "filler": false, "evidence_eligible": true},
+      "feedback": {"first_error_principle": "未培训人数减少，变化量负220要与原有1100比较。", "full_explanation": "（880－1100）÷1100=－20%，所以选择D。"},
+      "calculation": {"base_value": 1100, "current_value": 880, "expected_rate_percent": -20, "rounding_decimals": 0}
+    },
+    {
+      "schema_version": "hermes.question-version.v2",
+      "question_id": "xingce.data.growth.v2.q15",
+      "version": "1.0.0",
+      "status": "published_internal",
+      "domain": "xingce",
+      "user_facing_type": "资料分析",
+      "diagnostic_unit_id": "xingce.data-analysis.direct-growth-rate",
+      "content_source_id": "src.lumi.growth-v2-original",
+      "material_group_id": "mg.core.15",
+      "evidence_family_id": "ef.core.delay-culture",
+      "target_change_direction": "increase",
+      "prompt": "某流动文化驿站季度服务场次由720场增至828场，增长率是多少？",
+      "response_mode": "single_choice",
+      "options": {"A": "108%", "B": "15%", "C": "13.0%", "D": "115%"},
+      "scoring": {
+        "adapter": "xingce_mcq_v2", "max_score": 1, "correct_option": "B", "canonical_answer": "15%",
+        "error_option_mappings": {
+          "A": {"signature_id": null, "cause_candidate_ids": [], "observation": "把变化量108直接写成百分数，不属于三个目标签名"},
+          "C": {"signature_id": "growth.current-as-denominator", "cause_candidate_ids": ["cause.comparison-start-confusion", "cause.ratio-growth-distinction"], "observation": "108除以828约为13.0%，使用了现期量作分母"},
+          "D": {"signature_id": "growth.ratio-without-minus-one", "cause_candidate_ids": ["cause.ratio-growth-distinction"], "observation": "828除以720等于115%，把现基期比值直接当作增长率"}
+        }
+      },
+      "role_eligibility": {"regular_practice": false, "near_transfer": false, "delayed_validation": true, "reserved_unexposed": true, "filler": false, "evidence_eligible": true},
+      "feedback": {"first_error_principle": "新增108场应与原有720场比较。", "full_explanation": "（828－720）÷720=15%，所以选择B。"},
+      "calculation": {"base_value": 720, "current_value": 828, "expected_rate_percent": 15, "rounding_decimals": 0}
+    },
+    {
+      "schema_version": "hermes.question-version.v2",
+      "question_id": "xingce.data.growth.v2.q16",
+      "version": "1.0.0",
+      "status": "published_internal",
+      "domain": "xingce",
+      "user_facing_type": "资料分析",
+      "diagnostic_unit_id": "xingce.data-analysis.direct-growth-rate",
+      "content_source_id": "src.lumi.growth-v2-original",
+      "material_group_id": "mg.core.16",
+      "evidence_family_id": "ef.core.delay-transit",
+      "target_change_direction": "decrease",
+      "prompt": "某公交线路高峰期平均候车人数由960人降至816人，增长率是多少？",
+      "response_mode": "single_choice",
+      "options": {"A": "-17.6%", "B": "15%", "C": "85%", "D": "-15%"},
+      "scoring": {
+        "adapter": "xingce_mcq_v2", "max_score": 1, "correct_option": "D", "canonical_answer": "-15%",
+        "error_option_mappings": {
+          "A": {"signature_id": "growth.current-as-denominator", "cause_candidate_ids": ["cause.comparison-start-confusion", "cause.ratio-growth-distinction"], "observation": "负144除以816约为负17.6%，使用了现期量作分母"},
+          "B": {"signature_id": "growth.decrease-sign-dropped", "cause_candidate_ids": ["cause.direction-sign-not-carried"], "observation": "选择了正确下降幅度15%，但丢失负号"},
+          "C": {"signature_id": "growth.ratio-without-minus-one", "cause_candidate_ids": ["cause.ratio-growth-distinction"], "observation": "816除以960等于85%，把现基期比值直接当作增长率"}
+        }
+      },
+      "role_eligibility": {"regular_practice": false, "near_transfer": false, "delayed_validation": true, "reserved_unexposed": true, "filler": false, "evidence_eligible": true},
+      "feedback": {"first_error_principle": "候车人数下降，变化量负144要与原有960比较。", "full_explanation": "（816－960）÷960=－15%，所以选择D。"},
+      "calculation": {"base_value": 960, "current_value": 816, "expected_rate_percent": -15, "rounding_decimals": 0}
+    },
+    {
+      "schema_version": "hermes.question-version.v2",
+      "question_id": "xingce.data.growth.v2.q17",
+      "version": "1.0.0",
+      "status": "published_internal",
+      "domain": "xingce",
+      "user_facing_type": "资料分析",
+      "diagnostic_unit_id": "xingce.data-analysis.direct-growth-rate",
+      "content_source_id": "src.lumi.growth-v2-original",
+      "material_group_id": "mg.core.17",
+      "evidence_family_id": "ef.core.delay-industry",
+      "target_change_direction": "increase",
+      "prompt": "某产业园可复用包装箱周转量由1400箱增至1750箱，增长率是多少？",
+      "response_mode": "single_choice",
+      "options": {"A": "125%", "B": "350%", "C": "25%", "D": "20%"},
+      "scoring": {
+        "adapter": "xingce_mcq_v2", "max_score": 1, "correct_option": "C", "canonical_answer": "25%",
+        "error_option_mappings": {
+          "A": {"signature_id": "growth.ratio-without-minus-one", "cause_candidate_ids": ["cause.ratio-growth-distinction"], "observation": "1750除以1400等于125%，把现基期比值直接当作增长率"},
+          "B": {"signature_id": null, "cause_candidate_ids": [], "observation": "把变化量350直接写成百分数，不属于三个目标签名"},
+          "D": {"signature_id": "growth.current-as-denominator", "cause_candidate_ids": ["cause.comparison-start-confusion", "cause.ratio-growth-distinction"], "observation": "350除以1750等于20%，使用了现期量作分母"}
+        }
+      },
+      "role_eligibility": {"regular_practice": false, "near_transfer": false, "delayed_validation": true, "reserved_unexposed": true, "filler": false, "evidence_eligible": true},
+      "feedback": {"first_error_principle": "新增350箱相对于原有1400箱。", "full_explanation": "（1750－1400）÷1400=25%，所以选择C。"},
+      "calculation": {"base_value": 1400, "current_value": 1750, "expected_rate_percent": 25, "rounding_decimals": 0}
+    },
+    {
+      "schema_version": "hermes.question-version.v2",
+      "question_id": "xingce.data.growth.v2.q18",
+      "version": "1.0.0",
+      "status": "published_internal",
+      "domain": "xingce",
+      "user_facing_type": "资料分析",
+      "diagnostic_unit_id": "xingce.data-analysis.direct-growth-rate",
+      "content_source_id": "src.lumi.growth-v2-original",
+      "material_group_id": "mg.core.18",
+      "evidence_family_id": "ef.core.delay-ecology",
+      "target_change_direction": "decrease",
+      "prompt": "某河段人工清理漂浮物次数由540次降至486次，增长率是多少？",
+      "response_mode": "single_choice",
+      "options": {"A": "90%", "B": "10%", "C": "-11.1%", "D": "-10%"},
+      "scoring": {
+        "adapter": "xingce_mcq_v2", "max_score": 1, "correct_option": "D", "canonical_answer": "-10%",
+        "error_option_mappings": {
+          "A": {"signature_id": "growth.ratio-without-minus-one", "cause_candidate_ids": ["cause.ratio-growth-distinction"], "observation": "486除以540等于90%，把现基期比值直接当作增长率"},
+          "B": {"signature_id": "growth.decrease-sign-dropped", "cause_candidate_ids": ["cause.direction-sign-not-carried"], "observation": "选择了正确下降幅度10%，但丢失负号"},
+          "C": {"signature_id": "growth.current-as-denominator", "cause_candidate_ids": ["cause.comparison-start-confusion", "cause.ratio-growth-distinction"], "observation": "负54除以486约为负11.1%，使用了现期量作分母"}
+        }
+      },
+      "role_eligibility": {"regular_practice": false, "near_transfer": false, "delayed_validation": true, "reserved_unexposed": true, "filler": false, "evidence_eligible": true},
+      "feedback": {"first_error_principle": "清理次数下降，变化量负54要与原有540比较。", "full_explanation": "（486－540）÷540=－10%，所以选择D。"},
+      "calculation": {"base_value": 540, "current_value": 486, "expected_rate_percent": -10, "rounding_decimals": 0}
+    },
+    {
+      "schema_version": "hermes.question-version.v2",
+      "question_id": "xingce.data.filler.v2.q01",
+      "version": "1.0.0",
+      "status": "published_internal",
+      "domain": "xingce",
+      "user_facing_type": "资料分析",
+      "diagnostic_unit_id": "xingce.data-analysis.mixed-spacing",
+      "content_source_id": "src.lumi.growth-v2-original",
+      "material_group_id": "mg.filler.01",
+      "evidence_family_id": "ef.filler.01",
+      "target_change_direction": "not_applicable",
+      "prompt": "某服务大厅本月共办理800件事项，其中线上办理200件，线上办理占比是多少？",
+      "response_mode": "single_choice",
+      "options": {"A": "20%", "B": "25%", "C": "40%", "D": "75%"},
+      "scoring": {
+        "adapter": "xingce_mcq_v2", "max_score": 1, "correct_option": "B", "canonical_answer": "25%",
+        "error_option_mappings": {
+          "A": {"signature_id": null, "cause_candidate_ids": [], "observation": "非目标单元错项，不生成增长率错误签名"},
+          "C": {"signature_id": null, "cause_candidate_ids": [], "observation": "非目标单元错项，不生成增长率错误签名"},
+          "D": {"signature_id": null, "cause_candidate_ids": [], "observation": "非目标单元错项，不生成增长率错误签名"}
+        }
+      },
+      "role_eligibility": {"regular_practice": true, "near_transfer": false, "delayed_validation": false, "reserved_unexposed": false, "filler": true, "evidence_eligible": false},
+      "feedback": {"first_error_principle": "占比用部分量除以总体量。", "full_explanation": "200÷800=25%，所以选择B。"}
+    },
+    {
+      "schema_version": "hermes.question-version.v2",
+      "question_id": "xingce.data.filler.v2.q02",
+      "version": "1.0.0",
+      "status": "published_internal",
+      "domain": "xingce",
+      "user_facing_type": "资料分析",
+      "diagnostic_unit_id": "xingce.data-analysis.mixed-spacing",
+      "content_source_id": "src.lumi.growth-v2-original",
+      "material_group_id": "mg.filler.02",
+      "evidence_family_id": "ef.filler.02",
+      "target_change_direction": "not_applicable",
+      "prompt": "12个社区服务点一天合计接待960人次，平均每个点接待多少人次？",
+      "response_mode": "single_choice",
+      "options": {"A": "60人次", "B": "72人次", "C": "80人次", "D": "96人次"},
+      "scoring": {
+        "adapter": "xingce_mcq_v2", "max_score": 1, "correct_option": "C", "canonical_answer": "80人次",
+        "error_option_mappings": {
+          "A": {"signature_id": null, "cause_candidate_ids": [], "observation": "非目标单元错项，不生成增长率错误签名"},
+          "B": {"signature_id": null, "cause_candidate_ids": [], "observation": "非目标单元错项，不生成增长率错误签名"},
+          "D": {"signature_id": null, "cause_candidate_ids": [], "observation": "非目标单元错项，不生成增长率错误签名"}
+        }
+      },
+      "role_eligibility": {"regular_practice": true, "near_transfer": false, "delayed_validation": false, "reserved_unexposed": false, "filler": true, "evidence_eligible": false},
+      "feedback": {"first_error_principle": "平均数用总量除以单位数。", "full_explanation": "960÷12=80人次，所以选择C。"}
+    },
+    {
+      "schema_version": "hermes.question-version.v2",
+      "question_id": "xingce.data.filler.v2.q03",
+      "version": "1.0.0",
+      "status": "published_internal",
+      "domain": "xingce",
+      "user_facing_type": "资料分析",
+      "diagnostic_unit_id": "xingce.data-analysis.mixed-spacing",
+      "content_source_id": "src.lumi.growth-v2-original",
+      "material_group_id": "mg.filler.03",
+      "evidence_family_id": "ef.filler.03",
+      "target_change_direction": "not_applicable",
+      "prompt": "甲路线日均客流量为450人次，乙路线为150人次，甲路线是乙路线的多少倍？",
+      "response_mode": "single_choice",
+      "options": {"A": "2倍", "B": "3倍", "C": "4倍", "D": "300倍"},
+      "scoring": {
+        "adapter": "xingce_mcq_v2", "max_score": 1, "correct_option": "B", "canonical_answer": "3倍",
+        "error_option_mappings": {
+          "A": {"signature_id": null, "cause_candidate_ids": [], "observation": "非目标单元错项，不生成增长率错误签名"},
+          "C": {"signature_id": null, "cause_candidate_ids": [], "observation": "非目标单元错项，不生成增长率错误签名"},
+          "D": {"signature_id": null, "cause_candidate_ids": [], "observation": "非目标单元错项，不生成增长率错误签名"}
+        }
+      },
+      "role_eligibility": {"regular_practice": true, "near_transfer": false, "delayed_validation": false, "reserved_unexposed": false, "filler": true, "evidence_eligible": false},
+      "feedback": {"first_error_principle": "问“是几倍”时直接用甲量除以乙量。", "full_explanation": "450÷150=3倍，所以选择B。"}
+    },
+    {
+      "schema_version": "hermes.question-version.v2",
+      "question_id": "xingce.data.filler.v2.q04",
+      "version": "1.0.0",
+      "status": "published_internal",
+      "domain": "xingce",
+      "user_facing_type": "资料分析",
+      "diagnostic_unit_id": "xingce.data-analysis.mixed-spacing",
+      "content_source_id": "src.lumi.growth-v2-original",
+      "material_group_id": "mg.filler.04",
+      "evidence_family_id": "ef.filler.04",
+      "target_change_direction": "not_applicable",
+      "prompt": "某站点单日回收物由680件增加到850件，增加量是多少？",
+      "response_mode": "single_choice",
+      "options": {"A": "150件", "B": "170件", "C": "180件", "D": "125件"},
+      "scoring": {
+        "adapter": "xingce_mcq_v2", "max_score": 1, "correct_option": "B", "canonical_answer": "170件",
+        "error_option_mappings": {
+          "A": {"signature_id": null, "cause_candidate_ids": [], "observation": "非目标单元错项，不生成增长率错误签名"},
+          "C": {"signature_id": null, "cause_candidate_ids": [], "observation": "非目标单元错项，不生成增长率错误签名"},
+          "D": {"signature_id": null, "cause_candidate_ids": [], "observation": "非目标单元错项，不生成增长率错误签名"}
+        }
+      },
+      "role_eligibility": {"regular_practice": true, "near_transfer": false, "delayed_validation": false, "reserved_unexposed": false, "filler": true, "evidence_eligible": false},
+      "feedback": {"first_error_principle": "增加量用现期量减去基期量。", "full_explanation": "850－680=170件，所以选择B。"}
+    },
+    {
+      "schema_version": "hermes.question-version.v2",
+      "question_id": "xingce.data.filler.v2.q05",
+      "version": "1.0.0",
+      "status": "published_internal",
+      "domain": "xingce",
+      "user_facing_type": "资料分析",
+      "diagnostic_unit_id": "xingce.data-analysis.mixed-spacing",
+      "content_source_id": "src.lumi.growth-v2-original",
+      "material_group_id": "mg.filler.05",
+      "evidence_family_id": "ef.filler.05",
+      "target_change_direction": "not_applicable",
+      "prompt": "某平台本期注册量为1200户，比上期增长20%，则上期注册量是多少户？",
+      "response_mode": "single_choice",
+      "options": {"A": "960户", "B": "1000户", "C": "1040户", "D": "1440户"},
+      "scoring": {
+        "adapter": "xingce_mcq_v2", "max_score": 1, "correct_option": "B", "canonical_answer": "1000户",
+        "error_option_mappings": {
+          "A": {"signature_id": null, "cause_candidate_ids": [], "observation": "非目标单元错项，不生成直接增长率错误签名"},
+          "C": {"signature_id": null, "cause_candidate_ids": [], "observation": "非目标单元错项，不生成直接增长率错误签名"},
+          "D": {"signature_id": null, "cause_candidate_ids": [], "observation": "非目标单元错项，不生成直接增长率错误签名"}
+        }
+      },
+      "role_eligibility": {"regular_practice": true, "near_transfer": false, "delayed_validation": false, "reserved_unexposed": false, "filler": true, "evidence_eligible": false},
+      "feedback": {"first_error_principle": "现期量等于基期量乘以1加增长率。", "full_explanation": "上期量=1200÷1.2=1000户，所以选择B。"}
+    },
+    {
+      "schema_version": "hermes.question-version.v2",
+      "question_id": "xingce.data.filler.v2.q06",
+      "version": "1.0.0",
+      "status": "published_internal",
+      "domain": "xingce",
+      "user_facing_type": "资料分析",
+      "diagnostic_unit_id": "xingce.data-analysis.mixed-spacing",
+      "content_source_id": "src.lumi.growth-v2-original",
+      "material_group_id": "mg.filler.06",
+      "evidence_family_id": "ef.filler.06",
+      "target_change_direction": "not_applicable",
+      "prompt": "某季度500项抽查中有125项采用线上核验，线上核验占比是多少？",
+      "response_mode": "single_choice",
+      "options": {"A": "20%", "B": "25%", "C": "30%", "D": "40%"},
+      "scoring": {
+        "adapter": "xingce_mcq_v2", "max_score": 1, "correct_option": "B", "canonical_answer": "25%",
+        "error_option_mappings": {
+          "A": {"signature_id": null, "cause_candidate_ids": [], "observation": "非目标单元错项，不生成增长率错误签名"},
+          "C": {"signature_id": null, "cause_candidate_ids": [], "observation": "非目标单元错项，不生成增长率错误签名"},
+          "D": {"signature_id": null, "cause_candidate_ids": [], "observation": "非目标单元错项，不生成增长率错误签名"}
+        }
+      },
+      "role_eligibility": {"regular_practice": true, "near_transfer": false, "delayed_validation": false, "reserved_unexposed": false, "filler": true, "evidence_eligible": false},
+      "feedback": {"first_error_principle": "线上核验是部分量，500项是总体量。", "full_explanation": "125÷500=25%，所以选择B。"}
+    },
+    {
+      "schema_version": "hermes.question-version.v2",
+      "question_id": "xingce.data.filler.v2.q07",
+      "version": "1.0.0",
+      "status": "published_internal",
+      "domain": "xingce",
+      "user_facing_type": "资料分析",
+      "diagnostic_unit_id": "xingce.data-analysis.mixed-spacing",
+      "content_source_id": "src.lumi.growth-v2-original",
+      "material_group_id": "mg.filler.07",
+      "evidence_family_id": "ef.filler.07",
+      "target_change_direction": "not_applicable",
+      "prompt": "12个月共组织1560场公益活动，月均组织多少场？",
+      "response_mode": "single_choice",
+      "options": {"A": "120场", "B": "125场", "C": "130场", "D": "135场"},
+      "scoring": {
+        "adapter": "xingce_mcq_v2", "max_score": 1, "correct_option": "C", "canonical_answer": "130场",
+        "error_option_mappings": {
+          "A": {"signature_id": null, "cause_candidate_ids": [], "observation": "非目标单元错项，不生成增长率错误签名"},
+          "B": {"signature_id": null, "cause_candidate_ids": [], "observation": "非目标单元错项，不生成增长率错误签名"},
+          "D": {"signature_id": null, "cause_candidate_ids": [], "observation": "非目标单元错项，不生成增长率错误签名"}
+        }
+      },
+      "role_eligibility": {"regular_practice": true, "near_transfer": false, "delayed_validation": false, "reserved_unexposed": false, "filler": true, "evidence_eligible": false},
+      "feedback": {"first_error_principle": "月均数用全年总场次除以12。", "full_explanation": "1560÷12=130场，所以选择C。"}
+    },
+    {
+      "schema_version": "hermes.question-version.v2",
+      "question_id": "xingce.data.filler.v2.q08",
+      "version": "1.0.0",
+      "status": "published_internal",
+      "domain": "xingce",
+      "user_facing_type": "资料分析",
+      "diagnostic_unit_id": "xingce.data-analysis.mixed-spacing",
+      "content_source_id": "src.lumi.growth-v2-original",
+      "material_group_id": "mg.filler.08",
+      "evidence_family_id": "ef.filler.08",
+      "target_change_direction": "not_applicable",
+      "prompt": "甲类事项办理量为1480件，乙类为1210件，两类相差多少件？",
+      "response_mode": "single_choice",
+      "options": {"A": "250件", "B": "260件", "C": "270件", "D": "290件"},
+      "scoring": {
+        "adapter": "xingce_mcq_v2", "max_score": 1, "correct_option": "C", "canonical_answer": "270件",
+        "error_option_mappings": {
+          "A": {"signature_id": null, "cause_candidate_ids": [], "observation": "非目标单元错项，不生成增长率错误签名"},
+          "B": {"signature_id": null, "cause_candidate_ids": [], "observation": "非目标单元错项，不生成增长率错误签名"},
+          "D": {"signature_id": null, "cause_candidate_ids": [], "observation": "非目标单元错项，不生成增长率错误签名"}
+        }
+      },
+      "role_eligibility": {"regular_practice": true, "near_transfer": false, "delayed_validation": false, "reserved_unexposed": false, "filler": true, "evidence_eligible": false},
+      "feedback": {"first_error_principle": "相差量用较大值减较小值。", "full_explanation": "1480－1210=270件，所以选择C。"}
+    }
+  ]
+}

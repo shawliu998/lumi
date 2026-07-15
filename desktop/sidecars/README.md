@@ -31,6 +31,9 @@ The frontend never receives a Shell capability and cannot execute this or any
 other command. No arbitrary executable, filesystem, or remote network access
 is granted. The shell plugin is used only by trusted Rust lifecycle code.
 
-`npm run check:sidecar` exercises the packed executable's health endpoint and
-termination behavior. `npm run check:managed-app` performs the same lifecycle
-verification through the built Tauri app.
+`npm run check:sidecar` exercises the packed executable's health endpoint,
+requires its Core-320 capability to match the source manifest's bank/version/
+digest and exact five scope counts, and checks termination behavior.
+`npm run check:managed-app` requires the versioned Core-320 manifest, schema,
+and safe sample to be byte-identical across source, built runtime, and `.app`,
+then performs lifecycle verification through the built Tauri app.

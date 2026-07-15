@@ -3,8 +3,10 @@ from __future__ import annotations
 import importlib.util
 import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 RUNNER_PATH = Path(__file__).resolve().parents[1] / "run_all.py"
@@ -72,6 +74,32 @@ class EvidenceIntegrationTests(unittest.TestCase):
         self.assertEqual(result.status, "pass", result.evidence)
         self.assertIn("awaiting_probe", result.summary)
 
+    def test_core320_manifest_and_materialization_boundary_close_the_gate(self) -> None:
+        result = runner.gate_core320_bank(runner.Context())
+        self.assertEqual(result.status, "pass", result.evidence)
+        bank = result.evidence[0]
+        self.assertEqual(bank["question_count"], 320)
+        self.assertEqual(bank["scope_counts"]["xingce.mixed.core"], 320)
+
+    def test_core320_five_scope_service_contract_closes_the_gate(self) -> None:
+        result = runner.gate_core320_scopes(runner.Context())
+        self.assertEqual(result.status, "pass", result.evidence)
+        self.assertIn("four-module plus mixed", result.summary)
+
+    def test_continuous_practice_focused_contract_closes_the_gate(self) -> None:
+        result = runner.gate_continuous_practice_v1(runner.Context())
+        self.assertEqual(result.status, "pass", result.evidence)
+        self.assertIn("without a production build", result.summary)
+        labels = {next(iter(item)) for item in result.evidence}
+        self.assertTrue(
+            {
+                "required_files",
+                "engine_policy",
+                "service_read_models",
+                "client_contracts",
+            }.issubset(labels)
+        )
+
     def test_attempt_evidence_compaction_keeps_only_hash_and_redaction(self) -> None:
         compact = runner._compact_attempt_api_evidence(
             {
@@ -95,6 +123,85 @@ class EvidenceIntegrationTests(unittest.TestCase):
         self.assertIn("[EMAIL]", serialized)
         self.assertIn("response_sha256", serialized)
         self.assertNotIn("example.invalid", serialized)
+
+
+class ContinuousPracticeGateDeterminismTests(unittest.TestCase):
+    @staticmethod
+    def _completed(command, **kwargs):
+        return runner.subprocess.CompletedProcess(
+            command,
+            0,
+            stdout="focused stdout\n",
+            stderr="focused stderr\n",
+        )
+
+    def test_missing_contract_surface_is_pending(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            with mock.patch.object(runner, "REPO_ROOT", Path(temporary)):
+                result = runner.gate_continuous_practice_v1(runner.Context())
+        self.assertEqual(result.status, "pending")
+        self.assertEqual(
+            result.evidence[0]["missing"],
+            [
+                "client/tests/practiceInsights.test.js",
+                "client/tests/smartPracticeState.test.js",
+                "docs/CONTINUOUS_PRACTICE_V1.md",
+                "engine/tests/test_next_scope_policy.py",
+                "service/tests/test_learning_records.py",
+            ],
+        )
+
+    def test_focused_command_evidence_is_deterministic_and_never_builds(self) -> None:
+        with mock.patch.object(
+            runner.subprocess,
+            "run",
+            side_effect=self._completed,
+        ):
+            first = runner.gate_continuous_practice_v1(runner.Context())
+            second = runner.gate_continuous_practice_v1(runner.Context())
+        self.assertEqual(first.status, "pass")
+        self.assertEqual(first.evidence, second.evidence)
+        serialized = json.dumps(first.evidence)
+        self.assertNotIn("npm run build", serialized)
+        self.assertNotIn('"build"', serialized)
+        for item in first.evidence[1:]:
+            command = next(iter(item.values()))
+            self.assertEqual(command["exit_code"], 0)
+            self.assertEqual(len(command["command_sha256"]), 64)
+            self.assertEqual(len(command["output_sha256"]), 64)
+            self.assertTrue(command["input_sha256"])
+
+    def test_present_but_failing_focused_test_is_fail(self) -> None:
+        def failed(command, **kwargs):
+            return runner.subprocess.CompletedProcess(
+                command,
+                1
+                if any(str(part).endswith("test_next_scope_policy.py") for part in command)
+                else 0,
+                stdout="",
+                stderr="deterministic failure",
+            )
+
+        with mock.patch.object(runner.subprocess, "run", side_effect=failed):
+            result = runner.gate_continuous_practice_v1(runner.Context())
+        self.assertEqual(result.status, "fail")
+        self.assertIn("engine_policy focused tests failed", result.evidence[-1]["errors"])
+
+    def test_missing_node_runtime_is_pending_after_file_hashes(self) -> None:
+        with mock.patch.object(runner.shutil, "which", return_value=None):
+            result = runner.gate_continuous_practice_v1(runner.Context())
+        self.assertEqual(result.status, "pending")
+        self.assertEqual(result.evidence[-1], {"node": None})
+        self.assertEqual(
+            set(result.evidence[0]["required_files"]),
+            {
+                "contract",
+                "engine_policy_tests",
+                "service_read_model_tests",
+                "client_read_model_tests",
+                "client_session_state_tests",
+            },
+        )
 
 
 if __name__ == "__main__":

@@ -5,6 +5,14 @@ Shenlun, and structured Interview practice.  It deliberately has no runtime
 dependency on the production Shenlun repository or on mutable question-bank
 files.
 
+It also owns the internal Xingce Core-320 v3 practice package. The package is
+generated deterministically from four module adapters, pinned by
+`practice_v3/manifest.json`, and exposes 80 versioned questions for each of
+verbal, judgment, quantitative, and data analysis. The repository stores the
+generators, schema, checksum, and safe samples—not a bulk question dump.
+`scripts/materialize_practice_bank.py` can create a reviewable export outside
+the repository and refuses in-repository output paths.
+
 The 42 independently addressable fixtures (14 paths x `success`, `ambiguous`,
 and `offline`) are not a benchmark of real candidates. They are small contract
 tests proving that every representative module can emit the same learning-loop
@@ -31,8 +39,8 @@ are constrained scenario overlays resolved by `load_fixture_document`; this
 keeps content single-sourced while every scenario has a unique fixture ID,
 response, execution policy, and replay semantics.
 
-Run the contract suite from this directory:
+Run the domain contract suite from the repository root:
 
 ```bash
-python -m unittest discover -s tests -v
+PYTHONPATH="$PWD:$PWD/domains" python3 -m unittest discover -s domains/tests -v
 ```

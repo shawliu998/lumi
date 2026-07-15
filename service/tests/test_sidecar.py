@@ -60,17 +60,226 @@ class SidecarTests(unittest.TestCase):
         _, capabilities, _ = self.request("GET", "/v1/capabilities")
         self.assertEqual(capabilities["scenario_count"], 42)
         _, scenarios, _ = self.request("GET", "/v1/scenarios")
+        self.assertEqual(scenarios["policy"], "safe-practice-catalog-v1")
         self.assertEqual(scenarios["count"], 42)
+        self.assertTrue(all(item["prompt"] for item in scenarios["items"]))
+        self.assertTrue(all("title" in item and "skills" in item for item in scenarios["items"]))
         serialized = json.dumps(scenarios, ensure_ascii=False).lower()
         self.assertNotIn("/users/", serialized)
         self.assertNotIn("shenlun-agent-platform", serialized)
         self.assertNotIn("xingcetiku", serialized)
+        self.assertNotIn("correct_option", serialized)
+        self.assertNotIn("scenario_response", serialized)
+        self.assertNotIn("passing_response", serialized)
 
     def test_scenario_filters_cover_domain_and_mode(self) -> None:
         _, xingce, _ = self.request("GET", "/v1/scenarios?domain=xingce")
         _, offline, _ = self.request("GET", "/v1/scenarios?mode=offline")
         self.assertEqual(xingce["count"], 15)
         self.assertEqual(offline["count"], 14)
+
+    def test_lesson_catalog_and_detail_are_safe_auditable_contracts(self) -> None:
+        status, catalog, _ = self.request("GET", "/v1/lessons")
+        self.assertEqual(status, 200)
+        self.assertEqual(catalog["schema_version"], "hermes.lesson-catalog.v1")
+        self.assertEqual(catalog["policy"], "auditable-lesson-catalog-v1")
+        self.assertGreaterEqual(catalog["count"], 1)
+        self.assertEqual(catalog["count"], len(catalog["items"]))
+        summary = catalog["items"][0]
+        self.assertGreaterEqual(summary["practice_count"], 2)
+        self.assertEqual(summary["links"]["self"], f"/v1/lessons/{summary['lesson_id']}")
+        self.assertNotIn("practice_items", summary)
+
+        _, capabilities, _ = self.request("GET", "/v1/capabilities")
+        self.assertEqual(capabilities["lesson_count"], catalog["count"])
+        self.assertIn("auditable-lesson-catalog-v1", capabilities["features"])
+        self.assertIn("lesson-practice-via-existing-runtime", capabilities["features"])
+        self.assertEqual(capabilities["endpoints"]["lessons"], "GET /v1/lessons")
+
+        status, detail, _ = self.request("GET", summary["links"]["self"])
+        self.assertEqual(status, 200)
+        self.assertEqual(detail["schema_version"], "hermes.lesson-detail.v1")
+        self.assertEqual(detail["policy"], "auditable-lesson-catalog-v1")
+        lesson = detail["lesson"]
+        self.assertEqual(lesson["lesson_id"], summary["lesson_id"])
+        self.assertTrue(lesson["method_card"]["definition"])
+        self.assertTrue(lesson["worked_example"]["steps"])
+        self.assertTrue(lesson["worked_example"]["hint_ladder"])
+        self.assertEqual(len(lesson["practice_items"]), summary["practice_count"])
+        self.assertTrue(all(item["prompt"] and item["options"] for item in lesson["practice_items"]))
+        self.assertFalse(lesson["completion_policy"]["lesson_reading_changes_mastery"])
+        self.assertEqual(
+            set(lesson["provenance"]),
+            {"source_title", "rights_status", "review_status"},
+        )
+
+        serialized = json.dumps(detail, ensure_ascii=False).lower()
+        for protected in (
+            '"answer"',
+            "correct_option",
+            "correct_response",
+            "pass_condition",
+            '"scoring"',
+            '"diagnosis"',
+            "scenario_response",
+            "source_page_range",
+            '"author"',
+        ):
+            self.assertNotIn(protected, serialized)
+        self.assertNotIn("/users/", serialized)
+        self.assertNotIn("shenlun-agent-platform", serialized)
+        self.assertNotIn("xingcetiku", serialized)
+
+        _, scenarios, _ = self.request("GET", "/v1/scenarios")
+        self.assertEqual(scenarios["count"], 42)
+        scenario_ids = {item["fixture_id"] for item in scenarios["items"]}
+        self.assertTrue(
+            all(item["fixture_id"] not in scenario_ids for item in lesson["practice_items"])
+        )
+
+    def test_lesson_routes_fail_closed_for_unknown_id_and_queries(self) -> None:
+        status, missing, _ = self.request("GET", "/v1/lessons/not-in-catalog")
+        self.assertEqual(status, 404)
+        self.assertEqual(missing["error"]["code"], "lesson_not_found")
+
+        for path in (
+            "/v1/lessons?domain=xingce",
+            "/v1/lessons/not-in-catalog?include=answers",
+        ):
+            status, payload, _ = self.request("GET", path)
+            self.assertEqual(status, 400)
+            self.assertEqual(payload["error"]["code"], "invalid_query")
+
+    def test_lesson_fixture_uses_existing_attempt_runtime_trace_and_kt(self) -> None:
+        _, catalog, _ = self.request("GET", "/v1/lessons")
+        _, detail, _ = self.request("GET", catalog["items"][0]["links"]["self"])
+        fixture_id = detail["lesson"]["practice_items"][0]["fixture_id"]
+        fixture = self.application.lesson_catalog.resolve_fixture(fixture_id)
+        correct = fixture["scoring"]["correct_option"]
+        wrong = next(option for option in fixture["task"]["options"] if option != correct)
+
+        status, initial, _ = self.request(
+            "POST",
+            "/v1/attempts",
+            {
+                "fixture_id": fixture_id,
+                "response": wrong,
+                "confidence": 0.6,
+                "response_time_seconds": 30,
+                "run_id": "http-lesson-practice",
+            },
+        )
+        self.assertEqual(status, 201)
+        self.assertEqual(initial["fixture_id"], fixture_id)
+        self.assertEqual(initial["state"], "awaiting_probe")
+
+        status, after_probe, _ = self.request(
+            "POST",
+            initial["links"]["respond"],
+            {
+                "phase": "probe",
+                "expected_version": initial["state_version"],
+                "expected_state": initial["state"],
+                "response": "增长量要与变化前的基期量比较。",
+                "confidence": 0.8,
+                "response_time_seconds": 22,
+            },
+        )
+        self.assertEqual(status, 200)
+        self.assertEqual(after_probe["state"], "awaiting_verification")
+
+        verify_correct = fixture["independent_verify"]["pass_condition"]["correct_option"]
+        status, completed, _ = self.request(
+            "POST",
+            after_probe["links"]["respond"],
+            {
+                "phase": "verification",
+                "expected_version": after_probe["state_version"],
+                "expected_state": after_probe["state"],
+                "response": verify_correct,
+                "confidence": 0.9,
+                "response_time_seconds": 18,
+            },
+        )
+        self.assertEqual(status, 200)
+        self.assertEqual(completed["state"], "completed")
+        self.assertTrue(completed["verification"]["effective"])
+        self.assertIsNotNone(completed["mastery_update"])
+        self.assertTrue(completed["trace_verified"])
+
+        status, trace, _ = self.request("GET", completed["links"]["trace"])
+        self.assertEqual(status, 200)
+        self.assertTrue(trace["trace_verified"])
+        trace_json = json.dumps(trace, ensure_ascii=False).lower()
+        self.assertIn(fixture_id, trace_json)
+        self.assertNotIn("correct_option", trace_json)
+        self.assertNotIn("pass_condition", trace_json)
+
+    def test_complete_lesson_fixture_set_yields_two_verified_transfers(self) -> None:
+        _, catalog, _ = self.request("GET", "/v1/lessons")
+        _, detail, _ = self.request("GET", catalog["items"][0]["links"]["self"])
+        practice_items = detail["lesson"]["practice_items"]
+        self.assertEqual(len(practice_items), 2)
+
+        for index, item in enumerate(practice_items, start=1):
+            fixture = self.application.lesson_catalog.resolve_fixture(item["fixture_id"])
+            _, initial, _ = self.request(
+                "POST",
+                "/v1/attempts",
+                {
+                    "fixture_id": item["fixture_id"],
+                    "response": fixture["scoring"]["correct_option"],
+                    "confidence": 0.9,
+                    "response_time_seconds": 20,
+                    "run_id": f"http-full-lesson-{index}",
+                },
+            )
+            _, after_probe, _ = self.request(
+                "POST",
+                initial["links"]["respond"],
+                {
+                    "phase": "probe",
+                    "expected_version": initial["state_version"],
+                    "expected_state": initial["state"],
+                    "response": "变化量应与变化前的基期量比较。",
+                    "confidence": 0.9,
+                    "response_time_seconds": 12,
+                },
+            )
+            _, completed, _ = self.request(
+                "POST",
+                after_probe["links"]["respond"],
+                {
+                    "phase": "verification",
+                    "expected_version": after_probe["state_version"],
+                    "expected_state": after_probe["state"],
+                    "response": fixture["independent_verify"]["pass_condition"]["correct_option"],
+                    "confidence": 0.9,
+                    "response_time_seconds": 15,
+                },
+            )
+            self.assertTrue(completed["verification"]["effective"])
+            self.assertTrue(completed["trace_verified"])
+
+        _, skills, _ = self.request("GET", "/v1/skills/report")
+        self.assertEqual(skills["skill_count"], 1)
+        self.assertEqual(skills["items"][0]["run_count"], 2)
+        self.assertEqual(skills["items"][0]["verified_transfers"], 2)
+
+    def test_attempt_fixture_resolution_keeps_representative_catalog_priority(self) -> None:
+        fixture_id = "xingce.data-analysis.growth-rate.synthetic-01"
+
+        class LessonCatalogTrap:
+            def resolve_fixture(self, unexpected_id: str) -> dict[str, Any]:
+                raise AssertionError(f"lesson fallback must not resolve {unexpected_id}")
+
+        lesson_catalog = self.application.lesson_catalog
+        self.application.lesson_catalog = LessonCatalogTrap()  # type: ignore[assignment]
+        try:
+            resolved = self.application._resolve_attempt_fixture(fixture_id)
+        finally:
+            self.application.lesson_catalog = lesson_catalog
+        self.assertEqual(resolved["fixture_id"], fixture_id)
 
     def test_http_run_trace_replay_and_skill_report(self) -> None:
         status, run, headers = self.request(
@@ -192,6 +401,8 @@ class SidecarTests(unittest.TestCase):
         self.assertEqual(after_probe["state"], "awaiting_verification")
         self.assertIsNotNone(after_probe["teaching"])
         self.assertEqual(after_probe["verification"]["status"], "awaiting_learner_response")
+        self.assertEqual(after_probe["verification"]["options"]["C"], "15%")
+        self.assertNotIn("correct_option", after_probe["verification"])
         self.assertIsNone(after_probe["mastery_update"])
         self.assertIsNone(after_probe["reflection"])
         _, still_empty_skills, _ = self.request("GET", "/v1/skills/report")

@@ -1,3 +1,16 @@
+import {
+  createSmartPracticeStartBody,
+  validateSmartPracticeCapabilities,
+} from "./practiceScopes";
+import {
+  isKnownPracticeScope,
+  normalizePracticeHistory,
+  normalizePracticeOverview,
+  normalizePracticeProfile,
+  normalizePracticeSessionReport,
+  normalizeWrongQuestionBook,
+} from "./practiceInsights";
+
 const DEFAULT_BASE_URL = "http://127.0.0.1:8765";
 const REQUEST_TIMEOUT_MS = 5000;
 
@@ -31,6 +44,19 @@ export async function fetchHealth() {
   return health;
 }
 
+export async function fetchCapabilities() {
+  const capabilities = await request("/v1/capabilities");
+  try {
+    validateSmartPracticeCapabilities(capabilities);
+  } catch {
+    throw new HermesApiError("本机服务不支持当前 Core-320 题库。", {
+      kind: "contract",
+      code: "invalid_core320_capabilities",
+    });
+  }
+  return capabilities;
+}
+
 export async function fetchSkillReport() {
   const report = await request("/v1/skills/report");
   if (report?.policy !== "trace-summary-v1" || !Array.isArray(report?.items)) {
@@ -40,6 +66,271 @@ export async function fetchSkillReport() {
     });
   }
   return report;
+}
+
+function normalizeReadModel(payload, normalizer, message, code) {
+  try {
+    return normalizer(payload);
+  } catch {
+    throw new HermesApiError(message, { kind: "contract", code });
+  }
+}
+
+export async function fetchPracticeOverview() {
+  const payload = await request("/v1/practice/overview");
+  return normalizeReadModel(
+    payload,
+    normalizePracticeOverview,
+    "本机学习概览格式与客户端不兼容。",
+    "invalid_practice_overview_contract",
+  );
+}
+
+export async function fetchPracticeProfile() {
+  const payload = await request("/v1/practice/profile");
+  return normalizeReadModel(
+    payload,
+    normalizePracticeProfile,
+    "本机学习档案格式与客户端不兼容。",
+    "invalid_practice_profile_contract",
+  );
+}
+
+export async function fetchWrongQuestionBook({
+  limit = 30,
+  offset = 0,
+  state = "needs_review",
+  moduleId = "",
+} = {}) {
+  if (
+    !Number.isInteger(limit)
+    || limit < 1
+    || limit > 100
+    || !Number.isInteger(offset)
+    || offset < 0
+    || !["needs_review", "resolved", "all"].includes(state)
+  ) {
+    throw new HermesApiError("错题本筛选条件无效。", {
+      kind: "client",
+      code: "invalid_wrong_question_query",
+    });
+  }
+  const query = new URLSearchParams({
+    limit: String(limit),
+    offset: String(offset),
+    state,
+  });
+  if (moduleId) query.set("module_id", String(moduleId));
+  const payload = await request(`/v1/practice/wrong-questions?${query}`);
+  return normalizeReadModel(
+    payload,
+    normalizeWrongQuestionBook,
+    "本机错题本格式与客户端不兼容。",
+    "invalid_wrong_question_book_contract",
+  );
+}
+
+export async function fetchPracticeHistory({
+  limit = 30,
+  offset = 0,
+  scopeId = "",
+  status = "",
+} = {}) {
+  if (
+    !Number.isInteger(limit)
+    || limit < 1
+    || limit > 100
+    || !Number.isInteger(offset)
+    || offset < 0
+    || (scopeId && !isKnownPracticeScope(scopeId))
+    || (status && !["active", "completed", "ended_early"].includes(status))
+  ) {
+    throw new HermesApiError("练习历史筛选条件无效。", {
+      kind: "client",
+      code: "invalid_practice_history_query",
+    });
+  }
+  const query = new URLSearchParams({ limit: String(limit), offset: String(offset) });
+  if (scopeId) query.set("scope_id", scopeId);
+  if (status) query.set("status", status);
+  const payload = await request(`/v1/practice/history?${query}`);
+  return normalizeReadModel(
+    payload,
+    normalizePracticeHistory,
+    "本机练习历史格式与客户端不兼容。",
+    "invalid_practice_history_contract",
+  );
+}
+
+export async function fetchPracticeSessionReport(sessionId) {
+  assertPracticeSessionId(sessionId);
+  const payload = await request(`/v1/practice-sessions/${encodeURIComponent(sessionId)}/report`);
+  return normalizeReadModel(
+    payload,
+    normalizePracticeSessionReport,
+    "本组练习报告格式与客户端不兼容。",
+    "invalid_practice_session_report_contract",
+  );
+}
+
+export async function fetchPracticeCatalog() {
+  const catalog = await request("/v1/scenarios?domain=xingce&mode=success");
+  if (
+    catalog?.policy !== "safe-practice-catalog-v1"
+    || !Array.isArray(catalog?.items)
+    || catalog.items.some((item) => !item?.fixture_id || !item?.prompt || !item?.domain)
+  ) {
+    throw new HermesApiError("练习题目录格式与客户端不兼容。", {
+      kind: "contract",
+      code: "invalid_practice_catalog_contract",
+    });
+  }
+  return catalog;
+}
+
+export async function fetchLessonCatalog() {
+  const catalog = await request("/v1/lessons");
+  if (
+    catalog?.schema_version !== "hermes.lesson-catalog.v1"
+    || catalog?.policy !== "auditable-lesson-catalog-v1"
+    || !Array.isArray(catalog?.items)
+    || catalog.items.some((item) => (
+      !item?.lesson_id
+      || !item?.title
+      || !Number.isFinite(item?.estimated_minutes)
+      || !Number.isInteger(item?.practice_count)
+      || !item?.links?.self
+    ))
+  ) {
+    throw new HermesApiError("教程目录格式与客户端不兼容。", {
+      kind: "contract",
+      code: "invalid_lesson_catalog_contract",
+    });
+  }
+  return catalog;
+}
+
+export async function fetchLesson(lessonId) {
+  if (!lessonId || !/^[A-Za-z0-9._:-]+$/.test(String(lessonId))) {
+    throw new HermesApiError("教程标识无效。", {
+      kind: "client",
+      code: "invalid_lesson_id",
+    });
+  }
+  const detail = await request(`/v1/lessons/${encodeURIComponent(lessonId)}`);
+  const lesson = detail?.lesson;
+  if (
+    detail?.schema_version !== "hermes.lesson-detail.v1"
+    || detail?.policy !== "auditable-lesson-catalog-v1"
+    || lesson?.lesson_id !== lessonId
+    || !lesson?.method_card
+    || !lesson?.worked_example
+    || !Array.isArray(lesson?.practice_items)
+    || !lesson?.completion_policy
+  ) {
+    throw new HermesApiError("教程内容格式与客户端不兼容。", {
+      kind: "contract",
+      code: "invalid_lesson_detail_contract",
+    });
+  }
+  return lesson;
+}
+
+function assertPracticeSessionId(sessionId) {
+  if (!sessionId || !/^[A-Za-z0-9._:-]+$/.test(String(sessionId))) {
+    throw new HermesApiError("练习会话标识无效。", {
+      kind: "client",
+      code: "invalid_practice_session_id",
+    });
+  }
+}
+
+function validateSmartPracticePayload(payload, { requireContinuable = false } = {}) {
+  const hasQuestion = Boolean(
+    payload?.question?.question_id && payload?.question?.question_version_id,
+  );
+  const hasPendingProbe = Boolean(
+    payload?.pending_probe?.hypothesis_id
+    && payload.pending_probe.prompt
+    && payload.pending_probe.options
+    && (Array.isArray(payload.pending_probe.options)
+      ? payload.pending_probe.options.length > 0
+      : Object.keys(payload.pending_probe.options).length > 0),
+  );
+  if (
+    payload?.schema_version !== "lumi.practice-session.v2"
+    || !payload?.session?.session_id
+    || payload.session.target_count !== 8
+    || !Number.isInteger(payload.session.answered_count)
+    || (requireContinuable && !hasQuestion && !hasPendingProbe)
+  ) {
+    throw new HermesApiError("本机服务返回了不兼容的 8 题练习状态。", {
+      kind: "contract",
+      code: "invalid_smart_practice_contract",
+    });
+  }
+  return payload;
+}
+
+export async function startSmartPracticeSession({ scopeId } = {}) {
+  const payload = await request("/v1/practice-sessions", {
+    method: "POST",
+    body: createSmartPracticeStartBody(scopeId),
+  });
+  return validateSmartPracticePayload(payload, { requireContinuable: true });
+}
+
+export async function submitSmartPracticeAnswer({
+  sessionId,
+  questionId,
+  questionVersionId,
+  answer,
+  responseTimeSeconds,
+} = {}) {
+  assertPracticeSessionId(sessionId);
+  if (!questionId || !questionVersionId || !String(answer || "").trim()) {
+    throw new HermesApiError("请选择答案后再提交。", {
+      kind: "client",
+      code: "invalid_smart_practice_answer",
+    });
+  }
+  const payload = await request(`/v1/practice-sessions/${encodeURIComponent(sessionId)}/answers`, {
+    method: "POST",
+    body: {
+      question_id: String(questionId),
+      question_version_id: String(questionVersionId),
+      answer: String(answer).trim(),
+      response_time_seconds: Math.max(0, Math.min(Number(responseTimeSeconds) || 0, 7200)),
+    },
+  });
+  return validateSmartPracticePayload(payload);
+}
+
+export async function submitSmartPracticeProbe({ sessionId, hypothesisId, answer } = {}) {
+  assertPracticeSessionId(sessionId);
+  if (!hypothesisId || !String(answer || "").trim()) {
+    throw new HermesApiError("探查结果不完整。", {
+      kind: "client",
+      code: "invalid_smart_practice_probe",
+    });
+  }
+  const payload = await request(`/v1/practice-sessions/${encodeURIComponent(sessionId)}/probes`, {
+    method: "POST",
+    body: {
+      hypothesis_id: String(hypothesisId),
+      answer: String(answer).trim(),
+    },
+  });
+  return validateSmartPracticePayload(payload);
+}
+
+export async function endSmartPracticeSession({ sessionId, reason } = {}) {
+  assertPracticeSessionId(sessionId);
+  const payload = await request(`/v1/practice-sessions/${encodeURIComponent(sessionId)}/end`, {
+    method: "POST",
+    body: reason ? { reason: String(reason).slice(0, 120) } : {},
+  });
+  return validateSmartPracticePayload(payload);
 }
 
 export async function submitAttempt({ fixtureId, response, confidence, responseTimeSeconds, runId } = {}) {

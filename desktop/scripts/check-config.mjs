@@ -9,14 +9,20 @@ const cargoPath = resolve(desktopRoot, "src-tauri/Cargo.toml");
 const runtimePath = resolve(desktopRoot, "src-tauri/src/main.rs");
 const bootstrapPath = resolve(desktopRoot, "sidecars/hermes_sidecar_bootstrap.py");
 const launcherPath = resolve(desktopRoot, "sidecars/hermes_sidecar_launcher.c");
+const buildSidecarPath = resolve(desktopRoot, "scripts/build-sidecar.sh");
+const core320ManifestPath = resolve(desktopRoot, "../domains/practice_v3/manifest.json");
+const core320SchemaPath = resolve(desktopRoot, "../domains/practice_v3/practice-bank-manifest.schema.json");
+const core320SamplesPath = resolve(desktopRoot, "../domains/practice_v3/samples.safe.json");
 
 const config = JSON.parse(await readFile(configPath, "utf8"));
 const capability = JSON.parse(await readFile(capabilityPath, "utf8"));
-const [cargo, runtime, bootstrap, launcher] = await Promise.all([
+const [cargo, runtime, bootstrap, launcher, buildSidecar, core320Manifest] = await Promise.all([
   readFile(cargoPath, "utf8"),
   readFile(runtimePath, "utf8"),
   readFile(bootstrapPath, "utf8"),
-  readFile(launcherPath, "utf8")
+  readFile(launcherPath, "utf8"),
+  readFile(buildSidecarPath, "utf8"),
+  readFile(core320ManifestPath, "utf8").then(JSON.parse)
 ]);
 
 const expectations = [
@@ -41,6 +47,19 @@ const expectations = [
   [runtime.includes("impl Drop for RunningSidecar"), "runtime must retain an RAII sidecar cleanup guard"],
   [runtime.includes("terminate_and_wait"), "runtime must reap the sidecar after termination"],
   [bootstrap.includes("_parent_death_watchdog"), "sidecar bootstrap must stop when its parent disappears"],
+  [bootstrap.includes("catalog.LESSON_ROOT"), "frozen sidecar must resolve the packaged lesson data root"],
+  [bootstrap.includes("practice_v2.DEFAULT_PRACTICE_ROOT"), "frozen sidecar must resolve the packaged practice-v2 data root"],
+  [bootstrap.includes("practice_bank_v3.DEFAULT_PRACTICE_BANK_ROOT"), "frozen sidecar must resolve the packaged core-320 manifest root"],
+  [buildSidecar.includes("--collect-submodules hermes_practice"), "sidecar build must explicitly collect the deterministic practice engine"],
+  [buildSidecar.includes("--gate core320_bank --no-write"), "sidecar build must fail closed on the Core-320 source/materialization gate before packaging"],
+  [buildSidecar.includes("domains/lessons:domains/lessons"), "sidecar build must retain the manifest-backed lesson JSON tree"],
+  [buildSidecar.includes("domains/practice_v2:domains/practice_v2"), "sidecar build must package the versioned practice-v2 JSON tree"],
+  [buildSidecar.includes("domains/practice_v3:domains/practice_v3"), "sidecar build must package the core-320 version manifest"],
+  [core320Manifest.bank_id === "lumi.xingce.core-320.practice-v3", "Core-320 manifest must pin the expected bank"],
+  [core320Manifest.expected_question_count === 320, "Core-320 manifest must pin exactly 320 questions"],
+  [Object.keys(core320Manifest.expected_module_counts ?? {}).length === 4, "Core-320 manifest must pin four module counts"],
+  [Object.values(core320Manifest.expected_module_counts ?? {}).every((count) => count === 80), "each Core-320 module must pin 80 questions"],
+  [/^[0-9a-f]{64}$/.test(core320Manifest.generated_sha256 ?? ""), "Core-320 manifest must pin a SHA-256 digest"],
   [launcher.includes("execv(executable, argv)"), "native launcher must exec the tracked sidecar runtime"],
   [JSON.stringify(capability.permissions) === JSON.stringify(["core:default"]), "frontend capability must remain core-only"]
 ];
@@ -52,4 +71,9 @@ for (const [valid, message] of expectations) {
 await access(distPath);
 await access(bootstrapPath);
 await access(launcherPath);
-console.log("Lumi desktop configuration, packaged-sidecar plan, and client/dist entrypoint are present.");
+await access(core320SchemaPath);
+await access(core320SamplesPath);
+console.log(
+  `Lumi desktop configuration, Core-320 ${core320Manifest.generated_sha256}, packaged-sidecar plan, ` +
+    "and client/dist entrypoint are present."
+);

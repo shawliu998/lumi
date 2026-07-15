@@ -1,0 +1,14 @@
+{
+  "schema_version": "hermes.practice-manifest.v2",
+  "package_id": "lumi.practice-v2.catalog",
+  "version": "1.0.0",
+  "created_at": "2026-07-14",
+  "packages": [
+    {
+      "package_id": "lumi.xingce.growth-rate.practice-v2",
+      "version": "1.0.0",
+      "path": "growth_rate.practice.v2.json",
+      "sha256": "377a762ab7990dc1e88beee78ff1a85e29f9835ade8090129618a223e9cfce8c"
+    }
+  ]
+}

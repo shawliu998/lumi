@@ -1,0 +1,364 @@
+{
+  "schema_version": "hermes.lesson.v1",
+  "lesson_id": "xingce.data-analysis.growth-rate.lesson-01",
+  "version": "1.0.0",
+  "domain": "xingce",
+  "path": "data_analysis",
+  "module": "资料分析/增长率",
+  "title": "增长率：先找比较起点",
+  "estimated_minutes": 8,
+  "skill_ids": [
+    "xingce.data.growth.compute-rate"
+  ],
+  "method_card": {
+    "definition": "增长率表示同一指标从基期到现期的相对变化程度；结果为负时表示下降。",
+    "formula": "增长率 = (现期量 - 基期量) / 基期量 × 100%",
+    "applicability": [
+      "题目给出同一指标在两个可比时点的数值",
+      "两个数值的统计口径与单位一致"
+    ],
+    "common_mistake": {
+      "label": "把现期量放在分母",
+      "explanation": "增长率要回答变化相对于起点有多大，因此分母应是变化发生前的基期量。"
+    }
+  },
+  "worked_example": {
+    "example_id": "growth-rate-worked-original-01",
+    "prompt": "某社区科普馆周末接待人数由210人增至252人，增长率是多少？",
+    "steps": [
+      {
+        "step_id": "label-periods",
+        "instruction": "标记两个时点",
+        "content": "基期量是210，现期量是252。"
+      },
+      {
+        "step_id": "compute-change",
+        "instruction": "先求变化量",
+        "content": "变化量为252 - 210 = 42。"
+      },
+      {
+        "step_id": "compare-with-base",
+        "instruction": "用变化量比较起点",
+        "content": "42 / 210 = 0.20。"
+      },
+      {
+        "step_id": "interpret",
+        "instruction": "化成百分数并解释",
+        "content": "增长率为20%，表示新增人数相当于基期人数的20%。"
+      }
+    ],
+    "hint_ladder": [
+      {
+        "level": 1,
+        "label": "找起点",
+        "prompt": "先不计算：210与252中，哪一个是变化发生前的量？",
+        "reveal_rank": 1
+      },
+      {
+        "level": 2,
+        "label": "求变化",
+        "prompt": "先用现期量减去基期量，再想这个差应与哪个时点比较。",
+        "reveal_rank": 2
+      },
+      {
+        "level": 3,
+        "label": "给公式框架",
+        "prompt": "把变化量放在分子、基期量放在分母：请代入(252 - 210) / 210。",
+        "reveal_rank": 3
+      }
+    ],
+    "answer": "20%"
+  },
+  "practice_fixtures": [
+    {
+      "schema_version": "hermes.domain-fixture.v1",
+      "fixture_id": "xingce.data-analysis.growth-rate.lesson-practice-01",
+      "domain": "xingce",
+      "path": "data_analysis",
+      "mode": "success",
+      "module": "资料分析/增长率",
+      "scenario_response": "B",
+      "execution": {
+        "connectivity": "local",
+        "cloud_calls_expected": 0,
+        "fallback": "not_needed",
+        "scorer": "deterministic_local"
+      },
+      "expected_semantics": {
+        "score": "pass",
+        "cause_status": "unconfirmed_hypothesis"
+      },
+      "task": {
+        "prompt": "某市图书馆数字阅读活动参与人次由320增至368，同比增长率是多少？",
+        "response_mode": "single_choice",
+        "options": {
+          "A": "约13%",
+          "B": "15%",
+          "C": "48%",
+          "D": "115%"
+        }
+      },
+      "skills": [
+        {
+          "skill_id": "xingce.data.growth.compute-rate",
+          "weight": 1.0
+        }
+      ],
+      "scoring": {
+        "adapter": "xingce_mcq_v1",
+        "max_score": 1,
+        "pass_score": 1,
+        "correct_option": "B",
+        "distractor_evidence": {
+          "A": "used_current_as_denominator",
+          "C": "used_increment_as_percentage",
+          "D": "reported_ratio_not_growth"
+        }
+      },
+      "diagnosis": {
+        "semantics": "ranked_unconfirmed_hypotheses",
+        "evidence_catalog": [
+          {
+            "evidence_id": "answer_incorrect",
+            "description": "作答选项与确定性答案不同"
+          },
+          {
+            "evidence_id": "used_current_as_denominator",
+            "description": "所选数值与48除以368相符"
+          },
+          {
+            "evidence_id": "used_increment_as_percentage",
+            "description": "所选数值直接使用变化量48"
+          },
+          {
+            "evidence_id": "reported_ratio_not_growth",
+            "description": "所选数值与368除以320相符"
+          }
+        ],
+        "candidate_causes": [
+          {
+            "cause_id": "denominator-current-base-confusion",
+            "label": "可能混淆了增长率的比较起点",
+            "synthetic_prior": 0.4,
+            "evidence_refs": [
+              "answer_incorrect",
+              "used_current_as_denominator"
+            ],
+            "is_ground_truth": false
+          },
+          {
+            "cause_id": "increment-rate-confusion",
+            "label": "可能把变化量直接当成百分比",
+            "synthetic_prior": 0.25,
+            "evidence_refs": [
+              "answer_incorrect",
+              "used_increment_as_percentage"
+            ],
+            "is_ground_truth": false
+          },
+          {
+            "cause_id": "ratio-growth-confusion",
+            "label": "可能把现期与基期的比值当成增长率",
+            "synthetic_prior": 0.35,
+            "evidence_refs": [
+              "answer_incorrect",
+              "reported_ratio_not_growth"
+            ],
+            "is_ground_truth": false
+          }
+        ]
+      },
+      "probe": {
+        "prompt": "某志愿项目服务人次从400变为460，请只写增长率算式，并说明分母代表什么，不计算。",
+        "targets": [
+          "denominator-current-base-confusion",
+          "ratio-growth-confusion"
+        ]
+      },
+      "teach": {
+        "prompt": "增长率比较的是“变化量占起点的多少”。先认出变化前的基期量，再用（现期量－基期量）÷基期量；不要把现期量放在分母。",
+        "strategy": "least-help-first"
+      },
+      "independent_verify": {
+        "prompt": "某园区共享单车日均订单由2400单增至2640单，增长率是多少？",
+        "response_mode": "single_choice",
+        "pass_condition": {
+          "correct_option": "B",
+          "options": {
+            "A": "约9.1%",
+            "B": "10%",
+            "C": "240%",
+            "D": "110%"
+          }
+        }
+      },
+      "samples": {
+        "passing_response": "B",
+        "failing_response": "A"
+      },
+      "provenance": {
+        "content_origin": "synthetic_original",
+        "authoring_note": "数值、情境、选项与解析路径均为Lumi内部原创合成",
+        "prior_source": "synthetic_engineering_prior_v1",
+        "source_use": "concept_structure_only",
+        "source_text_included": false
+      }
+    },
+    {
+      "schema_version": "hermes.domain-fixture.v1",
+      "fixture_id": "xingce.data-analysis.growth-rate.lesson-practice-02",
+      "domain": "xingce",
+      "path": "data_analysis",
+      "mode": "success",
+      "module": "资料分析/增长率",
+      "scenario_response": "A",
+      "execution": {
+        "connectivity": "local",
+        "cloud_calls_expected": 0,
+        "fallback": "not_needed",
+        "scorer": "deterministic_local"
+      },
+      "expected_semantics": {
+        "score": "pass",
+        "cause_status": "unconfirmed_hypothesis"
+      },
+      "task": {
+        "prompt": "某展馆月均纸质宣传品用量由750份降至690份，该指标的增长率是多少？",
+        "response_mode": "single_choice",
+        "options": {
+          "A": "-8%",
+          "B": "8%",
+          "C": "约-8.7%",
+          "D": "92%"
+        }
+      },
+      "skills": [
+        {
+          "skill_id": "xingce.data.growth.compute-rate",
+          "weight": 1.0
+        }
+      ],
+      "scoring": {
+        "adapter": "xingce_mcq_v1",
+        "max_score": 1,
+        "pass_score": 1,
+        "correct_option": "A",
+        "distractor_evidence": {
+          "B": "dropped_negative_sign",
+          "C": "used_current_as_denominator",
+          "D": "reported_ratio_not_growth"
+        }
+      },
+      "diagnosis": {
+        "semantics": "ranked_unconfirmed_hypotheses",
+        "evidence_catalog": [
+          {
+            "evidence_id": "answer_incorrect",
+            "description": "作答选项与确定性答案不同"
+          },
+          {
+            "evidence_id": "dropped_negative_sign",
+            "description": "所选数值忽略了下降方向"
+          },
+          {
+            "evidence_id": "used_current_as_denominator",
+            "description": "所选数值与负60除以690相符"
+          },
+          {
+            "evidence_id": "reported_ratio_not_growth",
+            "description": "所选数值与690除以750相符"
+          }
+        ],
+        "candidate_causes": [
+          {
+            "cause_id": "sign-direction-confusion",
+            "label": "可能未把下降编码为负变化",
+            "synthetic_prior": 0.35,
+            "evidence_refs": [
+              "answer_incorrect",
+              "dropped_negative_sign"
+            ],
+            "is_ground_truth": false
+          },
+          {
+            "cause_id": "denominator-current-base-confusion",
+            "label": "可能混淆了增长率的比较起点",
+            "synthetic_prior": 0.4,
+            "evidence_refs": [
+              "answer_incorrect",
+              "used_current_as_denominator"
+            ],
+            "is_ground_truth": false
+          },
+          {
+            "cause_id": "ratio-growth-confusion",
+            "label": "可能把现期与基期的比值当成增长率",
+            "synthetic_prior": 0.25,
+            "evidence_refs": [
+              "answer_incorrect",
+              "reported_ratio_not_growth"
+            ],
+            "is_ground_truth": false
+          }
+        ]
+      },
+      "probe": {
+        "prompt": "某指标从500降到450，请只判断变化量的正负，并写出增长率的分母。",
+        "targets": [
+          "sign-direction-confusion",
+          "denominator-current-base-confusion"
+        ]
+      },
+      "teach": {
+        "prompt": "下降时，现期量－基期量为负，因此增长率也应为负。先保留变化量的正负号，再除以变化前的基期量。",
+        "strategy": "least-help-first"
+      },
+      "independent_verify": {
+        "prompt": "某公共空间每周开放时长由450小时增至522小时，增长率是多少？",
+        "response_mode": "single_choice",
+        "pass_condition": {
+          "correct_option": "B",
+          "options": {
+            "A": "约13.8%",
+            "B": "16%",
+            "C": "72%",
+            "D": "116%"
+          }
+        }
+      },
+      "samples": {
+        "passing_response": "A",
+        "failing_response": "C"
+      },
+      "provenance": {
+        "content_origin": "synthetic_original",
+        "authoring_note": "数值、情境、选项与解析路径均为Lumi内部原创合成",
+        "prior_source": "synthetic_engineering_prior_v1",
+        "source_use": "concept_structure_only",
+        "source_text_included": false
+      }
+    }
+  ],
+  "completion_policy": {
+    "minimum_questions": 4,
+    "consecutive_verified_transfers": 2,
+    "lesson_reading_changes_mastery": false,
+    "hinted_evidence_discount": 0.5
+  },
+  "provenance": {
+    "content_origin": "synthetic_original",
+    "source_title": "三色笔记-行测理.pdf",
+    "source_page_range": {
+      "pdf_start": 3,
+      "pdf_end": 10,
+      "printed_start": 1,
+      "printed_end": 8
+    },
+    "source_use": "concept_structure_only",
+    "rights_status": "internal_review_required",
+    "source_text_included": false,
+    "author": "Lumi internal curriculum team",
+    "authored_at": "2026-07-14",
+    "review_status": "internal_review_required"
+  }
+}

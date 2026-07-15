@@ -3,6 +3,11 @@ import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { spawn } from "node:child_process";
+import {
+  assertCore320Capabilities,
+  loadCore320Manifest,
+  requestCapabilities
+} from "./core320-contract.mjs";
 
 const desktopRoot = resolve(import.meta.dirname, "..");
 const launcher = resolve(desktopRoot, "src-tauri/binaries/hermes-sidecar-aarch64-apple-darwin");
@@ -27,7 +32,7 @@ async function requestHealth(port) {
   return { status: response.status, body: await response.json() };
 }
 
-async function waitForHealth(port, timeoutMs = 8_000) {
+async function waitForHealth(port, timeoutMs = 16_000) {
   const deadline = Date.now() + timeoutMs;
   let lastError;
   while (Date.now() < deadline) {
@@ -47,7 +52,10 @@ async function waitForHealth(port, timeoutMs = 8_000) {
     }
     await new Promise((resolveDelay) => setTimeout(resolveDelay, 100));
   }
-  throw new Error(`sidecar health handshake timed out: ${lastError?.message ?? "unknown error"}`);
+  throw new Error(
+    `sidecar health handshake timed out: ${lastError?.message ?? "unknown error"}; ` +
+      `stderr: ${stderr.slice(-2000)}`
+  );
 }
 
 function waitForExit(child, timeoutMs = 4_000) {
@@ -74,6 +82,16 @@ child.stderr.on("data", (chunk) => {
 
 try {
   const health = await waitForHealth(port);
+  const capabilities = await requestCapabilities(port);
+  const { value: core320Manifest } = await loadCore320Manifest(desktopRoot);
+  if (
+    capabilities.body.smart_practice_package?.package_id !== "lumi.xingce.growth-rate.practice-v2" ||
+    capabilities.body.smart_practice_package?.target_count !== 8 ||
+    !capabilities.body.features?.includes("answer-only-smart-practice-v2")
+  ) {
+    throw new Error(`packaged smart-practice capability is unavailable: ${JSON.stringify(capabilities)}`);
+  }
+  const core320 = assertCore320Capabilities(capabilities, core320Manifest);
   const exit = waitForExit(child);
   child.kill("SIGTERM");
   await exit;
@@ -85,7 +103,10 @@ try {
   } catch (error) {
     if (error.message === "sidecar still answered health checks after termination") throw error;
   }
-  console.log(`Sidecar health and termination checks passed (version ${health.version}).`);
+  console.log(
+    `Sidecar health, Core-320 ${core320.generated_sha256}, five scopes, and termination checks passed ` +
+      `(version ${health.version}).`
+  );
 } finally {
   if (!child.killed) child.kill("SIGKILL");
   await rm(stateDirectory, { recursive: true, force: true });

@@ -1,0 +1,14 @@
+{
+  "schema_version": "hermes.lesson-package.v1",
+  "package_id": "lumi.internal-lessons",
+  "version": "0.1.0",
+  "created_at": "2026-07-14",
+  "lessons": [
+    {
+      "lesson_id": "xingce.data-analysis.growth-rate.lesson-01",
+      "version": "1.0.0",
+      "path": "xingce_growth_rate.lesson.v1.json",
+      "sha256": "106bb64c902bfc74de67698b28a278bf6f68f433965beb8b5536b304043c17c5"
+    }
+  ]
+}

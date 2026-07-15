@@ -9,12 +9,14 @@ PASS. It never writes outside evals/reports.
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 import hashlib
 import json
 import math
 import os
 import re
 import select
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -36,6 +38,24 @@ FORBIDDEN_REPO = Path(
     os.environ.get("LUMI_SHENLUN_REPO", Path.home() / "Desktop" / "shenlun-agent-platform")
 )
 STATUSES = {"pass", "fail", "pending"}
+
+
+def sanitize_public_report_paths(value: Any) -> Any:
+    """Remove machine-specific paths before evidence is written to Git."""
+
+    if isinstance(value, dict):
+        return {key: sanitize_public_report_paths(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [sanitize_public_report_paths(item) for item in value]
+    if not isinstance(value, str):
+        return value
+    sanitized = value.replace(str(REPO_ROOT), ".")
+    sanitized = sanitized.replace(str(FORBIDDEN_REPO), "$LUMI_SHENLUN_REPO")
+    return re.sub(
+        r"evals/reports/runtime-probe-[^/\s\"]+/trace\.sqlite3",
+        "evals/reports/runtime-probe-<temporary>/trace.sqlite3",
+        sanitized,
+    )
 
 
 def utc_now() -> str:
@@ -367,10 +387,657 @@ def gate_engine_tests(ctx: Context) -> GateResult:
     return GateResult("engine_tests", "pass", "deterministic engine tests passed", evidence)
 
 
+def _file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def gate_core320_bank(ctx: Context) -> GateResult:
+    """Validate the pinned generated bank and its outside-Git export boundary."""
+
+    domains = REPO_ROOT / "domains"
+    manifest_path = domains / "practice_v3" / "manifest.json"
+    schema_path = domains / "practice_v3" / "practice-bank-manifest.schema.json"
+    materializer_path = REPO_ROOT / "scripts" / "materialize_practice_bank.py"
+    missing = [
+        str(path.relative_to(REPO_ROOT))
+        for path in (manifest_path, schema_path, materializer_path)
+        if not path.is_file()
+    ]
+    if missing:
+        return GateResult(
+            "core320_bank",
+            "pending",
+            "Core-320 manifest, schema, or materializer is absent",
+            [{"missing": missing}],
+        )
+
+    evidence: list[dict[str, Any]] = []
+    errors: list[str] = []
+    try:
+        manifest = load_json(manifest_path)
+        schema = load_json(schema_path)
+        errors.extend(f"manifest: {item}" for item in validate_json(manifest, schema))
+        domain_dir = str(domains)
+        if domain_dir not in sys.path:
+            sys.path.insert(0, domain_dir)
+        from hermes_domains.practice_bank_v3 import load_practice_bank, load_scope_catalog
+        from hermes_domains.practice_v3_common import MIXED_SCOPE_ID, MODULE_SCOPES
+
+        bank = load_practice_bank()
+        scopes = load_scope_catalog()
+        question_ids = [item["question_id"] for item in bank["questions"]]
+        module_counts = Counter(item["module_id"] for item in bank["questions"])
+        expected_modules = Counter(manifest["expected_module_counts"])
+        expected_scope_counts = {**manifest["expected_module_counts"], MIXED_SCOPE_ID: 320}
+        actual_scope_counts = {item["scope_id"]: item["question_count"] for item in scopes}
+        invariants = {
+            "bank_id_matches_manifest": bank.get("bank_id") == manifest.get("bank_id"),
+            "bank_version_matches_manifest": bank.get("version") == manifest.get("version"),
+            "generator_version_matches_manifest": bank.get("generator_version") == manifest.get("generator_version"),
+            "digest_matches_manifest": bank.get("generated_sha256") == manifest.get("generated_sha256"),
+            "question_count_is_320": len(bank.get("questions", [])) == manifest.get("expected_question_count") == 320,
+            "question_ids_are_unique": len(question_ids) == len(set(question_ids)) == 320,
+            "module_counts_are_80_each": module_counts == expected_modules,
+            "scope_catalog_is_exact": actual_scope_counts == expected_scope_counts,
+            "module_scope_constants_are_exact": set(MODULE_SCOPES.values()) == set(manifest["expected_module_counts"]),
+        }
+        errors.extend(name for name, valid in invariants.items() if not valid)
+        evidence.append(
+            {
+                "manifest": str(manifest_path.relative_to(REPO_ROOT)),
+                "manifest_sha256": _file_sha256(manifest_path),
+                "bank_id": bank.get("bank_id"),
+                "version": bank.get("version"),
+                "generator_version": bank.get("generator_version"),
+                "generated_sha256": bank.get("generated_sha256"),
+                "question_count": len(bank.get("questions", [])),
+                "module_counts": dict(sorted(module_counts.items())),
+                "scope_counts": dict(sorted(actual_scope_counts.items())),
+                "invariants": invariants,
+            }
+        )
+
+        with tempfile.TemporaryDirectory(prefix="lumi-core320-export-") as temporary:
+            materialize_command = [
+                sys.executable,
+                str(materializer_path),
+                "--output",
+                temporary,
+            ]
+            materialized = subprocess.run(
+                materialize_command,
+                cwd=REPO_ROOT,
+                capture_output=True,
+                text=True,
+                timeout=90,
+            )
+            materialize_evidence: dict[str, Any] = {
+                "command": materialize_command,
+                "exit_code": materialized.returncode,
+                "stderr": materialized.stderr[-2000:],
+            }
+            if materialized.returncode:
+                errors.append("outside-Git materialization failed")
+            else:
+                try:
+                    summary = json.loads(materialized.stdout)
+                    destination = Path(summary["output"]).resolve()
+                    if destination == REPO_ROOT or REPO_ROOT in destination.parents:
+                        errors.append("materializer wrote its bulk export inside the Git workspace")
+                    export_manifest = load_json(destination / "manifest.json")
+                    exported_ids: list[str] = []
+                    exported_scope_counts: dict[str, int] = {}
+                    file_hashes: dict[str, str] = {}
+                    for item in export_manifest.get("files", []):
+                        module_path = destination / item["path"]
+                        payload = load_json(module_path)
+                        scope_id = payload.get("scope_id")
+                        count = payload.get("question_count")
+                        exported_scope_counts[str(scope_id)] = int(count) if isinstance(count, int) else -1
+                        exported_ids.extend(question["question_id"] for question in payload.get("questions", []))
+                        file_hashes[item["path"]] = _file_sha256(module_path)
+                    export_invariants = {
+                        "identity_matches": export_manifest.get("bank_id") == bank.get("bank_id")
+                        and export_manifest.get("version") == bank.get("version"),
+                        "digest_matches": export_manifest.get("generated_sha256") == bank.get("generated_sha256"),
+                        "count_matches": export_manifest.get("question_count") == len(bank["questions"]) == 320,
+                        "four_files_of_80": exported_scope_counts == manifest["expected_module_counts"],
+                        "exported_ids_match_bank": Counter(exported_ids) == Counter(question_ids),
+                    }
+                    errors.extend(f"materialized_{name}" for name, valid in export_invariants.items() if not valid)
+                    materialize_evidence.update(
+                        {
+                            "output_is_outside_workspace": True,
+                            "manifest": {
+                                "bank_id": export_manifest.get("bank_id"),
+                                "version": export_manifest.get("version"),
+                                "generated_sha256": export_manifest.get("generated_sha256"),
+                                "question_count": export_manifest.get("question_count"),
+                            },
+                            "scope_counts": dict(sorted(exported_scope_counts.items())),
+                            "file_sha256": dict(sorted(file_hashes.items())),
+                            "invariants": export_invariants,
+                        }
+                    )
+                except (KeyError, OSError, json.JSONDecodeError, TypeError, ValueError) as exc:
+                    errors.append("materialized export could not be audited")
+                    materialize_evidence["audit_error"] = repr(exc)
+            evidence.append({"outside_git_materialization": materialize_evidence})
+
+        forbidden_target = REPO_ROOT / f".eval-core320-materialization-forbidden-{os.getpid()}"
+        forbidden_command = [
+            sys.executable,
+            str(materializer_path),
+            "--output",
+            str(forbidden_target),
+        ]
+        try:
+            refused = subprocess.run(
+                forbidden_command,
+                cwd=REPO_ROOT,
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+            refusal_output = (refused.stdout + "\n" + refused.stderr).strip()
+            refused_safely = (
+                refused.returncode != 0
+                and "outside the Lumi Git workspace" in refusal_output
+                and not forbidden_target.exists()
+            )
+            if not refused_safely:
+                errors.append("inside-workspace materialization did not fail closed")
+            evidence.append(
+                {
+                    "inside_git_refusal": {
+                        "command": forbidden_command,
+                        "exit_code": refused.returncode,
+                        "expected_message_present": "outside the Lumi Git workspace" in refusal_output,
+                        "created_output": forbidden_target.exists(),
+                    }
+                }
+            )
+        finally:
+            if forbidden_target.exists():
+                if forbidden_target.is_dir():
+                    shutil.rmtree(forbidden_target)
+                else:
+                    forbidden_target.unlink()
+    except (OSError, subprocess.TimeoutExpired, json.JSONDecodeError, KeyError, ImportError, ValueError) as exc:
+        errors.append(f"Core-320 bank gate raised {exc!r}")
+
+    if errors:
+        return GateResult(
+            "core320_bank",
+            "fail",
+            "Core-320 manifest, generated bank, or materialization boundary failed",
+            evidence + [{"errors": errors}],
+        )
+    return GateResult(
+        "core320_bank",
+        "pass",
+        "manifest digest resolves 320 unique versions (80×4), five scopes are exact, and bulk export is complete outside Git and refused inside Git",
+        evidence,
+    )
+
+
+def gate_core320_scopes(ctx: Context) -> GateResult:
+    """Exercise the real five-scope HTTP contract through its focused suite."""
+
+    test_file = REPO_ROOT / "service" / "tests" / "test_practice_scopes_v3.py"
+    if not test_file.is_file():
+        return GateResult(
+            "core320_scopes",
+            "pending",
+            "Core-320 five-scope service contract tests are absent",
+            [{"path": str(test_file.relative_to(REPO_ROOT))}],
+        )
+    command = [
+        sys.executable,
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        str(test_file.parent),
+        "-p",
+        test_file.name,
+        "-v",
+    ]
+    try:
+        result = subprocess.run(
+            command,
+            cwd=REPO_ROOT / "service",
+            env=_service_environment(),
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        return GateResult(
+            "core320_scopes",
+            "fail",
+            "Core-320 five-scope service suite could not complete",
+            [{"command": command, "error": repr(exc)}],
+        )
+    evidence = [
+        {
+            "command": command,
+            "test_file": str(test_file.relative_to(REPO_ROOT)),
+            "test_file_sha256": _file_sha256(test_file),
+            "exit_code": result.returncode,
+            "output": (result.stdout + "\n" + result.stderr).strip()[-8000:],
+        }
+    ]
+    if result.returncode:
+        return GateResult(
+            "core320_scopes",
+            "fail",
+            "five-scope capabilities, fixed-eight starts, safe projection, mixed rotation, persistence, or fail-closed scope assertions failed",
+            evidence,
+        )
+    return GateResult(
+        "core320_scopes",
+        "pass",
+        "real loopback service passed exact four-module plus mixed scope, safe question, fixed-eight, rotation, shared-trace, restart, and fail-closed assertions",
+        evidence,
+    )
+
+
+def gate_continuous_practice_v1(ctx: Context) -> GateResult:
+    """Run only the frozen cross-session practice contract surfaces."""
+
+    required_files = {
+        "contract": REPO_ROOT / "docs" / "CONTINUOUS_PRACTICE_V1.md",
+        "engine_policy_tests": REPO_ROOT / "engine" / "tests" / "test_next_scope_policy.py",
+        "service_read_model_tests": REPO_ROOT / "service" / "tests" / "test_learning_records.py",
+        "client_read_model_tests": REPO_ROOT / "client" / "tests" / "practiceInsights.test.js",
+        "client_session_state_tests": REPO_ROOT / "client" / "tests" / "smartPracticeState.test.js",
+    }
+    missing = [
+        str(path.relative_to(REPO_ROOT))
+        for path in required_files.values()
+        if not path.is_file()
+    ]
+    if missing:
+        return GateResult(
+            "continuous_practice_v1",
+            "pending",
+            "continuous-practice contract or focused evidence surface is absent",
+            [{"missing": sorted(missing)}],
+        )
+
+    file_evidence = {
+        label: {
+            "path": str(path.relative_to(REPO_ROOT)),
+            "sha256": _file_sha256(path),
+        }
+        for label, path in sorted(required_files.items())
+    }
+    node = shutil.which("node")
+    if node is None:
+        return GateResult(
+            "continuous_practice_v1",
+            "pending",
+            "Node.js is required for the focused continuous-practice client tests",
+            [{"required_files": file_evidence}, {"node": None}],
+        )
+
+    engine_test = required_files["engine_policy_tests"]
+    service_test = required_files["service_read_model_tests"]
+    client_tests = (
+        required_files["client_read_model_tests"],
+        required_files["client_session_state_tests"],
+    )
+    engine_environment = dict(os.environ)
+    engine_environment["PYTHONPATH"] = (
+        str(REPO_ROOT / "engine")
+        + os.pathsep
+        + engine_environment.get("PYTHONPATH", "")
+    )
+    commands = (
+        (
+            "engine_policy",
+            [
+                sys.executable,
+                "-m",
+                "unittest",
+                "discover",
+                "-s",
+                str(engine_test.parent),
+                "-p",
+                engine_test.name,
+                "-v",
+            ],
+            REPO_ROOT / "engine",
+            engine_environment,
+            60,
+            (engine_test,),
+        ),
+        (
+            "service_read_models",
+            [
+                sys.executable,
+                "-m",
+                "unittest",
+                "discover",
+                "-s",
+                str(service_test.parent),
+                "-p",
+                service_test.name,
+                "-v",
+            ],
+            REPO_ROOT / "service",
+            _service_environment(),
+            120,
+            (service_test,),
+        ),
+        (
+            "client_contracts",
+            [
+                node,
+                "--test",
+                *(str(path.relative_to(REPO_ROOT / "client")) for path in client_tests),
+            ],
+            REPO_ROOT / "client",
+            dict(os.environ),
+            60,
+            client_tests,
+        ),
+    )
+
+    evidence: list[dict[str, Any]] = [{"required_files": file_evidence}]
+    failures: list[str] = []
+    for label, command, cwd, environment, timeout, inputs in commands:
+        command_descriptor = {
+            "command": command,
+            "cwd": str(cwd.relative_to(REPO_ROOT)),
+        }
+        item: dict[str, Any] = {
+            **command_descriptor,
+            "command_sha256": sha256_json(command_descriptor),
+            "input_sha256": {
+                str(path.relative_to(REPO_ROOT)): _file_sha256(path)
+                for path in inputs
+            },
+        }
+        try:
+            result = subprocess.run(
+                command,
+                cwd=cwd,
+                env=environment,
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+            )
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            item.update(exit_code=None, error=repr(exc))
+            failures.append(f"{label} focused tests could not complete")
+        else:
+            stdout = result.stdout.strip()
+            stderr = result.stderr.strip()
+            combined = stdout + ("\n" if stdout and stderr else "") + stderr
+            item.update(
+                exit_code=result.returncode,
+                stdout=stdout,
+                stderr=stderr,
+                output=combined,
+                output_sha256=hashlib.sha256(combined.encode("utf-8")).hexdigest(),
+            )
+            if result.returncode:
+                failures.append(f"{label} focused tests failed")
+        evidence.append({label: item})
+
+    if failures:
+        return GateResult(
+            "continuous_practice_v1",
+            "fail",
+            "continuous-practice focused policy, read-model, or client assertions failed",
+            evidence + [{"errors": failures}],
+        )
+    return GateResult(
+        "continuous_practice_v1",
+        "pass",
+        "frozen continuous-practice policy, five read models, client contracts, "
+        "and fixed-eight continuation state passed focused checks without a production build",
+        evidence,
+    )
+
+
+def gate_core320_client(ctx: Context) -> GateResult:
+    """Validate the client catalog against the manifest, then test and build it."""
+
+    client = REPO_ROOT / "client"
+    scope_module = client / "src" / "practiceScopes.js"
+    scope_test = client / "tests" / "practiceScopes.test.js"
+    manifest_path = REPO_ROOT / "domains" / "practice_v3" / "manifest.json"
+    required = [client / "package.json", scope_module, scope_test, manifest_path]
+    missing = [str(path.relative_to(REPO_ROOT)) for path in required if not path.is_file()]
+    if missing:
+        return GateResult(
+            "core320_client",
+            "pending",
+            "Core-320 client catalog, test, package, or source manifest is absent",
+            [{"missing": missing}],
+        )
+    if shutil.which("node") is None or shutil.which("npm") is None:
+        return GateResult(
+            "core320_client",
+            "pending",
+            "Node.js and npm are required for the Core-320 client gate",
+            [{"node": shutil.which("node"), "npm": shutil.which("npm")}],
+        )
+    if not (client / "node_modules" / ".bin" / "vite").is_file():
+        return GateResult(
+            "core320_client",
+            "pending",
+            "client dependencies are not installed; production build evidence is unavailable",
+            [{"missing": "client/node_modules/.bin/vite"}],
+        )
+
+    manifest = load_json(manifest_path)
+    catalog_program = (
+        f'import * as p from {json.dumps(scope_module.as_uri())};'
+        "console.log(JSON.stringify({"
+        "bank_id:p.SMART_PRACTICE_BANK_ID,bank_version:p.SMART_PRACTICE_BANK_VERSION,"
+        "bank_sha256:p.SMART_PRACTICE_BANK_SHA256,"
+        "pool_target:p.SMART_PRACTICE_SCOPE_TARGET,session_target:p.SMART_PRACTICE_SESSION_TARGET,"
+        "default_scope_id:p.DEFAULT_SMART_PRACTICE_SCOPE_ID,"
+        "scopes:p.SMART_PRACTICE_SCOPES.map(s=>({scope_id:s.scopeId,question_count:s.poolSize,mixed:s.mixed===true}))"
+        "}));"
+    )
+    catalog_command = ["node", "--input-type=module", "--eval", catalog_program]
+    commands = [
+        ("catalog", catalog_command),
+        ("tests", ["npm", "test"]),
+        ("build", ["npm", "run", "build"]),
+    ]
+    evidence: list[dict[str, Any]] = []
+    errors: list[str] = []
+    catalog: dict[str, Any] | None = None
+    for label, command in commands:
+        try:
+            result = subprocess.run(
+                command,
+                cwd=client,
+                capture_output=True,
+                text=True,
+                timeout=180,
+            )
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            errors.append(f"{label} command raised {exc!r}")
+            evidence.append({label: {"command": command, "error": repr(exc)}})
+            continue
+        item: dict[str, Any] = {
+            "command": command,
+            "exit_code": result.returncode,
+            "output": (result.stdout + "\n" + result.stderr).strip()[-8000:],
+        }
+        if result.returncode:
+            errors.append(f"client {label} command failed")
+        elif label == "catalog":
+            try:
+                catalog = json.loads(result.stdout)
+                item["catalog"] = catalog
+            except json.JSONDecodeError as exc:
+                errors.append("client scope catalog output is not JSON")
+                item["parse_error"] = repr(exc)
+        evidence.append({label: item})
+
+    if catalog is not None:
+        expected_scope_counts = {**manifest["expected_module_counts"], "xingce.mixed.core": 320}
+        actual_scope_counts = {item["scope_id"]: item["question_count"] for item in catalog.get("scopes", [])}
+        catalog_invariants = {
+            "bank_id_matches_manifest": catalog.get("bank_id") == manifest.get("bank_id"),
+            "bank_version_matches_manifest": catalog.get("bank_version") == manifest.get("version"),
+            "bank_digest_matches_manifest": catalog.get("bank_sha256") == manifest.get("generated_sha256"),
+            "pool_target_is_80": catalog.get("pool_target") == 80,
+            "session_target_is_8": catalog.get("session_target") == 8,
+            "default_is_data_analysis": catalog.get("default_scope_id") == "xingce.data-analysis.core",
+            "five_scope_counts_are_exact": actual_scope_counts == expected_scope_counts,
+            "mixed_is_reused_pool": sum(item.get("mixed") is True for item in catalog.get("scopes", [])) == 1,
+        }
+        errors.extend(name for name, valid in catalog_invariants.items() if not valid)
+        evidence.append({"catalog_invariants": catalog_invariants})
+
+    dist_index = client / "dist" / "index.html"
+    if not dist_index.is_file():
+        errors.append("client production build did not emit dist/index.html")
+    else:
+        evidence.append(
+            {
+                "build_artifact": str(dist_index.relative_to(REPO_ROOT)),
+                "sha256": _file_sha256(dist_index),
+            }
+        )
+    if errors:
+        return GateResult(
+            "core320_client",
+            "fail",
+            "Core-320 client manifest contract, tests, or production build failed",
+            evidence + [{"errors": errors}],
+        )
+    return GateResult(
+        "core320_client",
+        "pass",
+        "client pins the manifest bank/version and exact five scopes, then passes its tests and production build",
+        evidence,
+    )
+
+
+def gate_core320_packaging(ctx: Context) -> GateResult:
+    """Verify the packed sidecar and, when built, the managed debug app."""
+
+    desktop = REPO_ROOT / "desktop"
+    package = desktop / "package.json"
+    if not package.is_file():
+        return GateResult(
+            "core320_packaging",
+            "pending",
+            "desktop package is absent",
+            [{"path": str(package.relative_to(REPO_ROOT))}],
+        )
+    if shutil.which("node") is None or shutil.which("npm") is None:
+        return GateResult(
+            "core320_packaging",
+            "pending",
+            "Node.js and npm are required for desktop packaging verification",
+            [{"node": shutil.which("node"), "npm": shutil.which("npm")}],
+        )
+
+    config_command = ["npm", "run", "check:config"]
+    config = subprocess.run(
+        config_command,
+        cwd=desktop,
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    evidence: list[dict[str, Any]] = [
+        {
+            "configuration": {
+                "command": config_command,
+                "exit_code": config.returncode,
+                "output": (config.stdout + "\n" + config.stderr).strip()[-6000:],
+            }
+        }
+    ]
+    if config.returncode:
+        return GateResult(
+            "core320_packaging",
+            "fail",
+            "desktop Core-320 packaging configuration failed",
+            evidence,
+        )
+
+    launcher = desktop / "src-tauri" / "binaries" / "hermes-sidecar-aarch64-apple-darwin"
+    runtime = desktop / "src-tauri" / "resources" / "sidecar-runtime" / "hermes-sidecar"
+    app = desktop / "src-tauri" / "target" / "debug" / "bundle" / "macos" / "Lumi.app"
+    missing = [str(path.relative_to(REPO_ROOT)) for path in (launcher, runtime, app) if not path.exists()]
+    if missing:
+        evidence.append({"missing_built_artifacts": missing})
+        return GateResult(
+            "core320_packaging",
+            "pending",
+            "desktop configuration is valid, but packed sidecar or debug app evidence is not built",
+            evidence,
+        )
+
+    for label, command, timeout in (
+        ("packaged_sidecar", ["npm", "run", "check:sidecar"], 120),
+        ("managed_app", ["npm", "run", "check:managed-app"], 120),
+    ):
+        try:
+            result = subprocess.run(
+                command,
+                cwd=desktop,
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+            )
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            return GateResult(
+                "core320_packaging",
+                "fail",
+                f"desktop {label} verification could not complete",
+                evidence + [{label: {"command": command, "error": repr(exc)}}],
+            )
+        evidence.append(
+            {
+                label: {
+                    "command": command,
+                    "exit_code": result.returncode,
+                    "output": (result.stdout + "\n" + result.stderr).strip()[-8000:],
+                }
+            }
+        )
+        if result.returncode:
+            return GateResult(
+                "core320_packaging",
+                "fail",
+                f"desktop {label} Core-320 verification failed",
+                evidence,
+            )
+
+    return GateResult(
+        "core320_packaging",
+        "pass",
+        "packed sidecar exposes the manifest digest and exact five scopes; debug app contains the same content and passes managed lifecycle checks",
+        evidence,
+    )
+
+
 def _run_unittest_surface(root: Path) -> dict[str, Any]:
     command = [sys.executable, "-m", "unittest", "discover", "-s", str(root / "tests"), "-v"]
     environment = dict(os.environ)
-    environment["PYTHONPATH"] = str(root) + os.pathsep + environment.get("PYTHONPATH", "")
+    environment["PYTHONPATH"] = (
+        os.pathsep.join((str(root), str(REPO_ROOT)))
+        + os.pathsep
+        + environment.get("PYTHONPATH", "")
+    )
     result = subprocess.run(
         command,
         cwd=root,
@@ -1538,6 +2205,11 @@ GATES: dict[str, Callable[[Context], GateResult]] = {
     "teaching_transfer": gate_teaching_transfer,
     "privacy": gate_privacy,
     "readonly_boundary": gate_readonly_boundary,
+    "core320_bank": gate_core320_bank,
+    "core320_scopes": gate_core320_scopes,
+    "continuous_practice_v1": gate_continuous_practice_v1,
+    "core320_client": gate_core320_client,
+    "core320_packaging": gate_core320_packaging,
 }
 
 
@@ -1567,11 +2239,12 @@ def run_gates(selected: list[str] | None = None) -> tuple[dict[str, Any], Contex
         "schema_version": "release-report-v1",
         "run_id": "run-" + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ"),
         "generated_at": utc_now(),
-        "repository": str(REPO_ROOT),
+        "repository": ".",
         "overall_status": overall,
         "summary": {"pass": counts["pass"], "fail": counts["fail"], "pending": counts["pending"], "total": len(results)},
         "gates": [asdict(item) for item in results],
     }
+    report = sanitize_public_report_paths(report)
     report_errors = validate_json(report, load_json(CONTRACT_DIR / "release_report.schema.json"))
     if report_errors:
         integrity = GateResult("runner_integrity", "fail", "generated report violates its schema", [{"errors": report_errors}])
@@ -1600,7 +2273,7 @@ def render_markdown(report: Mapping[str, Any]) -> str:
     lines.extend(
         [
             "",
-            "The JSON report beside this file is authoritative and contains hashes, command output, missing matrix entries, and computed evidence.",
+            "When outputs are written, the JSON report is authoritative and contains hashes, command output, missing matrix entries, and computed evidence.",
             "",
         ]
     )

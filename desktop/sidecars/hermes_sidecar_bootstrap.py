@@ -12,8 +12,16 @@ import time
 # extraction directory without changing the shared service package.
 if getattr(sys, "frozen", False):
     from hermes_service import catalog
+    from hermes_domains import lessons, practice_bank_v3, practice_v2
 
     catalog.FIXTURE_ROOT = Path(sys._MEIPASS) / "domains" / "fixtures"
+    catalog.LESSON_ROOT = Path(sys._MEIPASS) / "domains" / "lessons"
+    # LessonCatalog's default was evaluated when hermes_service.catalog was
+    # imported, so update that frozen-only default before application import.
+    catalog.LessonCatalog.__init__.__defaults__ = (catalog.LESSON_ROOT,)
+    lessons.DEFAULT_LESSON_ROOT = catalog.LESSON_ROOT
+    practice_v2.DEFAULT_PRACTICE_ROOT = Path(sys._MEIPASS) / "domains" / "practice_v2"
+    practice_bank_v3.DEFAULT_PRACTICE_BANK_ROOT = Path(sys._MEIPASS) / "domains" / "practice_v3"
 
 from hermes_service.cli import main
 
