@@ -186,6 +186,7 @@ function derivedSummary(attempts, resumedCount = 0) {
     correctCount: resumedCount === 0 ? correct : null,
     totalCount: resumedCount + attempts.length,
     scoredCount: scored.length,
+    scoreBreakdownComplete: resumedCount === 0,
     primaryWeakness: null,
     wrongQuestions,
     wrongQuestionsComplete: resumedCount === 0,
@@ -226,7 +227,10 @@ function normalizeSummary(value, attempts, resumedCount = 0) {
     possiblePatterns,
     correctCount,
     totalCount,
-    scoredCount: Number.isInteger(value.scored_count) ? value.scored_count : fallback.scoredCount,
+    // Local attempts contain normal questions only. The service-level scored_count
+    // may also include a scored probe, so it is never used as this denominator.
+    scoredCount: fallback.scoredCount,
+    scoreBreakdownComplete: resumedCount === 0,
     primaryWeakness: possiblePatterns[0] || null,
     wrongQuestions,
     wrongQuestionsComplete: rawWrongQuestions !== null || resumedCount === 0,

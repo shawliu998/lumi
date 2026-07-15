@@ -19,6 +19,10 @@ When implementing from a selected generated mock, treat that image as the source
 - Do not copy Khan Academy names, marks, course content, or proprietary assets.
 - Avoid generic AI-dashboard styling: no gradients, glassmorphism, glow, robot or
   sparkle imagery, decorative neural graphs, excessive pills, or card nesting.
+- On the home recommendation surface, do not use a colored vertical rail or a
+  tinted rounded hero card. Use the approved editorial treatment: neutral rules,
+  strong typography, generous whitespace, and color only for semantic status or
+  the primary action.
 - Prefer ordinary product UI: source lists, tabs, tables, filters, disclosure
   rows, real empty/loading/selected states, and one consistent icon family.
 - The product canvas uses a pure white background. Brand assets are the green

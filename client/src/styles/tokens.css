@@ -1,0 +1,66 @@
+:root {
+  color-scheme: light;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "SF Pro Text",
+    "SF Pro Display",
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "Microsoft YaHei",
+    sans-serif;
+  font-synthesis: none;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --type-display: clamp(28px, 3vw, 36px);
+  --type-page-title: clamp(25px, 2.4vw, 30px);
+  --type-section-title: 18px;
+  --type-card-title: 16px;
+  --type-body-large: 16px;
+  --type-body: 15px;
+  --type-body-small: 13px;
+  --type-caption: 12px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  --radius-control: 8px;
+  --radius-option: 10px;
+  --radius-panel: 12px;
+  --radius-popover: 16px;
+
+  --canvas: #f6f6f3;
+  --surface: #ffffff;
+  --surface-muted: #f8f8f6;
+  --surface-raised: #ffffff;
+  --sidebar: #f2f2ef;
+  --ink: #202124;
+  --ink-soft: #4f5157;
+  --muted: #666a70;
+  --weak: #6b6d74;
+  --border: #e2e2de;
+  --border-strong: #cfcfca;
+  --hover: #ebebe7;
+  --accent: #6757c8;
+  --accent-strong: #5545b6;
+  --accent-soft: #f0eef9;
+  --accent-border: #c9c2eb;
+  --success: #2f7357;
+  --success-soft: #edf6f1;
+  --success-border: #bcdacb;
+  --danger: #9b4d47;
+  --danger-soft: #fbefee;
+  --danger-border: #e5c3c0;
+  --warning: #8a6230;
+  --warning-soft: #fbf5e9;
+  --focus-ring: rgba(103, 87, 200, 0.48);
+  --shadow-popover: 0 18px 50px rgba(28, 29, 32, 0.16), 0 2px 8px rgba(28, 29, 32, 0.08);
+}

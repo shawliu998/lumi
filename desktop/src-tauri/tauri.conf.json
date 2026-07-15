@@ -12,11 +12,14 @@
       {
         "label": "main",
         "title": "Lumi · 行测学习 Agent",
-        "width": 1320,
-        "height": 880,
-        "minWidth": 1024,
-        "minHeight": 680,
+        "width": 1180,
+        "height": 760,
+        "minWidth": 960,
+        "minHeight": 640,
         "resizable": true,
+        "decorations": true,
+        "titleBarStyle": "Visible",
+        "hiddenTitle": true,
         "fullscreen": false
       }
     ],

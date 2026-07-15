@@ -158,6 +158,41 @@ test("practice overview exposes only a valid resumable Core-320 session", () => 
     }],
   });
   assert.equal(incompatible.activeSession, null);
+  assert.deepEqual(incompatible.recentSessions, []);
+
+  const filtered = normalizePracticeOverview({
+    ...base,
+    recent_sessions: [
+      {
+        session_id: "practice-unknown",
+        scope_id: "unknown.scope",
+        status: "completed",
+        answered_count: 8,
+        target_count: 8,
+        correct_count: 8,
+      },
+      {
+        session_id: "practice-empty",
+        scope_id: "xingce.mixed.core",
+        status: "ended_early",
+        answered_count: 0,
+        target_count: 8,
+        correct_count: 0,
+        question_attempt_count: 0,
+        probe_or_skip_count: 0,
+        accuracy: null,
+        title: "智能刷题",
+        module_label: "行测",
+        started_at: "2026-07-15T09:00:00+08:00",
+      },
+    ],
+  });
+  assert.equal(filtered.recentSessions.length, 1);
+  assert.equal(filtered.recentSessions[0].scopeId, "xingce.mixed.core");
+  assert.equal(filtered.recentSessions[0].answeredCount, 0);
+  assert.equal(filtered.recentSessions[0].questionAttemptCount, 0);
+  assert.equal(filtered.recentSessions[0].probeOrSkipCount, 0);
+  assert.equal(filtered.recentSessions[0].correctCount, 0);
 });
 
 test("empty wrong-question and profile responses stay explicit empty records", () => {
@@ -194,5 +229,13 @@ test("read models fail closed instead of filling malformed evidence with demo va
   assert.throws(
     () => normalizePracticeProfile({ schema_version: "lumi.practice-profile.v1", ...profile }),
     /Invalid practice profile overall metrics/,
+  );
+  assert.throws(
+    () => normalizePracticeProfile({
+      schema_version: "lumi.practice-profile.v1",
+      ...embeddedProfile(),
+      error_hypotheses: [{ status: "supported_hypothesis" }],
+    }),
+    /Invalid reversible error hypothesis/,
   );
 });

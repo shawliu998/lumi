@@ -1,10 +1,9 @@
-import { useEffect, useId, useReducer, useRef } from "react";
+import { useEffect, useId, useReducer, useRef, useState } from "react";
 import {
   ArrowRight,
   CheckCircle,
   Info,
   Lightbulb,
-  LockKey,
   X,
   XCircle,
 } from "@phosphor-icons/react";
@@ -13,14 +12,18 @@ import {
   SMART_PRACTICE_TARGET,
   smartPracticeReducer,
 } from "./smartPracticeState";
-import "./smart-practice.css";
+import {
+  resolvePracticeEnterAction,
+  resolvePracticeOptionShortcut,
+  shouldConfirmPracticeExit,
+} from "./practiceKeyboard";
 
 function AnswerField({ question, answer, onChange, disabled, name }) {
   if (question.options.length > 0) {
     return (
       <fieldset className="smart-practice-options" disabled={disabled}>
         <legend>请选择一个答案</legend>
-        {question.options.map((option) => (
+        {question.options.map((option, index) => (
           <label className={answer === option.id ? "selected" : ""} key={option.id}>
             <input
               type="radio"
@@ -28,6 +31,7 @@ function AnswerField({ question, answer, onChange, disabled, name }) {
               value={option.id}
               checked={answer === option.id}
               onChange={(event) => onChange(event.target.value)}
+              aria-keyshortcuts={index < 4 ? `${String.fromCharCode(65 + index)} ${index + 1}` : undefined}
             />
             <strong>{option.id}</strong>
             <span>{option.text}</span>
@@ -71,23 +75,27 @@ function FeedbackView({
         <FeedbackIcon size={24} weight={feedback.correct === true ? "fill" : "regular"} />
         <div>
           <h3 id="smart-practice-feedback-title">{feedback.title}</h3>
-          {feedback.keyPrinciple && <p>{feedback.keyPrinciple}</p>}
           {feedback.correctOption && feedback.correct === false && (
-            <small>正确答案：{feedback.correctOption}</small>
+            <small>正确答案 {feedback.correctOption}</small>
           )}
+          {feedback.keyPrinciple && <p>{feedback.keyPrinciple}</p>}
         </div>
       </div>
 
       {feedback.explanation && (
         <details className="smart-practice-explanation">
           <summary>展开完整解析</summary>
-          <p>{feedback.explanation}</p>
+          <div>
+            {feedback.explanation.split(/\n{2,}/u).map((paragraph, index) => (
+              <p key={`${index}-${paragraph.slice(0, 16)}`}>{paragraph}</p>
+            ))}
+          </div>
         </details>
       )}
 
       {feedback.microtutorial && (
         <aside className="smart-practice-tutorial" aria-labelledby="smart-practice-tutorial-title">
-          <span><Lightbulb size={13} />针对本题</span>
+          <span><Lightbulb size={14} />Lumi 提示</span>
           <h4 id="smart-practice-tutorial-title">{feedback.microtutorial.title}</h4>
           {feedback.microtutorial.body && <p>{feedback.microtutorial.body}</p>}
           {feedback.microtutorial.points.length > 0 && (
@@ -148,23 +156,40 @@ function FeedbackView({
 }
 
 function SummaryView({ summary, onNextGroup }) {
+  const normalQuestionTotal = Number.isInteger(summary.scoredCount) ? summary.scoredCount : null;
+  const score = !summary.scoreBreakdownComplete || summary.correctCount === null || normalQuestionTotal === null
+    ? "—"
+    : `${summary.correctCount} / ${normalQuestionTotal}`;
+  const weakness = summary.primaryWeakness;
   return (
     <section className="smart-practice-summary" aria-labelledby="smart-practice-summary-title">
-      <CheckCircle size={34} weight="fill" />
-      <span>8 题已完成</span>
+      <span>本组已完成</span>
       <h3 id="smart-practice-summary-title">{summary.title}</h3>
       <p>{summary.message}</p>
 
-      <div className="smart-practice-summary-grid">
-        <section aria-labelledby="smart-practice-score-title">
-          <small id="smart-practice-score-title">本组正确</small>
-          <strong>{summary.correctCount === null ? "—" : summary.correctCount} / {summary.totalCount}</strong>
-          <span>{summary.correctCount === null ? "恢复前判分明细未返回" : "以本机已判分作答为准"}</span>
-        </section>
+      <div className="smart-practice-summary-result" aria-label="本组普通题结果">
+        <strong>{score}</strong>
+        <span>
+          普通题答对
+          <small>{!summary.scoreBreakdownComplete || summary.correctCount === null ? "恢复前的普通题判分明细不完整" : `本组共占用 ${summary.totalCount} / 8 个题位`}</small>
+        </span>
+      </div>
+
+      <div className="smart-practice-summary-insights">
         <section aria-labelledby="smart-practice-weakness-title">
-          <small id="smart-practice-weakness-title">主要薄弱点</small>
-          <strong>{summary.primaryWeakness?.title || "证据不足，暂不判断"}</strong>
-          <span>{summary.primaryWeakness?.evidence || "需要跨独立题族重复后才形成错因线索。"}</span>
+          <small id="smart-practice-weakness-title">最重要的错误模式</small>
+          <strong>{weakness?.title || "证据不足，暂不形成判断"}</strong>
+          <p>{weakness?.evidence || "目前没有跨独立题族重复的错误线索。"}</p>
+        </section>
+        <section>
+          <small>仍待确认</small>
+          <strong>{weakness ? "这个模式能否在新材料中再次出现" : "是否存在稳定的错误模式"}</strong>
+          <p>后续只用无提示、独立作答继续验证。</p>
+        </section>
+        <section>
+          <small>下一组准备验证</small>
+          <strong>{weakness ? `换题面检查「${weakness.title}」` : "继续积累跨题族证据"}</strong>
+          <p>不会增加额外学习任务。</p>
         </section>
       </div>
 
@@ -201,7 +226,7 @@ function SummaryView({ summary, onNextGroup }) {
       </section>
 
       <button type="button" className="button primary smart-practice-finish" onClick={onNextGroup}>
-        一键下一组 <ArrowRight size={14} />
+        开始下一组 <ArrowRight size={15} />
       </button>
     </section>
   );
@@ -221,11 +246,14 @@ function SummaryView({ summary, onNextGroup }) {
  */
 export function SmartPracticeWorkspace({ startSession, submitAnswer, submitProbe, close }) {
   const [state, dispatch] = useReducer(smartPracticeReducer, undefined, createSmartPracticeState);
+  const [exitPrompt, setExitPrompt] = useState(false);
   const titleId = useId();
   const answerName = useId();
   const probeName = useId();
   const workspaceRef = useRef(null);
   const closeRef = useRef(null);
+  const exitContinueRef = useRef(null);
+  const exitPromptRef = useRef(false);
   const startPromiseRef = useRef(null);
   const startLockRef = useRef(false);
   const submitLockRef = useRef(false);
@@ -233,11 +261,16 @@ export function SmartPracticeWorkspace({ startSession, submitAnswer, submitProbe
   const stateRef = useRef(state);
   const closeCallbackRef = useRef(close);
   stateRef.current = state;
+  exitPromptRef.current = exitPrompt;
   closeCallbackRef.current = close;
 
-  const closeWorkspace = (reason) => {
+  const closeWorkspace = (reason, { confirmed = false } = {}) => {
     const current = stateRef.current;
     if (startLockRef.current || current.phase === "submitting" || current.probeStatus === "submitting") return;
+    if (!confirmed && shouldConfirmPracticeExit(current.phase, current.answeredCount)) {
+      setExitPrompt(true);
+      return;
+    }
     closeCallbackRef.current?.({
       reason: reason || (current.phase === "complete" ? "completed" : "ended_early"),
       sessionId: current.sessionId,
@@ -283,13 +316,52 @@ export function SmartPracticeWorkspace({ startSession, submitAnswer, submitProbe
 
   useEffect(() => {
     const previousFocus = document.activeElement;
-    closeRef.current?.focus();
+    workspaceRef.current?.focus();
     const handleKeyDown = (event) => {
-          if (event.key === "Escape") {
-            event.preventDefault();
-            closeWorkspace();
+      if (event.defaultPrevented) return;
+      if (event.key === "Escape") {
+        event.preventDefault();
+        if (exitPromptRef.current) {
+          setExitPrompt(false);
+          closeRef.current?.focus();
+          return;
+        }
+        closeWorkspace();
         return;
       }
+      if (exitPromptRef.current && event.key !== "Tab") return;
+
+      const current = stateRef.current;
+      if (current.phase === "question" && current.currentQuestion?.options?.length) {
+        const optionId = resolvePracticeOptionShortcut(
+          event,
+          current.currentQuestion.options,
+          current.answer,
+        );
+        if (optionId) {
+          event.preventDefault();
+          dispatch({ type: "ANSWER_CHANGED", value: optionId });
+          window.requestAnimationFrame(() => {
+            const radios = [...(workspaceRef.current?.querySelectorAll(".smart-practice-options input[type='radio']") || [])];
+            radios.find((radio) => radio.value === optionId)?.focus();
+          });
+          return;
+        }
+      }
+
+      const enterAction = resolvePracticeEnterAction(event, current.phase);
+      if (enterAction === "submit" && current.answer.trim()) {
+        event.preventDefault();
+        workspaceRef.current?.querySelector(".smart-practice-question-card")?.requestSubmit?.();
+        return;
+      }
+      if (enterAction === "continue" && !current.feedback?.probe) {
+        event.preventDefault();
+        if (current.answeredCount < current.targetCount) questionStartedAtRef.current = Date.now();
+        dispatch({ type: "CONTINUE" });
+        return;
+      }
+
       if (event.key !== "Tab" || !workspaceRef.current) return;
       const focusable = [...workspaceRef.current.querySelectorAll(
         "button:not([disabled]), input:not([disabled]), textarea:not([disabled]), details > summary, [tabindex]:not([tabindex='-1'])",
@@ -311,6 +383,17 @@ export function SmartPracticeWorkspace({ startSession, submitAnswer, submitProbe
       previousFocus?.focus?.();
     };
   }, []);
+
+  useEffect(() => {
+    if (!exitPrompt) return undefined;
+    const frame = window.requestAnimationFrame(() => exitContinueRef.current?.focus());
+    return () => window.cancelAnimationFrame(frame);
+  }, [exitPrompt]);
+
+  const resumeFromExitPrompt = () => {
+    setExitPrompt(false);
+    window.requestAnimationFrame(() => workspaceRef.current?.focus());
+  };
 
   const retryStart = () => {
     const pending = beginSession({ force: true });
@@ -400,6 +483,7 @@ export function SmartPracticeWorkspace({ startSession, submitAnswer, submitProbe
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
+        tabIndex={-1}
       >
         <header className="smart-practice-header">
           <div>
@@ -408,12 +492,14 @@ export function SmartPracticeWorkspace({ startSession, submitAnswer, submitProbe
           </div>
           <div className="smart-practice-progress" aria-live="polite">
             <progress value={state.answeredCount} max={state.targetCount} aria-label={`已完成 ${state.answeredCount} 题，共 8 题`} />
-            <span><strong>{state.answeredCount}</strong> / {state.targetCount}</span>
+            <span>{state.phase === "question" || state.phase === "submitting"
+              ? <>第 <strong>{Math.min(state.targetCount, state.answeredCount + 1)}</strong> / {state.targetCount} 题</>
+              : <>已完成 <strong>{state.answeredCount}</strong> / {state.targetCount}</>}</span>
           </div>
           <button
             ref={closeRef}
             type="button"
-            className="icon-button smart-practice-close"
+            className="lumi-icon-button smart-practice-close"
             onClick={() => closeWorkspace()}
             disabled={saving}
             aria-label={saving ? "正在保存作答" : state.phase === "complete" ? "关闭练习" : "提前结束练习"}
@@ -422,50 +508,65 @@ export function SmartPracticeWorkspace({ startSession, submitAnswer, submitProbe
           </button>
         </header>
 
-        <main
+        <div
           className="smart-practice-scroll"
-          aria-live="polite"
           aria-busy={state.phase === "starting" || submitting}
         >
-          {state.phase === "starting" && (
+          {exitPrompt ? (
+            <section className="smart-practice-state smart-practice-exit-confirm" role="alertdialog" aria-labelledby="smart-practice-exit-title">
+              <Info size={27} />
+              <h3 id="smart-practice-exit-title">结束本组？</h3>
+              <p>已完成 {state.answeredCount} / 8 个题位。主动结束后，本组会标记为“提前结束”，不会保留为可继续会话。</p>
+              <div>
+                <button ref={exitContinueRef} type="button" className="button primary" onClick={resumeFromExitPrompt}>继续作答</button>
+                <button type="button" className="button secondary" onClick={() => closeWorkspace("ended_early", { confirmed: true })}>结束本组</button>
+              </div>
+            </section>
+          ) : state.phase === "starting" && (
             <div className="smart-practice-state" role="status">
               <span className="practice-spinner" />
               <h3>正在准备 8 道题</h3>
-              <p>题目和作答记录只在本机处理。</p>
+              <p>准备完成后会直接进入第 1 题。</p>
             </div>
           )}
 
-          {(state.phase === "question" || submitting) && question && (
+          {!exitPrompt && (state.phase === "question" || submitting) && question && (
             <form className="smart-practice-question-card" onSubmit={submitCurrentAnswer}>
               <div className="smart-practice-question-heading">
                 <span>{question.eyebrow || "连续刷题"}</span>
-                <small>第 {question.ordinal || state.answeredCount + 1} 题 · 只需提交答案</small>
+                <small>只需提交答案</small>
               </div>
-              <section className="smart-practice-prompt" aria-labelledby="smart-practice-question-title">
-                <small>题目</small>
-                <p id="smart-practice-question-title">{question.prompt}</p>
-              </section>
-              <AnswerField
-                question={question}
-                answer={state.answer}
-                onChange={(value) => dispatch({ type: "ANSWER_CHANGED", value })}
-                disabled={submitting}
-                name={answerName}
-              />
-              <button
-                type="submit"
-                className="button primary smart-practice-submit"
-                disabled={!state.answer.trim() || submitting}
-              >
-                {submitting ? "正在核对" : "提交答案"}<ArrowRight size={14} />
-              </button>
-              <p className="smart-practice-evidence-note">
-                <LockKey size={12} />无需填写信心或错因；系统只记录本次真实作答。
-              </p>
+              <div className="smart-practice-question-layout">
+                <div className="smart-practice-question-pane">
+                  <section className="smart-practice-prompt" aria-labelledby="smart-practice-question-title">
+                    <small>题目</small>
+                    <p id="smart-practice-question-title">{question.prompt}</p>
+                  </section>
+                  <AnswerField
+                    question={question}
+                    answer={state.answer}
+                    onChange={(value) => dispatch({ type: "ANSWER_CHANGED", value })}
+                    disabled={submitting}
+                    name={answerName}
+                  />
+                </div>
+              </div>
+              <div className="smart-practice-actions">
+                <button
+                  type="submit"
+                  className="button primary smart-practice-submit"
+                  disabled={!state.answer.trim() || submitting}
+                >
+                  {submitting ? "正在核对" : "提交答案"}<ArrowRight size={14} />
+                </button>
+                <p className="smart-practice-evidence-note">
+                  A–D 或 1–4 选择 · Enter 提交
+                </p>
+              </div>
             </form>
           )}
 
-          {state.phase === "feedback" && state.feedback && (
+          {!exitPrompt && state.phase === "feedback" && state.feedback && (
             <FeedbackView
               state={state}
               probeName={probeName}
@@ -476,11 +577,11 @@ export function SmartPracticeWorkspace({ startSession, submitAnswer, submitProbe
             />
           )}
 
-          {state.phase === "complete" && state.summary && (
+          {!exitPrompt && state.phase === "complete" && state.summary && (
             <SummaryView summary={state.summary} onNextGroup={startNextGroup} />
           )}
 
-          {state.phase === "error" && (
+          {!exitPrompt && state.phase === "error" && (
             <div className="smart-practice-state smart-practice-error" role="alert">
               <Info size={26} />
               <h3>{state.retryKind === "start" ? "暂时无法开始练习" : "这次操作还没有完成"}</h3>
@@ -488,11 +589,12 @@ export function SmartPracticeWorkspace({ startSession, submitAnswer, submitProbe
               <div>
                 {state.retryKind === "start" && <button type="button" className="button primary" onClick={retryStart}>重新开始</button>}
                 {state.retryKind === "submit" && <button type="button" className="button primary" onClick={retrySubmit}>返回本题重试</button>}
-                <button type="button" className="button secondary" onClick={() => closeWorkspace("interrupted")}>结束本组</button>
+                {state.retryKind === "continue" && <button type="button" className="button primary" onClick={retryStart}>重新读取下一题</button>}
+                <button type="button" className="button secondary" onClick={() => closeWorkspace("interrupted", { confirmed: true })}>结束本组</button>
               </div>
             </div>
           )}
-        </main>
+        </div>
       </section>
     </div>
   );

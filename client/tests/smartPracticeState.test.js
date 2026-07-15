@@ -263,6 +263,7 @@ test("a resumed group reports authoritative totals without inventing missing wro
 
   assert.equal(state.summary.correctCount, 5);
   assert.equal(state.summary.totalCount, 8);
+  assert.equal(state.summary.scoreBreakdownComplete, false);
   assert.equal(state.summary.wrongQuestions.length, 1);
   assert.equal(state.summary.wrongQuestionsComplete, false);
 

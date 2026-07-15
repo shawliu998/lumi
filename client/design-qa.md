@@ -7,6 +7,28 @@
 > internal expansion prerequisite; usability and fresh visual/accessibility
 > records remain separate evidence before a broader learner rollout.
 
+## 2026-07-15 full-window redesign status
+
+- Current implementation uses a real resizable Tauri content area, a 216/64px
+  sidebar, three primary destinations, a single-action home, a fixed-eight
+  focus workspace, and source-backed learning records. The historical 900 × 526
+  shell described below is no longer the current implementation.
+- The old `smart-practice.css` was removed and the old global stylesheet was
+  reduced to a small reset. Current semantic tokens and component rules live in
+  `src/styles/tokens.css` and `src/styles/redesign.css`.
+- Current deterministic evidence: 30 client tests pass, the Vite production
+  build and debug `Lumi.app` bundle pass, desktop configuration/managed-sidecar checks pass, and
+  `python3 scripts/verify_core.py` passes all 13 gates.
+- Fresh screenshots are still pending. The required in-app Browser runtime
+  failed during initialization with `Cannot redefine property: process`; the
+  build did not silently switch to an unapproved Playwright CLI. Therefore all
+  images under `qa/` remain explicitly classified as historical before-state
+  evidence, not current after-state QA.
+- The current Core-320 safe question contract exposes `prompt/options` but no
+  versioned material or chart projection. Long prompts use the tested scrollable
+  single-column DOM; a claimed data-analysis split view awaits a real contract,
+  fixture, and visual evidence.
+
 ## 2026-07-14 growth-rate lesson delta
 
 - Added a full-window lesson workspace with the confirmed learner-visible flow:
@@ -210,3 +232,68 @@ None for the requested scope.
 No P3 item is required for this handoff. The fixed 900 × 526 desktop shell at 1440 × 1024 is intentional because it preserves the supplied visual truth exactly; narrower breakpoints remain implemented separately.
 
 final result: passed
+
+---
+
+# Home recommendation editorial redesign QA — 2026-07-15
+
+## Comparison target
+
+- Source visual truth: `/Users/a1-6/.codex/generated_images/019f65cb-c8ad-7731-972f-2d04c7b655de/exec-d79d7eea-547e-4510-a5e0-278614147209.png`
+- Implementation target: `http://127.0.0.1:4173/`, `.home-recommendation`
+- Intended viewport: 1440 × 1024, connected overview state
+- Implementation screenshot: unavailable because the in-app Browser bootstrap failed before a tab could be opened (`Cannot redefine property: process`).
+
+## Evidence completed
+
+- Source mock was opened and inspected before implementation.
+- The selected editorial structure was implemented in `src/HomeScreen.jsx` and `src/styles/redesign.css`.
+- The vertical accent rail, tinted rounded panel, and purple kicker were removed.
+- A neutral numbered kicker, horizontal rule, stronger title hierarchy, semantic status color, and a flat existing primary action were added.
+- `npm test`: passed, 30 / 30 tests.
+- `npm run build`: passed.
+- `python3 scripts/check_client_artifacts.py`: passed, including the prohibited-style scan.
+- `git diff --check`: passed.
+
+## Full-view comparison evidence
+
+Blocked. The source mock is available, but the implementation could not be captured in the required in-app Browser at the matching viewport and state.
+
+## Focused comparison evidence
+
+Blocked for the same reason. The focused recommendation region cannot be visually compared from code or build output alone.
+
+## Findings
+
+- [P0] Required browser-rendered QA evidence is missing.
+  Location: home overview, `.home-recommendation`.
+  Evidence: the local server returns HTTP 200, but the in-app Browser runtime fails during bootstrap before it can open or capture the page.
+  Impact: typography, spacing, wrapping, responsive behavior, and final visual fidelity cannot be honestly approved from source code alone.
+  Fix: restore the in-app Browser runtime or explicitly authorize a Playwright CLI fallback, then capture 1440 × 1024 and a narrow breakpoint, compare both with the selected mock, and fix any P1/P2 drift.
+
+## Required fidelity surfaces
+
+- Fonts and typography: implemented from the existing SF Pro / PingFang stack; visual confirmation blocked.
+- Spacing and layout rhythm: implemented as a two-column editorial grid with neutral rules; visual confirmation blocked.
+- Colors and visual tokens: source uses neutral ink, green status, and a primary action; implementation maps these to existing tokens and contains no gradient; visual confirmation blocked.
+- Image quality and asset fidelity: no custom image assets are present in this component; Phosphor icons are retained.
+- Copy and content: existing dynamic recommendation copy and action behavior are preserved; Clock icon added to the duration label.
+
+## Comparison history
+
+- Iteration 1: implementation completed; automated checks passed; visual comparison blocked before first capture because browser bootstrap failed.
+
+## Implementation checklist
+
+- [x] Replace the vertical purple rail and tinted rounded card.
+- [x] Preserve dynamic recommendation content and the start-session action.
+- [x] Use existing tokens and the existing icon family.
+- [x] Pass tests, build, artifact scan, and whitespace validation.
+- [ ] Capture and compare the rendered desktop and narrow layouts.
+- [ ] Test the primary action and check the browser console.
+
+## Follow-up polish
+
+None can be classified until the rendered comparison is available.
+
+final result: blocked

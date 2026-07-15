@@ -2,6 +2,19 @@ import { SMART_PRACTICE_SCOPES } from "./practiceScopes.js";
 
 const KNOWN_SCOPE_IDS = new Set(SMART_PRACTICE_SCOPES.map((scope) => scope.scopeId));
 const WRONG_STATES = new Set(["needs_review", "resolved"]);
+const SESSION_STATES = new Set(["active", "completed", "ended_early"]);
+const HYPOTHESIS_STATES = new Set([
+  "evidence_insufficient",
+  "repeated_error_observed",
+  "awaiting_disambiguation",
+  "supported_hypothesis",
+  "awaiting_transfer_validation",
+  "weakened_by_transfer",
+  "persistent_or_recurrent",
+  "resolved_after_validation",
+  "hypothesis_withdrawn",
+  "voided",
+]);
 
 function isObject(value) {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -72,6 +85,29 @@ function requireModule(value) {
   return value;
 }
 
+function normalizeHypothesis(value) {
+  if (
+    !isObject(value)
+    || !text(value.hypothesis_id)
+    || !text(value.signature_label)
+    || !HYPOTHESIS_STATES.has(value.status)
+    || !Array.isArray(value.cause_candidates)
+    || !value.cause_candidates.every((candidate) => isObject(candidate) && text(candidate.label))
+    || !nonNegativeInteger(value.independent_family_count)
+  ) {
+    throw new TypeError("Invalid reversible error hypothesis");
+  }
+  return {
+    ...value,
+    hypothesis_id: text(value.hypothesis_id),
+    signature_label: text(value.signature_label),
+    cause_candidates: value.cause_candidates.map((candidate) => ({
+      ...candidate,
+      label: text(candidate.label),
+    })),
+  };
+}
+
 export function normalizePracticeProfile(payload, { embedded = false } = {}) {
   if (
     !isObject(payload)
@@ -85,7 +121,10 @@ export function normalizePracticeProfile(payload, { embedded = false } = {}) {
   }
   requireOverall(payload.overall);
   payload.modules.forEach(requireModule);
-  return payload;
+  return {
+    ...payload,
+    error_hypotheses: payload.error_hypotheses.map(normalizeHypothesis),
+  };
 }
 
 export function normalizeWrongQuestion(value) {
@@ -123,7 +162,7 @@ export function normalizeWrongQuestion(value) {
     independentWrongAttempts: value.attempts.independent_wrong_count,
     lastSelectedOption: text(value.attempts.last_selected_option),
     lastWrongAt: text(value.attempts.last_wrong_at),
-    diagnosisHypotheses: value.diagnosis_hypotheses,
+    diagnosisHypotheses: value.diagnosis_hypotheses.map(normalizeHypothesis),
   };
 }
 
@@ -153,37 +192,71 @@ export function normalizePracticeOverview(payload) {
   }
   const profile = normalizePracticeProfile(payload.profile, { embedded: true });
   const requestedScopeId = text(payload.recommendation.decision.recommended_scope_id);
-  const activeSession = payload.recent_sessions
+  const recentSessions = payload.recent_sessions
     .map((session) => {
       const scopeId = text(session?.scope_id);
       const sessionId = text(session?.session_id);
       if (
         !isObject(session)
-        || session.status !== "active"
         || !sessionId
         || !KNOWN_SCOPE_IDS.has(scopeId)
+        || !SESSION_STATES.has(session.status)
         || !nonNegativeInteger(session.answered_count)
         || session.target_count !== 8
-        || session.answered_count >= session.target_count
+        || session.answered_count > session.target_count
+        || (session.status === "active" && session.answered_count >= session.target_count)
+        || (session.status === "completed" && session.answered_count !== session.target_count)
       ) {
         return null;
       }
+      const questionAttemptCount = nonNegativeInteger(session.question_attempt_count)
+        && session.question_attempt_count <= session.answered_count
+        ? session.question_attempt_count
+        : null;
+      const probeOrSkipCount = nonNegativeInteger(session.probe_or_skip_count)
+        && session.probe_or_skip_count <= session.answered_count
+        && (questionAttemptCount === null
+          || session.probe_or_skip_count + questionAttemptCount === session.answered_count)
+        ? session.probe_or_skip_count
+        : null;
       return {
         sessionId,
         scopeId,
+        status: session.status,
         answeredCount: session.answered_count,
         targetCount: session.target_count,
+        questionAttemptCount,
+        probeOrSkipCount,
+        correctCount: questionAttemptCount !== null
+          && nonNegativeInteger(session.correct_count)
+          && session.correct_count <= questionAttemptCount
+          ? session.correct_count
+          : null,
+        accuracy: nullableMetric(session.accuracy) ? session.accuracy : null,
         title: text(session.title),
         moduleLabel: text(session.module_label),
         startedAt: text(session.started_at),
       };
     })
-    .find(Boolean) || null;
+    .filter(Boolean);
+  const resumable = recentSessions.find((session) => (
+    session.status === "active" && session.answeredCount < session.targetCount
+  ));
+  const activeSession = resumable ? {
+    sessionId: resumable.sessionId,
+    scopeId: resumable.scopeId,
+    answeredCount: resumable.answeredCount,
+    targetCount: resumable.targetCount,
+    title: resumable.title,
+    moduleLabel: resumable.moduleLabel,
+    startedAt: resumable.startedAt,
+  } : null;
   return {
     ...payload,
     profile,
     wrongQuestionPreview: payload.wrong_question_preview.map(normalizeWrongQuestion),
     recommendedScopeId: KNOWN_SCOPE_IDS.has(requestedScopeId) ? requestedScopeId : "",
+    recentSessions,
     activeSession,
   };
 }
@@ -213,7 +286,10 @@ export function normalizePracticeSessionReport(payload) {
   ) {
     throw new TypeError("Invalid practice session report contract");
   }
-  return payload;
+  return {
+    ...payload,
+    error_hypotheses: payload.error_hypotheses.map(normalizeHypothesis),
+  };
 }
 
 export function isKnownPracticeScope(scopeId) {

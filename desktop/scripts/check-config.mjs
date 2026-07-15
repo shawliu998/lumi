@@ -16,6 +16,7 @@ const core320SamplesPath = resolve(desktopRoot, "../domains/practice_v3/samples.
 
 const config = JSON.parse(await readFile(configPath, "utf8"));
 const capability = JSON.parse(await readFile(capabilityPath, "utf8"));
+const mainWindow = config.app?.windows?.find((window) => window.label === "main");
 const [cargo, runtime, bootstrap, launcher, buildSidecar, core320Manifest] = await Promise.all([
   readFile(cargoPath, "utf8"),
   readFile(runtimePath, "utf8"),
@@ -30,6 +31,15 @@ const expectations = [
   [config.identifier === "com.lumi.learning", "bundle identifier must be com.lumi.learning"],
   [config.build?.frontendDist === "../../client/dist", "frontendDist must point at client/dist"],
   [config.build?.devUrl === "http://127.0.0.1:1420", "devUrl must be loopback-only"],
+  [config.app?.windows?.length === 1, "desktop shell must define exactly one window"],
+  [mainWindow?.width === 1180, "main window width must be 1180 logical pixels"],
+  [mainWindow?.height === 760, "main window height must be 760 logical pixels"],
+  [mainWindow?.minWidth === 960, "main window minimum width must be 960 logical pixels"],
+  [mainWindow?.minHeight === 640, "main window minimum height must be 640 logical pixels"],
+  [mainWindow?.resizable === true, "main window must remain resizable"],
+  [mainWindow?.decorations === true, "main window must retain native decorations"],
+  [mainWindow?.titleBarStyle === "Visible", "main window must retain the native visible title bar"],
+  [mainWindow?.hiddenTitle === true, "main window must hide redundant native title text"],
   [config.app?.security?.csp?.includes("default-src 'self'"), "CSP must default to self"],
   [config.app?.security?.csp?.includes("connect-src 'self' http://127.0.0.1:8765"), "CSP must allow only the exact loopback sidecar origin"],
   [!config.app?.security?.csp?.includes("127.0.0.1:1420"), "CSP must not grant the development port network access"],
