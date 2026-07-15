@@ -13,7 +13,7 @@ calling tools or models again.
 ## Run locally
 
 ```bash
-cd $HOME/Documents/peikao/runtime
+cd $HOME/Documents/zhishixingqiu/runtime
 python3 -m unittest discover -s tests -v
 python3 -m hermes_runtime --db /tmp/hermes-demo.sqlite3 demo
 python3 -m hermes_runtime --db /tmp/hermes-demo.sqlite3 replay RUN_ID

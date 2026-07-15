@@ -77,17 +77,25 @@ Lumi operates with bounded autonomy:
 
 ## Representative v0 coverage
 
-Coverage is breadth-first for loop validation, not full-catalog completion:
+The implemented internal Xingce breadth is larger than the cross-domain fixture
+matrix but remains far smaller than a production catalog:
 
-- Xingce: one subtype each from verbal, judgment, quantitative, data analysis,
-  and common-knowledge/political-theory modules.
+- Xingce direct practice: Core-320 contains eight diagnostic units and 80
+  versioned questions each for verbal, judgment, quantitative, and data
+  analysis; mixed practice reuses those questions. Common/political knowledge
+  remains deferred.
+- Xingce/Shenlun/Interview regression: 42 synthetic cases cover 14
+  representative paths across success, ambiguous, and offline modes.
 - Shenlun: summarization, comprehensive analysis, recommendations, official
   writing, and essay samples.
 - Interview: comprehensive analysis, organization/planning, interpersonal, and
   emergency-response samples.
 
-Each sample path must produce domain evidence, at least one diagnosis hypothesis,
-a teaching decision, a verification event, and an auditable learner-state update.
+The historical regression paths exercise the complete diagnostic state machine.
+Core-320 direct practice does not force a probe, lesson, or verification after
+every answer: intervention is evidence-triggered, positive learning state still
+requires an unseen unhinted item, and unfinished validation carries into later
+practice without extending the fixed eight slots.
 
 ## Non-goals for v0
 

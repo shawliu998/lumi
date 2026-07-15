@@ -1,9 +1,8 @@
 # Lumi desktop
 
-This directory is a Tauri 2 macOS wrapper for the existing
-`../client/dist` frontend. It intentionally does not build or modify the
-frontend: the UI owner controls `client/`, while this shell packages its latest
-already-built output.
+This directory is a Tauri 2 macOS wrapper for the Lumi client. Desktop build
+commands first build `../client`, then package that exact output together with
+the local sidecar so a stale frontend cannot be shipped accidentally.
 
 ## Prerequisites
 
@@ -18,7 +17,7 @@ does not require a shell-profile change. They also keep npm's download cache in
 Install desktop dependencies:
 
 ```sh
-cd $HOME/Documents/peikao/desktop
+cd $HOME/Documents/zhishixingqiu/desktop
 npm_config_cache="$PWD/.npm-cache" npm install
 ```
 
@@ -48,17 +47,29 @@ npm run dev:frontend
 npm run dev
 ```
 
-Before a release build, the UI owner must build the frontend from `client/`:
+Build a local release package, including the frontend and sidecar:
 
 ```sh
-cd $HOME/Documents/peikao/client && npm run build
-cd $HOME/Documents/peikao/desktop && npm run build
+cd $HOME/Documents/zhishixingqiu/desktop && npm run build
 ```
 
-For a quick locally unsigned macOS `.app` verification build:
+For a quick locally unsigned macOS `.app` build (also builds the frontend):
+
+```sh
+npm run build:fast-app
+```
+
+Use the full rebuild when sidecar or question-bank source changed:
 
 ```sh
 npm run build:debug-app
+```
+
+When the packaged sidecar is already current, create an installable local
+release `.app` and `.dmg` without rebuilding PyInstaller:
+
+```sh
+npm run build:fast-release
 ```
 
 Artifacts are emitted under `src-tauri/target/<profile>/bundle/`.
@@ -94,3 +105,20 @@ port 8765 and do not include either hook.
 
 The wrapper must continue consuming versioned frontend outputs; it must not
 reach into mutable learning data or external production repositories.
+
+## Core-320 packaging
+
+`npm run build:sidecar` packages the frozen `domains/practice_v3` manifest,
+schema, and safe samples together with the deterministic generators. Before
+starting PyInstaller it runs the non-writing `core320_bank` gate, so an invalid
+digest or an unsafe materialization boundary fails before the expensive build.
+The sidecar check fails closed unless its capability response matches the source
+manifest's exact bank ID, version, SHA-256 digest, 320-question count, four
+80-question module scopes, and one 320-question mixed scope. The managed-app
+check additionally requires byte-identical manifest, schema, and safe-sample
+files in the source tree, built runtime, and `.app`, then proves that Tauri
+launches and stops the bundled sidecar. A missing runtime or `.app` is
+`PENDING` in the consolidated evaluation harness, never a packaging pass.
+These checks establish local ARM64 mechanics only; they do not establish
+signing, notarization, universal-binary support, human content approval, or
+external distribution readiness.

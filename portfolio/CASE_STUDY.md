@@ -2,30 +2,33 @@
 
 Status: **evidence-backed v0 case study; learner-outcome sections remain templates**
 
-Current evidence boundary: 42/42 representative domain contract cases and real
-success/ambiguous/offline domain→engine→runtime traces are reproducible through
-`evals/run_all.py`. The ARM64 debug Mac shell, packaged sidecar lifecycle, and
-three-screen visual/interaction baseline are also reproducible. This still does
-not prove population learning gains, notarized distribution readiness, or full
-content coverage.
+Current evidence boundary: the internal Core-320 bank contains 80 versioned
+questions in each of verbal, judgment, quantitative, and data analysis, exposed
+through four module scopes and one mixed scope. Its deterministic suites pass
+76 domain, 41 policy-engine, 43 service, and 22 client tests; the client build
+and ARM64 managed debug-app lifecycle also pass. The older 42/42 cross-domain
+fixture matrix remains reproducible regression evidence. None of this proves
+human content approval, population learning gains, notarized distribution, or
+full exam coverage.
 
-The real-attempt endpoint has a separate black-box safety gate for zero-cause
-correct answers, unconfirmed hypotheses, PII redaction, fail-closed fields, and
-engineering-prior fallback. The separate continuation gate proves one local
-versioned probe→verification session; the visible Mac flow now follows that
-same state machine and only shows mastery after independent verification. The
-initial POST alone still must not be described as a completed tutoring session.
+The default learner path is now module selection followed by fixed-eight direct
+practice, a factual group report, and one-click continuation into a
+conservatively selected or learner-chosen next group. Correct answers advance;
+errors receive minimum feedback; a tutorial or optional probe appears only
+after enough independent evidence; transfer and delayed checks remain ordinary
+later questions. The older mandatory
+probe→verification endpoint is a safety regression, not the visible default.
 
 Owner: `<NAME>`
 Version/date: `<VERSION>`
-Reproducible release report: `run-20260711T051110Z` in `evals/reports/latest.json`
+Legacy regression report: `run-20260714T120838Z` in `evals/reports/latest.json`
 
 ## One-sentence thesis
 
-Lumi turns an answer into an evidence-linked cycle of uncertain diagnosis,
-targeted probing, cause-specific teaching, independent transfer verification,
-knowledge-state update, and scheduled review—while keeping learner data local by
-default.
+Lumi turns ordinary question practice into an evidence-linked cycle of minimum
+feedback, uncertain error-pattern tracking, targeted intervention only when
+justified, and independent later verification—while keeping learner data local
+by default.
 
 ## Problem and user
 

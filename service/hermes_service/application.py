@@ -15,10 +15,11 @@ from hermes_integration.loop import (
 )
 from hermes_runtime.store import EventStore
 
-from .catalog import ScenarioCatalog
+from .catalog import LessonCatalog, ScenarioCatalog
+from .practice_v2 import PracticeServiceError, SmartPracticeCoordinator
 
 
-SERVICE_VERSION = "0.1.0"
+SERVICE_VERSION = "0.2.0"
 
 
 class ServiceError(RuntimeError):
@@ -33,7 +34,10 @@ class SidecarApplication:
     def __init__(self, database: str | Path) -> None:
         self.database = str(database)
         self.catalog = ScenarioCatalog()
+        self.lesson_catalog = LessonCatalog()
+        self.smart_practice = SmartPracticeCoordinator(self.database)
         self._continuation_lock = threading.Lock()
+        self._practice_lock = threading.Lock()
 
     def health(self) -> dict[str, Any]:
         store = EventStore(self.database)
@@ -50,15 +54,27 @@ class SidecarApplication:
 
     def capabilities(self) -> dict[str, Any]:
         scenarios = self.catalog.list()
-        return {
+        lessons = self.lesson_catalog.list()
+        payload = {
             "service_version": SERVICE_VERSION,
             "api_version": "v1",
             "local_only": True,
             "domains": sorted({item["domain"] for item in scenarios}),
             "learning_modes": sorted(SCENARIOS),
             "scenario_count": len(scenarios),
+            "lesson_count": len(lessons),
+            "smart_practice_package": {
+                "package_id": self.smart_practice.package_id,
+                "version": self.smart_practice.package_version,
+                "target_count": 8,
+            },
             "features": [
                 "representative-scenario-catalog",
+                "auditable-lesson-catalog-v1",
+                "lesson-practice-via-existing-runtime",
+                "answer-only-smart-practice-v2",
+                "fixed-eight-session-policy",
+                "cross-family-transfer-validation",
                 "domain-engine-runtime-loop",
                 "real-learner-attempt-v1",
                 "optimistic-attempt-continuation-v1",
@@ -71,6 +87,18 @@ class SidecarApplication:
                 "health": "GET /v1/health",
                 "capabilities": "GET /v1/capabilities",
                 "scenarios": "GET /v1/scenarios",
+                "lessons": "GET /v1/lessons",
+                "lesson_detail": "GET /v1/lessons/{lesson_id}",
+                "practice_session": "POST /v1/practice-sessions",
+                "practice_session_detail": "GET /v1/practice-sessions/{session_id}",
+                "practice_answer": "POST /v1/practice-sessions/{session_id}/answers",
+                "practice_probe": "POST /v1/practice-sessions/{session_id}/probes",
+                "practice_end": "POST /v1/practice-sessions/{session_id}/end",
+                "practice_session_report": "GET /v1/practice-sessions/{session_id}/report",
+                "practice_overview": "GET /v1/practice/overview",
+                "practice_history": "GET /v1/practice/history",
+                "practice_wrong_questions": "GET /v1/practice/wrong-questions",
+                "practice_profile": "GET /v1/practice/profile",
                 "run": "POST /v1/runs",
                 "attempt": "POST /v1/attempts",
                 "attempt_response": "POST /v1/attempts/{run_id}/responses",
@@ -79,6 +107,34 @@ class SidecarApplication:
                 "skills": "GET /v1/skills/report",
             },
         }
+        bank = self.smart_practice.bank_capability()
+        if bank is not None:
+            payload["smart_practice_bank"] = bank
+            payload["practice_learning_records"] = {
+                "read_only": True,
+                "authoritative_source": "verified_append_only_practice_trace",
+                "schemas": {
+                    "session_report": "lumi.practice-session-report.v1",
+                    "overview": "lumi.practice-overview.v1",
+                    "profile": "lumi.practice-profile.v1",
+                    "history": "lumi.practice-history.v1",
+                    "wrong_questions": "lumi.wrong-question-book.v1",
+                },
+                "empty_collection_status": 200,
+                "independent_evidence_only_for_profile_status": True,
+                "error_causes_are_reversible_hypotheses": True,
+            }
+            payload["features"].append("scope-bound-core-320-practice-v3")
+            payload["features"].extend(
+                [
+                    "rebuildable-practice-session-report-v1",
+                    "rebuildable-practice-history-v1",
+                    "evidence-backed-wrong-question-book-v1",
+                    "independent-evidence-practice-profile-v1",
+                    "deterministic-next-scope-overview-v1",
+                ]
+            )
+        return payload
 
     def scenarios(self, domain: str | None = None, mode: str | None = None) -> dict[str, Any]:
         if domain is not None and domain not in {"xingce", "shenlun", "interview"}:
@@ -86,7 +142,145 @@ class SidecarApplication:
         if mode is not None and mode not in {"success", "ambiguous", "offline"}:
             raise ServiceError(400, "invalid_mode", "mode must be success, ambiguous, or offline")
         items = self.catalog.list(domain=domain, mode=mode)
-        return {"count": len(items), "items": items}
+        return {
+            "policy": "safe-practice-catalog-v1",
+            "count": len(items),
+            "items": items,
+        }
+
+    def lessons(self) -> dict[str, Any]:
+        items = [public_safe(item) for item in self.lesson_catalog.list()]
+        for item in items:
+            item["links"] = {"self": f"/v1/lessons/{item['lesson_id']}"}
+        return {
+            "schema_version": "hermes.lesson-catalog.v1",
+            "policy": "auditable-lesson-catalog-v1",
+            "count": len(items),
+            "items": items,
+        }
+
+    def lesson(self, lesson_id: str) -> dict[str, Any]:
+        if len(lesson_id) > 200 or not _safe_identifier(lesson_id):
+            raise ServiceError(400, "invalid_lesson_id", "lesson_id contains unsupported characters")
+        try:
+            lesson = public_safe(self.lesson_catalog.resolve(lesson_id))
+        except KeyError:
+            raise ServiceError(404, "lesson_not_found", "lesson_id is not in the lesson catalog") from None
+        return {
+            "schema_version": "hermes.lesson-detail.v1",
+            "policy": "auditable-lesson-catalog-v1",
+            "lesson": lesson,
+            "links": {"catalog": "/v1/lessons"},
+        }
+
+    def start_practice_session(
+        self,
+        unit_id: str | None = None,
+        *,
+        scope_id: str | None = None,
+    ) -> dict[str, Any]:
+        with self._practice_lock:
+            return self._practice_call(
+                self.smart_practice.start,
+                unit_id,
+                scope_id=scope_id,
+            )
+
+    def practice_session(self, session_id: str) -> dict[str, Any]:
+        with self._practice_lock:
+            return self._practice_call(self.smart_practice.get, session_id)
+
+    def submit_practice_answer(
+        self,
+        session_id: str,
+        question_id: Any,
+        question_version_id: Any,
+        answer: Any,
+        response_time_seconds: Any = None,
+    ) -> dict[str, Any]:
+        with self._practice_lock:
+            return self._practice_call(
+                self.smart_practice.submit_answer,
+                session_id,
+                question_id,
+                question_version_id,
+                answer,
+                response_time_seconds,
+            )
+
+    def submit_practice_probe(
+        self,
+        session_id: str,
+        hypothesis_id: Any,
+        answer: Any,
+    ) -> dict[str, Any]:
+        with self._practice_lock:
+            return self._practice_call(
+                self.smart_practice.submit_probe,
+                session_id,
+                hypothesis_id,
+                answer,
+            )
+
+    def end_practice_session(self, session_id: str, reason: str | None = None) -> dict[str, Any]:
+        with self._practice_lock:
+            return self._practice_call(self.smart_practice.end, session_id, reason)
+
+    def practice_session_report(self, session_id: str) -> dict[str, Any]:
+        with self._practice_lock:
+            return self._practice_call(
+                self.smart_practice.practice_session_report,
+                session_id,
+            )
+
+    def practice_overview(self) -> dict[str, Any]:
+        with self._practice_lock:
+            return self._practice_call(self.smart_practice.practice_overview)
+
+    def practice_history(
+        self,
+        *,
+        limit: int,
+        offset: int,
+        scope_id: str | None,
+        status: str | None,
+    ) -> dict[str, Any]:
+        with self._practice_lock:
+            return self._practice_call(
+                self.smart_practice.practice_history,
+                limit=limit,
+                offset=offset,
+                scope_id=scope_id,
+                status=status,
+            )
+
+    def practice_wrong_questions(
+        self,
+        *,
+        limit: int,
+        offset: int,
+        state: str,
+        module_id: str | None,
+    ) -> dict[str, Any]:
+        with self._practice_lock:
+            return self._practice_call(
+                self.smart_practice.practice_wrong_questions,
+                limit=limit,
+                offset=offset,
+                state=state,
+                module_id=module_id,
+            )
+
+    def practice_profile(self) -> dict[str, Any]:
+        with self._practice_lock:
+            return self._practice_call(self.smart_practice.practice_profile)
+
+    @staticmethod
+    def _practice_call(function: Any, *args: Any, **kwargs: Any) -> Any:
+        try:
+            return function(*args, **kwargs)
+        except PracticeServiceError as exc:
+            raise ServiceError(exc.status, exc.code, exc.message) from None
 
     def submit_attempt(
         self,
@@ -99,9 +293,13 @@ class SidecarApplication:
         if not isinstance(fixture_id, str) or not fixture_id or len(fixture_id) > 200:
             raise ServiceError(400, "invalid_fixture_id", "fixture_id must be a non-empty catalog identifier")
         try:
-            fixture = self.catalog.resolve(fixture_id)
+            fixture = self._resolve_attempt_fixture(fixture_id)
         except KeyError:
-            raise ServiceError(404, "fixture_not_found", "fixture_id is not in the 42-scenario catalog") from None
+            raise ServiceError(
+                404,
+                "fixture_not_found",
+                "fixture_id is not in the representative or lesson practice catalog",
+            ) from None
         if not isinstance(response, str) or not response.strip():
             raise ServiceError(400, "invalid_response", "response must be non-empty text")
         if len(response) > 20_000:
@@ -237,7 +435,7 @@ class SidecarApplication:
         finally:
             store.close()
         try:
-            fixture = self.catalog.resolve(str(fixture_id))
+            fixture = self._resolve_attempt_fixture(str(fixture_id))
         except KeyError:
             raise ServiceError(409, "fixture_unavailable", "session fixture is no longer in the catalog") from None
         try:
@@ -283,6 +481,11 @@ class SidecarApplication:
                         "verification": {
                             "prompt": teaching["independent_verification_prompt"],
                             "response_mode": teaching["independent_verification_response_mode"],
+                            "options": dict(
+                                fixture.get("independent_verify", {})
+                                .get("pass_condition", {})
+                                .get("options", {})
+                            ),
                             "status": "awaiting_learner_response",
                         },
                         "mastery_update": None,
@@ -318,6 +521,12 @@ class SidecarApplication:
         ):
             raise ServiceError(400, "invalid_response_time", "response_time_seconds must be a number in [0, 7200]")
 
+    def _resolve_attempt_fixture(self, fixture_id: str) -> dict[str, Any]:
+        try:
+            return self.catalog.resolve(fixture_id)
+        except KeyError:
+            return self.lesson_catalog.resolve_fixture(fixture_id)
+
     def run_learning_loop(self, mode: str, run_id: str | None = None) -> dict[str, Any]:
         if mode not in SCENARIOS:
             raise ServiceError(400, "invalid_mode", "mode must be success, ambiguous, or offline")
@@ -352,8 +561,12 @@ class SidecarApplication:
             session.store.close()
 
     def trace(self, run_id: str) -> dict[str, Any]:
+        semantic_replay = self._practice_call(
+            self.smart_practice.verify_semantic_replay,
+            run_id,
+        )
         events, verified = self._events(run_id)
-        return {
+        payload = {
             "run_id": run_id,
             "trace_verified": verified,
             "event_count": len(events),
@@ -369,19 +582,29 @@ class SidecarApplication:
                 for event in events
             ],
         }
+        if semantic_replay is not None:
+            payload["semantic_replay_verified"] = semantic_replay
+        return payload
 
     def replay(self, run_id: str) -> dict[str, Any]:
+        semantic_replay = self._practice_call(
+            self.smart_practice.verify_semantic_replay,
+            run_id,
+        )
         store = EventStore(self.database)
         try:
             if not store.events(run_id):
                 raise ServiceError(404, "run_not_found", "the requested run does not exist")
             frames = list(store.replay(run_id))
-            return {
+            payload = {
                 "run_id": run_id,
                 "trace_verified": True,
                 "frame_count": len(frames),
                 "frames": public_safe(frames),
             }
+            if semantic_replay is not None:
+                payload["semantic_replay_verified"] = semantic_replay
+            return payload
         finally:
             store.close()
 

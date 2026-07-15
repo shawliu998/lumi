@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run deterministic Lumi checks without installing project dependencies."""
+"""Run deterministic Lumi checks without mutating tracked evidence reports."""
 
 from __future__ import annotations
 
@@ -15,7 +15,14 @@ XINGCE = Path(os.environ.get("LUMI_XINGCE_ROOT", Path.home() / "Documents" / "xi
 
 
 def command(name: str, argv: list[str], cwd: Path) -> dict[str, object]:
-    result = subprocess.run(argv, cwd=cwd, capture_output=True, text=True)
+    environment = dict(os.environ)
+    local_roots = [ROOT, *(ROOT / item for item in ("engine", "runtime", "domains", "integration", "service"))]
+    environment["PYTHONPATH"] = (
+        os.pathsep.join(str(path) for path in local_roots)
+        + os.pathsep
+        + environment.get("PYTHONPATH", "")
+    )
+    result = subprocess.run(argv, cwd=cwd, env=environment, capture_output=True, text=True)
     return {
         "name": name,
         "command": argv,
@@ -65,8 +72,8 @@ def main() -> int:
     if (ROOT / "evals" / "run_all.py").is_file():
         checks.append(
             (
-                "release-evidence",
-                [sys.executable, "evals/run_all.py"],
+                "consolidated-release-evidence",
+                [sys.executable, "evals/run_all.py", "--no-write"],
                 ROOT,
             )
         )
@@ -75,6 +82,11 @@ def main() -> int:
     if (client / "package.json").is_file():
         checks.extend(
             [
+                (
+                    "client-learning-policy",
+                    ["npm", "test"],
+                    client,
+                ),
                 (
                     "client-production-build",
                     ["npm", "run", "build"],

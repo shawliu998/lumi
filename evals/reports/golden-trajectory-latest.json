@@ -141,7 +141,7 @@
         "attempt:attempt-demo-probe-001"
       ],
       "output": {
-        "sha256": "4d7596e60b30632b371f3527ae39b82eff612719858677817b65939389f77c64",
+        "sha256": "0c442d69e5aeb0dfeccd6b02756b7e4c781ea1e536ccd13d110128d475c2e27a",
         "result": {
           "post_state": {
             "learner_id": "learner-demo-redacted",
@@ -153,7 +153,7 @@
             "evidence_count": 4,
             "mastery": 0.5751921245771141,
             "uncertainty": 0.40476676779245535,
-            "last_updated_at": "2026-07-11T05:11:10.021712+00:00",
+            "last_updated_at": "2026-07-14T12:08:38.020111+00:00",
             "provenance": [
               {
                 "attempt": {
@@ -243,7 +243,7 @@
       "evidence_count": 4,
       "mastery": 0.5751921245771141,
       "uncertainty": 0.40476676779245535,
-      "last_updated_at": "2026-07-11T05:11:10.021712+00:00",
+      "last_updated_at": "2026-07-14T12:08:38.020111+00:00",
       "provenance": [
         {
           "attempt": {

@@ -1,0 +1,128 @@
+{
+  "schema_version": "lumi.practice-safe-samples.v1",
+  "bank_id": "lumi.xingce.core-320.practice-v3",
+  "version": "1.0.1",
+  "sample_count": 8,
+  "items": [
+    {
+      "schema_version": "hermes.question-public.v2",
+      "question_id": "xingce.v3.q001.verbal.main-idea-structure.v01",
+      "version": "1.0.1",
+      "domain": "xingce",
+      "user_facing_type": "言语理解",
+      "prompt": "社区图书角让居民可以就近阅读。部分书目长期无人借阅，新需求也得不到满足。因此，管理者应依据借阅记录定期调整书目。这段文字意在说明：",
+      "response_mode": "single_choice",
+      "options": {
+        "A": "无人借阅的书都没有保留价值",
+        "B": "管理者应依据借阅记录定期调整书目",
+        "C": "社区图书角方便居民就近阅读",
+        "D": "所有公共阅读空间都应每天更换书目"
+      }
+    },
+    {
+      "schema_version": "hermes.question-public.v2",
+      "question_id": "xingce.v3.q002.judgment.graphic-properties.v01",
+      "version": "1.0.1",
+      "domain": "xingce",
+      "user_facing_type": "判断推理",
+      "prompt": "下列图形中，既是轴对称图形又是中心对称图形的是：",
+      "response_mode": "single_choice",
+      "options": {
+        "A": "等边三角形",
+        "B": "不等边三角形",
+        "C": "一般平行四边形",
+        "D": "正方形"
+      }
+    },
+    {
+      "schema_version": "hermes.question-public.v2",
+      "question_id": "xingce.v3.q003.quantitative.work-rate.v01",
+      "version": "1.0.1",
+      "domain": "xingce",
+      "user_facing_type": "数量关系",
+      "prompt": "青岚智造车间有一项协作任务，甲单独完成需6小时，乙单独完成需12小时。两人同时工作，完成全部任务需要多长时间？",
+      "response_mode": "single_choice",
+      "options": {
+        "A": "6小时",
+        "B": "12小时",
+        "C": "4小时",
+        "D": "18小时"
+      }
+    },
+    {
+      "schema_version": "hermes.question-public.v2",
+      "question_id": "xingce.v3.q004.data-analysis.direct-growth.v01",
+      "version": "1.0.1",
+      "domain": "xingce",
+      "user_facing_type": "资料分析",
+      "prompt": "青岚市公共阅读服务的一项年度指标由400单位增加到460单位，该指标的增长率是多少？",
+      "response_mode": "single_choice",
+      "options": {
+        "A": "15%",
+        "B": "-15%",
+        "C": "115%",
+        "D": "13.0%"
+      }
+    },
+    {
+      "schema_version": "hermes.question-public.v2",
+      "question_id": "xingce.v3.q005.verbal.main-idea-structure.v02",
+      "version": "1.0.1",
+      "domain": "xingce",
+      "user_facing_type": "言语理解",
+      "prompt": "学校开辟了供学生照料的小花园。只分配土地而不记录养护过程，学生很难比较方法。因此，课程应加入简短的观察记录。这段文字意在说明：",
+      "response_mode": "single_choice",
+      "options": {
+        "A": "课程应加入简短的观察记录",
+        "B": "学校为学生提供了种植空间",
+        "C": "每门课程都必须建设大型花园",
+        "D": "观察记录可以代替全部种植实践"
+      }
+    },
+    {
+      "schema_version": "hermes.question-public.v2",
+      "question_id": "xingce.v3.q006.judgment.graphic-properties.v02",
+      "version": "1.0.1",
+      "domain": "xingce",
+      "user_facing_type": "判断推理",
+      "prompt": "下列图形中，是中心对称图形但不是轴对称图形的是：",
+      "response_mode": "single_choice",
+      "options": {
+        "A": "一般等腰梯形",
+        "B": "一般平行四边形",
+        "C": "长方形",
+        "D": "不等边三角形"
+      }
+    },
+    {
+      "schema_version": "hermes.question-public.v2",
+      "question_id": "xingce.v3.q007.quantitative.work-rate.v02",
+      "version": "1.0.1",
+      "domain": "xingce",
+      "user_facing_type": "数量关系",
+      "prompt": "澄川公共维护站有一项协作任务，甲单独完成需8小时，乙单独完成需24小时。两人同时工作，完成任务的1/2需要多长时间？",
+      "response_mode": "single_choice",
+      "options": {
+        "A": "4小时",
+        "B": "16小时",
+        "C": "6小时",
+        "D": "3小时"
+      }
+    },
+    {
+      "schema_version": "hermes.question-public.v2",
+      "question_id": "xingce.v3.q008.data-analysis.direct-growth.v02",
+      "version": "1.0.1",
+      "domain": "xingce",
+      "user_facing_type": "资料分析",
+      "prompt": "澄川清洁能源项目的一项年度指标由750单位下降到600单位，该指标的增长率是多少？",
+      "response_mode": "single_choice",
+      "options": {
+        "A": "20%",
+        "B": "-25%",
+        "C": "-20%",
+        "D": "80%"
+      }
+    }
+  ]
+}

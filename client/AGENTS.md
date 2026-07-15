@@ -25,3 +25,30 @@ When implementing from a selected generated mock, treat that image as the source
   translucent orbital mark and the Lumi wordmark supplied on 2026-07-11; use
   transparent files in-product and render the white wordmark as a dark variant
   when it appears on white surfaces.
+
+## Current product scope
+
+- The first usable milestone is the **Xingce-only agent experience**, described
+  by the owner as “粉笔行测的 agent 版”. Treat that phrase as a product benchmark,
+  not permission to copy proprietary questions, assets, or exact interface.
+- The current internal milestone is **Core-320**: verbal, judgment,
+  quantitative, and data analysis each expose 80 versioned questions, with one
+  mixed scope that reuses those pools. Common-knowledge/political-theory is
+  deferred and must not be implied as available.
+- Direct fixed-eight practice is the default learner path. Answer is the only
+  required input; explanations stay folded, and tutorials or optional probes
+  appear only when repeated independent evidence justifies them. Do not restore
+  a mandatory staged diagnosis/Feynman flow or add a ninth slot for intervention.
+- After question eight, show a concise evidence report with the scored result,
+  at most one evidence-backed weakness, and real wrong-question details kept
+  folded. The only primary terminal action is to start the next fixed-eight
+  group; closing remains available through the workspace close control.
+- Wrong-question and learner-profile surfaces read the local sidecar's replayed
+  read models. Preserve `null` and empty collections as explicit no-evidence
+  states; never substitute demo metrics or infer missing resumed-session detail.
+- Keep scope selection, real visible questions, cross-session learner evidence,
+  independent later verification, and factual summaries working before exposing
+  Shenlun or Interview in the client.
+- Do not use cross-domain placeholder tasks to make the product appear broader.
+  The underlying versioned contracts may remain, but the current client should
+  visibly promise only the Xingce loop it can execute.

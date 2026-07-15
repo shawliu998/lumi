@@ -1,7 +1,12 @@
-# Lumi release evidence
+# Lumi legacy v0 regression evidence
 
-- Run: `run-20260711T051110Z`
-- Generated: `2026-07-11T05:11:10.387175+00:00`
+This dated report predates Core-320. `PASS` applies only to the 13 gates listed
+below; it does not validate the four-module bank, five v3 scopes, current client,
+or external release readiness. Current evidence is indexed in
+`docs/COMPLETION_AUDIT.md`.
+
+- Run: `run-20260714T120838Z`
+- Generated: `2026-07-14T12:08:38.159520+00:00`
 - Overall: **PASS**
 - Counts: 13 pass / 0 fail / 0 pending
 

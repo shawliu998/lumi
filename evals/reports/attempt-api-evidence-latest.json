@@ -82,9 +82,9 @@
           "events": [
             {
               "seq": 1,
-              "occurred_at": "2026-07-11T05:11:09.821999+00:00",
+              "occurred_at": "2026-07-14T12:08:37.848920+00:00",
               "kind": "run_started",
-              "event_hash": "01ef7dbf26e6dce37c54f32023416fe6fa362c3ff55231bcf8750aeed6a23780",
+              "event_hash": "54d770072399dc2df8e2c7eaeafae324982a96149197174dfc15202a14757c5d",
               "previous_hash": "GENESIS",
               "payload": {
                 "state_after": {
@@ -293,10 +293,10 @@
             },
             {
               "seq": 2,
-              "occurred_at": "2026-07-11T05:11:09.824412+00:00",
+              "occurred_at": "2026-07-14T12:08:37.850057+00:00",
               "kind": "phase_completed",
-              "event_hash": "3cbecdc362915ab504e3e1de7029987b94c34da3695393f3e91b98d3287f6d0c",
-              "previous_hash": "01ef7dbf26e6dce37c54f32023416fe6fa362c3ff55231bcf8750aeed6a23780",
+              "event_hash": "b9b3391705ead36080f114d24042bdfc9cc71cf7198dbac113574e600885cb34",
+              "previous_hash": "54d770072399dc2df8e2c7eaeafae324982a96149197174dfc15202a14757c5d",
               "payload": {
                 "input": {
                   "context": {
@@ -602,10 +602,10 @@
             },
             {
               "seq": 3,
-              "occurred_at": "2026-07-11T05:11:09.824928+00:00",
+              "occurred_at": "2026-07-14T12:08:37.850581+00:00",
               "kind": "phase_completed",
-              "event_hash": "e05a811a0bb7d777f1dfd71fe4992955397dc2e7c3dadaa1964a811e0d13f8c2",
-              "previous_hash": "3cbecdc362915ab504e3e1de7029987b94c34da3695393f3e91b98d3287f6d0c",
+              "event_hash": "6775d5c7fd713da1bfd23085b81f78beaf2741641d115ed7feedc38685a6c279",
+              "previous_hash": "b9b3391705ead36080f114d24042bdfc9cc71cf7198dbac113574e600885cb34",
               "payload": {
                 "input": {
                   "context": {
@@ -889,10 +889,10 @@
             },
             {
               "seq": 4,
-              "occurred_at": "2026-07-11T05:11:09.825427+00:00",
+              "occurred_at": "2026-07-14T12:08:37.851097+00:00",
               "kind": "phase_completed",
-              "event_hash": "c41496060cf0e3b0aa71265ef8e6b910579a9b51bcc40e7058bafae39e8358d3",
-              "previous_hash": "e05a811a0bb7d777f1dfd71fe4992955397dc2e7c3dadaa1964a811e0d13f8c2",
+              "event_hash": "4316279c1745a89fcdf05363a3215c1ec339e61546fb18a4b1855c2e50fb9c88",
+              "previous_hash": "6775d5c7fd713da1bfd23085b81f78beaf2741641d115ed7feedc38685a6c279",
               "payload": {
                 "input": {
                   "context": {
@@ -1196,10 +1196,10 @@
             },
             {
               "seq": 5,
-              "occurred_at": "2026-07-11T05:11:09.825879+00:00",
+              "occurred_at": "2026-07-14T12:08:37.851538+00:00",
               "kind": "run_interrupted",
-              "event_hash": "e8744c22c1034173e9326ced1a3d18f86126ad9511b3cb146df44dee6905f337",
-              "previous_hash": "c41496060cf0e3b0aa71265ef8e6b910579a9b51bcc40e7058bafae39e8358d3",
+              "event_hash": "9fed3df909759916dfba3956f35af8dec835965eea49243047bfb5eefdc38261",
+              "previous_hash": "4316279c1745a89fcdf05363a3215c1ec339e61546fb18a4b1855c2e50fb9c88",
               "payload": {
                 "reason": "requested interrupt boundary",
                 "state_after": {
@@ -2219,9 +2219,9 @@
           "events": [
             {
               "seq": 1,
-              "occurred_at": "2026-07-11T05:11:09.833802+00:00",
+              "occurred_at": "2026-07-14T12:08:37.858854+00:00",
               "kind": "run_started",
-              "event_hash": "d35167f3f9834b0ce2a23cd242c0cd21b139e27caa51f811fb03e78558d18fcf",
+              "event_hash": "1be3356e8adb81132a7cb64910e4500fe458e6e983056cd791eaf593af9310ea",
               "previous_hash": "GENESIS",
               "payload": {
                 "state_after": {
@@ -2430,10 +2430,10 @@
             },
             {
               "seq": 2,
-              "occurred_at": "2026-07-11T05:11:09.834769+00:00",
+              "occurred_at": "2026-07-14T12:08:37.859636+00:00",
               "kind": "phase_completed",
-              "event_hash": "1478fa1dc1a5027d3121315cc311192c9289548588603b0b0fe76e6e1b19dc87",
-              "previous_hash": "d35167f3f9834b0ce2a23cd242c0cd21b139e27caa51f811fb03e78558d18fcf",
+              "event_hash": "2c5eb85729629c80571f4774319e2413051b02d833bd55f29d88b34f059a412e",
+              "previous_hash": "1be3356e8adb81132a7cb64910e4500fe458e6e983056cd791eaf593af9310ea",
               "payload": {
                 "input": {
                   "context": {
@@ -2910,10 +2910,10 @@
             },
             {
               "seq": 3,
-              "occurred_at": "2026-07-11T05:11:09.835785+00:00",
+              "occurred_at": "2026-07-14T12:08:37.860578+00:00",
               "kind": "phase_completed",
-              "event_hash": "9ef364e43ca042ae58cb47d3d2e593a87c027e3827e49cf4babadb0541e82778",
-              "previous_hash": "1478fa1dc1a5027d3121315cc311192c9289548588603b0b0fe76e6e1b19dc87",
+              "event_hash": "d683a8ab792269ed87ddbac3cdd195f5762c058d84f4d2e9e3fb19bb2a180a59",
+              "previous_hash": "2c5eb85729629c80571f4774319e2413051b02d833bd55f29d88b34f059a412e",
               "payload": {
                 "input": {
                   "context": {
@@ -3599,10 +3599,10 @@
             },
             {
               "seq": 4,
-              "occurred_at": "2026-07-11T05:11:09.836732+00:00",
+              "occurred_at": "2026-07-14T12:08:37.861498+00:00",
               "kind": "phase_completed",
-              "event_hash": "0615eb6b6884dc207e291246e7ed54d0599df74ea96721f17992a70c87157b97",
-              "previous_hash": "9ef364e43ca042ae58cb47d3d2e593a87c027e3827e49cf4babadb0541e82778",
+              "event_hash": "3bacda1d93fff364e615464086a9903c2265bd8446663f3f32512edb67cdd429",
+              "previous_hash": "d683a8ab792269ed87ddbac3cdd195f5762c058d84f4d2e9e3fb19bb2a180a59",
               "payload": {
                 "input": {
                   "context": {
@@ -4212,10 +4212,10 @@
             },
             {
               "seq": 5,
-              "occurred_at": "2026-07-11T05:11:09.837489+00:00",
+              "occurred_at": "2026-07-14T12:08:37.862208+00:00",
               "kind": "run_interrupted",
-              "event_hash": "1ec4558f33493e35fda3a9107ee7b63e6eae22c2ce011baf36bcf6cf2f944cc4",
-              "previous_hash": "0615eb6b6884dc207e291246e7ed54d0599df74ea96721f17992a70c87157b97",
+              "event_hash": "26623f31c056cbd7420e4dcdde68eacca983384dadd2add7995864a612e35a57",
+              "previous_hash": "3bacda1d93fff364e615464086a9903c2265bd8446663f3f32512edb67cdd429",
               "payload": {
                 "reason": "requested interrupt boundary",
                 "state_after": {
@@ -6061,9 +6061,9 @@
           "events": [
             {
               "seq": 1,
-              "occurred_at": "2026-07-11T05:11:09.849362+00:00",
+              "occurred_at": "2026-07-14T12:08:37.871794+00:00",
               "kind": "run_started",
-              "event_hash": "dd95ceb2cfa95dd7af3fbb58cf7fea2cae5f7ed7fc8b103c9d6a2c3b7ea73a76",
+              "event_hash": "f84f135a52a70ea479c5e17db37970e4778b47ddc343e500597aa113628c8ed7",
               "previous_hash": "GENESIS",
               "payload": {
                 "state_after": {
@@ -6272,10 +6272,10 @@
             },
             {
               "seq": 2,
-              "occurred_at": "2026-07-11T05:11:09.850247+00:00",
+              "occurred_at": "2026-07-14T12:08:37.872487+00:00",
               "kind": "phase_completed",
-              "event_hash": "30769e1bed7f2d26282d740f23e681e9191031776dd670e6ba19b363120e7be6",
-              "previous_hash": "dd95ceb2cfa95dd7af3fbb58cf7fea2cae5f7ed7fc8b103c9d6a2c3b7ea73a76",
+              "event_hash": "429bf4c08afc37b7810212ad49a83530ab16b4da2fe73fff2eeedbc7f0a136d5",
+              "previous_hash": "f84f135a52a70ea479c5e17db37970e4778b47ddc343e500597aa113628c8ed7",
               "payload": {
                 "input": {
                   "context": {
@@ -6707,10 +6707,10 @@
             },
             {
               "seq": 3,
-              "occurred_at": "2026-07-11T05:11:09.851267+00:00",
+              "occurred_at": "2026-07-14T12:08:37.873342+00:00",
               "kind": "phase_completed",
-              "event_hash": "a6e2ae51433671a75a64beee574f085fbc4c29a7a13ea06afbb139d10466a5fb",
-              "previous_hash": "30769e1bed7f2d26282d740f23e681e9191031776dd670e6ba19b363120e7be6",
+              "event_hash": "1629d2bf946ba205d94b7d58d2bad0da792e19efb9bf8f056ce5ac31480dd2e7",
+              "previous_hash": "429bf4c08afc37b7810212ad49a83530ab16b4da2fe73fff2eeedbc7f0a136d5",
               "payload": {
                 "input": {
                   "context": {
@@ -7348,10 +7348,10 @@
             },
             {
               "seq": 4,
-              "occurred_at": "2026-07-11T05:11:09.852398+00:00",
+              "occurred_at": "2026-07-14T12:08:37.874213+00:00",
               "kind": "phase_completed",
-              "event_hash": "835179d45abfa11baa85acb1e71080a3b1d2acbaef24e019810cd29db4539108",
-              "previous_hash": "a6e2ae51433671a75a64beee574f085fbc4c29a7a13ea06afbb139d10466a5fb",
+              "event_hash": "a6dba71ceb76a1cb88a0615d3828f23fd7cd3341f2be3a93d2dee77c890c94da",
+              "previous_hash": "1629d2bf946ba205d94b7d58d2bad0da792e19efb9bf8f056ce5ac31480dd2e7",
               "payload": {
                 "input": {
                   "context": {
@@ -7919,10 +7919,10 @@
             },
             {
               "seq": 5,
-              "occurred_at": "2026-07-11T05:11:09.853382+00:00",
+              "occurred_at": "2026-07-14T12:08:37.874886+00:00",
               "kind": "run_interrupted",
-              "event_hash": "1701ced4d0b210fb068bf8318d99e654aa1346ff7703170b0c38597230778223",
-              "previous_hash": "835179d45abfa11baa85acb1e71080a3b1d2acbaef24e019810cd29db4539108",
+              "event_hash": "13bb9d97f1d5ba4176d9893006bb840e4d67f991f9e5e6dc58f01b72c3f46711",
+              "previous_hash": "a6dba71ceb76a1cb88a0615d3828f23fd7cd3341f2be3a93d2dee77c890c94da",
               "payload": {
                 "reason": "requested interrupt boundary",
                 "state_after": {
@@ -9631,6 +9631,12 @@
           "verification": {
             "prompt": "某指标由80升到92，增长率是多少？",
             "response_mode": "single_choice",
+            "options": {
+              "A": "12%",
+              "B": "13%",
+              "C": "15%",
+              "D": "115%"
+            },
             "status": "awaiting_learner_response"
           },
           "mastery_update": null,
@@ -9834,9 +9840,9 @@
           "events": [
             {
               "seq": 1,
-              "occurred_at": "2026-07-11T05:11:09.833802+00:00",
+              "occurred_at": "2026-07-14T12:08:37.858854+00:00",
               "kind": "run_started",
-              "event_hash": "d35167f3f9834b0ce2a23cd242c0cd21b139e27caa51f811fb03e78558d18fcf",
+              "event_hash": "1be3356e8adb81132a7cb64910e4500fe458e6e983056cd791eaf593af9310ea",
               "previous_hash": "GENESIS",
               "payload": {
                 "state_after": {
@@ -10045,10 +10051,10 @@
             },
             {
               "seq": 2,
-              "occurred_at": "2026-07-11T05:11:09.834769+00:00",
+              "occurred_at": "2026-07-14T12:08:37.859636+00:00",
               "kind": "phase_completed",
-              "event_hash": "1478fa1dc1a5027d3121315cc311192c9289548588603b0b0fe76e6e1b19dc87",
-              "previous_hash": "d35167f3f9834b0ce2a23cd242c0cd21b139e27caa51f811fb03e78558d18fcf",
+              "event_hash": "2c5eb85729629c80571f4774319e2413051b02d833bd55f29d88b34f059a412e",
+              "previous_hash": "1be3356e8adb81132a7cb64910e4500fe458e6e983056cd791eaf593af9310ea",
               "payload": {
                 "input": {
                   "context": {
@@ -10525,10 +10531,10 @@
             },
             {
               "seq": 3,
-              "occurred_at": "2026-07-11T05:11:09.835785+00:00",
+              "occurred_at": "2026-07-14T12:08:37.860578+00:00",
               "kind": "phase_completed",
-              "event_hash": "9ef364e43ca042ae58cb47d3d2e593a87c027e3827e49cf4babadb0541e82778",
-              "previous_hash": "1478fa1dc1a5027d3121315cc311192c9289548588603b0b0fe76e6e1b19dc87",
+              "event_hash": "d683a8ab792269ed87ddbac3cdd195f5762c058d84f4d2e9e3fb19bb2a180a59",
+              "previous_hash": "2c5eb85729629c80571f4774319e2413051b02d833bd55f29d88b34f059a412e",
               "payload": {
                 "input": {
                   "context": {
@@ -11214,10 +11220,10 @@
             },
             {
               "seq": 4,
-              "occurred_at": "2026-07-11T05:11:09.836732+00:00",
+              "occurred_at": "2026-07-14T12:08:37.861498+00:00",
               "kind": "phase_completed",
-              "event_hash": "0615eb6b6884dc207e291246e7ed54d0599df74ea96721f17992a70c87157b97",
-              "previous_hash": "9ef364e43ca042ae58cb47d3d2e593a87c027e3827e49cf4babadb0541e82778",
+              "event_hash": "3bacda1d93fff364e615464086a9903c2265bd8446663f3f32512edb67cdd429",
+              "previous_hash": "d683a8ab792269ed87ddbac3cdd195f5762c058d84f4d2e9e3fb19bb2a180a59",
               "payload": {
                 "input": {
                   "context": {
@@ -11827,10 +11833,10 @@
             },
             {
               "seq": 5,
-              "occurred_at": "2026-07-11T05:11:09.837489+00:00",
+              "occurred_at": "2026-07-14T12:08:37.862208+00:00",
               "kind": "run_interrupted",
-              "event_hash": "1ec4558f33493e35fda3a9107ee7b63e6eae22c2ce011baf36bcf6cf2f944cc4",
-              "previous_hash": "0615eb6b6884dc207e291246e7ed54d0599df74ea96721f17992a70c87157b97",
+              "event_hash": "26623f31c056cbd7420e4dcdde68eacca983384dadd2add7995864a612e35a57",
+              "previous_hash": "3bacda1d93fff364e615464086a9903c2265bd8446663f3f32512edb67cdd429",
               "payload": {
                 "reason": "requested interrupt boundary",
                 "state_after": {
@@ -12141,10 +12147,10 @@
             },
             {
               "seq": 6,
-              "occurred_at": "2026-07-11T05:11:09.875052+00:00",
+              "occurred_at": "2026-07-14T12:08:37.891682+00:00",
               "kind": "learner_response_recorded",
-              "event_hash": "0f1507f1a8021497799489b7cfeb99a0af6451894f0f02f4aef9471c7f525347",
-              "previous_hash": "1ec4558f33493e35fda3a9107ee7b63e6eae22c2ce011baf36bcf6cf2f944cc4",
+              "event_hash": "00bfeb78704b1436fb67d0f3abd237c676623e6d02ced422cfd8ac1e4973e6e6",
+              "previous_hash": "26623f31c056cbd7420e4dcdde68eacca983384dadd2add7995864a612e35a57",
               "payload": {
                 "confidence": 0.75,
                 "expected_state": "awaiting_probe",
@@ -12510,10 +12516,10 @@
             },
             {
               "seq": 7,
-              "occurred_at": "2026-07-11T05:11:09.875942+00:00",
+              "occurred_at": "2026-07-14T12:08:37.892474+00:00",
               "kind": "run_resumed",
-              "event_hash": "b94d9df1ba8ed8a5e9457dd0330770863e99e52736b2a984ea661e603a66a9b6",
-              "previous_hash": "0f1507f1a8021497799489b7cfeb99a0af6451894f0f02f4aef9471c7f525347",
+              "event_hash": "bd98b25fa3c186592bcb25f855a2ea662d6dd4ff2891c2d97e16dba45c69d9c5",
+              "previous_hash": "00bfeb78704b1436fb67d0f3abd237c676623e6d02ced422cfd8ac1e4973e6e6",
               "payload": {
                 "state_after": {
                   "artifacts": {
@@ -12834,10 +12840,10 @@
             },
             {
               "seq": 8,
-              "occurred_at": "2026-07-11T05:11:09.877644+00:00",
+              "occurred_at": "2026-07-14T12:08:37.894040+00:00",
               "kind": "phase_completed",
-              "event_hash": "e53a4fa8c8d2ca1a40af7334547529388d073bf35bc76edc602140a00d52688e",
-              "previous_hash": "b94d9df1ba8ed8a5e9457dd0330770863e99e52736b2a984ea661e603a66a9b6",
+              "event_hash": "ac234c264f01d70160b3f0d71733cd4975f9cbb13901d62505735ec2d1f23dc5",
+              "previous_hash": "bd98b25fa3c186592bcb25f855a2ea662d6dd4ff2891c2d97e16dba45c69d9c5",
               "payload": {
                 "input": {
                   "context": {
@@ -13495,10 +13501,10 @@
             },
             {
               "seq": 9,
-              "occurred_at": "2026-07-11T05:11:09.878554+00:00",
+              "occurred_at": "2026-07-14T12:08:37.894811+00:00",
               "kind": "run_interrupted",
-              "event_hash": "996ac5d69e1c6e05d4adb91881b3234d98ed2cb558f5f6b1d02fe9a2e45761bf",
-              "previous_hash": "e53a4fa8c8d2ca1a40af7334547529388d073bf35bc76edc602140a00d52688e",
+              "event_hash": "1fa72f86154821073ab37fae3d37b7ae0dd8956ba1d4d5fa85c7f6cc88b6a7ed",
+              "previous_hash": "ac234c264f01d70160b3f0d71733cd4975f9cbb13901d62505735ec2d1f23dc5",
               "payload": {
                 "reason": "requested interrupt boundary",
                 "state_after": {
@@ -13834,10 +13840,10 @@
             },
             {
               "seq": 10,
-              "occurred_at": "2026-07-11T05:11:09.888250+00:00",
+              "occurred_at": "2026-07-14T12:08:37.901944+00:00",
               "kind": "learner_response_recorded",
-              "event_hash": "b2e39294fe451c6597caea8d66384ccb4de92e6520c1b2c4c7af9c4005a27f6f",
-              "previous_hash": "996ac5d69e1c6e05d4adb91881b3234d98ed2cb558f5f6b1d02fe9a2e45761bf",
+              "event_hash": "a94dea7a99fbf83cb393cc566ac37cf313909a60d3581be824672712eab98c95",
+              "previous_hash": "1fa72f86154821073ab37fae3d37b7ae0dd8956ba1d4d5fa85c7f6cc88b6a7ed",
               "payload": {
                 "confidence": 0.9,
                 "expected_state": "awaiting_verification",
@@ -14171,10 +14177,10 @@
             },
             {
               "seq": 11,
-              "occurred_at": "2026-07-11T05:11:09.889590+00:00",
+              "occurred_at": "2026-07-14T12:08:37.902753+00:00",
               "kind": "run_resumed",
-              "event_hash": "6a154558109716bbf3f949f20a81c2866c7f8185ff4e1abbbbd8186ac2718d8b",
-              "previous_hash": "b2e39294fe451c6597caea8d66384ccb4de92e6520c1b2c4c7af9c4005a27f6f",
+              "event_hash": "c03ca5164c1e678870a2353674dce7141372f500ee99ea16f3e9540ccb59c17b",
+              "previous_hash": "a94dea7a99fbf83cb393cc566ac37cf313909a60d3581be824672712eab98c95",
               "payload": {
                 "state_after": {
                   "artifacts": {
@@ -14509,10 +14515,10 @@
             },
             {
               "seq": 12,
-              "occurred_at": "2026-07-11T05:11:09.892422+00:00",
+              "occurred_at": "2026-07-14T12:08:37.905313+00:00",
               "kind": "phase_completed",
-              "event_hash": "3806d02b44c7b1b6cea4dac598d2eeb92260118236e8a224fc2fff1b68079759",
-              "previous_hash": "6a154558109716bbf3f949f20a81c2866c7f8185ff4e1abbbbd8186ac2718d8b",
+              "event_hash": "8d8233d21723f0de48bc610e80b0a0bebaedc849e633d54e056df70c75d1a2c4",
+              "previous_hash": "c03ca5164c1e678870a2353674dce7141372f500ee99ea16f3e9540ccb59c17b",
               "payload": {
                 "input": {
                   "context": {
@@ -14826,7 +14832,7 @@
                     "evidence_count": 1,
                     "failures": 0.35,
                     "irt_theta": -0.04375,
-                    "last_updated_at": "2026-07-11T05:11:09.890961+00:00",
+                    "last_updated_at": "2026-07-14T12:08:37.904041+00:00",
                     "learner_id": "local-learner",
                     "mastery": 0.3179550732662862,
                     "provenance": [
@@ -14889,7 +14895,7 @@
                     "evidence_count": 2,
                     "failures": 0.35,
                     "irt_theta": 0.08398393893641105,
-                    "last_updated_at": "2026-07-11T05:11:09.891042+00:00",
+                    "last_updated_at": "2026-07-14T12:08:37.904106+00:00",
                     "learner_id": "local-learner",
                     "mastery": 0.5473890567792533,
                     "provenance": [
@@ -15340,7 +15346,7 @@
                           "evidence_count": 1,
                           "failures": 0.35,
                           "irt_theta": -0.04375,
-                          "last_updated_at": "2026-07-11T05:11:09.890961+00:00",
+                          "last_updated_at": "2026-07-14T12:08:37.904041+00:00",
                           "learner_id": "local-learner",
                           "mastery": 0.3179550732662862,
                           "provenance": [
@@ -15403,7 +15409,7 @@
                           "evidence_count": 2,
                           "failures": 0.35,
                           "irt_theta": 0.08398393893641105,
-                          "last_updated_at": "2026-07-11T05:11:09.891042+00:00",
+                          "last_updated_at": "2026-07-14T12:08:37.904106+00:00",
                           "learner_id": "local-learner",
                           "mastery": 0.5473890567792533,
                           "provenance": [
@@ -15583,7 +15589,7 @@
                           "evidence_count": 1,
                           "failures": 0.35,
                           "irt_theta": -0.04375,
-                          "last_updated_at": "2026-07-11T05:11:09.890961+00:00",
+                          "last_updated_at": "2026-07-14T12:08:37.904041+00:00",
                           "learner_id": "local-learner",
                           "mastery": 0.3179550732662862,
                           "provenance": [
@@ -15646,7 +15652,7 @@
                           "evidence_count": 2,
                           "failures": 0.35,
                           "irt_theta": 0.08398393893641105,
-                          "last_updated_at": "2026-07-11T05:11:09.891042+00:00",
+                          "last_updated_at": "2026-07-14T12:08:37.904106+00:00",
                           "learner_id": "local-learner",
                           "mastery": 0.5473890567792533,
                           "provenance": [
@@ -15811,10 +15817,10 @@
             },
             {
               "seq": 13,
-              "occurred_at": "2026-07-11T05:11:09.894871+00:00",
+              "occurred_at": "2026-07-14T12:08:37.907137+00:00",
               "kind": "phase_completed",
-              "event_hash": "afe94c4d15e096cc214b19258054f4ff11f361cf88b30d311462201a6193cf6e",
-              "previous_hash": "3806d02b44c7b1b6cea4dac598d2eeb92260118236e8a224fc2fff1b68079759",
+              "event_hash": "241e9accc65c63df04bf94f7a1984cdfec5e794396f02c0faf2893a017e1a55e",
+              "previous_hash": "8d8233d21723f0de48bc610e80b0a0bebaedc849e633d54e056df70c75d1a2c4",
               "payload": {
                 "input": {
                   "context": {
@@ -16122,7 +16128,7 @@
                         "evidence_count": 1,
                         "failures": 0.35,
                         "irt_theta": -0.04375,
-                        "last_updated_at": "2026-07-11T05:11:09.890961+00:00",
+                        "last_updated_at": "2026-07-14T12:08:37.904041+00:00",
                         "learner_id": "local-learner",
                         "mastery": 0.3179550732662862,
                         "provenance": [
@@ -16185,7 +16191,7 @@
                         "evidence_count": 2,
                         "failures": 0.35,
                         "irt_theta": 0.08398393893641105,
-                        "last_updated_at": "2026-07-11T05:11:09.891042+00:00",
+                        "last_updated_at": "2026-07-14T12:08:37.904106+00:00",
                         "learner_id": "local-learner",
                         "mastery": 0.5473890567792533,
                         "provenance": [
@@ -16844,7 +16850,7 @@
                           "evidence_count": 1,
                           "failures": 0.35,
                           "irt_theta": -0.04375,
-                          "last_updated_at": "2026-07-11T05:11:09.890961+00:00",
+                          "last_updated_at": "2026-07-14T12:08:37.904041+00:00",
                           "learner_id": "local-learner",
                           "mastery": 0.3179550732662862,
                           "provenance": [
@@ -16907,7 +16913,7 @@
                           "evidence_count": 2,
                           "failures": 0.35,
                           "irt_theta": 0.08398393893641105,
-                          "last_updated_at": "2026-07-11T05:11:09.891042+00:00",
+                          "last_updated_at": "2026-07-14T12:08:37.904106+00:00",
                           "learner_id": "local-learner",
                           "mastery": 0.5473890567792533,
                           "provenance": [
@@ -17198,10 +17204,10 @@
             },
             {
               "seq": 14,
-              "occurred_at": "2026-07-11T05:11:09.897157+00:00",
+              "occurred_at": "2026-07-14T12:08:37.908953+00:00",
               "kind": "phase_completed",
-              "event_hash": "9f7677e969e810a2c2ab06fd1002648420e25dff43b6b511b95b1c6de5a67f15",
-              "previous_hash": "afe94c4d15e096cc214b19258054f4ff11f361cf88b30d311462201a6193cf6e",
+              "event_hash": "1971e7f78f8b55dc94c103f12cb4416c7cc8a64261c3719df30648a98511169e",
+              "previous_hash": "241e9accc65c63df04bf94f7a1984cdfec5e794396f02c0faf2893a017e1a55e",
               "payload": {
                 "input": {
                   "context": {
@@ -17609,7 +17615,7 @@
                         "evidence_count": 1,
                         "failures": 0.35,
                         "irt_theta": -0.04375,
-                        "last_updated_at": "2026-07-11T05:11:09.890961+00:00",
+                        "last_updated_at": "2026-07-14T12:08:37.904041+00:00",
                         "learner_id": "local-learner",
                         "mastery": 0.3179550732662862,
                         "provenance": [
@@ -17672,7 +17678,7 @@
                         "evidence_count": 2,
                         "failures": 0.35,
                         "irt_theta": 0.08398393893641105,
-                        "last_updated_at": "2026-07-11T05:11:09.891042+00:00",
+                        "last_updated_at": "2026-07-14T12:08:37.904106+00:00",
                         "learner_id": "local-learner",
                         "mastery": 0.5473890567792533,
                         "provenance": [
@@ -18247,7 +18253,7 @@
                           "evidence_count": 1,
                           "failures": 0.35,
                           "irt_theta": -0.04375,
-                          "last_updated_at": "2026-07-11T05:11:09.890961+00:00",
+                          "last_updated_at": "2026-07-14T12:08:37.904041+00:00",
                           "learner_id": "local-learner",
                           "mastery": 0.3179550732662862,
                           "provenance": [
@@ -18310,7 +18316,7 @@
                           "evidence_count": 2,
                           "failures": 0.35,
                           "irt_theta": 0.08398393893641105,
-                          "last_updated_at": "2026-07-11T05:11:09.891042+00:00",
+                          "last_updated_at": "2026-07-14T12:08:37.904106+00:00",
                           "learner_id": "local-learner",
                           "mastery": 0.5473890567792533,
                           "provenance": [
@@ -21944,7 +21950,7 @@
                         "evidence_count": 1,
                         "failures": 0.35,
                         "irt_theta": -0.04375,
-                        "last_updated_at": "2026-07-11T05:11:09.890961+00:00",
+                        "last_updated_at": "2026-07-14T12:08:37.904041+00:00",
                         "learner_id": "local-learner",
                         "mastery": 0.3179550732662862,
                         "provenance": [
@@ -22007,7 +22013,7 @@
                         "evidence_count": 2,
                         "failures": 0.35,
                         "irt_theta": 0.08398393893641105,
-                        "last_updated_at": "2026-07-11T05:11:09.891042+00:00",
+                        "last_updated_at": "2026-07-14T12:08:37.904106+00:00",
                         "learner_id": "local-learner",
                         "mastery": 0.5473890567792533,
                         "provenance": [
@@ -22472,7 +22478,7 @@
                         "evidence_count": 1,
                         "failures": 0.35,
                         "irt_theta": -0.04375,
-                        "last_updated_at": "2026-07-11T05:11:09.890961+00:00",
+                        "last_updated_at": "2026-07-14T12:08:37.904041+00:00",
                         "learner_id": "local-learner",
                         "mastery": 0.3179550732662862,
                         "provenance": [
@@ -22535,7 +22541,7 @@
                         "evidence_count": 2,
                         "failures": 0.35,
                         "irt_theta": 0.08398393893641105,
-                        "last_updated_at": "2026-07-11T05:11:09.891042+00:00",
+                        "last_updated_at": "2026-07-14T12:08:37.904106+00:00",
                         "learner_id": "local-learner",
                         "mastery": 0.5473890567792533,
                         "provenance": [
@@ -23232,7 +23238,7 @@
                         "evidence_count": 1,
                         "failures": 0.35,
                         "irt_theta": -0.04375,
-                        "last_updated_at": "2026-07-11T05:11:09.890961+00:00",
+                        "last_updated_at": "2026-07-14T12:08:37.904041+00:00",
                         "learner_id": "local-learner",
                         "mastery": 0.3179550732662862,
                         "provenance": [
@@ -23295,7 +23301,7 @@
                         "evidence_count": 2,
                         "failures": 0.35,
                         "irt_theta": 0.08398393893641105,
-                        "last_updated_at": "2026-07-11T05:11:09.891042+00:00",
+                        "last_updated_at": "2026-07-14T12:08:37.904106+00:00",
                         "learner_id": "local-learner",
                         "mastery": 0.5473890567792533,
                         "provenance": [
@@ -23914,7 +23920,7 @@
                         "evidence_count": 1,
                         "failures": 0.35,
                         "irt_theta": -0.04375,
-                        "last_updated_at": "2026-07-11T05:11:09.890961+00:00",
+                        "last_updated_at": "2026-07-14T12:08:37.904041+00:00",
                         "learner_id": "local-learner",
                         "mastery": 0.3179550732662862,
                         "provenance": [
@@ -23977,7 +23983,7 @@
                         "evidence_count": 2,
                         "failures": 0.35,
                         "irt_theta": 0.08398393893641105,
-                        "last_updated_at": "2026-07-11T05:11:09.891042+00:00",
+                        "last_updated_at": "2026-07-14T12:08:37.904106+00:00",
                         "learner_id": "local-learner",
                         "mastery": 0.5473890567792533,
                         "provenance": [
@@ -24165,7 +24171,7 @@
               "failed_or_inconclusive": 0,
               "latest_mastery": 0.5473890567792533,
               "latest_uncertainty": 0.4542183523241705,
-              "latest_at": "2026-07-11T05:11:09.894871+00:00"
+              "latest_at": "2026-07-14T12:08:37.907137+00:00"
             }
           ]
         },

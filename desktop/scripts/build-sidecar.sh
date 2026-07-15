@@ -15,6 +15,10 @@ if [ "$(uname -m)" != "arm64" ]; then
   exit 1
 fi
 
+# Fail before the expensive PyInstaller step if the source manifest, generated
+# bank, or outside-Git materialization boundary is inconsistent.
+"$python_bin" "$workspace_root/evals/run_all.py" --gate core320_bank --no-write
+
 if [ ! -x "$venv/bin/python" ]; then
   "$python_bin" -m venv "$venv"
 fi
@@ -44,8 +48,12 @@ mkdir -p "$(dirname -- "$launcher")" "$runtime_root"
   --collect-submodules hermes_integration \
   --collect-submodules hermes_runtime \
   --collect-submodules hermes_kt \
+  --collect-submodules hermes_practice \
   --collect-submodules hermes_domains \
   --add-data "$workspace_root/domains/fixtures:domains/fixtures" \
+  --add-data "$workspace_root/domains/lessons:domains/lessons" \
+  --add-data "$workspace_root/domains/practice_v2:domains/practice_v2" \
+  --add-data "$workspace_root/domains/practice_v3:domains/practice_v3" \
   "$desktop_root/sidecars/hermes_sidecar_bootstrap.py"
 
 cp -R "$dist_root/hermes-sidecar/." "$runtime_root/"

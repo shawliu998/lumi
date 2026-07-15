@@ -196,10 +196,14 @@ degrade to abstention rather than silently accepting an unverifiable result.
 
 ## Content boundary
 
-`xingcetiku` publishes immutable packages with a manifest, schema version,
-checksums, canonical items, paper occurrences, assets, skills, and distractor/
-misconception annotations. Lumi imports packages through validation and never
-queries mutable source folders directly.
+Lumi accepts two versioned content paths. `xingcetiku` may publish immutable
+packages with a manifest, schema version, checksums, canonical items, paper
+occurrences, assets, skills, and distractor annotations. Separately, the
+internal Core-320 bank is reproduced from repository-owned deterministic module
+generators and a frozen manifest digest. Both paths fail closed on schema,
+count, oracle, or checksum mismatch; neither path queries mutable source folders
+at runtime. The generated path commits schemas, generators, checksums, and safe
+samples rather than the 320-item bulk materialization.
 
 Shenlun production remains read-only. Lumi builds an independent domain module
 from documented requirements, owned test fixtures, and explicit import contracts.

@@ -27,7 +27,7 @@ invented.
 ## Run
 
 ```bash
-cd $HOME/Documents/peikao/integration
+cd $HOME/Documents/zhishixingqiu/integration
 python3 -m unittest discover -s tests -v
 
 python3 -m hermes_integration --db /tmp/hermes-integration.sqlite3 run success --run-id success-1

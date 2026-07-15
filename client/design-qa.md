@@ -1,6 +1,32 @@
 # Lumi Mac 客户端视觉与交互 QA
 
-## Comparison target
+> Status note: this is a dated v1 visual/contract baseline plus a 2026-07-14
+> growth-rate lesson delta. Its screenshots and mandatory continuation evidence
+> are historical and must not be presented as visual QA for the current
+> Core-320 direct-practice UI. The owner removed volunteer acceptance as an
+> internal expansion prerequisite; usability and fresh visual/accessibility
+> records remain separate evidence before a broader learner rollout.
+
+## 2026-07-14 growth-rate lesson delta
+
+- Added a full-window lesson workspace with the confirmed learner-visible flow:
+  method card/worked example → answer → immediate feedback or optional hint →
+  next item. There is no mandatory Feynman response or numbered diagnosis flow.
+- Cause probabilities, diagnosis decisions, and numeric KT deltas remain in the
+  local trace but were removed from the primary learner UI.
+- The client consumes safe `/v1/lessons` projections and sends every scored
+  response through the existing attempt/continuation API. Completion requires
+  four scored answers and two consecutive verified transfers; reading alone is
+  inert.
+- At that checkpoint, `npm test` covered six policy/state tests. The current
+  Core-320 client suite has 22 passing tests and its production build passes;
+  this dated section still does not supply current screenshots.
+- Fresh visual and interaction evidence is still pending. The in-app Browser
+  runtime failed during setup with an environment-level process binding
+  conflict, so no screenshot from this build is claimed or substituted with a
+  different browser automation surface.
+
+## Historical v1 comparison target
 
 - Source visual truth:
   - Overview: `/var/folders/21/lq2y7qwx7nz2czy8zxyyc6480000gn/T/codex-clipboard-9e126b71-77af-418b-94da-e3a343119661.png`

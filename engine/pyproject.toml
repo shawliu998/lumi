@@ -10,4 +10,4 @@ requires-python = ">=3.10"
 dependencies = []
 
 [tool.setuptools]
-packages = ["hermes_kt"]
+packages = ["hermes_kt", "hermes_practice"]
